@@ -2,7 +2,7 @@
 // Netwerk eerst; lukt dat niet, dan de bewaarde kopie. Bij elke stap VERSIE
 // ophogen en nieuwe bestanden aan KERN toevoegen.
 // (Opnieuw opgebouwd in stap 15: de vorige sw.js stond niet in het artifact.)
-const VERSIE = 'burcht-banier-0.22.0';
+const VERSIE = 'burcht-banier-0.22.1';
 const KERN = ["./index.html", "./manifest.webmanifest", "./css/stijl.css", "./data/assets.json", "./data/bouwwerken.json", "./data/economie.json", "./data/missies.json", "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png", "./js/assets.js", "./js/bouwen.js", "./js/camera.js", "./js/config.js", "./js/economie.js", "./js/eenheden.js", "./js/invoer.js", "./js/iso.js", "./js/kaart.js", "./js/kunst.js", "./js/leger.js", "./js/main.js", "./js/meting.js", "./js/modus.js", "./js/opslag.js", "./js/rood.js", "./js/spellus.js", "./js/strijd.js", "./js/tekenaar.js", "./js/toeval.js", "./js/ui.js", "./js/wegvinden.js"];
 
 self.addEventListener('install', (e) => {

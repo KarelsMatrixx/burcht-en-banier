@@ -23,6 +23,7 @@
   "opslag: de grondstoffen in de lijst hebben een grens. De burcht geeft plek aan het getal bij burcht, elke voorraadkamer voegt het getal bij voorraadkamer toe. Is alles vol, dan wachten je werkers met hun last. Goud heeft geen grens.",
   "neemt: een werker die iets verwerkt (de zager) haalt dit eerst uit de voorraad, loopt terug naar zijn werkplaats, werkt werkTijd seconden en brengt dan last van haalt naar de voorraad. 4 hout wordt zo 4 planken.",
   "Voedsel: eet is een lijst (brood en voedsel, dat zijn de appels). Je volk eet om de beurt van elke soort. stemming.afwisseling telt per ronde bij de populariteit als er van meer dan één soort te eten is. De bakker maakt van 4 tarwe 8 brood.",
+  "handel: bij een voorraadkamer verkoop je per keer 'per' stuks van een grondstof voor 'prijs' goud.",
   "legerMax: zoveel soldaten kun je hoogstens hebben.",
   "strijd: de aanvallen van de rode heer. eersteGolf is na hoeveel seconden de eerste aanval komt, tussenGolven de tijd tussen twee aanvallen.",
   "golven: wie er per aanval komt. Na de laatste regel blijft die laatste aanval terugkomen, tot de burcht van rood valt.",
@@ -146,9 +147,9 @@
    "bij": "STEEN",
    "ruimtOp": false,
    "last": 8,
-   "werkTijd": 4,
+   "werkTijd": 9,
    "snelheid": 1.5,
-   "snelheidMetLast": 1.1,
+   "snelheidMetLast": 1.0,
    "bereik": 10,
    "plek": "de rotsen",
    "bezig": "hakt steen uit de rots",
@@ -427,6 +428,17 @@
     "vanaf": 6,
     "max": 1
    }
+  }
+ },
+ "handel": {
+  "per": 10,
+  "prijs": {
+   "hout": 2,
+   "planken": 4,
+   "steen": 3,
+   "voedsel": 2,
+   "tarwe": 2,
+   "brood": 4
   }
  }
 }

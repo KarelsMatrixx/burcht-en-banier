@@ -67,7 +67,8 @@ async function start() {
     eenheden.kaartVeranderd(vakken);
   };
 
-  let naVoorraad = () => {};   // wordt verderop ingevuld, als de bouwbalk er is
+  let naVoorraad = () => {};
+  let verversHandel = () => {};   // het paneel van de voorraadkamer, als het openstaat   // wordt verderop ingevuld, als de bouwbalk er is
   const economie = maakEconomie({
     regels, kaart, wegvinder, eenheden,
     opKaart: kaartGewijzigd,
@@ -329,6 +330,35 @@ async function start() {
     toonKazerne();
   });
 
+  // De voorraadkamer: tik hem aan en verkoop wat je over hebt voor goud.
+  let handelVak = -1;
+  let handelBericht = '';
+  const toonHandel = () => {
+    const gebouw = handelVak >= 0 ? bouwer.werkOp(handelVak % kaart.breedte, Math.floor(handelVak / kaart.breedte)) : null;
+    if (!gebouw || !gebouw.handel || !regels.handel) {
+      handelVak = -1;
+      ui.toonHandel({ open: false });
+      return;
+    }
+    const h = regels.handel;
+    ui.toonHandel({
+      open: true,
+      regels: [`Voorraadkamer. Goud: ${economie.voorraad.goud}. Elke kamer geeft plek aan ${regels.opslag.voorraadkamer} van elke grondstof.`, handelBericht || `Verkoop per ${h.per} stuks voor goud.`],
+      knoppen: Object.keys(h.prijs).filter((n) => regels.grondstoffen[n] && (economie.voorraad[n] > 0 || economie.maakt(n))).map((n) => ({
+        sleutel: n,
+        naam: `${regels.grondstoffen[n].naam} (${economie.voorraad[n]})`,
+        kost: `${h.per} voor ${h.prijs[n]} goud`,
+        kan: economie.voorraad[n] >= h.per,
+      })),
+    }, (n) => {
+      const reden = economie.verkoop(n);
+      handelBericht = reden ? `Dat lukt niet: ${reden}.` : `Verkocht: ${h.per} ${regels.grondstoffen[n].naam.toLowerCase()} voor ${h.prijs[n]} goud.`;
+      toonHandel();
+    });
+  };
+  verversHandel = () => { if (handelVak >= 0) toonHandel(); };
+  ui.opHandelSluit(() => { handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); });
+
   // Soldaten kiezen: de knoppen rechts onderin en de uitleg erboven.
   let kaderAan = false;        // staat de knop Kader aan?
   naLeger = () => {
@@ -361,6 +391,7 @@ async function start() {
       });
     }
     if (kazerneVak >= 0) toonKazerne();
+    verversHandel();
   };
   ui.opKader(() => {
     kaderAan = !kaderAan;
@@ -651,6 +682,13 @@ async function start() {
       }
       // De kazerne aangetikt: daar leid je soldaten op.
       const aangetikt = binnenKaart(kaart, x, y) ? bouwer.werkOp(x, y) : null;
+      if (aangetikt && aangetikt.handel) {
+        handelVak = y * kaart.breedte + x;
+        handelBericht = '';
+        staat.gekozen = { x, y };
+        toonHandel();
+        return;
+      }
       if (aangetikt && aangetikt.leidtOp) {
         kazerneVak = y * kaart.breedte + x;
         kazerneBericht = '';

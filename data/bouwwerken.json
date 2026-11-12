@@ -40,7 +40,8 @@
     "woning":      { "naam": "Woning",      "groep": "dorp",    "object": "WONING",      "kosten": { "planken": 10 }, "woont": 4,
                      "tip": "Een woning geeft plek aan 4 boeren." },
     "voorraadkamer": { "naam": "Voorraad", "groep": "dorp", "leven": 250, "object": "VOORRAADKAMER", "kosten": { "hout": 30 },
-                     "tip": "Hier slaan je werkers hout, steen en voedsel op. Elke kamer geeft plek aan 150 van elk (ook planken)." },
+                     "handel": true,
+                     "tip": "Hier slaan je werkers hout, steen en voedsel op. Elke kamer geeft plek aan 150 van elk. Tik hem aan om overschot voor goud te verkopen." },
     "kazerne":     { "naam": "Kazerne",     "groep": "leger",   "object": "KAZERNE",     "kosten": { "planken": 10, "steen": 10 }, "leidtOp": true,
                      "tip": "Tik hem daarna aan om soldaten op te leiden." }
   }

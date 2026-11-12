@@ -47,12 +47,14 @@ export function maakUi() {
   // Tik je bovenin op je voorraad, dan klapt het paneel over je volk open.
   let kiesBelasting = () => {};
   let leidOp = () => {};
+  let verkoopActie = () => {};
   const klapVolk = (open) => {
     el('volkpaneel').hidden = !open;
     el('voorraad').classList.toggle('open', open);
   };
   el('voorraad').addEventListener('click', () => {
     el('legerpaneel').hidden = true;
+    el('handelpaneel').hidden = true;
     klapVolk(el('volkpaneel').hidden);
   });
   el('volk-sluit').addEventListener('click', () => klapVolk(false));
@@ -273,6 +275,7 @@ export function maakUi() {
       el('legerpaneel').hidden = !open;
       if (!open) return;
       klapVolk(false);
+      el('handelpaneel').hidden = true;
       el('leger-tekst').textContent = '';
       for (const regel of regels) {
         const p = document.createElement('div');
@@ -294,6 +297,40 @@ export function maakUi() {
         balk.children[i].lastChild.textContent = k.kost;
         balk.children[i].classList.toggle('kanniet', !k.kan);
       });
+    },
+    // Het paneel van de voorraadkamer: verkopen voor goud.
+    //   knoppen = [{ sleutel, naam, kost, kan }]
+    toonHandel({ open, regels = [], knoppen = [] }, opVerkoop) {
+      el('handelpaneel').hidden = !open;
+      if (!open) return;
+      klapVolk(false);
+      el('legerpaneel').hidden = true;
+      el('handel-tekst').replaceChildren(...regels.map((r) => { const p = document.createElement('div'); p.textContent = r; return p; }));
+      const balk = el('handel-knoppen');
+      // Dezelfde knoppen bijwerken in plaats van vervangen: anders mis je een
+      // tik als de voorraad net verandert terwijl je drukt.
+      const teken = knoppen.map((k) => k.sleutel).join();
+      if (balk.dataset.teken !== teken) {
+        balk.dataset.teken = teken;
+        balk.replaceChildren(...knoppen.map((k) => {
+          const knop = document.createElement('button');
+          knop.type = 'button';
+          knop.dataset.verkoop = k.sleutel;
+          knop.append(document.createElement('span'), document.createElement('small'));
+          knop.addEventListener('click', () => verkoopActie(k.sleutel));
+          return knop;
+        }));
+      }
+      verkoopActie = opVerkoop;
+      knoppen.forEach((k, i) => {
+        const knop = balk.children[i];
+        knop.firstChild.textContent = k.naam;
+        knop.lastChild.textContent = k.kost;
+        knop.classList.toggle('kanniet', !k.kan);
+      });
+    },
+    opHandelSluit(functie) {
+      el('handel-sluit').addEventListener('click', functie);
     },
     opOpleiden(functie) {
       leidOp = functie;

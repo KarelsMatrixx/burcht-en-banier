@@ -1501,8 +1501,6 @@ export function tekenKazerne(naam, def) {
   return huis;
 }
 
-// Een boomgaard: drie appelboompjes achter een laag hek, met een mand
-// appels vooraan.
 // Een tarweveld: omgeploegde aarde met rijen gouden aren en een laag hek.
 export function tekenTarweveld(naam, def) {
   const b = TB + 4;
@@ -1528,6 +1526,84 @@ export function tekenTarweveld(naam, def) {
     }
   }
   return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
+// Een bakkerij: een huis van rode baksteen met een grote bolle broodoven
+// aan de zijkant (met gloed in de opening), rook uit de schoorsteen, een
+// uithangbord met een krakeling en een bank met broden voor de deur.
+export function tekenBakkerij(naam, def) {
+  const huis = huisVariant(naam, def, 0);
+  const ctx = huis.beeld.getContext('2d');
+  const cx = huis.ax;
+  const cy = huis.ay - HH;
+  const L = [cx - 25, cy];
+  const B = [cx, cy + 12.5];
+  const R = [cx + 25, cy];
+  const wand = 15;
+  const steen = '#a24a32';
+
+  // Voegen: baksteen in rijen over beide wanden
+  for (let hoog = 2.5; hoog < wand; hoog += 2.5) {
+    lijn(ctx, L[0], L[1] - hoog, B[0], B[1] - hoog, 'rgba(255,230,200,0.18)', 0.5);
+    lijn(ctx, B[0], B[1] - hoog, R[0], R[1] - hoog, 'rgba(255,230,200,0.22)', 0.5);
+  }
+
+  // De broodoven: een bolle koepel van baksteen tegen de linkerwand
+  const o = tussen(L, B, 0.42);
+  const ox = o[0] - 3;
+  const oy = o[1] + 4;
+  ovaal(ctx, ox + 1.5, oy + 1, 11, 4.4, 'rgba(0,0,0,0.25)');
+  blok(ctx, ox - 10, oy - 3, 20, 3.2, tint(steen, -0.25));        // voet
+  ctx.fillStyle = steen;
+  ctx.beginPath();
+  ctx.ellipse(ox, oy - 3, 10, 10, 0, Math.PI, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = tint(steen, 0.18);
+  ctx.beginPath();
+  ctx.ellipse(ox + 2.5, oy - 5, 5, 6.5, 0, Math.PI * 1.1, Math.PI * 1.9);
+  ctx.fill();
+  for (const [dx, dy] of [[-6, -5], [-2, -9], [3, -8], [6, -4], [-4, -10.5], [1, -12]]) blok(ctx, ox + dx, oy + dy, 2.6, 0.6, 'rgba(60,20,10,0.35)');
+  // Opening met vuur
+  ctx.fillStyle = '#2a140c';
+  ctx.beginPath();
+  ctx.ellipse(ox - 1, oy - 3, 3.6, 4.2, 0, Math.PI, Math.PI * 2);
+  ctx.fill();
+  blok(ctx, ox - 4.6, oy - 3, 7.2, 1.2, '#2a140c');
+  ovaal(ctx, ox - 1, oy - 3.3, 2.4, 1.5, '#f08a2a');
+  ovaal(ctx, ox - 1, oy - 3.6, 1.2, 0.8, '#ffd36a');
+  // Ovenpijpje met rook
+  blok(ctx, ox + 3, oy - 16, 2.6, 4.5, tint(steen, -0.1));
+  for (const [dx, dy, r] of [[4.5, -19, 2], [6, -22.5, 2.6], [5, -26.5, 3.1]]) ovaal(ctx, ox + dx, oy + dy, r, r * 0.85, 'rgba(225,225,225,0.55)');
+
+  // Uithangbord met een krakeling aan de lichte wand
+  const hang = tussen(B, R, 0.86);
+  const hx = hang[0];
+  const hy = hang[1] - wand + 2;
+  lijn(ctx, hx, hy, hx + 7, hy - 1, '#2b2118', 1.1);
+  lijn(ctx, hx + 6.5, hy - 1, hx + 6.5, hy + 1.6, '#2b2118', 0.6);
+  ctx.strokeStyle = '#b8762f';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.ellipse(hx + 5.2, hy + 4.6, 2.1, 2.1, 0, 0, Math.PI * 2);
+  ctx.ellipse(hx + 7.8, hy + 4.6, 2.1, 2.1, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  lijn(ctx, hx + 4.2, hy + 7, hx + 8.8, hy + 7, '#b8762f', 1.4);
+
+  // Een bank met broden voor de deur en twee meelzakken
+  const bank = tussen(B, R, 0.45);
+  const bx = bank[0];
+  const by = bank[1] + 4;
+  blok(ctx, bx - 5, by - 4, 11, 1.6, '#7a5632');
+  blok(ctx, bx - 4.5, by - 2.4, 1.2, 3.4, '#5a3d22');
+  blok(ctx, bx + 4.2, by - 2.4, 1.2, 3.4, '#5a3d22');
+  for (const dx of [-3, 0.4, 3.8]) ovaal(ctx, bx + dx, by - 5, 1.7, 1.2, '#c27e3c');
+  for (const dx of [-3, 0.4, 3.8]) lijn(ctx, bx + dx - 0.8, by - 5.4, bx + dx + 0.6, by - 5.6, 'rgba(255,235,190,0.6)', 0.5);
+  const zak = tussen(L, B, 0.86);
+  for (const [dx, dy] of [[-1, 4], [2.4, 5.6]]) {
+    ovaal(ctx, zak[0] + dx, zak[1] + dy, 2.4, 3, '#e9e1cc');
+    blok(ctx, zak[0] + dx - 1.2, zak[1] + dy - 3.2, 2.4, 0.8, '#b8a888');
+  }
+  return huis;
 }
 
 export function tekenBoomgaard(naam, def) {

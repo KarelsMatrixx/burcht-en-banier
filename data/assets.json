@@ -44,7 +44,7 @@
     "dorp.voorraadkamer": { "vorm": "huis", "wand": "#9a7a4e", "pannen": true, "daken": ["#8a4a34"], "hoogte": 22, "sprite": "" },
     "werk.zagerij":   { "vorm": "huis", "wand": "#b58c5a", "daken": ["#7a5a3a"], "hoogte": 22, "sprite": "" },
     "werk.tarweveld": { "vorm": "tarweveld", "aar": "#d9b44a", "hoogte": 10, "sprite": "" },
-    "werk.bakkerij":  { "vorm": "huis", "wand": "#e6d6b0", "schoorsteen": true, "pannen": true, "daken": ["#a8452f"], "hoogte": 24, "sprite": "" },
+    "werk.bakkerij":  { "vorm": "bakkerij", "wand": "#b4573a", "schoorsteen": true, "pannen": true, "daken": ["#5b4636"], "hoogte": 24, "sprite": "" },
     "dorp.woning":     { "vorm": "huis", "wand": "#e0d2b4", "vakwerk": true, "pannen": true, "schoorsteen": true, "daken": ["#3f5e96"], "hoogte": 24, "sprite": "" },
 
     "eenheid.ridder_blauw":        { "vorm": "ridder",       "kleur": "#2f5fc4", "sprite": "" },

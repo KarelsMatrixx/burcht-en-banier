@@ -752,6 +752,17 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   werkLopersBij();
 
   return {
+    // Verkoop handel.per stuks van een grondstof voor goud. Geeft '' of de reden.
+    verkoop(naam) {
+      const h = regels.handel;
+      if (!h || !h.prijs[naam]) return 'dat koopt niemand';
+      if (voorraad[naam] < h.per) return `je hebt minder dan ${h.per} ${regels.grondstoffen[naam].naam.toLowerCase()}`;
+      voorraad[naam] -= h.per;
+      voorraad[volkRegels.munt] += h.prijs[naam];
+      opVoorraad();
+      opVerandering();
+      return '';
+    },
     voorraad, opslagMax, maakt: (naam) => [...werkplaatsen.values()].some((e) => e.werk.beroep.haalt === naam) || wachtend.some((w) => regels.beroepen[w.beroepNaam] && regels.beroepen[w.beroepNaam].haalt === naam), opslagKamers: () => kamers, herzieOpslag, kostTekst, tekort, tekortAan, betaal, geefTerug,
     nieuweWerkplaats, werkplaatsWeg, stap, beschrijf,
     bewaarStand, zetStand, herstel,
