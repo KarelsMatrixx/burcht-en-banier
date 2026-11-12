@@ -260,7 +260,10 @@ async function start() {
   naVoorraad = () => {
     const volk = economie.bevolking();
     const stem = economie.stemming();
-    const grondstoffen = Object.entries(regels.grondstoffen).map(([naam, def]) => ({ naam: def.naam, aantal: economie.voorraad[naam] }));
+    const grondstoffen = Object.entries(regels.grondstoffen).map(([naam, def]) => {
+      const max = economie.opslagMax(naam);
+      return { naam: def.naam, aantal: Number.isFinite(max) ? `${economie.voorraad[naam]}/${max}` : economie.voorraad[naam], slecht: Number.isFinite(max) && economie.voorraad[naam] >= max };
+    });
     ui.toonVoorraad([
       ...grondstoffen,
       // Je boeren en voor hoeveel er plek is, en hoe populair je bent.

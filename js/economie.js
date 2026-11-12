@@ -162,6 +162,34 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   }
   const bijBurcht = (vak) => (afleverplek[vak] ? { sta: vak } : null);
 
+  // --- Opslag: de burcht en je voorraadkamers --------------------------------------
+  // Werkers brengen hun last naar de dichtstbijzijnde plek: de burcht of een
+  // voorraadkamer. De voorraad zelf is één totaal, met een grens per soort:
+  // de burcht plus alle kamers. De grens geldt voor de grondstoffen in
+  // regels.opslag.grondstoffen (goud niet).
+  const opslagRegels = regels.opslag || { grondstoffen: [], burcht: 0, voorraadkamer: 0 };
+  const afleverBurcht = afleverplek.slice();
+  let kamers = 0;
+  function herzieOpslag() {
+    afleverplek.set(afleverBurcht);
+    kamers = 0;
+    for (let vak = 0; vak < B * H; vak++) {
+      if (kaart.object[vak] !== OBJECT.VOORRAADKAMER || kaart.eigenaar[vak] !== TEAM + 1) continue;
+      kamers++;
+      const x = vak % B;
+      const y = (vak - x) / B;
+      for (let r = 0; r < 4; r++) {
+        const nx = x + RX[r];
+        const ny = y + RY[r];
+        if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
+        if (kaart.object[ny * B + nx] !== OBJECT.VOORRAADKAMER) afleverplek[ny * B + nx] = 1;
+      }
+    }
+  }
+  const heeftGrens = (naam) => opslagRegels.grondstoffen.includes(naam);
+  const opslagMax = (naam) => (heeftGrens(naam) ? opslagRegels.burcht + kamers * opslagRegels.voorraadkamer : Infinity);
+  herzieOpslag();
+
   // --- Werkers --------------------------------------------------------------------
   const werkplaatsen = new Map();   // vak van het werkgebouw -> de werker die erbij hoort
   const wachtend = [];              // werkgebouwen zonder werker: { vak, beroepNaam }
@@ -452,8 +480,12 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     if (w.staat === 'breng') {
       if (e.pad) return;                     // nog onderweg
       if (afleverplek[hier]) {
-        voorraad[beroep.haalt] += w.last;
-        w.last = 0;
+        const ruimte = Math.max(0, opslagMax(beroep.haalt) - voorraad[beroep.haalt]);
+        if (ruimte <= 0) return klem(e, `kan zijn ${regels.grondstoffen[beroep.haalt].naam.toLowerCase()} niet kwijt: de opslag is vol`, 'Bouw een voorraadkamer of gebruik wat je hebt.', 3);
+        const brengt = Math.min(w.last, ruimte);
+        voorraad[beroep.haalt] += brengt;
+        w.last -= brengt;
+        if (w.last > 0) return klem(e, 'kan een deel van zijn last niet kwijt: de opslag is vol', 'Bouw een voorraadkamer.', 3);
         w.klem = '';
         w.staat = 'zoek';
         e.houding = null;
@@ -548,7 +580,14 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     }
   }
 
+  let opslagTeller = 0;
   function stap() {
+    if (++opslagTeller >= stappenPerSeconde) {
+      opslagTeller = 0;
+      const was = kamers;
+      herzieOpslag();
+      if (kamers !== was) opVoorraad();   // de grens is veranderd: de voorraad in beeld bijwerken
+    }
     for (const e of werkplaatsen.values()) werk(e);
     for (let i = 0; i < lopers.length; i++) slenter(lopers[i]);
     if (klokLoopt) volkStap();
@@ -634,7 +673,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   werkLopersBij();
 
   return {
-    voorraad, kostTekst, tekort, tekortAan, betaal, geefTerug,
+    voorraad, opslagMax, opslagKamers: () => kamers, herzieOpslag, kostTekst, tekort, tekortAan, betaal, geefTerug,
     nieuweWerkplaats, werkplaatsWeg, stap, beschrijf,
     bewaarStand, zetStand, herstel,
     // Woonruimte erbij (een woning gebouwd) of eraf (gesloopt).
