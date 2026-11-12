@@ -141,3 +141,12 @@
 - sw.js: de twee schilderijen en levelkaart.json zijn toegevoegd aan de bewaarde bestanden (0.31.0).
 - Bekend: Het Veen ligt op de weg boven het veen, niet erin; de brug kan in stijl afwijken van het schilderij; de naam Grauwvoort staat boven het punt; nog niet op een echte iPhone gezien (alleen Chrome op 844 bij 390).
 - Test: tests/kaart31.mjs (16 controles). tests/menu19.mjs en tests/campagne30.mjs slagen ook.
+
+## 0.32.0: het spel in het Engels, soldaten als beloning
+- Alles wat de speler ziet is Engels: knoppen, meldingen, panelen, eindschermen, de prestatietest, de foutmelding, namen van grondstoffen, gebouwen, soldaten, beroepen, kaarten, profielen, en alle campagneteksten. Titel: Keep & Banner. De code, de sleutels in de data en de opmerkingen blijven Nederlands.
+- Plaatsen en titels verengelst (Witherheath, Sevenwinds, Ironmarsh, The Fen, Stillwater, Giant's Spine, Greyford, White Dike, Mourngate, Mournkeep, Aldervale, Blackmark). Voornamen blijven (Reinout, Mechteld, Hademar, Wessel, Karel, Ottger). Kuyper werd Cooper, Valkenier werd Falconer.
+- Plaatjes in de voorraadbalk kiezen nu op sleutel (icoon-hout) in plaats van op de naam. Meervoud van soldaten staat in economie.json (meervoud). Nieuw: js/taal.js (a of an).
+- Vrijspelen: elk level heeft in campagne.json een beloning in plaats van nieuw. Je krijgt de beloning als je het level wint; in level n heb je de beloningen van alle levels ervoor. Proloog: stormram en ladderdrager. Reinout: kopermijn. Mechteld (schutters): kruisboog. Hademar (smid): bijlridder en katapult. Brandt en Gesina: sluipmoordenaar, magiertoren en vlammenwever. Lambrecht (machines): belegeringstoren.
+- Het eindscherm noemt wat je vrijspeelt ("Unlocked: Crossbowman"), de intro van een level wat er nieuw is ("New for you: Copper Mine").
+- Bekend: de belegeringstoren zit nu pas na level 6, dus in de speelbare levels 1 tot 3 niet meer; de balans van level 3 zonder katapult en bijlridder is niet getest. Technische foutmeldingen uit de code (bij een kapot databestand) zijn nog Nederlands.
+- Test: tests/campagne30.mjs aangepast (21 controles); de andere tests op Engelse teksten.

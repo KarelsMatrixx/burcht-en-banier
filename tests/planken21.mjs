@@ -19,8 +19,8 @@ const knop = async (t) => { for (const x of await p.$$('#bouwbalk button')) { if
 const naar = (x, y) => p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.begrens && s.camera.begrens(); return s.camera.wereldNaarScherm(w.x, w.y); }, [x, y]);
 const vrij = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; for (let r = 3; r < 9; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = st.x + dx, y = st.y + dy; if (s.wegvinder.isVrij(x, y, 0) && k.object[y * 64 + x] === 0 && Math.max(Math.abs(dx), Math.abs(dy)) === r && dx > 0) return [x, y]; } return null; });
 await p.evaluate(() => { window.spel.economie.voorraad.hout = 100; });
-await knop('Werk'); check('knop Zagerij', await knop('Zagerij'));
-let sp = await naar(...vrij); await p.touchscreen.tap(sp.x, sp.y); await knop('Zet neer'); await knop('Klaar');
+await knop('Work'); check('knop Zagerij', await knop('Sawmill'));
+let sp = await naar(...vrij); await p.touchscreen.tap(sp.x, sp.y); await knop('Place'); await knop('Done');
 check('zagerij staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], vrij)) === 23);
 // hout 100 - 25 = 75; volgen tot planken stijgen
 let staten = new Set(); let pl = 20, hout;
@@ -31,19 +31,19 @@ for (let t = 0; t < 60 && pl <= 20; t++) {
 }
 console.log([...staten].join(' / '));
 check('zager haalt hout (hout daalt)', true);
-check('zager zaagt', [...staten].some((x) => /zaagt/.test(x)));
+check('zager zaagt', [...staten].some((x) => /sawing/.test(x)));
 check('planken erbij (+4)', pl === 24, pl);
 check('hout eraf (100-25-4)', hout <= 71, hout);
 // zonder hout: wacht
 await p.evaluate(() => { window.spel.economie.voorraad.hout = 0; });
 await p.waitForTimeout(12000);
 const b2 = await p.evaluate(([x, y]) => window.spel.economie.beschrijf(y * 64 + x), vrij);
-check('zonder hout wacht hij', /wacht op hout|zaagt|planken/.test(b2), b2);
+check('zonder hout wacht hij', /waiting for wood|sawing|planks/.test(b2), b2);
 // woning kost planken
 await p.evaluate(() => { window.spel.economie.voorraad.planken = 0; });
-await knop('‹ Terug'); await knop('Dorp');
-const wn = await p.evaluate(() => [...document.querySelectorAll('#bouw-knoppen button')].map((b) => b.textContent).find((t) => t.startsWith('Woning')));
-check('woning kost planken', /planken/.test(wn), wn);
+await knop('‹ Back'); await knop('Village');
+const wn = await p.evaluate(() => [...document.querySelectorAll('#bouw-knoppen button')].map((b) => b.textContent).find((t) => t.startsWith('House')));
+check('woning kost planken', /planks/.test(wn), wn);
 // rood koopt nog katapult/rammen (planken als hout)
 const r = await p.evaluate(() => { const s = window.spel; s.rood.zetVoorraad('hout', 100); s.rood.zetVoorraad('goud', 100); return s.rood.stand(); });
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);

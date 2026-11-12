@@ -78,7 +78,7 @@ export async function laadAssets() {
     // onderdelen met één plaatje; varianten en loopbeelden volgen later.
     if (def.sprite) {
       if (asset.varianten || asset.rechts) {
-        meldingen.push(`${naam}: een eigen plaatje voor dit onderdeel kan nog niet.`);
+        meldingen.push(`${naam}: a custom image for this part is not supported yet.`);
       } else {
         try {
           const plaatje = await laadSprite('assets/sprites/' + def.sprite);
@@ -89,7 +89,7 @@ export async function laadAssets() {
           asset.ax = def.anker ? def.anker[0] : asset.b / 2;
           asset.ay = def.anker ? def.anker[1] : asset.h;
         } catch (fout) {
-          meldingen.push(`Plaatje ${def.sprite} niet gevonden. Getekende versie gebruikt voor ${naam}.`);
+          meldingen.push(`Image ${def.sprite} not found. Using the drawn version for ${naam}.`);
         }
       }
     }

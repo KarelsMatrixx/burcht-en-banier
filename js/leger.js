@@ -98,13 +98,13 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // Lege tekst als je deze soldaat kunt opleiden, anders de reden.
   function waaromNiet(sleutel) {
     const def = soorten[sleutel];
-    if (!def) return 'die soldaat bestaat niet';
-    if (def.koning) return 'er is maar één koning';
-    if (soldaten.length >= max) return `je leger is vol (${max} soldaten)`;
+    if (!def) return 'that soldier does not exist';
+    if (def.koning) return 'there is only one king';
+    if (soldaten.length >= max) return `your army is full (${max} soldiers)`;
     const tekort = economie.tekort(def.kosten);
     if (tekort) return tekort;
     const boeren = def.boeren || 1;
-    if (economie.bevolking().vrij < boeren) return boeren > 1 ? `hij kost ${boeren} boeren zonder werk` : 'er is geen boer zonder werk';
+    if (economie.bevolking().vrij < boeren) return boeren > 1 ? `he costs ${boeren} idle peasants` : 'there is no idle peasant';
     return '';
   }
 
@@ -114,7 +114,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const reden = waaromNiet(sleutel);
     if (reden) return reden;
     const vak = plekBij(kazerneVak, 4);
-    if (vak < 0) return 'er is geen plek bij de kazerne';
+    if (vak < 0) return 'there is no room next to the barracks';
     economie.betaal(soorten[sleutel].kosten);
     for (let i = soorten[sleutel].boeren || 1; i > 0; i--) economie.boerWeg();
     maak(sleutel, vak);

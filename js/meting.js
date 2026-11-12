@@ -19,10 +19,10 @@ export function maakMeting({ kaart, camera, eenheden, ui }) {
   const middenY = (grenzen.boven + grenzen.onder) / 2;
 
   const STANDEN = [
-    { naam: 'Dichtbij', zet: () => { camera.zetZoom(1.2); camera.kijkNaar(middenX, middenY); } },
-    { naam: 'Hele kaart', zet: () => { camera.zetZoom(CONFIG.camera.zoomMin); camera.kijkNaar(middenX, middenY); } },
+    { naam: 'Close up', zet: () => { camera.zetZoom(1.2); camera.kijkNaar(middenX, middenY); } },
+    { naam: 'Whole map', zet: () => { camera.zetZoom(CONFIG.camera.zoomMin); camera.kijkNaar(middenX, middenY); } },
     {
-      naam: 'Bewegend',
+      naam: 'Moving',
       zet: (deel) => {
         camera.zetZoom(1);
         camera.kijkNaar(grenzen.links * 0.6 + (grenzen.rechts - grenzen.links) * 0.6 * deel, middenY);
@@ -54,7 +54,7 @@ export function maakMeting({ kaart, camera, eenheden, ui }) {
     nu = nieuweTellers();
     venster = { beelden: 0, tijd: 0 };
     reken = { stappen: 0, tijd: 0, hoogste: 0 };
-    ui.toonVoortgang(`Meting loopt: ${STANDEN[0].naam} (1 van ${STANDEN.length})`);
+    ui.toonVoortgang(`Measuring: ${STANDEN[0].naam} (1 of ${STANDEN.length})`);
   }
 
   // Wordt elk beeld aangeroepen door de spellus.
@@ -87,7 +87,7 @@ export function maakMeting({ kaart, camera, eenheden, ui }) {
       nu = nieuweTellers();
       venster = { beelden: 0, tijd: 0 };
       if (stand >= STANDEN.length) rondAf();
-      else ui.toonVoortgang(`Meting loopt: ${STANDEN[stand].naam} (${stand + 1} van ${STANDEN.length})`);
+      else ui.toonVoortgang(`Measuring: ${STANDEN[stand].naam} (${stand + 1} of ${STANDEN.length})`);
     }
   }
 
@@ -107,28 +107,28 @@ export function maakMeting({ kaart, camera, eenheden, ui }) {
 
     let oordeel;
     if (allesRond30 && zwaarsteTekenen < 12) {
-      oordeel = 'ONDUIDELIJK. Je scherm lijkt begrensd op 30 beelden/s.\nStaat de energiebesparingsmodus aan? Zet die uit en meet opnieuw.';
+      oordeel = 'UNCLEAR. Your screen seems capped at 30 fps.\nIs low power mode on? Turn it off and measure again.';
     } else if (traagste >= 50) {
-      oordeel = 'RUIM VOLDOENDE. Canvas kan dit aan.';
+      oordeel = 'MORE THAN ENOUGH. Canvas can handle this.';
     } else if (traagste >= 30) {
-      oordeel = 'VOLDOENDE, maar met weinig marge.';
+      oordeel = 'ENOUGH, but with little margin.';
     } else {
-      oordeel = 'ONVOLDOENDE. Eerst overleggen voor we verder bouwen.';
+      oordeel = 'NOT ENOUGH. Discuss this before we build further.';
     }
 
     const regels = [
-      `Meting klaar: ${aantalFiguren} figuren`,
+      `Measurement done: ${aantalFiguren} figures`,
       '',
       ...uitkomsten.map(
         (u) =>
-          `${u.naam.padEnd(11)} ${komma(u.beeldenPerSeconde, 0).padStart(3)} beelden/s` +
-          ` (laagste ${komma(u.laagste, 0)}) · tekenen ${komma(u.tekenMs)} ms`
+          `${u.naam.padEnd(11)} ${komma(u.beeldenPerSeconde, 0).padStart(3)} fps` +
+          ` (lowest ${komma(u.laagste, 0)}) · drawing ${komma(u.tekenMs)} ms`
       ),
-      `Rekenen     ${komma(reken.stappen ? reken.tijd / reken.stappen : 0)} ms per stap (hoogste ${komma(reken.hoogste)})`,
+      `Logic       ${komma(reken.stappen ? reken.tijd / reken.stappen : 0)} ms per step (highest ${komma(reken.hoogste)})`,
       '',
-      `Oordeel: ${oordeel}`,
+      `Verdict: ${oordeel}`,
       '',
-      `v${CONFIG.versie} · scherm ${camera.breedte}×${camera.hoogte} · pixelratio ${window.devicePixelRatio || 1}`,
+      `v${CONFIG.versie} · screen ${camera.breedte}×${camera.hoogte} · pixelratio ${window.devicePixelRatio || 1}`,
     ];
     ui.toonVoortgang('');
     ui.toonUitslag(regels.join('\n'));

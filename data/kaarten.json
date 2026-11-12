@@ -9,7 +9,7 @@
  ],
  "kaarten": {
   "standaard": {
-   "naam": "Het Middenland",
+   "naam": "The Midlands",
    "breedte": 64, "hoogte": 64, "zaad": 20261110,
    "water": 0.3, "zand": 0.36, "bos": 0.62, "start": [0.22, 0.78],
    "vindplaatsen": [
@@ -20,7 +20,7 @@
    "midden": [{ "soort": "IJZER", "dx": -4, "dy": 3, "straal": 2.4 }]
   },
   "dal": {
-   "naam": "Het Groene Dal",
+   "naam": "The Green Vale",
    "breedte": 56, "hoogte": 56, "zaad": 1101,
    "water": 0.2, "zand": 0.25, "bos": 0.56, "start": [0.22, 0.78],
    "vindplaatsen": [
@@ -31,7 +31,7 @@
    "midden": [{ "soort": "STEEN", "dx": 0, "dy": 0, "straal": 2 }]
   },
   "meren": {
-   "naam": "De Twee Meren",
+   "naam": "The Two Lakes",
    "breedte": 64, "hoogte": 64, "zaad": 2202,
    "water": 0.4, "zand": 0.45, "bos": 0.64, "start": [0.2, 0.8],
    "vindplaatsen": [
@@ -42,7 +42,7 @@
    "midden": [{ "soort": "IJZER", "dx": -3, "dy": 3, "straal": 2.6 }, { "soort": "STEEN", "dx": 4, "dy": -4, "straal": 2 }]
   },
   "grensland": {
-   "naam": "Het Grensland",
+   "naam": "The Borderland",
    "breedte": 72, "hoogte": 72, "zaad": 3303,
    "water": 0.28, "zand": 0.34, "bos": 0.6, "start": [0.18, 0.82],
    "vindplaatsen": [

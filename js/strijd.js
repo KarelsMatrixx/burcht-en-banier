@@ -401,7 +401,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       doel.rust = 0;
       if (b.team === SPELER && !burchtGemeld) {
         burchtGemeld = true;
-        opMelding('Je burcht wordt aangevallen! Stuur je soldaten erheen.');
+        opMelding('Your keep is under attack! Send your soldiers there.');
       }
       balkenBij();
       opStand();
@@ -772,9 +772,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     zetLadder(vak, e.team, kant, !!k.def.vast);
     k.ladder = -1;
     zetHouding(e, null);
-    if (k.def.vast) opMelding(e.team === SPELER ? 'De belegeringstoren staat tegen de muur van rood. Kies soldaten en tik die muur aan: dan klimmen ze erop.' : 'Rood zet een belegeringstoren tegen je muur! Zet soldaten op dat stuk muur: het duurt lang voor ze hem omduwen.');
-    else if (e.team === SPELER) opMelding('De ladder staat tegen de muur van rood. Kies soldaten en tik die muur aan: dan klimmen ze erop.');
-    else opMelding('Rood zet een ladder tegen je muur! Zet soldaten op dat stuk muur: zij duwen hem om.');
+    if (k.def.vast) opMelding(e.team === SPELER ? 'The siege tower stands against the red wall. Select soldiers and tap that wall: they will climb onto it.' : 'Red is rolling a siege tower against your wall! Put soldiers on that piece of wall: it takes them a long time to push it over.');
+    else if (e.team === SPELER) opMelding('The ladder stands against the red wall. Select soldiers and tap that wall: they will climb onto it.');
+    else opMelding('Red is setting a ladder against your wall! Put soldiers on that piece of wall: they will push it over.');
     opVerandering();
   }
 
@@ -799,7 +799,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       const pad = sta < 0 ? null : zoekPad(e, sta);
       if (!pad) {
         k.klim = -1;
-        if (e.team === SPELER) opMelding('Je sluipmoordenaar kan niet bij dat stuk muur komen.');
+        if (e.team === SPELER) opMelding('Your assassin cannot reach that piece of wall.');
         return;
       }
       zetPad(e, pad);
@@ -1089,7 +1089,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (++k.duw >= stappen(vasteLadders.has(vakVan(e)) ? (R.omduwenVast || 10) : (R.omduwen || 3))) {
         k.duw = 0;
         haalLadderWeg(vakVan(e), VIJAND);
-        opMelding('Je soldaten hebben een ladder van rood omgeduwd.');
+        opMelding('Your soldiers pushed over a red ladder.');
       }
     } else {
       k.duw = 0;
@@ -1229,7 +1229,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (telAls) {
       golf++;
       burchtGemeld = false;
-      if (!heer) opMelding(`Aanval ${golf}! ${aantal} ${aantal === 1 ? 'vijand komt' : 'vijanden komen'} van de rode burcht op je af.`);
+      if (!heer) opMelding(`Attack ${golf}! ${aantal} ${aantal === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`);
     }
     opVerandering();
     opStand();
@@ -1301,7 +1301,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     for (const b of burchten) {
       if (b.leven > 0 || b.gemeldKapot) continue;
       b.gemeldKapot = true;
-      if (koningSleutel) opMelding(b.team === SPELER ? 'Je burcht is kapot! Je koning is nu zwakker en geneest niet meer. Bescherm hem.' : 'De burcht van rood is kapot: zijn koning is zwakker. Versla hem!');
+      if (koningSleutel) opMelding(b.team === SPELER ? 'Your keep is destroyed! Your king is weaker now and no longer heals. Protect him.' : 'The red keep is destroyed: their king is weaker. Defeat him!');
     }
     if (stapNr % perSeconde === 0) opStand();
   }

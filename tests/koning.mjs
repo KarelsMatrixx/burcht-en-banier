@@ -40,7 +40,7 @@ check('koning loopt waar je tikt', Math.hypot(kp[0] - doel[0] - 0.5, kp[1] - doe
 // burcht kapot: geen verlies, koning zwakker
 const r2 = await p.evaluate(() => { const s = window.spel; s.strijd.zetBurcht(0); s.strijd.stap(); return { u: s.strijd.uitslag(), m: document.getElementById('meldingen').textContent.slice(-150) }; });
 check('burcht kapot is geen verlies', !r2.u, JSON.stringify(r2));
-check('melding koning zwakker', /zwakker/.test(r2.m), r2.m);
+check('melding koning zwakker', /weaker/.test(r2.m), r2.m);
 // rode koning blijft thuis: zet hem weg, hij loopt terug
 const r3 = await p.evaluate(async () => { const s = window.spel; const rk = s.strijd.koning(1); const st = s.kaart.start[1]; const t0 = Math.hypot(rk.x - st.x, rk.y - st.y); return t0; });
 check('rode koning thuis', r3 < 3.5, r3);
@@ -54,10 +54,10 @@ const r4 = await p.evaluate(() => { const s = window.spel; return { a: !!s.strij
 check('na laden: één koning elk, rood leven bewaard', r4.a && r4.n === 1 && r4.r >= 100 && r4.r < 140, JSON.stringify(r4));
 // rode koning dood = gewonnen
 const r5 = await p.evaluate(() => { const s = window.spel; s.strijd.koning(1).dood = true; s.strijd.stap(); return { u: s.strijd.uitslag(), t: document.getElementById('einde-titel').textContent }; });
-check('rode koning dood = gewonnen', r5.u === 'gewonnen' && /Gewonnen/.test(r5.t), JSON.stringify(r5));
+check('rode koning dood = gewonnen', r5.u === 'gewonnen' && /Victory/.test(r5.t), JSON.stringify(r5));
 await p.evaluate(() => localStorage.clear()); await p.reload(); await wacht();
 const r6 = await p.evaluate(() => { const s = window.spel; s.strijd.koning(0).leven = 0; s.strijd.koning(0).dood = true; s.strijd.stap(); return { u: s.strijd.uitslag(), t: document.getElementById('einde-tekst').textContent }; });
-check('jouw koning dood = verloren', r6.u === 'verloren' && /koning/.test(r6.t), JSON.stringify(r6));
+check('jouw koning dood = verloren', r6.u === 'verloren' && /king/.test(r6.t), JSON.stringify(r6));
 // plaatje
 await p.evaluate(() => localStorage.clear()); await p.reload(); await wacht();
 await p.evaluate(async () => { const iso = await import('/js/iso.js'); const s = window.spel; const a = s.strijd.koning(0); s.leger.zetStand([['ridder', Math.floor(a.x) + 1, Math.floor(a.y), 60, 0], ['bijlridder', Math.floor(a.x) + 1, Math.floor(a.y) + 1, 60, 0]]); s.strijd.zetVijand('ridder', Math.floor(a.x) - 1, Math.floor(a.y) + 2, 60); const w = iso.rasterNaarWereld(a.x, a.y + 0.5); s.camera.x = w.x; s.camera.y = w.y - 10; s.camera.zetZoom(2.5); document.getElementById('tip').hidden = true; document.getElementById('meldingen').hidden = true; });

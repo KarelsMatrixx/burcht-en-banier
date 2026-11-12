@@ -208,11 +208,11 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
     if (uitvalKlok > 0) uitvalKlok -= dt;
     if (uitvalKlok <= 0 && aantal() > 0 && bedreigd()) {
       uitvalKlok = H.uitvalPauze;
-      stuur((n) => `De rode heer doet een uitval met ${n} ${n === 1 ? 'man' : 'mannen'}!`, false);
+      stuur((n) => `The red lord makes a sally with ${n} ${n === 1 ? 'man' : 'men'}!`, false);
       return;
     }
     if (sinds >= (aanvallen === 0 ? H.eersteAanval : H.tussen) && sterkte() >= doel()) {
-      stuur((n) => `Aanval ${aanvallen + 1}! ${n} ${n === 1 ? 'vijand komt' : 'vijanden komen'} van de rode burcht op je af.`, true);
+      stuur((n) => `Attack ${aanvallen + 1}! ${n} ${n === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`, true);
       opVerandering();
     }
   }

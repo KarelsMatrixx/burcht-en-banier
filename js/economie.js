@@ -20,6 +20,7 @@ import { CONFIG } from './config.js';
 import { OBJECT } from './kaart.js';
 import { SOORT } from './eenheden.js';
 import { maakToeval } from './toeval.js';
+import { metLidwoord } from './taal.js';
 
 const TEAM = 0;   // de speler
 
@@ -54,15 +55,18 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
 
   const soorten = (kosten) => Object.entries(kosten || {});
 
-  // "14 steen", of "4 steen en 4 hout".
+  // De naam van een grondstof in een zin: "stone", "wood".
+  const klein = (naam) => (regels.grondstoffen[naam] ? regels.grondstoffen[naam].naam : naam).toLowerCase();
+
+  // "14 stone", of "4 stone and 4 wood".
   function kostTekst(kosten, keer = 1) {
-    return soorten(kosten).map(([naam, aantal]) => `${aantal * keer} ${naam}`).join(' en ');
+    return soorten(kosten).map(([naam, aantal]) => `${aantal * keer} ${klein(naam)}`).join(' and ');
   }
 
   // Lege tekst als je het kunt betalen, anders wat je tekortkomt.
   function tekort(kosten, keer = 1) {
     for (const [naam, aantal] of soorten(kosten)) {
-      if (voorraad[naam] < aantal * keer) return `te weinig ${naam} (dit kost ${aantal * keer}, je hebt ${voorraad[naam]})`;
+      if (voorraad[naam] < aantal * keer) return `not enough ${klein(naam)} (this costs ${aantal * keer}, you have ${voorraad[naam]})`;
     }
     return '';
   }
@@ -357,10 +361,10 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     }
     wachtend.push({ vak: werkVak, beroepNaam });
     if (!nieuw) return;
-    let raad = 'Er komt vanzelf een nieuwe boer.';
-    if (volk >= ruimte()) raad = 'Zet een woning neer, dan komen er meer.';
-    else if (eten() <= 0) raad = 'Zonder voedsel komt er niemand bij.';
-    opMelding(`Er is geen boer vrij voor de ${beroep.naam}. ${raad}`);
+    let raad = 'A new peasant will come by itself.';
+    if (volk >= ruimte()) raad = 'Build a house and more will come.';
+    else if (eten() <= 0) raad = 'Without food, no one new arrives.';
+    opMelding(`No peasant is free to work as ${beroep.naam}. ${raad}`);
   }
 
   // Vrije boeren gaan naar de werkgebouwen die het langst wachten.
@@ -399,7 +403,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     const w = e.werk;
     if (w.klem !== tekst) {
       w.klem = tekst;
-      opMelding(`Een ${w.beroep.naam} ${tekst}.${raad ? ` ${raad}` : ''}`);
+      opMelding(`${metLidwoord(w.beroep.naam, true)} ${tekst}.${raad ? ` ${raad}` : ''}`);
     }
     w.wacht = Math.round(pauze * stappenPerSeconde);
   }
@@ -427,7 +431,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     const thuis = thuisVan(w.plaats);
     if (w.staat === 'zoek') {
       if (!wegvinder.isVrij(hier % B, Math.floor(hier / B), TEAM)) {
-        if (thuis < 0) return klem(e, 'is ingebouwd');
+        if (thuis < 0) return klem(e, 'is walled in');
         zetOp(e, thuis);
         hier = thuis;
       }
@@ -436,7 +440,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       if (afleverplek[hier]) w.staat = 'haal';
       else {
         const doel = zoekDichtbij(hier, bijBurcht, B * H);
-        if (!doel || !loopNaar(e, hier, doel.sta)) return klem(e, 'kan niet bij de voorraad', 'Zet een poort in je muur of bouw een voorraadkamer dichterbij.');
+        if (!doel || !loopNaar(e, hier, doel.sta)) return klem(e, 'cannot reach the stores', 'Put a gate in your wall or build a storehouse closer by.');
         w.klem = '';
         w.staat = 'haal';
         return;
@@ -459,7 +463,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
         w.genomen = false;
         e.houding = null;
         e.snelheid = beroep.snelheid;
-        return klem(e, `kan niet terug naar ${beroep.plek}`, '', 3);
+        return klem(e, `cannot get back to ${beroep.plek}`, '', 3);
       }
       w.staat = 'terug';
       return;
@@ -467,7 +471,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     // terug
     if (e.pad) return;
     if (hier !== thuis) {
-      if (thuis < 0 || !loopNaar(e, hier, thuis)) return klem(e, `kan niet terug naar ${beroep.plek}`, '', 3);
+      if (thuis < 0 || !loopNaar(e, hier, thuis)) return klem(e, `cannot get back to ${beroep.plek}`, '', 3);
       return;
     }
     w.staat = 'werk';
@@ -498,14 +502,14 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       const thuis = thuisVan(w.plaats);
       if (!wegvinder.isVrij(hier % B, Math.floor(hier / B), TEAM)) {
         // Hij staat nog in het gebouw omdat het was ingebouwd.
-        if (thuis < 0) return klem(e, 'is ingebouwd');
+        if (thuis < 0) return klem(e, 'is walled in');
         zetOp(e, thuis);
         hier = thuis;
       }
       // Hij zoekt vanaf zijn werkplaats, zodat hij in de buurt blijft werken.
       const doel = zoekDichtbij(thuis >= 0 ? thuis : hier, bijBron(beroep.bron), beroep.bereik);
       if (!doel) return klem(e, beroep.mist, beroep.raad, 3);
-      if (!loopNaar(e, hier, doel.sta)) return klem(e, `kan niet bij ${beroep.plek}`);
+      if (!loopNaar(e, hier, doel.sta)) return klem(e, `cannot reach ${beroep.plek}`);
       w.klem = '';
       w.bron = doel.bron;
       w.sta = doel.sta;
@@ -550,11 +554,11 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       if (e.pad) return;                     // nog onderweg
       if (afleverplek[hier]) {
         const ruimte = Math.max(0, opslagMax(beroep.haalt) - voorraad[beroep.haalt]);
-        if (ruimte <= 0) return klem(e, `kan zijn ${regels.grondstoffen[beroep.haalt].naam.toLowerCase()} niet kwijt: de opslag is vol`, 'Bouw een voorraadkamer of gebruik wat je hebt.', 3);
+        if (ruimte <= 0) return klem(e, `cannot unload his ${klein(beroep.haalt)}: the stores are full`, 'Build a storehouse or use what you have.', 3);
         const brengt = Math.min(w.last, ruimte);
         voorraad[beroep.haalt] += brengt;
         w.last -= brengt;
-        if (w.last > 0) return klem(e, 'kan een deel van zijn last niet kwijt: de opslag is vol', 'Bouw een voorraadkamer.', 3);
+        if (w.last > 0) return klem(e, 'cannot unload part of his load: the stores are full', 'Build a storehouse.', 3);
         w.klem = '';
         w.staat = 'zoek';
         e.houding = null;
@@ -564,7 +568,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
         return;
       }
       const doel = zoekDichtbij(hier, bijBurcht, B * H);
-      if (!doel || !loopNaar(e, hier, doel.sta)) return klem(e, 'kan niet bij de burcht', 'Zet een poort in je muur.');
+      if (!doel || !loopNaar(e, hier, doel.sta)) return klem(e, 'cannot reach the keep', 'Put a gate in your wall.');
       w.klem = '';
     }
   }
@@ -605,10 +609,10 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     const genoeg = eten() >= volk * volkRegels.eetPerPersoon;
     const soorten = eetSoorten.filter((n) => voorraad[n] > 0).length;
     return [
-      { naam: 'eten', waarde: genoeg ? stem.eten : stem.honger },
-      { naam: 'afwisseling', waarde: genoeg && soorten > 1 ? stem.afwisseling || 0 : 0 },
-      { naam: 'belasting', waarde: tarieven[belasting].effect },
-      { naam: 'wonen', waarde: volk > ruimte() ? stem.krap : 0 },
+      { naam: 'food', waarde: genoeg ? stem.eten : stem.honger },
+      { naam: 'variety', waarde: genoeg && soorten > 1 ? stem.afwisseling || 0 : 0 },
+      { naam: 'tax', waarde: tarieven[belasting].effect },
+      { naam: 'housing', waarde: volk > ruimte() ? stem.krap : 0 },
     ];
   }
 
@@ -630,7 +634,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       for (const n of eetSoorten) voorraad[n] = 0;
       if (!honger) {
         const heeftBron = [...werkplaatsen.values()].some((e) => eetSoorten.includes(e.werk.beroep.haalt));
-        opMelding(`Het voedsel is op. Er komen geen boeren meer bij.${heeftBron ? '' : ` ${volkRegels.raadHonger}`}`);
+        opMelding(`The food has run out. No new peasants will come.${heeftBron ? '' : ` ${volkRegels.raadHonger}`}`);
       }
       honger = true;
     }
@@ -638,7 +642,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     const was = populariteit;
     populariteit = Math.max(0, Math.min(100, populariteit + factoren.reduce((som, f) => som + f.waarde, 0)));
     if (was >= stem.grens && populariteit < stem.grens) {
-      opMelding('Je boeren zijn ontevreden en gaan vertrekken. Tik bovenin op je voorraad om te zien waarom.');
+      opMelding('Your peasants are unhappy and will start to leave. Tap your stores at the top to see why.');
     }
     opVoorraad();
     opVerandering();
@@ -672,19 +676,19 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
 
   // Wat de werker van dit gebouw aan het doen is, voor in beeld.
   function beschrijf(werkVak) {
-    if (wachtend.some((w) => w.vak === werkVak)) return 'wacht op een vrije boer';
+    if (wachtend.some((w) => w.vak === werkVak)) return 'waiting for a free peasant';
     const e = werkplaatsen.get(werkVak);
     if (!e) return '';
     const w = e.werk;
     const bezig = {
-      zoek: 'zoekt werk',
-      heen: `loopt naar ${w.beroep.plek}`,
-      haal: `haalt ${Object.keys(w.beroep.neemt || {}).join(' en ')} uit de voorraad`,
-      terug: `brengt ${Object.keys(w.beroep.neemt || {}).join(' en ')} naar ${w.beroep.plek}`,
+      zoek: 'is looking for work',
+      heen: `is walking to ${w.beroep.plek}`,
+      haal: `is taking ${Object.keys(w.beroep.neemt || {}).map(klein).join(' and ')} from the stores`,
+      terug: `is carrying ${Object.keys(w.beroep.neemt || {}).map(klein).join(' and ')} to ${w.beroep.plek}`,
       werk: w.beroep.bezig,
-      breng: `brengt ${w.beroep.haalt} naar de voorraad`,
+      breng: `is bringing ${klein(w.beroep.haalt)} to the stores`,
     };
-    return `de ${w.beroep.naam} ${w.klem || bezig[w.staat]}`;
+    return `the ${w.beroep.naam} ${w.klem || bezig[w.staat]}`;
   }
 
   // --- Bewaren en terugzetten -------------------------------------------------------
@@ -755,8 +759,8 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     // Verkoop handel.per stuks van een grondstof voor goud. Geeft '' of de reden.
     verkoop(naam) {
       const h = regels.handel;
-      if (!h || !h.prijs[naam]) return 'dat koopt niemand';
-      if (voorraad[naam] < h.per) return `je hebt minder dan ${h.per} ${regels.grondstoffen[naam].naam.toLowerCase()}`;
+      if (!h || !h.prijs[naam]) return 'nobody buys that';
+      if (voorraad[naam] < h.per) return `you have less than ${h.per} ${klein(naam)}`;
       voorraad[naam] -= h.per;
       voorraad[volkRegels.munt] += h.prijs[naam];
       opVoorraad();

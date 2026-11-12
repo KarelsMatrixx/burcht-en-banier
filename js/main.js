@@ -18,6 +18,7 @@ import { maakStrijd } from './strijd.js';
 import { maakRood } from './rood.js';
 import { maakOpslag } from './opslag.js';
 import { maakUi } from './ui.js';
+import { metLidwoord } from './taal.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, ontgrendeld } from './modus.js';
 
 const GEEN_TITEL = 'burcht-banier.geenTitel';
@@ -49,6 +50,14 @@ async function start() {
   const eenheden = maakEenheden(kaart, wegvinder, assets.haal('kasteel.muur').hoogte, hoogteOp);
   const meting = maakMeting({ kaart, camera, eenheden, ui });
   const { bouwwerken, groepen } = await laadBouwwerken();
+  // De naam van een soldaat of gebouw, voor wat je in een level vrijspeelt.
+  const naamVan = (sleutel) => (regels.soldaten[sleutel] || bouwwerken[sleutel] || {}).naam;
+  // Wat er in dit level nieuw is: de beloning van het level ervoor.
+  const nieuwHier = () => {
+    const vorige = missie ? missies.campagne.find((c) => c.id === missie.id - 1) : null;
+    const erbij = vorige ? (vorige.beloning || []).map(naamVan).filter(Boolean) : [];
+    return erbij.length ? ` New for you: ${erbij.join(', ')}.` : '';
+  };
   const regels = await laadEconomie();
   // Vrij spel of een missie: de regels van die modus over de gewone regels heen.
   pasProfielToe(regels, profielVan(missies, modus));
@@ -62,7 +71,7 @@ async function start() {
     const stand = { bouwwerken: bouwer.eigenBouwwerken(), ...economie.bewaarStand(), leger: leger.bewaarStand(), strijd: strijd.bewaarStand() };
     if (opslag.bewaar(stand) || bewaarFoutGemeld) return;
     bewaarFoutGemeld = true;
-    ui.toonMelding('Bewaren lukt hier niet. Wat je doet is weg als je het spel sluit.');
+    ui.toonMelding('Saving does not work here. Your progress is lost when you close the game.');
   };
 
   // De kaart is veranderd zonder dat er gebouwd is (er is een boom om).
@@ -124,7 +133,7 @@ async function start() {
     const bomenWeg = economie.zetStand(bewaard);
     if (bomenWeg.size) kaartGewijzigd(bomenWeg);
     const teruggezet = bouwer.zetTerug(bewaard.bouwwerken);
-    if (teruggezet) ui.toonMelding(`Je kasteel staat er weer: ${teruggezet} ${teruggezet === 1 ? 'bouwwerk' : 'bouwwerken'}.`);
+    if (teruggezet) ui.toonMelding(`Your castle is back: ${teruggezet} ${teruggezet === 1 ? 'building' : 'buildings'}.`);
     leger.zetStand(bewaard.leger);
     strijd.zetStand(bewaard.strijd);
   } else {
@@ -165,9 +174,9 @@ async function start() {
 
     if (sloop) {
       if (bouw.begin) tegels = [{ ...bouw.begin, ok: bouwer.isVanSpeler(bouw.begin.x, bouw.begin.y) }];
-      if (!bouw.begin) hint = 'Tik op iets dat je zelf hebt gebouwd.';
-      else if (tegels[0].ok) hint = 'Tik op Sloop om dit af te breken. Je krijgt de helft van de prijs terug.';
-      else hint = 'Dit kun je niet slopen. Alleen wat je zelf hebt gebouwd.';
+      if (!bouw.begin) hint = 'Tap something you built yourself.';
+      else if (tegels[0].ok) hint = 'Tap Demolish to tear this down. You get half the price back.';
+      else hint = 'You cannot demolish this. Only what you built yourself.';
     } else {
       const naam = werk.naam.toLowerCase();
       if (bouw.begin) {
@@ -183,30 +192,30 @@ async function start() {
       const kost = economie.kostTekst(werk.kosten, goed);
       betaalbaar = !tekort;
       if (!bouw.begin) {
-        if (werk.lijn) hint = `Tik waar de ${naam} begint.`;
-        else if (werk.inMuur) hint = `Tik een stuk van je muur aan waar de ${naam} moet komen.`;
-        else hint = `Tik waar de ${naam} moet komen.`;
+        if (werk.lijn) hint = `Tap where the ${naam} starts.`;
+        else if (werk.inMuur) hint = `Tap the piece of your wall where the ${naam} should go.`;
+        else hint = `Tap where the ${naam} should go.`;
         if (werk.tip) hint += ` ${werk.tip}`;
       } else if (!goed && werk.lijn && bouw.eind) {
-        hint = 'Hier kan het nergens (rood). Tik een ander eind.';
+        hint = 'It fits nowhere here (red). Tap another end point.';
       } else if (!goed) {
-        hint = `Hier kan het niet: ${bouwer.waaromNiet(bouw.begin.x, bouw.begin.y, werk)}.`;
+        hint = `Not here: ${bouwer.waaromNiet(bouw.begin.x, bouw.begin.y, werk)}.`;
       } else if (tekort) {
-        hint = `Dat lukt niet: ${tekort}.`;
+        hint = `Not possible: ${tekort}.`;
         // Wie deze grondstof nog niet binnenkrijgt, heeft een zetje nodig.
         const mist = economie.tekortAan(werk.kosten, goed);
         const bron = Object.values(bouwwerken).find((w) => w.werker && regels.beroepen[w.werker].haalt === mist);
         if (bron && !economie.aantalMetBeroep(bron.werker)) {
-          hint += bron === werk ? ' Sloop iets: je krijgt de helft terug.' : ` Zet eerst een ${bron.naam.toLowerCase()} neer.`;
+          hint += bron === werk ? ' Demolish something: you get half back.' : ` First build ${metLidwoord(bron.naam.toLowerCase())}.`;
         }
       } else if (werk.lijn && !bouw.eind) {
-        hint = `Tik waar hij eindigt, of zet dit ene stuk neer voor ${kost}.`;
+        hint = `Tap where it ends, or place this one piece for ${kost}.`;
       } else if (werk.lijn) {
-        hint = `${goed} ${goed === 1 ? 'stuk' : 'stukken'} voor ${kost}` + (fout ? `, ${fout} kan niet (rood)` : '') + '. Tik een ander eind of zet neer.';
+        hint = `${goed} ${goed === 1 ? 'piece' : 'pieces'} for ${kost}` + (fout ? `, ${fout} not possible (red)` : '') + '. Tap another end point or place it.';
       } else {
-        hint = `Dit kost ${kost}. Tik een andere plek of zet neer.`;
+        hint = `This costs ${kost}. Tap another spot or place it.`;
         // Een werkgebouw zonder boer doet niets: dat wil je vooraf weten.
-        if (werk.werker && economie.bevolking().vrij <= 0) hint += ' Let op: er is geen boer vrij, het gebouw wacht tot er een komt.';
+        if (werk.werker && economie.bevolking().vrij <= 0) hint += ' Note: no peasant is free, the building waits until one arrives.';
       }
     }
 
@@ -214,7 +223,7 @@ async function start() {
     ui.zetBouwStand({
       actief: bouw.sleutel,
       hint,
-      bevestigTekst: sloop ? 'Sloop' : 'Zet neer',
+      bevestigTekst: sloop ? 'Demolish' : 'Place',
       kanBevestigen: betaalbaar && tegels.some((t) => t.ok),
     });
     naLeger();
@@ -256,7 +265,7 @@ async function start() {
     groepen,
     [
       ...Object.values(bouwwerken).filter((werk) => mag(werk.sleutel)).map((werk) => ({ sleutel: werk.sleutel, naam: werk.naam, kost: economie.kostTekst(werk.kosten), groep: werk.groep })),
-      { sleutel: SLOOP, naam: 'Slopen' },
+      { sleutel: SLOOP, naam: 'Demolish' },
     ],
     kiesBouw,
     stopBouw
@@ -276,25 +285,25 @@ async function start() {
       .filter(([naam, def]) => def.begin > 0 || economie.voorraad[naam] > 0 || economie.maakt(naam))
       .map(([naam, def]) => {
         const max = economie.opslagMax(naam);
-        return { naam: def.naam, aantal: economie.voorraad[naam], slecht: Number.isFinite(max) && economie.voorraad[naam] >= max };
+        return { sleutel: naam, naam: def.naam, aantal: economie.voorraad[naam], slecht: Number.isFinite(max) && economie.voorraad[naam] >= max };
       });
     ui.toonVoorraad([
       ...grondstoffen,
       // Je boeren en voor hoeveel er plek is, en hoe populair je bent.
-      { naam: 'Boeren', aantal: `${volk.volk}/${volk.ruimte}` },
-      { naam: 'Populariteit', aantal: stem.populariteit, slecht: stem.populariteit < stem.grens },
+      { sleutel: 'boeren', naam: 'Peasants', aantal: `${volk.volk}/${volk.ruimte}` },
+      { sleutel: 'populariteit', naam: 'Popularity', aantal: stem.populariteit, slecht: stem.populariteit < stem.grens },
     ]);
     // Het paneel achter de voorraad: alles met naam erbij, en de belasting.
     const plus = (getal) => (getal > 0 ? `+${getal}` : getal < 0 ? `−${-getal}` : '0');
-    const wacht = volk.wachtend ? ` ${volk.wachtend} ${volk.wachtend === 1 ? 'gebouw wacht' : 'gebouwen wachten'} op een boer.` : '';
+    const wacht = volk.wachtend ? ` ${volk.wachtend} ${volk.wachtend === 1 ? 'building is' : 'buildings are'} waiting for a peasant.` : '';
     ui.toonVolk({
       regels: [
-        grondstoffen.map((g) => { const sl = Object.keys(regels.grondstoffen).find((k) => regels.grondstoffen[k].naam === g.naam); const m = economie.opslagMax(sl); return `${g.naam} ${g.aantal}${Number.isFinite(m) ? ' van ' + m : ''}`; }).join(' · '),
-        `Boeren: ${volk.volk}, plek voor ${volk.ruimte}. ${stem.lopers} zonder werk.${wacht}`,
-        `Populariteit ${stem.populariteit}. Elke halve minuut ${plus(stem.totaal)}: ` + stem.factoren.filter((f) => f.waarde || f.naam !== 'afwisseling').map((f) => `${f.naam} ${plus(f.waarde)}`).join(', ') + '.',
-        `Vanaf ${stem.grens} komen er boeren bij, daaronder vertrekken ze.`,
+        grondstoffen.map((g) => { const sl = Object.keys(regels.grondstoffen).find((k) => regels.grondstoffen[k].naam === g.naam); const m = economie.opslagMax(sl); return `${g.naam} ${g.aantal}${Number.isFinite(m) ? ' of ' + m : ''}`; }).join(' · '),
+        `Peasants: ${volk.volk}, room for ${volk.ruimte}. ${stem.lopers} without work.${wacht}`,
+        `Popularity ${stem.populariteit}. Every half minute ${plus(stem.totaal)}: ` + stem.factoren.filter((f) => f.waarde || f.naam !== 'variety').map((f) => `${f.naam} ${plus(f.waarde)}`).join(', ') + '.',
+        `From ${stem.grens} upwards new peasants arrive; below that they leave.`,
       ],
-      tarieven: stem.tarieven.map((t) => ({ naam: t.naam, uitleg: `${volk.volk * t.goud} goud, ${plus(t.effect)}` })),
+      tarieven: stem.tarieven.map((t) => ({ naam: t.naam, uitleg: `${volk.volk * t.goud} gold, ${plus(t.effect)}` })),
       gekozen: stem.belasting,
     });
     // Het paneel van de kazerne rekent met goud en boeren: dat gaat mee.
@@ -321,8 +330,8 @@ async function start() {
     ui.toonKazerne({
       open: true,
       regels: [
-        `${gebouw.naam}. Soldaten: ${leger.aantal()} van ${leger.max}. Goud: ${economie.voorraad.goud}. Boeren zonder werk: ${Math.max(0, volk.vrij)}.`,
-        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystieke soldaten kosten goud, koper en twee boeren zonder werk.' : 'Een soldaat kost goud en een boer zonder werk.'),
+        `${gebouw.naam}. Soldiers: ${leger.aantal()} of ${leger.max}. Gold: ${economie.voorraad.goud}. Idle peasants: ${Math.max(0, volk.vrij)}.`,
+        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : 'A soldier costs gold and one idle peasant.'),
       ],
       knoppen: Object.values(leger.soorten).filter((def) => mag(def.sleutel) && (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
     });
@@ -335,7 +344,7 @@ async function start() {
   ui.opKazerneSluit(sluitKazerne);
   ui.opOpleiden((sleutel) => {
     const reden = leger.leidOp(sleutel, kazerneVak);
-    kazerneBericht = reden ? `Dat lukt niet: ${reden}.` : `Er staat een ${leger.soorten[sleutel].naam.toLowerCase()} klaar bij de kazerne.`;
+    kazerneBericht = reden ? `Not possible: ${reden}.` : `${metLidwoord(leger.soorten[sleutel].naam.toLowerCase(), true)} is ready at the barracks.`;
     toonKazerne();
   });
 
@@ -352,16 +361,16 @@ async function start() {
     const h = regels.handel;
     ui.toonHandel({
       open: true,
-      regels: [`Voorraadkamer. Goud: ${economie.voorraad.goud}. Elke kamer geeft plek aan ${regels.opslag.voorraadkamer} van elke grondstof.`, handelBericht || `Verkoop per ${h.per} stuks voor goud.`],
+      regels: [`Storehouse. Gold: ${economie.voorraad.goud}. Each storehouse holds ${regels.opslag.voorraadkamer} of every resource.`, handelBericht || `Sell in lots of ${h.per} for gold.`],
       knoppen: Object.keys(h.prijs).filter((n) => regels.grondstoffen[n] && (economie.voorraad[n] > 0 || economie.maakt(n))).map((n) => ({
         sleutel: n,
         naam: `${regels.grondstoffen[n].naam} (${economie.voorraad[n]})`,
-        kost: `${h.per} voor ${h.prijs[n]} goud`,
+        kost: `${h.per} for ${h.prijs[n]} gold`,
         kan: economie.voorraad[n] >= h.per,
       })),
     }, (n) => {
       const reden = economie.verkoop(n);
-      handelBericht = reden ? `Dat lukt niet: ${reden}.` : `Verkocht: ${h.per} ${regels.grondstoffen[n].naam.toLowerCase()} voor ${h.prijs[n]} goud.`;
+      handelBericht = reden ? `Not possible: ${reden}.` : `Sold: ${h.per} ${regels.grondstoffen[n].naam.toLowerCase()} for ${h.prijs[n]} gold.`;
       toonHandel();
     });
   };
@@ -375,18 +384,18 @@ async function start() {
     if (bouwt) kaderAan = false;
     const gekozen = leger.aantalGekozen();
     let hint = '';
-    if (!bouwt && kaderAan) hint = 'Sleep met één vinger een kader om je soldaten.';
-    else if (!bouwt && gekozen === 1) hint = '1 soldaat gekozen. Tik waar hij heen moet.';
-    else if (!bouwt && gekozen > 1) hint = `${gekozen} soldaten gekozen. Tik waar ze heen moeten.`;
+    if (!bouwt && kaderAan) hint = 'Drag a box around your soldiers with one finger.';
+    else if (!bouwt && gekozen === 1) hint = '1 soldier selected. Tap where he should go.';
+    else if (!bouwt && gekozen > 1) hint = `${gekozen} soldiers selected. Tap where they should go.`;
     // Zijn er vijanden, dan kun je die ook aantikken. Heb je een toren,
     // wachttoren of poort, dan kunnen ze de muur op.
-    if (hint && gekozen && !kaderAan && strijd.aantalVijanden()) hint = hint.replace(/\.$/, ', of tik een vijand aan.');
-    else if (hint && gekozen && !kaderAan && wegvinder.aantalOpgangen(0)) hint = hint.replace(/\.$/, ', ook boven op je muur.');
+    if (hint && gekozen && !kaderAan && strijd.aantalVijanden()) hint = hint.replace(/\.$/, ', or tap an enemy.');
+    else if (hint && gekozen && !kaderAan && wegvinder.aantalOpgangen(0)) hint = hint.replace(/\.$/, ', also on top of your wall.');
     ui.toonLeger({ zichtbaar: !bouwt && leger.aantal() > 0, hint, kader: kaderAan, gekozen: gekozen > 0 });
     // Groepen (dichtbij, afstand, belegering) en losse soorten kiezen.
     if (!bouwt && leger.aantal() > 0) {
       const t = leger.telling();
-      const namenGroep = { melee: 'Dichtbij', afstand: 'Afstand', belegering: 'Belegering' };
+      const namenGroep = { melee: 'Melee', afstand: 'Ranged', belegering: 'Siege' };
       const lijst = [];
       const groepen = Object.keys(namenGroep).filter((g) => t.groepen[g]);
       const soortKeys = Object.keys(t.perSoort);
@@ -482,42 +491,42 @@ async function start() {
     eenheden.zetAantal(aantal(), false);
     opslag.wis();
     bewaren = true;
-    if (weg || bomenTerug.size) ui.toonMelding(`Opnieuw begonnen: ${weg} ${weg === 1 ? 'bouwwerk' : 'bouwwerken'} afgebroken, het bos staat er weer.`);
-    else ui.toonMelding(gevochten ? 'Opnieuw begonnen: de eerste aanval moet nog komen.' : 'Er was nog niets veranderd.');
+    if (weg || bomenTerug.size) ui.toonMelding(`Restarted: ${weg} ${weg === 1 ? 'building' : 'buildings'} torn down, the forest is back.`);
+    else ui.toonMelding(gevochten ? 'Restarted: the first attack is still to come.' : 'Nothing had changed yet.');
   };
   ui.opOpnieuw(opnieuw);
 
   // --- Het gevecht ------------------------------------------------------------------
   const tijd = (seconden) => `${Math.floor(seconden / 60)}:${String(seconden % 60).padStart(2, '0')}`;
   let vijandInBeeld = false;
-  const heerNaam = missie ? missie.heer : 'Rood';
+  const heerNaam = missie ? missie.heer : 'Red';
   naStrijd = () => {
     const s = strijd.stand();
     let kort = '';
     let lang = '';
     const h = s.heer;
-    const rij = h ? Object.entries(h.reserve).map(([k, n]) => { const naam = (regels.soldaten[k] ? regels.soldaten[k].naam : k).toLowerCase(); return `${n} ${n === 1 ? naam : naam + (naam.endsWith('ram') ? 'men' : 's')}`; }).join(', ') : '';
+    const rij = h ? Object.entries(h.reserve).map(([k, n]) => { const d = regels.soldaten[k]; return `${n} ${(d ? (n === 1 ? d.naam : d.meervoud || d.naam + 's') : k).toLowerCase()}`; }).join(', ') : '';
     if (s.golven === 0) {
-      lang = 'Vrij spel zonder aanvallen: bouw, laat je volk groeien en oefen je soldaten.';
+      lang = 'Free play without attacks: build, grow your people and train your soldiers.';
     } else if (s.vrede) {
-      lang = 'De burcht van rood is gevallen. Er komt niemand meer.';
+      lang = 'The red keep has fallen. No one else is coming.';
     } else if (h) {
       // Rood verzamelt zelf: je ziet hoe sterk zijn reserve is en wat hij nog verdient.
       const klaar = h.sterkte >= h.doel && h.wacht > 0;
-      if (s.vijanden) kort = 'Aanval!';
-      else kort = klaar ? tijd(h.wacht) : `Rood ${Math.floor(h.sterkte)}/${Math.ceil(h.doel)}`;
-      lang = (s.vijanden ? `Aanval ${s.golf}: nog ${s.vijanden} ${s.vijanden === 1 ? 'vijand' : 'vijanden'}. ` : `Aanval ${s.golf + 1}: `) +
-        `${heerNaam} heeft ${rij || 'nog niemand'} in reserve (sterkte ${h.sterkte} van ${h.doel}). ` +
-        `Zijn werken: ${h.werken} van ${h.werkenTotaal} staan nog. Voorraad: ${h.voorraad.goud} goud, ${h.voorraad.hout} hout, ${h.voorraad.steen} steen.`;
+      if (s.vijanden) kort = 'Attack!';
+      else kort = klaar ? tijd(h.wacht) : `Red ${Math.floor(h.sterkte)}/${Math.ceil(h.doel)}`;
+      lang = (s.vijanden ? `Attack ${s.golf}: ${s.vijanden} ${s.vijanden === 1 ? 'enemy' : 'enemies'} left. ` : `Attack ${s.golf + 1}: `) +
+        `${heerNaam} has ${rij || 'no one yet'} in reserve (strength ${h.sterkte} of ${h.doel}). ` +
+        `Workshops still standing: ${h.werken} of ${h.werkenTotaal}. Stock: ${h.voorraad.goud} gold, ${h.voorraad.hout} wood, ${h.voorraad.steen} stone.`;
     } else if (s.vijanden) {
-      kort = 'Aanval!';
-      lang = `Aanval ${s.golf}: nog ${s.vijanden} ${s.vijanden === 1 ? 'vijand' : 'vijanden'}. De volgende komt over ${tijd(s.klok)}.`;
+      kort = 'Attack!';
+      lang = `Attack ${s.golf}: ${s.vijanden} ${s.vijanden === 1 ? 'enemy' : 'enemies'} left. The next one comes in ${tijd(s.klok)}.`;
     } else if (s.golven) {
       kort = tijd(s.klok);
-      lang = `Aanval ${s.golf + 1} komt over ${tijd(s.klok)}.`;
+      lang = `Attack ${s.golf + 1} comes in ${tijd(s.klok)}.`;
     }
-    lang += ` Burcht: ${s.burcht} van ${s.burchtMax}.`;
-    if (!s.vrede) lang += ` Burcht van rood: ${s.rood} van ${s.roodMax}. Laat die vallen en je wint.`;
+    lang += ` Keep: ${s.burcht} of ${s.burchtMax}.`;
+    if (!s.vrede) lang += ` Red keep: ${s.rood} of ${s.roodMax}. Break it and the red king grows weaker.`;
     ui.toonStrijd({ kort, lang: lang.trim(), slecht: s.vijanden > 0 });
     // De uitleg bij je soldaten verandert als er vijanden zijn.
     if (vijandInBeeld !== s.vijanden > 0) {
@@ -536,12 +545,12 @@ async function start() {
       // Jouw soldaten hebben iets van rood vernield.
       if (performance.now() - laatstVernieldRood < 6000) return;
       laatstVernieldRood = performance.now();
-      ui.toonMelding(`Je soldaten hebben een ${werk.naam.toLowerCase()} van rood vernield.`);
+      ui.toonMelding(`Your soldiers destroyed a red ${werk.naam.toLowerCase()}.`);
       return;
     }
     if (performance.now() - laatstVernield < 6000) return;
     laatstVernield = performance.now();
-    ui.toonMelding(`De vijand heeft een ${werk.naam.toLowerCase()} van je vernield.`);
+    ui.toonMelding(`The enemy destroyed your ${werk.naam.toLowerCase()}.`);
   };
 
   // Gewonnen of verloren: het spel staat stil tot je kiest.
@@ -556,40 +565,42 @@ async function start() {
     }
     const s = strijd.stand();
     if (wat === 'gewonnen') {
-      const na = s.golf ? ` Je hebt ${s.golf} ${s.golf === 1 ? 'aanval' : 'aanvallen'} doorstaan.` : '';
+      const na = s.golf ? ` You withstood ${s.golf} ${s.golf === 1 ? 'attack' : 'attacks'}.` : '';
       if (missie) {
         missieGewonnen(missie.id);
         const volgende = missies.campagne.find((c) => c.id === missie.id + 1 && c.speelbaar);
-        ui.toonEinde({ open: true, titel: `${missie.naam} gewonnen!`, tekst: `${missie.uit}${missie.wessel ? ` Je vindt iets van Wessel: ${missie.wessel.charAt(0).toLowerCase()}${missie.wessel.slice(1)}` : ""}${na}`, verder: true, volgende: !!volgende });
+        const erbij = (missie.beloning || []).map(naamVan).filter(Boolean);
+        const vrij = erbij.length ? ` Unlocked: ${erbij.join(', ')}.` : '';
+        ui.toonEinde({ open: true, titel: `Victory at ${missie.naam}!`, tekst: `${missie.uit}${missie.wessel ? ` You find something of Wessel's: ${missie.wessel.charAt(0).toLowerCase()}${missie.wessel.slice(1)}` : ''}${vrij}${na}`, verder: true, volgende: !!volgende });
       } else {
-        ui.toonEinde({ open: true, titel: 'Gewonnen!', tekst: `De koning van rood is verslagen en de jouwe leeft nog.${na}`, verder: true });
+        ui.toonEinde({ open: true, titel: 'Victory!', tekst: `The red king is defeated and yours still lives.${na}`, verder: true });
       }
     } else {
-      ui.toonEinde({ open: true, titel: 'Verloren', tekst: `Je koning is gesneuveld bij aanval ${s.golf}. Begin opnieuw en probeer het nog eens.`, verloren: true });
+      ui.toonEinde({ open: true, titel: 'Defeat', tekst: `Your king fell during attack ${s.golf}. Start again and try once more.`, verloren: true });
     }
   };
   ui.opVerder(() => {
     strijd.gaVerder();
     ui.toonEinde({ open: false });
-    ui.toonMelding('Je speelt verder. Er komen geen aanvallen meer.');
+    ui.toonMelding('You play on. No more attacks will come.');
   });
   ui.opEindeOpnieuw(opnieuw);
 
   // --- Het beginscherm en de levelkaart ---------------------------------------------------
   // (titelOpen staat hierboven bij de spellus.)
   // --- Het menu: vrij spel en de campagne -------------------------------------------------
-  const modusNaam = missie ? missie.titel : `Vrij spel: ${missies.profielen[modus.profiel].naam}`;
-  document.getElementById('versie').textContent += ` · ${missie ? 'missie ' + missie.id : missies.profielen[modus.profiel].naam.toLowerCase()}`;
+  const modusNaam = missie ? missie.titel : `Free play: ${missies.profielen[modus.profiel].naam}`;
+  document.getElementById('versie').textContent += ` · ${missie ? 'mission ' + missie.id : missies.profielen[modus.profiel].naam.toLowerCase()}`;
   const gewonnen = voortgang();
   const menuItems = () => [
     ...missies.campagne.filter((c) => c.speelbaar).map((c) => ({
-      groep: 'Campagne', sleutel: `missie:${c.id}`, naam: `${c.titel}${gewonnen.includes(c.id) ? ' (gewonnen)' : ''}`,
-      tekst: isOpen(c, gewonnen) ? c.intro.split('. ')[0] + '.' : `Win eerst level ${c.id - 1}.`,
+      groep: 'Campaign', sleutel: `missie:${c.id}`, naam: `${c.titel}${gewonnen.includes(c.id) ? ' (won)' : ''}`,
+      tekst: isOpen(c, gewonnen) ? c.intro.split('. ')[0] + '.' : `Win level ${c.id - 1} first.`,
       kan: isOpen(c, gewonnen),
       nu: modus.soort === 'campagne' && modus.missie === c.id,
     })),
     ...missies.vrij.map((v) => ({
-      groep: 'Vrij spel', sleutel: `vrij:${v.profiel}`, naam: missies.profielen[v.profiel].naam, tekst: v.tekst,
+      groep: 'Free play', sleutel: `vrij:${v.profiel}`, naam: missies.profielen[v.profiel].naam, tekst: v.tekst,
       nu: modus.soort === 'vrij' && modus.profiel === v.profiel,
     })),
   ];
@@ -597,14 +608,14 @@ async function start() {
     const [soort, waarde] = sleutel.split(':');
     const nieuw = soort === 'missie' ? { soort: 'campagne', missie: Number(waarde) } : { soort: 'vrij', profiel: waarde };
     if (!zetModus(nieuw)) {
-      ui.toonMelding('Kiezen lukt hier niet: het geheugen van de browser is dicht.');
+      ui.toonMelding('Choosing does not work here: the browser storage is blocked.');
       return;
     }
     bewaar();   // wat je nu hebt blijft bewaard bij deze modus
     try { window.sessionStorage.setItem(GEEN_TITEL, '1'); } catch (fout) { /* dan zie je het beginscherm nog eens */ }
     window.location.reload();
   };
-  const openMenu = () => ui.toonMenu({ open: true, nu: `Nu: ${modusNaam}. Elke modus bewaart zijn eigen spel.`, items: menuItems() });
+  const openMenu = () => ui.toonMenu({ open: true, nu: `Now: ${modusNaam}. Each mode keeps its own game.`, items: menuItems() });
   const kanVerder = !!bewaard || !!missie;   // is er al iets gespeeld?
   const toonKaart = () => {
     const open = (c) => isOpen(c, gewonnen);
@@ -616,11 +627,11 @@ async function start() {
     })), (id) => {
       const c = missies.campagne.find((m) => m.id === id);
       const tekst = document.getElementById('kaart-tekst');
-      if (!c.speelbaar) { tekst.textContent = `${c.titel}${c.heer ? ` (${c.heer})` : ''}: komt later.`; return; }
-      if (!open(c)) { tekst.textContent = `${c.titel}: win eerst level ${id - 1}.`; return; }
+      if (!c.speelbaar) { tekst.textContent = `${c.titel}${c.heer ? ` (${c.heer})` : ''}: coming later.`; return; }
+      if (!open(c)) { tekst.textContent = `${c.titel}: win level ${id - 1} first.`; return; }
       if (modus.soort === 'campagne' && modus.missie === id) { sluitTitel(); return; }
       kiesModus(`missie:${id}`);
-    }, 'Tik op een level om het te starten. Een gewonnen level kun je opnieuw spelen.', missies.levelkaart);
+    }, 'Tap a level to start it. You can replay a level you have won.', missies.levelkaart);
   };
   const toonTitel = () => { titelOpen = true; ui.toonTitel({ open: true, weergave: 'voorpagina', kanVerder }); };
   const sluitTitel = () => { titelOpen = false; ui.toonTitel({ open: false }); };
@@ -634,11 +645,11 @@ async function start() {
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
   ui.opMissieBegin(() => ui.toonMissie({ open: false }));
-  if (missie && !bewaard && !strijd.uitslag()) ui.toonMissie({ open: true, titel: missie.titel, tekst: `${missie.intro}${kaart.naam ? ` Je speelt op de kaart ${kaart.naam}.` : ''}` });
+  if (missie && !bewaard && !strijd.uitslag()) ui.toonMissie({ open: true, titel: missie.titel, tekst: `${missie.intro}${nieuwHier()}${kaart.naam ? ` Map: ${kaart.naam}.` : ''}` });
   if (strijd.uitslag()) naEinde(strijd.uitslag());
   else if (strijd.stand().golf === 0 && !strijd.stand().vrede) {
     const hh = strijd.stand().heer;
-    ui.toonMelding(hh ? 'De rode heer verzamelt een leger. Zijn werken staan buiten zijn muur: sloop ze en hij verdient minder. Bouw een kazerne en leid soldaten op.' : `De rode heer valt over ${tijd(strijd.stand().klok)} aan. Bouw een kazerne en leid soldaten op.`);
+    ui.toonMelding(hh ? 'The enemy is gathering an army. Their workshops stand outside their wall: destroy them and they earn less. Build barracks and train soldiers.' : `The enemy attacks in ${tijd(strijd.stand().klok)}. Build barracks and train soldiers.`);
   }
 
   const naarStart = () => {
@@ -687,7 +698,7 @@ async function start() {
           staat.doel = { x: Math.floor(vijand.x), y: Math.floor(vijand.y), duur: 900, tot: performance.now() + 900, aanval: true };
         } else {
           staat.gekozen = null;
-          ui.toonTegel(`Vijand: ${leger.soorten[vijand.vijand].naam.toLowerCase()}, leven ${Math.max(0, Math.ceil(vijand.leven))} van ${vijand.levenMax}`);
+          ui.toonTegel(`Enemy: ${leger.soorten[vijand.vijand].naam.toLowerCase()}, health ${Math.max(0, Math.ceil(vijand.leven))} of ${vijand.levenMax}`);
         }
         return;
       }
@@ -721,7 +732,7 @@ async function start() {
           const klimVak = strijd.isRodeMuur(vanRood.vak) ? vanRood.vak : strijd.dichtsteRodeMuur(vanRood.vak, 3);
           if (klimVak >= 0 && strijd.klimBevel(klimmers, klimVak)) {
             staat.doel = { x: klimVak % kaart.breedte, y: Math.floor(klimVak / kaart.breedte), duur: 900, tot: performance.now() + 900 };
-            ui.toonMelding('Je sluipmoordenaar klimt op de muur van rood.');
+            ui.toonMelding('Your assassin climbs the red wall.');
             if (klimmers.length === groep.length) return;
           }
         }
@@ -732,14 +743,14 @@ async function start() {
         if (draagt && muurVak >= 0) {
           if (strijd.zetLadderBevel(groep.filter(isDrager), muurVak)) {
             staat.doel = { x: muurVak % kaart.breedte, y: Math.floor(muurVak / kaart.breedte), duur: 900, tot: performance.now() + 900 };
-            ui.toonMelding(groep.some((e) => leger.soorten[e.soldaat.sleutel].vast) ? 'De belegeringstoren gaat naar de muur van rood. Daarna klimmen je soldaten er overheen.' : 'Je ladderdrager zet een ladder tegen de muur van rood.');
+            ui.toonMelding(groep.some((e) => leger.soorten[e.soldaat.sleutel].vast) ? 'The siege tower rolls to the red wall. Then your soldiers climb over it.' : 'Your ladder bearer sets a ladder against the red wall.');
           } else {
-            ui.toonMelding('Je ladderdrager kan niet bij die muur komen.');
+            ui.toonMelding('Your ladder bearer cannot reach that wall.');
           }
           return;
         }
         if (draagt && !groep.some((e) => !isDrager(e))) {
-          ui.toonMelding(strijd.isVanRood(vanRood.vak) && !strijd.isRodeMuurZonderLadder(vanRood.vak) ? 'Tik op een stuk gewone muur zonder ladder: daar past de toren of ladder tegen.' : 'Daar staat al een ladder.');
+          ui.toonMelding(strijd.isVanRood(vanRood.vak) && !strijd.isRodeMuurZonderLadder(vanRood.vak) ? 'Tap a plain piece of wall without a ladder: the tower or ladder fits there.' : 'There is already a ladder there.');
           return;
         }
         if (leger.heeftTrap(vanRood.x, vanRood.y) && groep.some((e) => !isRam(e) && !isDrager(e))) {
@@ -759,14 +770,14 @@ async function start() {
         if (strijd.valBouwAan(leger.gekozen(), vanRood.vak)) {
           staat.doel = { x: vanRood.x, y: vanRood.y, duur: 900, tot: performance.now() + 900, aanval: true };
         } else {
-          ui.toonMelding('Daar kunnen je soldaten niet bij komen. Breek eerst door de poort of de muur van rood.');
+          ui.toonMelding('Your soldiers cannot reach that. Break through the red gate or wall first.');
         }
         return;
       }
       if (vanRood) {
         const leven = strijd.levenOp(vanRood.vak);
         staat.gekozen = { x: vanRood.x, y: vanRood.y };
-        ui.toonTegel(`Tegel ${vanRood.x}, ${vanRood.y}: ${beschrijfTegel(kaart, vanRood.x, vanRood.y)} van rood, leven ${leven.leven} van ${leven.max}`);
+        ui.toonTegel(`Tile ${vanRood.x}, ${vanRood.y}: red ${beschrijfTegel(kaart, vanRood.x, vanRood.y)}, health ${leven.leven} of ${leven.max}`);
         return;
       }
       // Zijn er soldaten gekozen en tik je je eigen muur aan, dan gaan ze erop.
@@ -775,9 +786,9 @@ async function start() {
         if (leger.stuur(muur.x, muur.y, true)) {
           staat.doel = { x: muur.x, y: muur.y, duur: 900, tot: performance.now() + 900, hoogte: hoogteOp(muur.y * kaart.breedte + muur.x) };
         } else if (!leger.heeftTrap(muur.x, muur.y)) {
-          ui.toonMelding('Je soldaten kunnen deze muur niet op. Bouw er een toren, wachttoren of poort aan vast.');
+          ui.toonMelding('Your soldiers cannot get onto this wall. Attach a tower, watchtower or gate to it.');
         } else {
-          ui.toonMelding('Daar kunnen je soldaten niet komen.');
+          ui.toonMelding('Your soldiers cannot get there.');
         }
         return;
       }
@@ -785,18 +796,18 @@ async function start() {
       if (leger.aantalGekozen()) {
         if (!binnenKaart(kaart, x, y)) return;
         if (leger.stuur(x, y)) staat.doel = { x, y, duur: 900, tot: performance.now() + 900 };
-        else ui.toonMelding('Daar kunnen je soldaten niet komen.');
+        else ui.toonMelding('Your soldiers cannot get there.');
         return;
       }
       if (binnenKaart(kaart, x, y)) {
         staat.gekozen = { x, y };
         let bezig = economie.beschrijf(y * kaart.breedte + x);
         const gebouw = bouwer.werkOp(x, y);
-        if (gebouw && gebouw.woont) bezig = `plek voor ${gebouw.woont} boeren`;
+        if (gebouw && gebouw.woont) bezig = `room for ${gebouw.woont} peasants`;
         // Is het beschadigd, dan zie je hoeveel het nog kan hebben.
         const leven = strijd.levenOp(y * kaart.breedte + x);
-        const heel = leven && leven.leven < leven.max ? `, leven ${leven.leven} van ${leven.max}` : '';
-        ui.toonTegel(`Tegel ${x}, ${y}: ${beschrijfTegel(kaart, x, y)}` + (bezig ? `, ${bezig}` : '') + heel);
+        const heel = leven && leven.leven < leven.max ? `, health ${leven.leven} of ${leven.max}` : '';
+        ui.toonTegel(`Tile ${x}, ${y}: ${beschrijfTegel(kaart, x, y)}` + (bezig ? `, ${bezig}` : '') + heel);
       } else {
         staat.gekozen = null;
         ui.toonTegel('');

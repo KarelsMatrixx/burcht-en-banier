@@ -9,10 +9,10 @@ export function maakUi() {
   let beelden = '';
   let offline = false;
 
-  el('versie').textContent = `stap ${CONFIG.stap} · v${CONFIG.versie}`;
+  el('versie').textContent = `step ${CONFIG.stap} · v${CONFIG.versie}`;
 
   const werkStatusBij = () => {
-    el('status').textContent = [beelden, offline ? 'offline klaar' : 'offline nog niet klaar']
+    el('status').textContent = [beelden, offline ? 'offline ready' : 'offline not ready yet']
       .filter(Boolean)
       .join(' · ');
   };
@@ -67,7 +67,7 @@ export function maakUi() {
 
   return {
     toonBeelden(aantal) {
-      beelden = `${aantal} beelden/s`;
+      beelden = `${aantal} fps`;
       werkStatusBij();
     },
     zetOfflineKlaar() {
@@ -92,16 +92,18 @@ export function maakUi() {
     },
     // De voorraad bovenin: een plaatje en een getal per soort. De namen
     // staan in het paneel dat opent als je de voorraad aantikt.
-    //   lijst = [{ naam, aantal, slecht }]   (slecht = in het rood)
+    //   lijst = [{ sleutel, naam, aantal, slecht }]   (slecht = in het rood)
+    //   sleutel kiest het plaatje (icoon-hout), naam is de Engelse naam.
     toonVoorraad(lijst) {
       el('voorraad-lijst').textContent = '';
-      for (const { naam, aantal, slecht } of lijst) {
+      for (const { sleutel, naam, aantal, slecht } of lijst) {
         const vak = document.createElement('span');
         vak.className = 'grondstof' + (slecht ? ' slecht' : '');
         vak.dataset.naam = naam;
+        vak.dataset.sleutel = sleutel || naam.toLowerCase();
         vak.title = naam;
         const icoon = document.createElement('i');
-        icoon.className = `icoon icoon-${naam.toLowerCase()}`;
+        icoon.className = `icoon icoon-${sleutel || naam.toLowerCase()}`;
         const getal = document.createElement('b');
         getal.textContent = aantal;
         vak.append(icoon, getal);
@@ -445,11 +447,11 @@ export function maakUi() {
     // --- De prestatietest ---------------------------------------------------
     toonProef({ aantal, wachtend, tekenMs, rekenMs }) {
       el('proef-cijfers').textContent =
-        `${aantal} figuren · tekenen ${komma(tekenMs)} ms · rekenen ${komma(rekenMs)} ms` +
-        (wachtend ? ` · ${wachtend} wachten op route` : '');
+        `${aantal} figures · drawing ${komma(tekenMs)} ms · logic ${komma(rekenMs)} ms` +
+        (wachtend ? ` · ${wachtend} waiting for a route` : '');
     },
     zetAantalKnop(aantal) {
-      el('knop-aantal').textContent = `Figuren: ${aantal}`;
+      el('knop-aantal').textContent = `Figures: ${aantal}`;
     },
     opAantal(functie) {
       el('knop-aantal').addEventListener('click', functie);
@@ -490,7 +492,7 @@ export function maakUi() {
       for (const [groep, naam] of Object.entries(groepen)) {
         maak(naam, () => toonGroep(groep)).dataset.open = groep;
       }
-      const terug = maak('‹ Terug', () => {
+      const terug = maak('‹ Back', () => {
         toonGroep(null);
         opTerug();
       });
@@ -519,7 +521,7 @@ export function maakUi() {
       el('bouwhint').textContent = hint || '';
       el('bouwhint').hidden = !hint;
       el('bouw-acties').hidden = !actief;
-      el('knop-bevestig').textContent = bevestigTekst || 'Zet neer';
+      el('knop-bevestig').textContent = bevestigTekst || 'Place';
       el('knop-bevestig').disabled = !kanBevestigen;
       el('knop-bevestig').classList.toggle('gevaar', actief === 'sloop');
       // Tijdens het bouwen is de ruimte onderin nodig voor de uitleg.
@@ -539,7 +541,7 @@ export function maakUi() {
       const rust = () => {
         clearTimeout(zeker);
         zeker = null;
-        knop.textContent = 'Opnieuw beginnen';
+        knop.textContent = 'Start over';
         knop.classList.remove('gevaar');
       };
       knop.addEventListener('click', () => {
@@ -548,7 +550,7 @@ export function maakUi() {
           functie();
           return;
         }
-        knop.textContent = 'Zeker weten? Tik nog eens';
+        knop.textContent = 'Are you sure? Tap again';
         knop.classList.add('gevaar');
         zeker = setTimeout(rust, 4000);
       });

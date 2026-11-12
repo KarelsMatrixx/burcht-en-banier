@@ -33,12 +33,14 @@ export async function laadMissies() {
 // daarna als het vorige level gewonnen is.
 export const isOpen = (c, gewonnen) => c.id <= 1 || gewonnen.includes(c.id - 1);
 
-// Wat je in dit level al hebt: alles uit "nieuw" van dit level en de levels
-// ervoor. Wat in geen enkel level staat, heb je altijd. Zonder level: alles.
+// Wat je in een level mag gebruiken. Elk level heeft een beloning: soldaten en
+// gebouwen die je krijgt als je het wint (vaak iets van de heer die je versloeg).
+// In level n heb je de beloningen van alle levels ervoor. Wat in geen enkele
+// beloning staat, heb je altijd. In vrij spel (levelId null) heb je alles.
 export function ontgrendeld(campagne, levelId) {
   if (levelId === null || levelId === undefined) return () => true;
-  const ergens = new Set(campagne.flatMap((c) => c.nieuw || []));
-  const al = new Set(campagne.filter((c) => c.id <= levelId).flatMap((c) => c.nieuw || []));
+  const ergens = new Set(campagne.flatMap((c) => c.beloning || []));
+  const al = new Set(campagne.filter((c) => c.id < levelId).flatMap((c) => c.beloning || []));
   return (sleutel) => !ergens.has(sleutel) || al.has(sleutel);
 }
 

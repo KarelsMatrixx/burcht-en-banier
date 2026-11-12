@@ -20,17 +20,17 @@ await p.evaluate(async () => { window.__iso = await import('/js/iso.js'); window
 // vrije tegel naast de burcht binnen de ring vinden
 const vrij = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; for (let r = 3; r < 9; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = st.x + dx, y = st.y + dy; if (s.wegvinder.isVrij(x, y, 0) && k.object[y * 64 + x] === 0 && Math.max(Math.abs(dx), Math.abs(dy)) === r && dx > 0) return [x, y]; } return null; });
 console.log('vrij', vrij);
-await knop('Dorp'); check('knop Voorraad', await knop('Voorraad'));
+await knop('Village'); check('knop Voorraad', await knop('Storehouse'));
 const sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.begrens && s.camera.begrens(); return s.camera.wereldNaarScherm(w.x, w.y); }, vrij);
 await p.touchscreen.tap(sp.x, sp.y);
-await knop('Zet neer'); await knop('Klaar');
+await knop('Place'); await knop('Done');
 await p.waitForTimeout(300);
 const o = await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], vrij);
 check('voorraadkamer staat (object 22)', o === 22, o);
 await p.waitForTimeout(1500);
 i = await e();
 check('grens 300 met kamer', i.max === 300 && i.k === 1, JSON.stringify(i));
-check('paneel toont van 300', /van 300/.test(await p.textContent('#volk-tekst')), await p.textContent('#volk-tekst'));
+check('paneel toont van 300', /of 300/.test(await p.textContent('#volk-tekst')), await p.textContent('#volk-tekst'));
 // werker met vol magazijn
 const hk = await p.evaluate(() => {
   const s = window.spel; const k = s.kaart; const w = s.bouwwerken.voorraadkamer ? (s.bouwer.werken ? null : null) : null;
@@ -43,17 +43,17 @@ const hk = await p.evaluate(() => {
 });
 console.log('houthakker op', hk);
 await p.evaluate(() => { window.spel.economie.voorraad.hout = 300; window.spel.economie.voorraad.goud = 500; });
-await knop('‹ Terug'); await knop('Werk'); check('knop Houthakker', await knop('Houthakker'));
+await knop('‹ Back'); await knop('Work'); check('knop Houthakker', await knop("Woodcutter's Hut"));
 const sp2 = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.begrens && s.camera.begrens(); return s.camera.wereldNaarScherm(w.x, w.y); }, hk);
-await p.touchscreen.tap(sp2.x, sp2.y); await knop('Zet neer'); await knop('Klaar');
+await p.touchscreen.tap(sp2.x, sp2.y); await knop('Place'); await knop('Done');
 const werkers = () => p.evaluate(() => [...window.spel.eenheden.lijst ? window.spel.eenheden.lijst() : []].length);
 let klem = '';
-for (let t = 0; t < 120 && !/vol/.test(klem); t++) {
+for (let t = 0; t < 120 && !/full/.test(klem); t++) {
   await p.waitForTimeout(1000);
   klem = await p.evaluate(() => document.getElementById('meldingen').textContent);
 }
 console.log('melding:', klem.slice(-160));
-check('werker meldt dat opslag vol is', /vol/.test(klem), klem.slice(-200));
+check('werker meldt dat opslag vol is', /full/.test(klem), klem.slice(-200));
 const hout1 = await p.evaluate(() => window.spel.economie.voorraad.hout);
 check('hout blijft op grens', hout1 === 300, hout1);
 await p.evaluate(() => { window.spel.economie.voorraad.hout = 100; });

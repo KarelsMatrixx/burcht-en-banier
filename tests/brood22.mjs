@@ -12,20 +12,20 @@ await p.goto('http://localhost:8136/?x=' + Date.now()); await wacht();
 await p.evaluate(() => localStorage.clear()); await p.reload(); await wacht();
 await p.evaluate(async () => { window.__iso = await import('/js/iso.js'); });
 const hud = () => p.textContent('#voorraad-lijst');
-check('geen tarwe/brood in balk bij begin', !(await p.evaluate(() => [...document.querySelectorAll('#voorraad-lijst .grondstof')].some((g) => /Tarwe|Brood/.test(g.dataset.naam)))));
+check('geen tarwe/brood in balk bij begin', !(await p.evaluate(() => [...document.querySelectorAll('#voorraad-lijst .grondstof')].some((g) => /Wheat|Bread/.test(g.dataset.naam)))));
 const knop = async (t) => { for (const x of await p.$$('#bouwbalk button')) { if ((await x.textContent()).startsWith(t) && await x.isVisible()) { await x.tap(); return true; } } return false; };
 const naar = (x, y) => p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.begrens && s.camera.begrens(); return s.camera.wereldNaarScherm(w.x, w.y); }, [x, y]);
 const vrijeTegels = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; const uit = []; for (let r = 7; r < 12 && uit.length < 2; r++) for (let dy = -r; dy <= r && uit.length < 2; dy++) for (let dx = -r; dx <= r && uit.length < 2; dx++) { const x = st.x + dx, y = st.y + dy; if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; let goed = true; for (let a = -1; a <= 1; a++) for (let c = -1; c <= 1; c++) if (!s.wegvinder.isVrij(x + a, y + c, 0) || k.object[(y + c) * 64 + x + a] !== 0) goed = false; if (goed && !uit.some(([u, v]) => Math.abs(u - x) < 3 && Math.abs(v - y) < 3)) uit.push([x, y]); } return uit; });
 console.log('tegels', JSON.stringify(vrijeTegels));
 await p.evaluate(() => { const v = window.spel.economie.voorraad; v.hout = 100; v.planken = 50; v.steen = 50; });
-await knop('Werk'); check('knop Tarweveld', await knop('Tarweveld'));
-let sp = await naar(...vrijeTegels[0]); await p.touchscreen.tap(sp.x, sp.y); await knop('Zet neer'); await knop('Klaar');
+await knop('Work'); check('knop Tarweveld', await knop('Wheat Field'));
+let sp = await naar(...vrijeTegels[0]); await p.touchscreen.tap(sp.x, sp.y); await knop('Place'); await knop('Done');
 check('tarweveld staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], vrijeTegels[0])) === 24);
-await knop('Werk'); check('knop Bakkerij', await knop('Bakkerij'));
-sp = await naar(...vrijeTegels[1]); await p.touchscreen.tap(sp.x, sp.y); await knop('Zet neer'); await knop('Klaar');
+await knop('Work'); check('knop Bakkerij', await knop('Bakery'));
+sp = await naar(...vrijeTegels[1]); await p.touchscreen.tap(sp.x, sp.y); await knop('Place'); await knop('Done');
 check('bakkerij staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], vrijeTegels[1])) === 25);
 await p.waitForTimeout(500);
-check('tarwe en brood in balk zodra je ze maakt', /Tarwe/.test(await p.evaluate(() => [...document.querySelectorAll('#voorraad-lijst .grondstof')].map((g) => g.dataset.naam).join())));
+check('tarwe en brood in balk zodra je ze maakt', /Wheat/.test(await p.evaluate(() => [...document.querySelectorAll('#voorraad-lijst .grondstof')].map((g) => g.dataset.naam).join())));
 let v = {}; let staten = new Set();
 for (let t = 0; t < 90 && !(v.brood > 0); t++) {
   await p.waitForTimeout(1000);
@@ -33,10 +33,10 @@ for (let t = 0; t < 90 && !(v.brood > 0); t++) {
   v = r.v; staten.add(r.t); staten.add(r.b);
 }
 console.log([...staten].join(' / '), JSON.stringify(v));
-check('tarwe geoogst', [...staten].some((x) => /oogst/.test(x)));
+check('tarwe geoogst', [...staten].some((x) => /harvesting/.test(x)));
 check('brood gebakken', v.brood === 8, v.brood);
 // eten: volk eet om de beurt brood en voedsel; afwisseling +2
 const st = await p.evaluate(() => { const s = window.spel.economie; s.voorraad.brood = 20; s.voorraad.voedsel = 20; return s.stemming(); });
-check('afwisseling telt mee', st.factoren.some((f) => f.naam === 'afwisseling' && f.waarde === 2), JSON.stringify(st.factoren));
+check('afwisseling telt mee', st.factoren.some((f) => f.naam === 'variety' && f.waarde === 2), JSON.stringify(st.factoren));
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);
 await b.close(); srv.kill();

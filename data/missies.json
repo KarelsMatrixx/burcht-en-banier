@@ -6,7 +6,7 @@
  ],
  "profielen": {
   "rustig": {
-   "naam": "Rustig",
+   "naam": "Easy",
    "begin": {
     "hout": 80,
     "steen": 40,
@@ -56,13 +56,13 @@
    }
   },
   "normaal": {
-   "naam": "Normaal",
+   "naam": "Normal",
    "begin": {},
    "heer": {},
    "strijd": {}
   },
   "zwaar": {
-   "naam": "Zwaar",
+   "naam": "Hard",
    "begin": {
     "hout": 40,
     "steen": 20,
@@ -125,7 +125,7 @@
    }
   },
   "vrede": {
-   "naam": "Zonder aanvallen",
+   "naam": "No attacks",
    "begin": {
     "hout": 120,
     "steen": 80,
@@ -142,19 +142,19 @@
  "vrij": [
   {
    "profiel": "normaal",
-   "tekst": "Je bouwt en vecht tegen de rode heer. Dit is het spel zoals het was."
+   "tekst": "You build and fight the red lord. This is the game as it was."
   },
   {
    "profiel": "rustig",
-   "tekst": "Meer grondstoffen om mee te beginnen. De rode heer verzamelt langzaam en zijn burcht is zwakker."
+   "tekst": "More resources to start with. The red lord gathers slowly and his keep is weaker."
   },
   {
    "profiel": "zwaar",
-   "tekst": "Weinig grondstoffen, een snelle en rijke rode heer met een sterke burcht."
+   "tekst": "Few resources, and a fast, rich red lord with a strong keep."
   },
   {
    "profiel": "vrede",
-   "tekst": "Geen aanvallen en niets te winnen. Alleen bouwen, een volk laten groeien en je soldaten oefenen."
+   "tekst": "No attacks and nothing to win. Just build, grow your people and train your soldiers."
   }
  ]
 }

@@ -70,6 +70,6 @@ await p.waitForTimeout(1500);
 await p.screenshot({ path: '/home/claude/stap26.png' });
 // 6. selectieknoppen
 const kn = await p.$$eval('#leger-groepen button', (k) => k.map((x) => x.textContent));
-check('knoppen per soort', kn.some((t) => /Bijlridder/.test(t)) && kn.some((t) => /Kruisboog/.test(t)), kn.join('|'));
+check('knoppen per soort', kn.some((t) => /Axe Knight/.test(t)) && kn.some((t) => /Crossbowman/.test(t)), kn.join('|'));
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);
 await b.close(); srv.kill();

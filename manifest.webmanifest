@@ -1,8 +1,8 @@
 {
-  "name": "Burcht & Banier",
-  "short_name": "Burcht",
-  "description": "Middeleeuwse kasteel RTS (in ontwikkeling)",
-  "lang": "nl",
+  "name": "Keep & Banner",
+  "short_name": "Keep",
+  "description": "Medieval castle RTS (in development)",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -24,7 +24,7 @@ const v0 = await p.evaluate(() => ({ ...window.spel.economie.voorraad }));
 await p.tap('#handel-knoppen button[data-verkoop="hout"]');
 const v1 = await p.evaluate(() => ({ ...window.spel.economie.voorraad }));
 check('10 hout verkocht voor 2 goud', v1.hout === v0.hout - 10 && v1.goud === v0.goud + 2, JSON.stringify([v0, v1]));
-check('bericht', /Verkocht/.test(await p.textContent('#handel-tekst')));
+check('bericht', /Sold/.test(await p.textContent('#handel-tekst')));
 await p.evaluate(() => { window.spel.economie.voorraad.steen = 5; }); await p.waitForTimeout(1200);
 const steenKnop = await p.$eval('#handel-knoppen button[data-verkoop="steen"]', (k) => k.className);
 check('steen < 10: knop dof', /kanniet/.test(steenKnop), steenKnop);

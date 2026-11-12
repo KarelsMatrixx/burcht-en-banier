@@ -43,27 +43,27 @@ export function maakBouwer({ kaart, wegvinder, tekenaar, eenheden, economie, bou
 
   // Geeft een lege tekst als dit bouwwerk hier mag staan, anders de reden.
   function waaromNiet(x, y, werk) {
-    if (!binnenKaart(kaart, x, y)) return 'dit ligt buiten de kaart';
+    if (!binnenKaart(kaart, x, y)) return 'this is off the map';
     const i = y * B + x;
-    if (kaart.grond[i] === GROND.WATER) return 'dit is water';
+    if (kaart.grond[i] === GROND.WATER) return 'this is water';
     const staat = kaart.object[i];
 
     if (werk && werk.inMuur) {
       // Een poort komt in een gat tussen twee stukken muur, of in de
       // plaats van een eigen stuk muur.
       const eigenMuur = staat === OBJECT.MUUR && kaart.eigenaar[i] === SPELER;
-      if (staat !== OBJECT.GEEN && !eigenMuur) return 'hier staat al iets';
-      if (staat === OBJECT.GEEN && eenheden.staatOp(x, y)) return 'er staat iemand';
+      if (staat !== OBJECT.GEEN && !eigenMuur) return 'something is already here';
+      if (staat === OBJECT.GEEN && eenheden.staatOp(x, y)) return 'someone is standing here';
       const buren = aansluiting(kaart, x, y, OBJECT.MUUR);
       const ene = (buren & 2) && (buren & 8);     // muur aan beide kanten, de ene richting
       const andere = (buren & 1) && (buren & 4);  // of de andere richting
-      if (ene && andere) return 'op een kruising van muren kan geen poort';
-      if (!ene && !andere) return 'een poort moet tussen twee stukken muur staan';
+      if (ene && andere) return 'a gate cannot go on a crossing of walls';
+      if (!ene && !andere) return 'a gate must stand between two pieces of wall';
       return '';
     }
 
-    if (staat !== OBJECT.GEEN) return 'hier staat al iets';
-    if (eenheden.staatOp(x, y)) return 'er staat iemand';
+    if (staat !== OBJECT.GEEN) return 'something is already here';
+    if (eenheden.staatOp(x, y)) return 'someone is standing here';
     if (werk && werk.dichtbij && !isDichtbij(x, y, werk.dichtbij)) return werk.dichtbij.reden;
     return '';
   }

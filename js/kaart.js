@@ -27,10 +27,10 @@ export const OBJECT_ASSET = [
   'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren',
 ];
 
-const GROND_TEKST = ['gras', 'gras', 'zand', 'water', 'aarde', 'akker'];
+const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
 const OBJECT_TEKST = [
-  '', 'bos', 'steen', 'kopererts', 'muur', 'toren', 'poort', 'burcht', 'burcht', 'burcht', 'wachttoren',
-  'huis', 'hut', 'tent', 'hooiberg', 'waterput', 'vaten', 'houthakkershut', 'steengroeve', 'boomgaard', 'woning', 'kazerne', 'voorraadkamer', 'zagerij', 'tarweveld', 'bakkerij', 'kopermijn', 'magiertoren',
+  '', 'forest', 'rock', 'copper ore', 'wall', 'tower', 'gate', 'keep', 'keep', 'keep', 'watchtower',
+  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'quarry', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mage tower',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.

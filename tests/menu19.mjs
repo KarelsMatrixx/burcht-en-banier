@@ -26,7 +26,7 @@ await p.screenshot({ path: '/home/claude/stap19-kaart.png' });
 // dicht level aantikken: melding, geen start
 const bx = async (i) => { const r = await (await p.$$('#kaart-doek .punt .tikvlak'))[i].boundingBox(); return [r.x + r.width / 2, r.y + r.height / 2]; };
 let [x, y] = await bx(2); await p.touchscreen.tap(x, y);
-check('dicht level geeft uitleg', /win eerst/.test(await p.textContent('#kaart-tekst')), await p.textContent('#kaart-tekst'));
+check('dicht level geeft uitleg', /first/.test(await p.textContent('#kaart-tekst')), await p.textContent('#kaart-tekst'));
 // level 1 starten
 [x, y] = await bx(1);
 await Promise.all([p.waitForNavigation(), p.touchscreen.tap(x, y)]); await wacht();
