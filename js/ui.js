@@ -151,17 +151,31 @@ export function maakUi() {
     toonTitel({ open, weergave = 'voorpagina', kanVerder = false }) {
       el('titelscherm').hidden = !open;
       if (!open) return;
+      el('titelscherm').classList.toggle('op-kaart', weergave === 'kaart');
+      el('titel-beeld').hidden = weergave !== 'voorpagina';
       el('titel-voorpagina').hidden = weergave !== 'voorpagina';
       el('titel-kaart').hidden = weergave !== 'kaart';
       el('titel-verder').hidden = !kanVerder;
     },
-    // De levelkaart. levels = [{ id, naam, x, y, staat: 'open'|'gewonnen'|'dicht'|'nu' }].
-    toonLevelkaart(levels, opKies, tekst = '') {
+    // De levelkaart: het schilderij met de weg, de brug en de punten erbovenop.
+    // levels = [{ id, naam, portret, x, y (procenten van het beeld), staat: 'open'|'gewonnen'|'dicht'|'nu'|'later' }].
+    // kaartdata = data/levelkaart.json (beeld, route, brug, pos per level).
+    toonLevelkaart(levels, opKies, tekst = '', kaartdata) {
       const NS = 'http://www.w3.org/2000/svg';
+      const B = kaartdata.breedte, H = kaartdata.hoogte;   // we tekenen in pixels van het schilderij
       const doek = el('kaart-doek');
       doek.replaceChildren();
+      const vlak = document.createElement('div');
+      vlak.className = 'kaartvlak';
+      vlak.style.aspectRatio = `${B} / ${H}`;
+      const beeld = document.createElement('img');
+      beeld.className = 'kaartbeeld';
+      beeld.src = kaartdata.beeld;
+      beeld.alt = '';
+      beeld.decoding = 'async';
+      vlak.appendChild(beeld);
       const svg = document.createElementNS(NS, 'svg');
-      svg.setAttribute('viewBox', '0 0 400 200');
+      svg.setAttribute('viewBox', `0 0 ${B} ${H}`);
       svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
       const maak = (naam, attr, tekstInhoud) => {
         const n = document.createElementNS(NS, naam);
@@ -169,42 +183,77 @@ export function maakUi() {
         if (tekstInhoud !== undefined) n.textContent = tekstInhoud;
         return n;
       };
-      svg.appendChild(maak('rect', { x: 0, y: 0, width: 400, height: 200, class: 'perkament' }));
-      // Een paar heuvels en bomen als versiering.
-      for (const [x, y, r] of [[60, 30, 22], [150, 20, 18], [250, 175, 22], [330, 175, 20], [200, 110, 14], [110, 120, 12]]) svg.appendChild(maak('ellipse', { cx: x, cy: y, rx: r * 1.4, ry: r * 0.7, class: 'heuvel' }));
-      for (const [x, y] of [[20, 30], [95, 35], [235, 30], [300, 130], [370, 120], [175, 185], [120, 190], [345, 180]]) {
-        svg.appendChild(maak('rect', { x: x - 1, y: y, width: 2, height: 6, class: 'stam' }));
-        svg.appendChild(maak('circle', { cx: x, cy: y - 2, r: 6, class: 'boom' }));
-      }
-      const pt = (l) => [l.x * 4, l.y * 2];
-      // De weg: een stuk kleurt goud als het level ervoor gewonnen is.
+      const R = 62;   // straal van een punt
+      const KLEUR = { open: '#e0b94a', gewonnen: '#6ea65a', dicht: '#8b8b82', later: '#8b8b82', nu: '#c8372b' };
+
+      // De brug over de kloof: de weg is daar op het schilderij onderbroken.
+      // Hij steekt aan beide kanten een stuk over de rand, zodat je hem ook ziet naast het portret.
+      const [ax, ay] = [kaartdata.brug.van[0] * B, kaartdata.brug.van[1] * H];
+      const [cx, cy] = [kaartdata.brug.naar[0] * B, kaartdata.brug.naar[1] * H];
+      const kaal = Math.hypot(cx - ax, cy - ay);
+      const [ux, uy] = [(cx - ax) / kaal, (cy - ay) / kaal];
+      const OVER = 46;
+      const [bx1, by1] = [ax - ux * OVER, ay - uy * OVER];
+      const lengte = kaal + 2 * OVER;
+      const hoek = (Math.atan2(cy - ay, cx - ax) * 180) / Math.PI;
+      const brug = maak('g', { class: 'brug', transform: `translate(${bx1} ${by1}) rotate(${hoek})` });
+      brug.appendChild(maak('rect', { x: -6, y: -22, width: lengte + 12, height: 52, rx: 8, class: 'brug-schaduw' }));
+      brug.appendChild(maak('rect', { x: 0, y: -26, width: lengte, height: 52, rx: 6, class: 'brug-dek' }));
+      for (let k = 18; k < lengte - 6; k += 24) brug.appendChild(maak('line', { x1: k, y1: -26, x2: k, y2: 26, class: 'brug-plank' }));
+      brug.appendChild(maak('rect', { x: -10, y: -34, width: lengte + 20, height: 9, rx: 4, class: 'brug-leuning' }));
+      brug.appendChild(maak('rect', { x: -10, y: 25, width: lengte + 20, height: 9, rx: 4, class: 'brug-leuning' }));
+      for (const [k, y] of [[-10, -34], [lengte + 4, -34], [-10, 25], [lengte + 4, 25]]) brug.appendChild(maak('rect', { x: k, y: y - 5, width: 12, height: 19, rx: 3, class: 'brug-paal' }));
+      svg.appendChild(brug);
+
+      // De weg kleurt goud tot het laatst gewonnen level.
+      const route = kaartdata.route.map(([x, y]) => `${(x * B).toFixed(1)} ${(y * H).toFixed(1)}`).join(' L ');
+      let tot = 0;
       for (let i = 0; i + 1 < levels.length; i++) {
-        const [x1, y1] = pt(levels[i]);
-        const [x2, y2] = pt(levels[i + 1]);
-        svg.appendChild(maak('line', { x1, y1, x2, y2, class: levels[i].staat === 'gewonnen' || (i === 0 && levels[0].staat === 'later') ? 'pad af' : 'pad' }));
+        if (levels[i].staat === 'gewonnen' || (i === 0 && levels[0].staat === 'later')) tot = kaartdata.pos[String(levels[i + 1].id)] ?? tot;
+        else break;
       }
+      if (tot > 0) {
+        for (const klasse of ['weg-rand', 'weg-goud']) {
+          svg.appendChild(maak('path', { d: `M ${route}`, class: klasse, pathLength: 1000, 'stroke-dasharray': `${Math.round(tot * 1000)} 1001` }));
+        }
+      }
+
       const defs = maak('defs', {});
-      defs.appendChild(Object.assign(maak('clipPath', { id: 'rond-portret', clipPathUnits: 'objectBoundingBox' }), {}));
-      defs.firstChild.appendChild(maak('circle', { cx: 0.5, cy: 0.5, r: 0.5 }));
+      const knip = maak('clipPath', { id: 'rond-portret', clipPathUnits: 'objectBoundingBox' });
+      knip.appendChild(maak('circle', { cx: 0.5, cy: 0.5, r: 0.5 }));
+      defs.appendChild(knip);
       svg.appendChild(defs);
+
       for (const l of levels) {
-        const [x, y] = pt(l);
+        const x = (l.x / 100) * B, y = (l.y / 100) * H;
         const groep = maak('g', { class: `punt ${l.staat}`, 'data-id': l.id, tabindex: 0 });
-        groep.appendChild(maak('circle', { cx: x, cy: y, r: 18, class: 'tikvlak' }));
-        groep.appendChild(maak('circle', { cx: x, cy: y, r: 13.5, class: 'rond' }));
-        if (l.portret) groep.appendChild(maak('image', { href: `beelden/portretten/${l.portret}.jpg`, x: x - 11.5, y: y - 11.5, width: 23, height: 23, 'clip-path': 'url(#rond-portret)', class: 'gezicht' }));
-        const teken = l.staat === 'dicht' || l.staat === 'later' ? '🔒' : l.staat === 'gewonnen' ? '✔' : '';
-        groep.appendChild(maak('circle', { cx: x + 10, cy: y - 10, r: 6, class: 'nummer' }));
-        groep.appendChild(maak('text', { x: x + 10, y: y - 7.6, class: 'cijfer' }, l.id === 0 ? 'P' : String(l.id)));
-        if (teken) groep.appendChild(maak('text', { x: x - 10, y: y - 6.5, class: 'teken' }, teken));
-        groep.appendChild(maak('text', { x, y: y + 24, class: 'naam' }, l.naam));
+        groep.appendChild(maak('circle', { cx: x, cy: y, r: R + 26, class: 'tikvlak' }));
+        groep.appendChild(maak('circle', { cx: x, cy: y, r: R + 5, class: 'rand' }));
+        groep.appendChild(maak('circle', { cx: x, cy: y, r: R, class: 'rond', stroke: KLEUR[l.staat] || KLEUR.open }));
+        if (l.portret) groep.appendChild(maak('image', { href: `beelden/portretten/${l.portret}.jpg`, x: x - (R - 5), y: y - (R - 5), width: 2 * (R - 5), height: 2 * (R - 5), 'clip-path': 'url(#rond-portret)', class: 'gezicht' }));
+        // De stand van een punt: een groen zegel met vinkje, of een slot. Geen cijfers.
+        if (l.staat === 'gewonnen' || l.staat === 'dicht' || l.staat === 'later') {
+          const sx = x + R * 0.74, sy = y + R * 0.74;
+          const zegel = maak('g', { class: 'zegel', transform: `translate(${sx} ${sy})` });
+          zegel.appendChild(maak('circle', { r: 25, class: 'zegel-rond' }));
+          if (l.staat === 'gewonnen') {
+            zegel.appendChild(maak('path', { d: 'M -11 1 L -3 9 L 12 -9', class: 'vinkje' }));
+          } else {
+            zegel.appendChild(maak('path', { d: 'M -6 -2 L -6 -8 A 6 6 0 0 1 6 -8 L 6 -2', class: 'beugel' }));
+            zegel.appendChild(maak('rect', { x: -10, y: -3, width: 20, height: 15, rx: 3, class: 'slot' }));
+          }
+          groep.appendChild(zegel);
+        }
+        // De naam staat onder het punt; bij Grauwvoort erboven, want onder zit Witte Dijk dichtbij.
+        groep.appendChild(maak('text', { x, y: l.id === 7 ? y - R - 22 : y + R + 46, class: 'naam' }, l.naam));
         svg.appendChild(groep);
       }
       svg.addEventListener('click', (e) => {
         const g = e.target.closest('.punt');
         if (g) opKies(Number(g.dataset.id));
       });
-      doek.appendChild(svg);
+      vlak.appendChild(svg);
+      doek.appendChild(vlak);
       el('kaart-tekst').textContent = tekst;
     },
     opTitel({ campagne, vrij, verder, terug }) {

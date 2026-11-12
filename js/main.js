@@ -620,7 +620,7 @@ async function start() {
       if (!open(c)) { tekst.textContent = `${c.titel}: win eerst level ${id - 1}.`; return; }
       if (modus.soort === 'campagne' && modus.missie === id) { sluitTitel(); return; }
       kiesModus(`missie:${id}`);
-    }, 'Tik op een level om het te starten. Een gewonnen level kun je opnieuw spelen.');
+    }, 'Tik op een level om het te starten. Een gewonnen level kun je opnieuw spelen.', missies.levelkaart);
   };
   const toonTitel = () => { titelOpen = true; ui.toonTitel({ open: true, weergave: 'voorpagina', kanVerder }); };
   const sluitTitel = () => { titelOpen = false; ui.toonTitel({ open: false }); };

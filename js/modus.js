@@ -22,6 +22,10 @@ export async function laadMissies() {
   if (!ca.ok) throw new Error('Kon data/campagne.json niet laden.');
   m.campagne = (await ca.json()).levels;
   for (const c of m.campagne) if (!m.profielen[c.profiel]) throw new Error(`campagne.json: level ${c.id} verwijst naar onbekend profiel ${c.profiel}`);
+  // De weg en de brug op het schilderij van de levelkaart.
+  const lk = await fetch('data/levelkaart.json');
+  if (!lk.ok) throw new Error('Kon data/levelkaart.json niet laden.');
+  m.levelkaart = await lk.json();
   return m;
 }
 

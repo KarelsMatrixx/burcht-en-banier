@@ -1,7 +1,7 @@
 {
  "_uitleg": [
   "De campagne: de proloog (id 0) en tien levels, naar claude/campagne-verhaal.md in het project.",
-  "heer: de naam van de tegenstander (de rode koning is de heer zelf). portret: bestand in beelden/portretten. profiel: uit missies.json. kaart: uit kaarten.json. punt: plek op de levelkaart in procenten.",
+  "heer: de naam van de tegenstander (de rode koning is de heer zelf). portret: bestand in beelden/portretten. profiel: uit missies.json. kaart: uit kaarten.json. punt: plek op de levelkaart in procenten van het schilderij (beelden/levelkaart.webp); de weg en de brug staan in data/levelkaart.json.",
   "speelbaar: false zolang het level nog niet gebouwd is; het staat dan op de kaart als 'komt later'.",
   "nieuw: soldaten en gebouwen die je vanaf dit level hebt. Alles uit eerdere levels blijft. Wat in geen enkel level staat, heb je altijd (de economie, kazerne, muren).",
   "intro en uit: de korte tekst voor en na het level (de verhaalbalk komt in stap 31). wessel: het voorwerp van Wessel dat je na het winnen vindt."
@@ -16,8 +16,8 @@
    "profiel": "rustig",
    "kaart": "standaard",
    "punt": {
-    "x": 7,
-    "y": 80
+    "x": 6.5,
+    "y": 71.4
    },
    "speelbaar": false,
    "nieuw": [
@@ -37,8 +37,8 @@
    "profiel": "rustig",
    "kaart": "dal",
    "punt": {
-    "x": 15.5,
-    "y": 56
+    "x": 10.9,
+    "y": 50.1
    },
    "speelbaar": true,
    "nieuw": [
@@ -58,8 +58,8 @@
    "profiel": "normaal",
    "kaart": "meren",
    "punt": {
-    "x": 24.5,
-    "y": 82
+    "x": 20.9,
+    "y": 34.4
    },
    "speelbaar": true,
    "nieuw": [
@@ -78,8 +78,8 @@
    "profiel": "zwaar",
    "kaart": "grensland",
    "punt": {
-    "x": 33,
-    "y": 54
+    "x": 38.5,
+    "y": 55.6
    },
    "speelbaar": true,
    "nieuw": [
@@ -101,8 +101,8 @@
    "profiel": "normaal",
    "kaart": "standaard",
    "punt": {
-    "x": 42,
-    "y": 80
+    "x": 44.7,
+    "y": 38.4
    },
    "speelbaar": false,
    "nieuw": [
@@ -123,8 +123,8 @@
    "profiel": "normaal",
    "kaart": "standaard",
    "punt": {
-    "x": 51,
-    "y": 48
+    "x": 51.2,
+    "y": 44.2
    },
    "speelbaar": false,
    "nieuw": [],
@@ -141,8 +141,8 @@
    "profiel": "normaal",
    "kaart": "standaard",
    "punt": {
-    "x": 60,
-    "y": 74
+    "x": 61.1,
+    "y": 32.3
    },
    "speelbaar": false,
    "nieuw": [],
@@ -159,8 +159,8 @@
    "profiel": "zwaar",
    "kaart": "standaard",
    "punt": {
-    "x": 69,
-    "y": 40
+    "x": 69.9,
+    "y": 44.6
    },
    "speelbaar": false,
    "nieuw": [],
@@ -177,8 +177,8 @@
    "profiel": "zwaar",
    "kaart": "standaard",
    "punt": {
-    "x": 78,
-    "y": 66
+    "x": 76.1,
+    "y": 56.2
    },
    "speelbaar": false,
    "nieuw": [],
@@ -195,8 +195,8 @@
    "profiel": "zwaar",
    "kaart": "standaard",
    "punt": {
-    "x": 85,
-    "y": 36
+    "x": 84.1,
+    "y": 48.9
    },
    "speelbaar": false,
    "nieuw": [],
@@ -213,8 +213,8 @@
    "profiel": "zwaar",
    "kaart": "standaard",
    "punt": {
-    "x": 91.5,
-    "y": 12
+    "x": 88.1,
+    "y": 30.3
    },
    "speelbaar": false,
    "nieuw": [],

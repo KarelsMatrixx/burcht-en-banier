@@ -694,44 +694,128 @@ button:active {
   opacity: 0.92;
 }
 
-/* Het beginscherm en de levelkaart (stap 19) */
+/* Het beginscherm en de levelkaart (stap 19, nieuw uiterlijk in stap 31) */
 #titelscherm {
   position: fixed;
   inset: 0;
   z-index: 60;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(ellipse at 50% 40%, #3b4a2a 0%, #1b2214 70%, #0f130b 100%);
+  background: #14130f;
   color: #f7ecd0;
   pointer-events: auto;
+  overflow: hidden;
 }
 #titelscherm[hidden] { display: none; }
-#titel-voorpagina, #titel-kaart { width: min(720px, 96vw); text-align: center; }
-#titel-voorpagina[hidden], #titel-kaart[hidden] { display: none; }
-#titel-voorpagina h1 { font-size: clamp(30px, 8vh, 54px); margin: 0 0 4px; color: #f3d37a; letter-spacing: 1px; text-shadow: 0 3px 0 #0008; }
-#titel-voorpagina p { margin: 0 0 16px; opacity: 0.85; }
-#titel-knoppen { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+/* Het schilderij vult het hele scherm; de rechterkant (het kasteel) blijft het langst in beeld. */
+#titel-beeld {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 85% 50%;
+}
+#titel-beeld[hidden] { display: none; }
+/* Een donkere schaduw links, zodat titel en knoppen goed leesbaar blijven. */
+#titelscherm:not(.op-kaart)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(8, 10, 7, 0.82) 0%, rgba(8, 10, 7, 0.55) 26%, rgba(8, 10, 7, 0) 54%);
+  pointer-events: none;
+}
+#titel-voorpagina {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: max(5vw, env(safe-area-inset-left));
+  width: min(250px, 30vw);
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+#titel-voorpagina[hidden] { display: none; }
+#titel-voorpagina h1 { font-size: clamp(28px, 9.5vh, 50px); line-height: 1.05; margin: 0 0 6px; color: #f3d37a; letter-spacing: 1px; text-shadow: 0 3px 0 #0009, 0 0 14px #0008; }
+#titel-voorpagina p { margin: 0 0 14px; opacity: 0.9; font-size: 0.95em; text-shadow: 0 1px 4px #000a; }
+#titel-knoppen { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
 #titel-knoppen button, #kaart-terug { min-height: 48px; min-width: 120px; font-size: 16px; }
 #titel-knoppen button[hidden] { display: none; }
-#kaart-kop { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-#kaart-kop strong { font-size: 18px; color: #f3d37a; }
-#kaart-kop #kaart-terug { min-width: 80px; min-height: 40px; }
-#kaart-doek svg { width: 100%; max-height: 66vh; display: block; }
-#kaart-tekst { margin-top: 6px; font-size: 0.9em; opacity: 0.85; min-height: 1.4em; }
-#kaart-doek .perkament { fill: #d9c18a; stroke: #f3d37a; stroke-width: 4; rx: 12; }
-#kaart-doek .heuvel { fill: #b9a66a; }
-#kaart-doek .stam { fill: #5a3d22; }
-#kaart-doek .boom { fill: #4d7a34; }
-#kaart-doek .pad { fill: none; stroke: #6b4a22; stroke-width: 3; stroke-dasharray: 2 7; stroke-linecap: round; }
+
+/* De levelkaart: het schilderij over het hele scherm, met de knoppen erbovenop. */
+#titel-kaart { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+#titel-kaart[hidden] { display: none; }
+#kaart-doek { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.kaartvlak { position: relative; width: min(100vw, calc(100vh * 2.357)); max-height: 100vh; }
+.kaartbeeld, .kaartvlak svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#kaart-kop {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 12px 4px 4px;
+  background: rgba(20, 14, 8, 0.72);
+  border-radius: 12px;
+}
+#kaart-kop strong { font-size: 17px; color: #f3d37a; }
+#kaart-kop #kaart-terug { min-width: 76px; min-height: 40px; }
+#kaart-tekst {
+  position: absolute;
+  bottom: max(6px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  width: max-content;
+  max-width: 86vw;
+  padding: 5px 14px;
+  text-align: center;
+  font-size: 0.9em;
+  background: rgba(20, 14, 8, 0.78);
+  border-radius: 12px;
+}
+#kaart-tekst:empty { display: none; }
+
+/* De punten: een portret in een ring. De kleur van de ring is de stand. */
 #kaart-doek .tikvlak { fill: transparent; }
-#kaart-doek .punt { cursor: pointer; }
-#kaart-doek .punt .rond { fill: #e0b94a; stroke: #3a2a12; stroke-width: 2.5; }
-#kaart-doek .punt.gewonnen .rond { fill: #6ea65a; }
-#kaart-doek .punt.dicht .rond { fill: #8b8b82; }
-#kaart-doek .punt.nu .rond { stroke: #c8372b; stroke-width: 4; }
-#kaart-doek .cijfer { text-anchor: middle; font: 700 15px sans-serif; fill: #2a1d0b; pointer-events: none; }
-#kaart-doek .naam { text-anchor: middle; font: 700 10px sans-serif; fill: #2a1d0b; pointer-events: none; paint-order: stroke; stroke: #d9c18a; stroke-width: 3px; }
+#kaart-doek .punt { cursor: pointer; outline: none; }
+#kaart-doek .punt .rand { fill: #2a1d0b; }
+#kaart-doek .punt .rond { fill: #3a2a12; stroke-width: 11; }
+#kaart-doek .punt.nu .rond { stroke-width: 14; }
+#kaart-doek .punt .gezicht { pointer-events: none; }
+#kaart-doek .punt.later .gezicht, #kaart-doek .punt.dicht .gezicht { filter: grayscale(1); opacity: 0.6; }
+#kaart-doek .punt.later .rond { stroke-dasharray: 18 12; }
+#kaart-doek .zegel { pointer-events: none; }
+#kaart-doek .zegel-rond { fill: #2a1d0b; stroke: #f3d37a; stroke-width: 4; }
+#kaart-doek .punt.gewonnen .zegel-rond { fill: #4f8a3e; }
+#kaart-doek .vinkje { fill: none; stroke: #f7ecd0; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+#kaart-doek .beugel { fill: none; stroke: #f7ecd0; stroke-width: 4.5; stroke-linecap: round; }
+#kaart-doek .slot { fill: #f7ecd0; }
+#kaart-doek .naam {
+  text-anchor: middle;
+  font: 700 36px sans-serif;
+  fill: #f7ecd0;
+  stroke: #1b140a;
+  stroke-width: 9px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+  pointer-events: none;
+}
+#kaart-doek .punt.later .naam, #kaart-doek .punt.dicht .naam { fill: #cfc8b4; }
+
+/* De weg kleurt goud tot het laatst gewonnen level. */
+#kaart-doek .weg-rand { fill: none; stroke: #5a3d12; stroke-opacity: 0.75; stroke-width: 46; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+#kaart-doek .weg-goud { fill: none; stroke: #f3d37a; stroke-opacity: 0.92; stroke-width: 32; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+
+/* De brug over de kloof. */
+#kaart-doek .brug { pointer-events: none; }
+#kaart-doek .brug-schaduw { fill: #000; opacity: 0.35; }
+#kaart-doek .brug-dek { fill: #b98d52; stroke: #2a1d0b; stroke-width: 6; }
+#kaart-doek .brug-plank { stroke: #7a5632; stroke-width: 4; }
+#kaart-doek .brug-leuning { fill: #6b4a22; stroke: #2a1d0b; stroke-width: 4; }
+#kaart-doek .brug-paal { fill: #4a3218; stroke: #2a1d0b; stroke-width: 4; }
 
 /* Planken: drie lichte latten op elkaar. */
 .icoon-planken {
@@ -796,14 +880,3 @@ button:active {
 }
 #leger-groepen::-webkit-scrollbar { display: none; }
 #leger-groepen button { flex: 0 0 auto; white-space: nowrap; }
-
-/* Levelkaart met elf punten en portretten (stap 30) */
-#kaart-doek .pad.af { stroke: #c9a227; stroke-dasharray: none; stroke-width: 3.5; }
-#kaart-doek .punt .rond { stroke-width: 2.5; }
-#kaart-doek .punt .gezicht { pointer-events: none; }
-#kaart-doek .punt.later .gezicht, #kaart-doek .punt.dicht .gezicht { filter: grayscale(1); opacity: 0.55; }
-#kaart-doek .punt.later .rond { fill: #8b8b82; stroke-dasharray: 3 2; }
-#kaart-doek .punt .nummer { fill: #2a1d0b; stroke: #d9c18a; stroke-width: 1; pointer-events: none; }
-#kaart-doek .punt .cijfer { font: 700 8px sans-serif; fill: #f3d37a; text-anchor: middle; pointer-events: none; }
-#kaart-doek .punt .teken { font: 9px sans-serif; text-anchor: middle; pointer-events: none; }
-#kaart-doek .naam { font-size: 9px; }

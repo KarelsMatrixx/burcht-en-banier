@@ -132,3 +132,12 @@
 - Na het winnen: de slottekst van de heer en wat je van Wessel vindt.
 - De 22 portretten staan in beelden/portretten (256 pixels, samen 255 KB) en worden offline bewaard.
 - Test: tests/campagne30.mjs.
+
+## 0.31.0 (stap 31): schilderijen voor het beginscherm en de levelkaart
+- Beginscherm: een schilderij (beelden/startscherm.webp, 146 KB, 2576 breed) over het hele scherm. Titel en knoppen staan links, over een donkere schaduw.
+- Levelkaart: een schilderij (beelden/levelkaart.webp, 273 KB, 2576 breed) over het hele scherm. De elf punten staan op de open plekken van de weg. Een punt is een portret in een ring; de kleur van de ring is de stand: goud open, groen gewonnen (met vinkje), grijs dicht of komt later (met slot), rood het huidige level. De cijfertjes zijn weg.
+- De weg kleurt goud tot het laatst gewonnen level. De kloof bij Grauwvoort heeft een brug, in code getekend, want de weg is in het schilderij daar onderbroken.
+- Nieuw: data/levelkaart.json (route, brug en hoe ver langs de route elk level ligt). In data/campagne.json zijn de punten nu procenten van het schilderij.
+- sw.js: de twee schilderijen en levelkaart.json zijn toegevoegd aan de bewaarde bestanden (0.31.0).
+- Bekend: Het Veen ligt op de weg boven het veen, niet erin; de brug kan in stijl afwijken van het schilderij; de naam Grauwvoort staat boven het punt; nog niet op een echte iPhone gezien (alleen Chrome op 844 bij 390).
+- Test: tests/kaart31.mjs (16 controles). tests/menu19.mjs en tests/campagne30.mjs slagen ook.
