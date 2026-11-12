@@ -39,6 +39,7 @@
  "campagne": [
   {
    "id": 1,
+   "punt": { "x": 18, "y": 66 },
    "titel": "Missie 1: Heer Reinout van Dorre Heide",
    "heer": "Heer Reinout van Dorre Heide",
    "profiel": "rustig",
@@ -47,6 +48,7 @@
   },
   {
    "id": 2,
+   "punt": { "x": 50, "y": 34 },
    "titel": "Missie 2: Vrouwe Mechteld Zevenwind",
    "heer": "Vrouwe Mechteld Zevenwind",
    "profiel": "normaal",
@@ -55,6 +57,7 @@
   },
   {
    "id": 3,
+   "punt": { "x": 80, "y": 60 },
    "titel": "Missie 3: Graaf Hademar van IJzerbroek",
    "heer": "Graaf Hademar van IJzerbroek",
    "profiel": "zwaar",

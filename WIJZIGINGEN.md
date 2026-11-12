@@ -27,3 +27,11 @@
 - Nieuw: kiezen per groep (Dichtbij, Afstand, Belegering) en per soort (Ridder, Boogschutter, Katapult, enz.) met knoppen onderin; verschijnen als je meer dan een groep of soort hebt.
 - Tests met echte aanrakingen: tests/aanraking.mjs, toren_klim.mjs (toren tegen de muur, drie ridders klimmen erover en komen binnen), selectie.mjs.
 - Bekend: een toren of katapult alleen op pad wordt neergemaaid door de uitval van rood; neem soldaten mee.
+
+## 0.19.0 (stap 19): beginscherm en levelkaart
+- Het spel opent met een beginscherm (Campagne, Vrij spel, Verder spelen als je al iets hebt gespeeld). Campagne opent een levelkaart met punten voor level 1, 2 en 3: open (geel), gewonnen (groen met vinkje), dicht (grijs met slot), huidig (rode rand). Tik op een open level en het start; een dicht level zegt welk level je eerst moet winnen. Vrij spel opent het bestaande menu met de vier profielen.
+- De Menu-knop opent nu de levelkaart. Achter het beginscherm en de kaart staat het spel stil.
+- Het beginscherm komt alleen bij het openen van de pagina, niet na het kiezen van een level.
+- Meer levels toevoegen: een nieuwe missie in data/missies.json (campagne) met een punt {x, y} in procenten; de kaart tekent hem vanzelf.
+- Nog gelijke kaart onder alle levels; eigen kaarten komen in stap 24 en 25.
+- Test: tests/menu19.mjs.

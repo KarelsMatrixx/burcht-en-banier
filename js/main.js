@@ -20,6 +20,8 @@ import { maakOpslag } from './opslag.js';
 import { maakUi } from './ui.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe } from './modus.js';
 
+const GEEN_TITEL = 'burcht-banier.geenTitel';
+
 async function start() {
   const canvas = document.getElementById('spel');
   const ui = maakUi();
@@ -29,6 +31,7 @@ async function start() {
   assets.meldingen.forEach((tekst) => ui.toonMelding(tekst));
 
   const kaart = maakKaart(CONFIG.kaart);
+  let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
   const tekenaar = maakTekenaar(canvas, kaart, camera, assets);
   const wegvinder = maakWegvinder(kaart);
@@ -525,6 +528,8 @@ async function start() {
   });
   ui.opEindeOpnieuw(opnieuw);
 
+  // --- Het beginscherm en de levelkaart ---------------------------------------------------
+  // (titelOpen staat hierboven bij de spellus.)
   // --- Het menu: vrij spel en de campagne -------------------------------------------------
   const modusNaam = missie ? missie.titel : `Vrij spel: ${missies.profielen[modus.profiel].naam}`;
   document.getElementById('versie').textContent += ` · ${missie ? 'missie ' + missie.id : missies.profielen[modus.profiel].naam.toLowerCase()}`;
@@ -549,9 +554,33 @@ async function start() {
       return;
     }
     bewaar();   // wat je nu hebt blijft bewaard bij deze modus
+    try { window.sessionStorage.setItem(GEEN_TITEL, '1'); } catch (fout) { /* dan zie je het beginscherm nog eens */ }
     window.location.reload();
   };
-  ui.opMenu(() => ui.toonMenu({ open: true, nu: `Nu: ${modusNaam}. Elke modus bewaart zijn eigen spel.`, items: menuItems() }));
+  const openMenu = () => ui.toonMenu({ open: true, nu: `Nu: ${modusNaam}. Elke modus bewaart zijn eigen spel.`, items: menuItems() });
+  const kanVerder = !!bewaard || !!missie;   // is er al iets gespeeld?
+  const toonKaart = () => {
+    const open = (c) => c.id === 1 || gewonnen.includes(c.id - 1);
+    ui.toonTitel({ open: true, weergave: 'kaart' });
+    ui.toonLevelkaart(missies.campagne.map((c, i) => ({
+      id: c.id, naam: c.heer.replace(/^(Heer|Vrouwe|Graaf)\s+/, ''),
+      x: c.punt ? c.punt.x : 15 + (i * 35) % 70, y: c.punt ? c.punt.y : (i % 2 ? 35 : 65),
+      staat: gewonnen.includes(c.id) ? 'gewonnen' : !open(c) ? 'dicht' : modus.soort === 'campagne' && modus.missie === c.id ? 'nu' : 'open',
+    })), (id) => {
+      const c = missies.campagne.find((m) => m.id === id);
+      if (!open(c)) { document.getElementById('kaart-tekst').textContent = `Win eerst level ${id - 1}.`; return; }
+      if (modus.soort === 'campagne' && modus.missie === id) { sluitTitel(); return; }
+      kiesModus(`missie:${id}`);
+    }, 'Tik op een level om het te starten. Een gewonnen level kun je opnieuw spelen.');
+  };
+  const toonTitel = () => { titelOpen = true; ui.toonTitel({ open: true, weergave: 'voorpagina', kanVerder }); };
+  const sluitTitel = () => { titelOpen = false; ui.toonTitel({ open: false }); };
+  ui.opTitel({ campagne: toonKaart, vrij: () => { sluitTitel(); openMenu(); }, verder: sluitTitel, terug: toonTitel });
+  ui.opMenu(() => { titelOpen = true; toonKaart(); });
+  // Het beginscherm komt bij het openen van de pagina, niet na het kiezen van een level.
+  let geenTitel = false;
+  try { geenTitel = window.sessionStorage.getItem(GEEN_TITEL) === '1'; window.sessionStorage.removeItem(GEEN_TITEL); } catch (fout) { /* geen geheugen: dan toon je het gewoon */ }
+  if (!geenTitel) toonTitel();
   ui.opMenuKeuze(kiesModus);
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
@@ -765,7 +794,7 @@ async function start() {
   maakSpellus({
     stappenPerSeconde: CONFIG.spel.stappenPerSeconde,
     stap: (dt) => {
-      if (strijd.uitslag()) return;   // gewonnen of verloren: alles staat stil
+      if (strijd.uitslag() || titelOpen) return;   // gewonnen of verloren, of het beginscherm staat open: alles staat stil
       eenheden.stap(dt);
       economie.stap();
       leger.stap();

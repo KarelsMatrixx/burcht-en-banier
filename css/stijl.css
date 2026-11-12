@@ -693,3 +693,42 @@ button:active {
   font-size: 0.85em;
   opacity: 0.92;
 }
+
+/* Het beginscherm en de levelkaart (stap 19) */
+#titelscherm {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 40%, #3b4a2a 0%, #1b2214 70%, #0f130b 100%);
+  color: #f7ecd0;
+  pointer-events: auto;
+}
+#titelscherm[hidden] { display: none; }
+#titel-voorpagina, #titel-kaart { width: min(720px, 96vw); text-align: center; }
+#titel-voorpagina[hidden], #titel-kaart[hidden] { display: none; }
+#titel-voorpagina h1 { font-size: clamp(30px, 8vh, 54px); margin: 0 0 4px; color: #f3d37a; letter-spacing: 1px; text-shadow: 0 3px 0 #0008; }
+#titel-voorpagina p { margin: 0 0 16px; opacity: 0.85; }
+#titel-knoppen { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+#titel-knoppen button, #kaart-terug { min-height: 48px; min-width: 120px; font-size: 16px; }
+#titel-knoppen button[hidden] { display: none; }
+#kaart-kop { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+#kaart-kop strong { font-size: 18px; color: #f3d37a; }
+#kaart-kop #kaart-terug { min-width: 80px; min-height: 40px; }
+#kaart-doek svg { width: 100%; max-height: 66vh; display: block; }
+#kaart-tekst { margin-top: 6px; font-size: 0.9em; opacity: 0.85; min-height: 1.4em; }
+#kaart-doek .perkament { fill: #d9c18a; stroke: #f3d37a; stroke-width: 4; rx: 12; }
+#kaart-doek .heuvel { fill: #b9a66a; }
+#kaart-doek .stam { fill: #5a3d22; }
+#kaart-doek .boom { fill: #4d7a34; }
+#kaart-doek .pad { fill: none; stroke: #6b4a22; stroke-width: 3; stroke-dasharray: 2 7; stroke-linecap: round; }
+#kaart-doek .tikvlak { fill: transparent; }
+#kaart-doek .punt { cursor: pointer; }
+#kaart-doek .punt .rond { fill: #e0b94a; stroke: #3a2a12; stroke-width: 2.5; }
+#kaart-doek .punt.gewonnen .rond { fill: #6ea65a; }
+#kaart-doek .punt.dicht .rond { fill: #8b8b82; }
+#kaart-doek .punt.nu .rond { stroke: #c8372b; stroke-width: 4; }
+#kaart-doek .cijfer { text-anchor: middle; font: 700 15px sans-serif; fill: #2a1d0b; pointer-events: none; }
+#kaart-doek .naam { text-anchor: middle; font: 700 10px sans-serif; fill: #2a1d0b; pointer-events: none; paint-order: stroke; stroke: #d9c18a; stroke-width: 3px; }

@@ -145,6 +145,59 @@ export function maakUi() {
       if (el('strijd-kort').textContent !== kort) el('strijd-kort').textContent = kort;
       if (el('volk-strijd').textContent !== lang) el('volk-strijd').textContent = lang || '';
     },
+    // Het beginscherm. weergave = 'voorpagina' of 'kaart'.
+    toonTitel({ open, weergave = 'voorpagina', kanVerder = false }) {
+      el('titelscherm').hidden = !open;
+      if (!open) return;
+      el('titel-voorpagina').hidden = weergave !== 'voorpagina';
+      el('titel-kaart').hidden = weergave !== 'kaart';
+      el('titel-verder').hidden = !kanVerder;
+    },
+    // De levelkaart. levels = [{ id, naam, x, y, staat: 'open'|'gewonnen'|'dicht'|'nu' }].
+    toonLevelkaart(levels, opKies, tekst = '') {
+      const NS = 'http://www.w3.org/2000/svg';
+      const doek = el('kaart-doek');
+      doek.replaceChildren();
+      const svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 400 200');
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      const maak = (naam, attr, tekstInhoud) => {
+        const n = document.createElementNS(NS, naam);
+        for (const [k, v] of Object.entries(attr)) n.setAttribute(k, v);
+        if (tekstInhoud !== undefined) n.textContent = tekstInhoud;
+        return n;
+      };
+      svg.appendChild(maak('rect', { x: 0, y: 0, width: 400, height: 200, class: 'perkament' }));
+      // Een paar heuvels en bomen als versiering.
+      for (const [x, y, r] of [[60, 150, 26], [140, 170, 20], [330, 150, 30], [250, 60, 18], [350, 40, 22], [90, 40, 20]]) svg.appendChild(maak('ellipse', { cx: x, cy: y, rx: r * 1.4, ry: r * 0.7, class: 'heuvel' }));
+      for (const [x, y] of [[40, 110], [200, 140], [290, 110], [120, 90], [370, 100], [210, 30]]) {
+        svg.appendChild(maak('rect', { x: x - 1, y: y, width: 2, height: 6, class: 'stam' }));
+        svg.appendChild(maak('circle', { cx: x, cy: y - 2, r: 6, class: 'boom' }));
+      }
+      const pt = (l) => [l.x * 4, l.y * 2];
+      if (levels.length > 1) svg.appendChild(maak('polyline', { points: levels.map((l) => pt(l).join(',')).join(' '), class: 'pad' }));
+      for (const l of levels) {
+        const [x, y] = pt(l);
+        const groep = maak('g', { class: `punt ${l.staat}`, 'data-id': l.id, tabindex: 0 });
+        groep.appendChild(maak('circle', { cx: x, cy: y, r: 22, class: 'tikvlak' }));
+        groep.appendChild(maak('circle', { cx: x, cy: y, r: 15, class: 'rond' }));
+        groep.appendChild(maak('text', { x, y: y + 5, class: 'cijfer' }, l.staat === 'dicht' ? '🔒' : l.staat === 'gewonnen' ? '✔' : String(l.id)));
+        groep.appendChild(maak('text', { x, y: y + 34, class: 'naam' }, l.naam));
+        svg.appendChild(groep);
+      }
+      svg.addEventListener('click', (e) => {
+        const g = e.target.closest('.punt');
+        if (g) opKies(Number(g.dataset.id));
+      });
+      doek.appendChild(svg);
+      el('kaart-tekst').textContent = tekst;
+    },
+    opTitel({ campagne, vrij, verder, terug }) {
+      el('titel-campagne').addEventListener('click', campagne);
+      el('titel-vrij').addEventListener('click', vrij);
+      el('titel-verder').addEventListener('click', verder);
+      el('kaart-terug').addEventListener('click', terug);
+    },
     // Het menu. items = [{ groep, naam, tekst, sleutel, nu, kan }] (groep zet een kopje neer
     // als hij verschilt van de vorige), nu = tekst bovenaan.
     toonMenu({ open, nu = '', items = [] }) {
