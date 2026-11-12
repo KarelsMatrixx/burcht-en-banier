@@ -13,7 +13,7 @@ const laad = () => p.waitForFunction(() => window.spel && window.spel.strijd, nu
 await p.goto('http://localhost:8123/?x=' + Date.now()); await laad();
 await p.evaluate(() => localStorage.clear()); await p.reload(); await laad();
 const soort = process.argv[2] || 'katapult';
-const doelVak = process.argv[3] ? process.argv[3].split(',').map(Number) : [44, 13];
+const doelVak = process.argv[3] ? process.argv[3].split(',').map(Number) : [49, 13];
 await p.evaluate(async (soort) => {
   const iso = await import('/js/iso.js'); window.__iso = iso;
   const s = window.spel; const m = s.strijd.rood();

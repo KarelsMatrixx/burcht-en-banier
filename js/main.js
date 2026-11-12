@@ -1,7 +1,7 @@
 // MAIN: zet alle onderdelen in elkaar en start het spel.
 
 import { CONFIG } from './config.js';
-import { maakKaart, binnenKaart, beschrijfTegel, OBJECT_ASSET } from './kaart.js';
+import { maakKaart, laadKaarten, binnenKaart, beschrijfTegel, OBJECT_ASSET } from './kaart.js';
 import { rasterNaarWereld, wereldNaarRaster, kaartGrenzen } from './iso.js';
 import { maakCamera } from './camera.js';
 import { koppelInvoer } from './invoer.js';
@@ -30,7 +30,13 @@ async function start() {
   const assets = await laadAssets();
   assets.meldingen.forEach((tekst) => ui.toonMelding(tekst));
 
-  const kaart = maakKaart(CONFIG.kaart);
+  // Vrij spel of een missie: dat bepaalt ook welke kaart je krijgt.
+  const missies = await laadMissies();
+  const modus = leesModus(missies);
+  const missie = modus.soort === 'campagne' ? missies.campagne.find((c) => c.id === modus.missie) : null;
+  const kaarten = await laadKaarten();
+  const kaartNaam = (missie && missie.kaart) || 'standaard';
+  const kaart = maakKaart(kaarten[kaartNaam] || { ...CONFIG.kaart });
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
   const tekenaar = maakTekenaar(canvas, kaart, camera, assets);
@@ -43,11 +49,8 @@ async function start() {
   const { bouwwerken, groepen } = await laadBouwwerken();
   const regels = await laadEconomie();
   // Vrij spel of een missie: de regels van die modus over de gewone regels heen.
-  const missies = await laadMissies();
-  const modus = leesModus(missies);
-  const missie = modus.soort === 'campagne' ? missies.campagne.find((c) => c.id === modus.missie) : null;
   pasProfielToe(regels, profielVan(missies, modus));
-  const opslag = maakOpslag(CONFIG.kaart.zaad, opslagSleutel(modus));
+  const opslag = maakOpslag(kaart.zaad, opslagSleutel(modus));
 
   // Bewaren: na elke keer bouwen, slopen, hakken of afleveren.
   let bewaarFoutGemeld = false;
@@ -623,7 +626,7 @@ async function start() {
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
   ui.opMissieBegin(() => ui.toonMissie({ open: false }));
-  if (missie && !bewaard && !strijd.uitslag()) ui.toonMissie({ open: true, titel: missie.titel, tekst: missie.intro });
+  if (missie && !bewaard && !strijd.uitslag()) ui.toonMissie({ open: true, titel: missie.titel, tekst: `${missie.intro}${kaart.naam ? ` Je speelt op de kaart ${kaart.naam}.` : ''}` });
   if (strijd.uitslag()) naEinde(strijd.uitslag());
   else if (strijd.stand().golf === 0 && !strijd.stand().vrede) {
     const hh = strijd.stand().heer;

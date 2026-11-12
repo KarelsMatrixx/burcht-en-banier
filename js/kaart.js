@@ -99,13 +99,37 @@ const INRICHTING = [
 // Maakt een kaart voor vrij spel: twee startplekken, water, bos, steen
 // en ijzer. De kaart is gespiegeld door het midden, zodat beide spelers
 // dezelfde kansen hebben.
-export function maakKaart({ breedte, hoogte, zaad }) {
+// Het recept staat in data/kaarten.json; zonder recept komt de standaardkaart.
+const STANDAARD = {
+  water: 0.3, zand: 0.36, bos: 0.62, start: [0.22, 0.78],
+  vindplaatsen: [
+    { soort: 'STEEN', dx: -9, dy: -10, straal: 2.6 },
+    { soort: 'IJZER', dx: 4, dy: 10, straal: 2.2 },
+    { soort: 'BOOM', dx: -10, dy: 3, straal: 3.5 },
+  ],
+  midden: [{ soort: 'IJZER', dx: -4, dy: 3, straal: 2.4 }],
+};
+
+export async function laadKaarten() {
+  const antwoord = await fetch('data/kaarten.json');
+  if (!antwoord.ok) throw new Error('Kon data/kaarten.json niet laden.');
+  const k = await antwoord.json();
+  for (const [naam, r] of Object.entries(k.kaarten)) {
+    if (!(r.breedte >= 40 && r.hoogte >= 40 && r.breedte <= 96 && r.hoogte <= 96)) throw new Error(`kaarten.json: kaart ${naam} moet tussen 40 en 96 tegels groot zijn`);
+    for (const v of [...(r.vindplaatsen || []), ...(r.midden || [])]) if (OBJECT[v.soort] === undefined) throw new Error(`kaarten.json: kaart ${naam} kent geen ${v.soort}`);
+  }
+  return k.kaarten;
+}
+
+export function maakKaart(recept) {
+  const r = { ...STANDAARD, ...recept };
+  const { breedte, hoogte, zaad } = r;
   const toeval = maakToeval(zaad);
   const aantal = breedte * hoogte;
   const grond = new Uint8Array(aantal);
   const object = new Uint8Array(aantal);
 
-  const eigen = { x: Math.round(breedte * 0.22), y: Math.round(hoogte * 0.78) };
+  const eigen = { x: Math.round(breedte * r.start[0]), y: Math.round(hoogte * r.start[1]) };
   const start = [eigen, { x: breedte - 1 - eigen.x, y: hoogte - 1 - eigen.y }];
 
   const grof = maakRuis(toeval, breedte, hoogte, 12);
@@ -120,13 +144,13 @@ export function maakKaart({ breedte, hoogte, zaad }) {
       const naarStart = Math.min(afstand(x, y, start[0]), afstand(x, y, start[1]));
       const nat = grof(x, y) * 0.7 + fijn(x, y) * 0.3;
 
-      if (naarStart > 13 && nat < 0.3) grond[i] = GROND.WATER;
-      else if (naarStart > 11 && nat < 0.36) grond[i] = GROND.ZAND;
+      if (naarStart > 13 && nat < r.water) grond[i] = GROND.WATER;
+      else if (naarStart > 11 && nat < r.zand) grond[i] = GROND.ZAND;
       else grond[i] = fijn(x, y) > 0.5 ? GROND.GRAS : GROND.GRAS_DONKER;
 
       if (grond[i] <= GROND.GRAS_DONKER && naarStart > 7.5) {
         const dichtheid = bos(x, y);
-        if (dichtheid > 0.62 || (dichtheid > 0.52 && toeval() < 0.35)) object[i] = OBJECT.BOOM;
+        if (dichtheid > r.bos || (dichtheid > r.bos - 0.1 && toeval() < 0.35)) object[i] = OBJECT.BOOM;
       }
     }
   }
@@ -144,11 +168,9 @@ export function maakKaart({ breedte, hoogte, zaad }) {
       }
     }
   };
-  vlek(eigen.x - 9, eigen.y - 10, 2.6, OBJECT.STEEN);
-  vlek(eigen.x + 4, eigen.y + 10, 2.2, OBJECT.IJZER);
-  vlek(eigen.x - 10, eigen.y + 3, 3.5, OBJECT.BOOM);
-  // Extra ijzer in het midden van de kaart, om over te vechten.
-  vlek(Math.round(breedte / 2) - 4, Math.round(hoogte / 2) + 3, 2.4, OBJECT.IJZER);
+  for (const v of r.vindplaatsen) vlek(eigen.x + v.dx, eigen.y + v.dy, v.straal, OBJECT[v.soort]);
+  // In het midden van de kaart, om over te vechten.
+  for (const v of r.midden) vlek(Math.round(breedte / 2) + v.dx, Math.round(hoogte / 2) + v.dy, v.straal, OBJECT[v.soort]);
 
   // 3. Een kasteel rond de startplek, met een dorp en een legerkamp. Dit
   //    is decor uit de kaartgenerator, zonder functie in het spel.
@@ -256,6 +278,53 @@ export function maakKaart({ breedte, hoogte, zaad }) {
     }
   }
 
+  let padGemaakt = 'ja';
+  // 5c. Er moet een weg over land zijn van jouw poort naar die van rood.
+  //     Is die er niet (te veel water of bos), dan wordt er een pad gemaakt:
+  //     water wordt zand (een doorwaadbare plek) en bomen gaan weg. Het pad
+  //     loopt van poort naar poort en is dus ook gespiegeld.
+  {
+    const van = { x: eigen.x + RING + 1, y: eigen.y };
+    const naar = { x: start[1].x - RING - 1, y: start[1].y };
+    const begaanbaar = (i) => grond[i] !== GROND.WATER && (object[i] === OBJECT.GEEN || false);
+    const verbonden = () => {
+      const gezien = new Uint8Array(aantal);
+      const rij = [van.y * breedte + van.x];
+      gezien[rij[0]] = 1;
+      const doel = naar.y * breedte + naar.x;
+      while (rij.length) {
+        const i = rij.pop();
+        if (i === doel) return true;
+        const x = i % breedte;
+        const y = (i - x) / breedte;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= breedte || ny >= hoogte) continue;
+          const j = ny * breedte + nx;
+          if (gezien[j] || !begaanbaar(j)) continue;
+          gezien[j] = 1;
+          rij.push(j);
+        }
+      }
+      return false;
+    };
+    if (!verbonden()) {
+      const stappen = Math.max(Math.abs(naar.x - van.x), Math.abs(naar.y - van.y));
+      for (let k = 0; k <= stappen; k++) {
+        const x = Math.round(van.x + ((naar.x - van.x) * k) / stappen);
+        const y = Math.round(van.y + ((naar.y - van.y) * k) / stappen);
+        for (const [dx, dy] of [[0, 0], [1, 0], [0, 1]]) {
+          const i = (y + dy) * breedte + x + dx;
+          if (x + dx >= breedte || y + dy >= hoogte || eigenaar[i]) continue;
+          if (grond[i] === GROND.WATER) grond[i] = GROND.ZAND;
+          if (object[i] === OBJECT.BOOM) object[i] = OBJECT.GEEN;
+        }
+      }
+    }
+    padGemaakt = !verbonden() ? 'geen' : 'ja';
+  }
+
   // 6. Looproutes voor de wachters op de muur, per kasteel. Elke muur is
   //    in tweeën gedeeld door een wachttoren of de poort.
   const routesRond = (m, teken) => {
@@ -278,7 +347,7 @@ export function maakKaart({ breedte, hoogte, zaad }) {
     { team: 1, midden: start[1], routes: routesRond(start[1], -1) },
   ];
 
-  return { breedte, hoogte, grond, object, eigenaar, start, kastelen };
+  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, verbonden: padGemaakt === 'ja' };
 }
 
 export function binnenKaart(kaart, x, y) {

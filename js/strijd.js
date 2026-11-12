@@ -49,7 +49,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const golven = R.golven;
   const herstelNa = stappen(R.herstelNa);
   const herstelElke = stappen(R.herstelElke);
-  const toeval = maakToeval(CONFIG.kaart.zaad + 77);
+  const toeval = maakToeval(kaart.zaad + 77);
 
   for (const [nummer, golfje] of golven.entries()) {
     for (const sleutel of Object.keys(golfje)) {

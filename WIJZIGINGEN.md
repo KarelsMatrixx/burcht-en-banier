@@ -72,3 +72,11 @@
 - De bouwknoppen staan nu op één rij die je met je vinger schuift; de eerste knop (Terug) blijft staan.
 - Eigen tekening: een heuvel met stollenmond van balken, rails, een karretje met erts en een lantaarn; mijnwerker met een mand koper.
 - Test: tests/koper23.mjs.
+
+## 0.24.0 (stap 24 en 25): kaartsysteem en een eigen kaart per level
+- Een kaart is nu een recept in data/kaarten.json: grootte, zaad, hoeveel water, hoeveel bos, waar je burcht staat en waar steen, kopererts en extra bos liggen. De generator in js/kaart.js maakt er het speelveld van; rood staat altijd gespiegeld, zijn burcht, muur en werken worden uit de kaart berekend.
+- Vier kaarten: Het Middenland (vrij spel, ongewijzigd, 64x64), Het Groene Dal (level 1, 56x56, klein en bosrijk, weinig water), De Twee Meren (level 2, 64x64, grote meren), Het Grensland (level 3, 72x72, burchten verder uit elkaar, kopererts alleen in het midden).
+- De generator controleert of er een weg over land is van jouw poort naar die van rood. Zo niet, dan maakt hij een doorwaadbare plek en kapt hij een pad.
+- Meer kaarten toevoegen: een recept in data/kaarten.json en in data/missies.json bij een level kaart: naam.
+- De missie-intro noemt de kaart. Een bewaard spel van een level dat nog op de oude kaart is begonnen, start opnieuw (de stand past niet op de nieuwe kaart).
+- Test: tests/kaarten24.mjs (grootte, weg tussen de poorten, drie werken van rood, steen en koper bereikbaar, voor alle vier kaarten).
