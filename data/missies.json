@@ -1,0 +1,65 @@
+{
+ "_uitleg": [
+  "Hier staan de spelmodi. profielen zijn de moeilijkheidsgraden: heer en strijd overschrijven de getallen in economie.json (heer en strijd), begin overschrijft de beginvoorraad.",
+  "vrij: de keuzes voor vrij spel. campagne: de missies in volgorde; elke missie hoort bij een profiel en heeft een eigen heer, intro en slottekst.",
+  "Een profiel met strijd.golven = [] betekent: geen aanvallen, niets te winnen. Alle missies spelen op dezelfde kaart; een eigen kaart per missie komt later."
+ ],
+ "profielen": {
+  "rustig": {
+   "naam": "Rustig",
+   "begin": { "hout": 80, "steen": 40, "voedsel": 40, "goud": 40 },
+   "heer": { "begin": { "hout": 5, "steen": 5, "goud": 10 }, "burchtGoud": 0.2, "eersteAanval": 330, "tussen": 150, "doelBegin": 2, "doelPerAanval": 1, "doelMax": 12, "rammenVanaf": 5, "extra_soorten": { "katapult": { "vanaf": 8, "max": 1 }, "toren": { "vanaf": 9, "max": 1 } } },
+   "strijd": { "roodBurchtLeven": 700, "wachters": 2 }
+  },
+  "normaal": {
+   "naam": "Normaal",
+   "begin": {},
+   "heer": {},
+   "strijd": {}
+  },
+  "zwaar": {
+   "naam": "Zwaar",
+   "begin": { "hout": 40, "steen": 20, "voedsel": 20, "goud": 20 },
+   "heer": { "begin": { "hout": 20, "steen": 20, "goud": 40 }, "burchtGoud": 0.4, "eersteAanval": 150, "tussen": 75, "doelBegin": 3.5, "doelPerAanval": 2, "doelMax": 26, "rammenVanaf": 2, "ridderPerSchutter": 1, "extra_soorten": { "katapult": { "vanaf": 4, "max": 1 }, "toren": { "vanaf": 6, "max": 1 } } },
+   "strijd": { "roodBurchtLeven": 1400, "wachters": 4 }
+  },
+  "vrede": {
+   "naam": "Zonder aanvallen",
+   "begin": { "hout": 120, "steen": 80, "voedsel": 60, "goud": 80 },
+   "heer": {},
+   "strijd": { "golven": [] }
+  }
+ },
+ "vrij": [
+  { "profiel": "normaal", "tekst": "Je bouwt en vecht tegen de rode heer. Dit is het spel zoals het was." },
+  { "profiel": "rustig", "tekst": "Meer grondstoffen om mee te beginnen. De rode heer verzamelt langzaam en zijn burcht is zwakker." },
+  { "profiel": "zwaar", "tekst": "Weinig grondstoffen, een snelle en rijke rode heer met een sterke burcht." },
+  { "profiel": "vrede", "tekst": "Geen aanvallen en niets te winnen. Alleen bouwen, een volk laten groeien en je soldaten oefenen." }
+ ],
+ "campagne": [
+  {
+   "id": 1,
+   "titel": "Missie 1: Heer Reinout van Dorre Heide",
+   "heer": "Heer Reinout van Dorre Heide",
+   "profiel": "rustig",
+   "intro": "Heer Reinout heerst over de Dorre Heide, en hij is trots maar voorzichtig. Hij verzamelt zijn mannen langzaam en valt pas aan als hij zeker is. Bouw je volk op, leid soldaten op en neem zijn burcht in voordat hij sterk wordt.",
+   "uit": "Heer Reinout is verslagen. De Dorre Heide is van jou."
+  },
+  {
+   "id": 2,
+   "titel": "Missie 2: Vrouwe Mechteld Zevenwind",
+   "heer": "Vrouwe Mechteld Zevenwind",
+   "profiel": "normaal",
+   "intro": "Vrouwe Mechteld stuurt haar boogschutters vooruit en laat haar ridders de muren beuken. Ze herstelt wat je vernield en ze doet uitvallen zodra je te dichtbij komt. Houd je werkers veilig en val haar werken buiten de muur aan.",
+   "uit": "Vrouwe Mechteld heeft de Zevenwind verloren. Haar werken zijn van jou."
+  },
+  {
+   "id": 3,
+   "titel": "Missie 3: Graaf Hademar van IJzerbroek",
+   "heer": "Graaf Hademar van IJzerbroek",
+   "profiel": "zwaar",
+   "intro": "Graaf Hademar heeft IJzerbroek rijk gemaakt en gebruikt dat. Hij koopt snel, rammen en katapulten komen vroeg, en zijn belegeringstorens volgen. Je begint met weinig. Sloop zijn werken en hou je burcht overeind.",
+   "uit": "Graaf Hademar is gevallen. Alle drie de heren zijn verslagen: de campagne is uitgespeeld."
+  }
+ ]
+}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Burcht &amp; Banier</title>
+
+  <!-- Zorgt dat het spel als app op het beginscherm kan staan. -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#14130f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Burcht">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+
+  <link rel="stylesheet" href="css/stijl.css">
+
+  <script>
+    // Laat fouten in beeld zien. Zonder dit zie je op een telefoon alleen
+    // een zwart scherm als er iets misgaat.
+    (function () {
+      // Draait het spel ingesloten in een andere pagina (een voorbeeld),
+      // dan mag het ook staand. Zie css/stijl.css.
+      try {
+        if (window.self !== window.top) document.documentElement.classList.add('ingesloten');
+      } catch (fout) {
+        document.documentElement.classList.add('ingesloten');
+      }
+      function toon(tekst) {
+        var vak = document.getElementById('fout');
+        if (!vak) return;
+        vak.hidden = false;
+        vak.textContent = 'Er ging iets mis:\n\n' + tekst +
+          '\n\nMaak een schermafbeelding en stuur die mee in de chat.';
+      }
+      window.addEventListener('error', function (e) {
+        if (e.message) {
+          toon(e.message + '\n(' + String(e.filename || '').split('/').pop() + ', regel ' + e.lineno + ')');
+        } else if (e.target && (e.target.src || e.target.href)) {
+          toon('Kon dit bestand niet laden:\n' + (e.target.src || e.target.href));
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function (e) {
+        toon(String((e.reason && (e.reason.stack || e.reason.message)) || e.reason));
+      });
+    })();
+  </script>
+</head>
+<body>
+  <canvas id="spel"></canvas>
+
+  <div id="hud">
+    <div id="hud-boven">
+      <div class="plaat" id="titel">
+        <strong>Burcht &amp; Banier</strong><br>
+        <small id="versie"></small>
+      </div>
+      <div class="plaat" id="voorraad"><span id="voorraad-lijst"></span><span class="strijdvak" id="strijdinfo" hidden><i class="icoon icoon-aanval"></i><b id="strijd-kort"></b></span></div>
+      <div class="plaat" id="tegelinfo" hidden></div>
+      <div class="knoppen">
+        <button id="knop-menu" type="button">Menu</button>
+        <button id="knop-test" type="button">Test</button>
+        <button id="knop-start" type="button">Naar start</button>
+      </div>
+    </div>
+    <!-- Het paneel over je volk: tik bovenin op je voorraad -->
+    <div class="plaat" id="volkpaneel" hidden>
+      <div id="volk-tekst"></div>
+      <div id="volk-strijd"></div>
+      <div id="volk-kop">Belasting</div>
+      <div id="volk-rij">
+        <div class="knoppen" id="volk-belasting"></div>
+        <button id="volk-sluit" type="button">Sluiten</button>
+      </div>
+    </div>
+    <!-- De kazerne: tik hem aan om soldaten op te leiden -->
+    <div class="plaat" id="legerpaneel" hidden>
+      <div id="leger-tekst"></div>
+      <div id="leger-rij">
+        <div class="knoppen" id="leger-opleiden"></div>
+        <button id="leger-sluit" type="button">Sluiten</button>
+      </div>
+    </div>
+    <div id="hud-onder">
+      <!-- De prestatietest, achter de knop Test -->
+      <div class="plaat" id="proef" hidden>
+        <div id="status"></div>
+        <div id="proef-cijfers">Prestatietest</div>
+        <div id="voortgang" hidden></div>
+        <div class="knoppen">
+          <button id="knop-meting" type="button">Start meting</button>
+          <button id="knop-aantal" type="button">Figuren: 150</button>
+          <button id="knop-opnieuw" type="button">Opnieuw beginnen</button>
+        </div>
+      </div>
+      <div id="meldingen"></div>
+      <div class="plaat" id="tip" hidden>
+        <span>Tip: tik in Safari op Deel en kies "Zet op beginscherm". Dan speel je schermvullend en zonder internet.</span>
+        <button id="tip-sluit" type="button">Sluiten</button>
+      </div>
+      <!-- Bouwen: uitleg bij wat je aan het doen bent, en de bouwbalk -->
+      <div class="plaat" id="bouwhint" hidden></div>
+      <div class="plaat" id="legerhint" hidden></div>
+      <div id="bouwbalk">
+        <div class="knoppen" id="bouw-knoppen"></div>
+        <div class="knoppen" id="bouw-acties" hidden>
+          <button id="knop-bevestig" type="button">Zet neer</button>
+          <button id="knop-klaar" type="button">Klaar</button>
+        </div>
+        <!-- Je soldaten kiezen: verschijnt zodra je er een hebt -->
+        <div class="knoppen" id="leger-balk" hidden>
+          <button id="knop-kader" type="button">Kader</button>
+          <button id="knop-alle" type="button">Alle</button>
+          <button id="knop-niets" type="button">Niets</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="plaat" id="uitslag" hidden>
+    <pre id="uitslag-tekst"></pre>
+    <button id="uitslag-sluit" type="button">Sluiten</button>
+  </div>
+
+  <!-- Gewonnen of verloren -->
+  <div class="plaat" id="einde" hidden>
+    <strong id="einde-titel"></strong>
+    <div id="einde-tekst"></div>
+    <div class="knoppen">
+      <button id="einde-volgende" type="button" hidden>Volgende missie</button>
+      <button id="einde-verder" type="button">Verder spelen</button>
+      <button id="einde-opnieuw" type="button">Opnieuw beginnen</button>
+    </div>
+  </div>
+
+  <!-- Het menu: vrij spel en de campagne -->
+  <div class="plaat" id="menu" hidden>
+    <strong>Menu</strong>
+    <div id="menu-nu"></div>
+    <div id="menu-lijst"></div>
+    <div class="knoppen"><button id="menu-sluit" type="button">Sluiten</button></div>
+  </div>
+
+  <!-- De intro van een missie -->
+  <div class="plaat" id="missie" hidden>
+    <strong id="missie-titel"></strong>
+    <div id="missie-tekst"></div>
+    <div class="knoppen"><button id="missie-begin" type="button">Begin</button></div>
+  </div>
+
+  <div id="draai">Draai je telefoon een kwartslag.<br>Burcht &amp; Banier speel je liggend.</div>
+  <pre id="fout" hidden></pre>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

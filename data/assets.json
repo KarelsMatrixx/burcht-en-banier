@@ -1,0 +1,67 @@
+{
+  "_uitleg": [
+    "Hier staat per onderdeel hoe het eruitziet.",
+    "vorm en kleur beschrijven het plaatje dat het spel zelf tekent (zie js/kunst.js).",
+    "Wil je een eigen plaatje? Zet het bestand in de map assets/sprites en vul de bestandsnaam in bij sprite, bijvoorbeeld \"sprite\": \"toren.png\".",
+    "Het plaatje moet isometrisch zijn (tegel 64 bij 32 pixels). De onderste punt van de tegelruit zit midden onderaan het plaatje.",
+    "Bij soldaten (namen die met eenheid. beginnen) is het ankerpunt de plek van de voeten.",
+    "Extra, alleen als het nodig is: \"anker\": [x, y] voor een ander ankerpunt, \"schaal\": 2 voor een plaatje dat dubbel zo groot is aangeleverd.",
+    "spreiding verschuift elk exemplaar een paar pixels, zodat een bos er niet uitziet als een rooster.",
+    "hoogte is de hoogte van een onderdeel in pixels. Het bepaalt de lengte van de slagschaduw; soldaten op een muur staan op de hoogte van de muur.",
+    "rang bepaalt welke grondsoort over welke heen valt: de hoogste rang loopt met een zachte rand over zijn buren. soort voorkomt een rand tussen twee tinten van hetzelfde."
+  ],
+  "assets": {
+    "grond.gras":          { "vorm": "grond", "patroon": "gras",  "kleur": "#6b8c46", "rang": 5, "soort": "gras", "sprite": "" },
+    "grond.gras_donker":   { "vorm": "grond", "patroon": "gras",  "kleur": "#61823e", "rang": 5, "soort": "gras", "sprite": "" },
+    "grond.zand":          { "vorm": "grond", "patroon": "zand",  "kleur": "#c2ae7c", "rang": 2, "sprite": "" },
+    "grond.water":         { "vorm": "grond", "patroon": "water", "kleur": "#3a6b88", "rang": 1, "sprite": "" },
+    "grond.aarde":         { "vorm": "grond", "patroon": "aarde", "kleur": "#8e7a56", "rang": 3, "sprite": "" },
+    "grond.akker":         { "vorm": "grond", "patroon": "akker", "kleur": "#b99d4c", "rang": 4, "sprite": "" },
+
+    "object.boom":         { "vorm": "boom", "kleur": "#3f7a36", "sprite": "", "spreiding": 6 },
+    "object.steen":        { "vorm": "rots", "kleur": "#a3a199", "sprite": "" },
+    "object.ijzer":        { "vorm": "rots", "kleur": "#6b5a52", "accent": "#b8612c", "sprite": "" },
+
+    "kasteel.muur":          { "vorm": "muur",       "kleur": "#b9ad94", "hoogte": 40, "sprite": "" },
+    "kasteel.toren":         { "vorm": "toren",      "kleur": "#b9ad94", "hoogte": 78, "sprite": "" },
+    "kasteel.wachttoren":    { "vorm": "wachttoren", "kleur": "#b9ad94", "hoogte": 62, "sprite": "" },
+    "kasteel.poort":         { "vorm": "poort",      "kleur": "#b9ad94", "hoogte": 58, "sprite": "" },
+    "kasteel.burcht":        { "vorm": "burcht",     "kleur": "#c4b89a", "hoogte": 74, "sprite": "" },
+    "kasteel.banier_blauw":  { "vorm": "burcht",     "kleur": "#c4b89a", "hoogte": 74, "banier": "#2f5fc4", "sprite": "" },
+    "kasteel.banier_rood":   { "vorm": "burcht",     "kleur": "#c4b89a", "hoogte": 74, "banier": "#c23a2e", "sprite": "" },
+
+    "dorp.huis":     { "vorm": "huis", "wand": "#dccfb2", "vakwerk": true, "pannen": true, "schoorsteen": true, "daken": ["#5c6b7a", "#9c5a3c", "#66727f"], "hoogte": 24, "sprite": "" },
+    "dorp.hut":      { "vorm": "huis", "wand": "#b79a6a", "daken": ["#b89a55", "#a88c4c", "#c2a560"], "hoogte": 22, "sprite": "" },
+    "dorp.tent":     { "vorm": "tent", "kleur": "#ddd2b6", "accent": "#8a3a2c", "sprite": "" },
+    "dorp.hooiberg": { "vorm": "hooiberg", "kleur": "#c9a94e", "sprite": "" },
+    "dorp.put":      { "vorm": "put", "kleur": "#a8a194", "dak": "#7a5a3a", "sprite": "" },
+    "dorp.vaten":    { "vorm": "vaten", "kleur": "#8a5f38", "sprite": "" },
+
+    "werk.houthakker": { "vorm": "houthakker", "wand": "#8f6f48", "daken": ["#667045"], "hoogte": 22, "sprite": "" },
+    "werk.steengroeve": { "vorm": "steengroeve", "kleur": "#a8a59c", "hoogte": 26, "sprite": "" },
+    "werk.boomgaard":  { "vorm": "boomgaard", "blad": "#4f8a3c", "appel": "#c8402f", "hoogte": 15, "sprite": "" },
+    "leger.kazerne":   { "vorm": "kazerne", "wand": "#b9b3a3", "pannen": true, "daken": ["#4d5564"], "kleur": "#2f5fc4", "hoogte": 26, "sprite": "" },
+    "dorp.woning":     { "vorm": "huis", "wand": "#e0d2b4", "vakwerk": true, "pannen": true, "schoorsteen": true, "daken": ["#3f5e96"], "hoogte": 24, "sprite": "" },
+
+    "eenheid.ridder_blauw":        { "vorm": "ridder",       "kleur": "#2f5fc4", "sprite": "" },
+    "eenheid.ridder_rood":         { "vorm": "ridder",       "kleur": "#c23a2e", "sprite": "" },
+    "eenheid.boogschutter_blauw":  { "vorm": "boogschutter", "kleur": "#2f5fc4", "sprite": "" },
+    "eenheid.boogschutter_rood":   { "vorm": "boogschutter", "kleur": "#c23a2e", "sprite": "" },
+    "eenheid.ram_blauw":           { "vorm": "ram",          "kleur": "#2f5fc4", "sprite": "" },
+    "eenheid.ram_rood":            { "vorm": "ram",          "kleur": "#c23a2e", "sprite": "" },
+    "eenheid.katapult_blauw":      { "vorm": "katapult",         "kleur": "#2f5fc4", "sprite": "" },
+    "eenheid.katapult_rood":       { "vorm": "katapult",         "kleur": "#c23a2e", "sprite": "" },
+    "eenheid.toren_blauw":         { "vorm": "belegeringstoren", "kleur": "#2f5fc4", "sprite": "" },
+    "eenheid.toren_rood":          { "vorm": "belegeringstoren", "kleur": "#c23a2e", "sprite": "" },
+    "eenheid.ladder_blauw":        { "vorm": "ladderdrager", "kleur": "#2f5fc4", "sprite": "" },
+    "eenheid.ladder_rood":         { "vorm": "ladderdrager", "kleur": "#c23a2e", "sprite": "" },
+    "eenheid.houthakker_blauw":    { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#b39a6b", "gereedschap": "bijl",    "vracht": "hout",  "sprite": "" },
+    "eenheid.houthakker_rood":     { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#b39a6b", "gereedschap": "bijl",    "vracht": "hout",  "sprite": "" },
+    "eenheid.steenhouwer_blauw":   { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#8d8678", "gereedschap": "houweel", "vracht": "steen", "sprite": "" },
+    "eenheid.steenhouwer_rood":    { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#8d8678", "gereedschap": "houweel", "vracht": "steen", "sprite": "" },
+    "eenheid.fruitteler_blauw":    { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#8a9a62", "gereedschap": "mand",    "vracht": "appels", "sprite": "" },
+    "eenheid.fruitteler_rood":     { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#8a9a62", "gereedschap": "mand",    "vracht": "appels", "sprite": "" },
+    "eenheid.boer_blauw":          { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#a9835a", "gereedschap": "geen",    "vracht": "",       "sprite": "" },
+    "eenheid.boer_rood":           { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#a9835a", "gereedschap": "geen",    "vracht": "",       "sprite": "" }
+  }
+}

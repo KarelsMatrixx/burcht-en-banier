@@ -1,0 +1,39 @@
+{
+  "_uitleg": [
+    "Hier staat wat je kunt bouwen. Elke regel wordt een knop in de bouwbalk, in deze volgorde.",
+    "groepen zijn de knoppen waarmee de bouwbalk begint. Elk bouwwerk hoort bij een groep.",
+    "naam is de tekst op de knop. object is de soort uit js/kaart.js (OBJECT).",
+    "kosten is wat het bouwen kost, per stuk. De namen komen uit data/economie.json.",
+    "lijn: true betekent dat je een begin en een eind aantikt en dat alles ertussen wordt gebouwd.",
+    "inMuur: true betekent dat het alleen tussen twee stukken muur kan staan, of in de plaats van een eigen stuk muur.",
+    "werker: bij dit gebouw hoort een werker met dat beroep (zie data/economie.json). Daar is een vrije boer voor nodig.",
+    "woont: voor zoveel boeren geeft dit gebouw woonruimte.",
+    "leidtOp: true betekent dat je hier soldaten opleidt: tik het gebouw aan (zie soldaten in data/economie.json).",
+    "dichtbij: het gebouw moet binnen afstand tegels van dat object staan; reden is de uitleg als dat niet zo is.",
+    "tip is een extra zin in de uitleg boven de bouwbalk.",
+    "leven: hoeveel het bouwwerk kan hebben voordat de vijand erdoorheen is. Staat het er niet, dan geldt gebouwLeven uit data/economie.json."
+  ],
+  "groepen": {
+    "kasteel": "Kasteel",
+    "werk": "Werk",
+    "dorp": "Dorp",
+    "leger": "Leger"
+  },
+  "bouwwerken": {
+    "muur":        { "naam": "Muur",        "groep": "kasteel", "leven": 200, "object": "MUUR",        "kosten": { "steen": 2 },  "lijn": true },
+    "toren":       { "naam": "Toren",       "groep": "kasteel", "leven": 400, "object": "TOREN",       "kosten": { "steen": 12 } },
+    "wachttoren":  { "naam": "Wachttoren",  "groep": "kasteel", "leven": 300, "object": "WACHTTOREN",  "kosten": { "steen": 8 } },
+    "poort":       { "naam": "Poort",       "groep": "kasteel", "leven": 250, "object": "POORT",       "kosten": { "steen": 4, "hout": 4 }, "inMuur": true },
+    "houthakker":  { "naam": "Houthakker",  "groep": "werk",    "object": "HOUTHAKKER",  "kosten": { "hout": 20 }, "werker": "houthakker",
+                     "tip": "Zet hem dicht bij bomen." },
+    "steengroeve": { "naam": "Steengroeve", "groep": "werk",    "object": "STEENGROEVE", "kosten": { "hout": 30 }, "werker": "steenhouwer",
+                     "dichtbij": { "object": "STEEN", "afstand": 2, "reden": "een steengroeve moet bij rotsen staan" },
+                     "tip": "Zet hem tegen de rotsen aan." },
+    "boomgaard":   { "naam": "Boomgaard",   "groep": "werk",    "object": "BOOMGAARD",   "kosten": { "hout": 15 }, "werker": "fruitteler",
+                     "tip": "Appels zijn voedsel voor je boeren." },
+    "woning":      { "naam": "Woning",      "groep": "dorp",    "object": "WONING",      "kosten": { "hout": 20 }, "woont": 4,
+                     "tip": "Een woning geeft plek aan 4 boeren." },
+    "kazerne":     { "naam": "Kazerne",     "groep": "leger",   "object": "KAZERNE",     "kosten": { "hout": 20, "steen": 10 }, "leidtOp": true,
+                     "tip": "Tik hem daarna aan om soldaten op te leiden." }
+  }
+}

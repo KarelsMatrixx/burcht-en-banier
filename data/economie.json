@@ -1,0 +1,347 @@
+{
+ "_uitleg": [
+  "Hier staan de getallen van de economie. Een getal aanpassen verandert het spel, zonder dat de code verandert.",
+  "grondstoffen: wat je kunt hebben. naam is de tekst in beeld, begin is waar je mee start.",
+  "sloopTerug: welk deel van de bouwkosten je terugkrijgt als je iets sloopt (0.5 is de helft, naar beneden afgerond).",
+  "bevolking: begin is met hoeveel boeren je start, plekBurcht is voor hoeveel boeren de burcht plek heeft.",
+  "komtElke: om de zoveel seconden komt er een boer bij, als er plek en voedsel is.",
+  "maaltijdElke: om de zoveel seconden is er een ronde: elke boer eet eetPerPersoon van de grondstof eet, je int belasting en de populariteit verandert. raadHonger is de tip als het voedsel op is.",
+  "stemming: de populariteit (0 tot 100). begin is waar je start; onder grens vertrekken boeren, vanaf grens komen er nieuwe bij.",
+  "Per ronde telt erbij: eten als iedereen at, honger als er te weinig was, krap als er meer boeren zijn dan woonruimte.",
+  "belasting: de standen die je kunt kiezen. goud is wat elke boer per ronde betaalt (in de grondstof munt), effect telt per ronde bij de populariteit.",
+  "beginBelasting is de stand waarmee je start (0 is de eerste). loperSnelheid is hoe snel een boer zonder werk rondloopt.",
+  "beroepen: de werkers. haalt is de grondstof die hij brengt, bij is waar hij die haalt (een soort uit js/kaart.js).",
+  "ruimtOp: true betekent dat de bron na het werk weg is (een boom). Bij false raakt hij niet op (een rots, een boomgaard).",
+  "last is hoeveel hij per keer draagt, werkTijd is hoe lang hij bij de bron bezig is (seconden),",
+  "snelheid is hoe snel hij loopt (tegels per seconde), bereik is hoe ver van zijn werkplaats hij zoekt (tegels lopen).",
+  "plek, bezig, mist en raad zijn de teksten in beeld.",
+  "Wat bouwen kost en hoeveel plek een woning geeft staat in data/bouwwerken.json.",
+  "soldaten: wat je bij de kazerne kunt opleiden. kosten is de prijs, snelheid is hoe snel hij loopt. Elke soldaat kost ook een boer zonder werk.",
+  "leven is hoeveel hij kan hebben, schade wat hij per klap doet, schadeBouw wat hij per klap aan een bouwwerk doet, slagTijd de tijd tussen twee klappen (seconden).",
+  "bereik is hoe ver hij kan raken (tegels; boven de 2 is het een schutter), zicht is van hoe ver hij een vijand opmerkt.",
+  "alleenBouw: deze soldaat vecht niet met soldaten, hij beukt alleen op bouwwerken (de stormram). pijlDekking: het deel van een pijl dat bij hem doorkomt (0.15 is iets meer dan een zesde). ladder: deze soldaat zet een ladder tegen een muur van rood (slagTijd is hoe lang dat duurt); langs die ladder kunnen je soldaten de muur op en aan de andere kant weer af.",
+  "legerMax: zoveel soldaten kun je hoogstens hebben.",
+  "strijd: de aanvallen van de rode heer. eersteGolf is na hoeveel seconden de eerste aanval komt, tussenGolven de tijd tussen twee aanvallen.",
+  "golven: wie er per aanval komt. Na de laatste regel blijft die laatste aanval terugkomen, tot de burcht van rood valt.",
+  "burchtLeven is hoeveel je burcht kan hebben. Valt hij, dan heb je verloren. De wacht op de burcht schiet zelf: burchtSchade per schot, om de burchtSlagTijd seconden, tot burchtBereik tegels ver.",
+  "roodBurchtLeven is hoeveel de burcht van rood kan hebben. Valt hij, dan heb je gewonnen. Zijn burcht schiet net zo terug als de jouwe. wachter is de soldaat die op de muren van rood loopt, wachters hoeveel het er zijn (hooguit 8: één per half stuk muur).",
+  "herstelNa: zoveel seconden zonder gevecht en je burcht en je soldaten herstellen langzaam (1 leven per herstelElke seconden).",
+  "muurBereik: zoveel tegels verder schiet een boogschutter die op de muur staat. muurDekking: het deel van de schade van een pijl dat iemand op de muur nog krijgt (0.5 is de helft).",
+  "gebouwLeven is het leven van een bouwwerk waar in data/bouwwerken.json geen leven bij staat.",
+  "omduwen: zoveel seconden staat een soldaat van jou op een stuk muur voordat hij een ladder van rood omduwt. Rood stuurt vanaf de vierde aanval ladderdragers mee: die zetten een ladder tegen de eerste muur die in de weg staat.",
+  "katapult: gooit stenen op bouwwerken tot 9 tegels ver (schadeBouw 60 per worp), vecht niet met soldaten. toren (belegeringstoren): zet een stevige ladder tegen een muur van rood, die je pas na omduwenVast seconden kunt omduwen; vast: true. De toren zelf is taai (300 leven)."
+ ],
+ "grondstoffen": {
+  "hout": {
+   "naam": "Hout",
+   "begin": 60
+  },
+  "steen": {
+   "naam": "Steen",
+   "begin": 30
+  },
+  "voedsel": {
+   "naam": "Voedsel",
+   "begin": 30
+  },
+  "goud": {
+   "naam": "Goud",
+   "begin": 30
+  }
+ },
+ "sloopTerug": 0.5,
+ "bevolking": {
+  "begin": 4,
+  "plekBurcht": 6,
+  "komtElke": 15,
+  "maaltijdElke": 30,
+  "eet": "voedsel",
+  "eetPerPersoon": 1,
+  "raadHonger": "Zet een boomgaard neer.",
+  "munt": "goud",
+  "stemming": {
+   "begin": 60,
+   "grens": 50,
+   "eten": 3,
+   "honger": -6,
+   "krap": -3
+  },
+  "belasting": [
+   {
+    "naam": "Geen",
+    "goud": 0,
+    "effect": 3
+   },
+   {
+    "naam": "Laag",
+    "goud": 1,
+    "effect": 0
+   },
+   {
+    "naam": "Middel",
+    "goud": 2,
+    "effect": -4
+   },
+   {
+    "naam": "Hoog",
+    "goud": 3,
+    "effect": -8
+   }
+  ],
+  "beginBelasting": 1,
+  "loperSnelheid": 0.8
+ },
+ "beroepen": {
+  "houthakker": {
+   "naam": "houthakker",
+   "soort": "HOUTHAKKER",
+   "haalt": "hout",
+   "bij": "BOOM",
+   "ruimtOp": true,
+   "last": 8,
+   "werkTijd": 3,
+   "snelheid": 1.6,
+   "snelheidMetLast": 1.3,
+   "bereik": 30,
+   "plek": "het bos",
+   "bezig": "hakt een boom om",
+   "mist": "vindt geen boom in de buurt",
+   "raad": "Zet de hut dichter bij het bos."
+  },
+  "steenhouwer": {
+   "naam": "steenhouwer",
+   "soort": "STEENHOUWER",
+   "haalt": "steen",
+   "bij": "STEEN",
+   "ruimtOp": false,
+   "last": 8,
+   "werkTijd": 4,
+   "snelheid": 1.5,
+   "snelheidMetLast": 1.1,
+   "bereik": 10,
+   "plek": "de rotsen",
+   "bezig": "hakt steen uit de rots",
+   "mist": "vindt geen rots in de buurt",
+   "raad": "Zet de groeve dichter bij de rotsen."
+  },
+  "fruitteler": {
+   "naam": "fruitteler",
+   "soort": "FRUITTELER",
+   "haalt": "voedsel",
+   "bij": "BOOMGAARD",
+   "ruimtOp": false,
+   "last": 6,
+   "werkTijd": 5,
+   "snelheid": 1.6,
+   "snelheidMetLast": 1.4,
+   "bereik": 3,
+   "plek": "de boomgaard",
+   "bezig": "plukt appels",
+   "mist": "kan niet bij zijn boomgaard",
+   "raad": "Maak er een tegel naast vrij."
+  }
+ },
+ "soldaten": {
+  "ridder": {
+   "naam": "Ridder",
+   "soort": "RIDDER",
+   "kosten": {
+    "goud": 12
+   },
+   "snelheid": 2.0,
+   "leven": 60,
+   "schade": 10,
+   "schadeBouw": 5,
+   "slagTijd": 1.0,
+   "bereik": 1.5,
+   "zicht": 5
+  },
+  "boogschutter": {
+   "naam": "Boogschutter",
+   "soort": "BOOGSCHUTTER",
+   "kosten": {
+    "goud": 8
+   },
+   "snelheid": 2.2,
+   "leven": 30,
+   "schade": 6,
+   "schadeBouw": 1,
+   "slagTijd": 1.6,
+   "bereik": 6,
+   "zicht": 7
+  },
+  "ram": {
+   "naam": "Stormram",
+   "soort": "RAM",
+   "kosten": {
+    "goud": 20,
+    "hout": 20
+   },
+   "snelheid": 0.9,
+   "leven": 240,
+   "schade": 0,
+   "schadeBouw": 40,
+   "slagTijd": 2.5,
+   "bereik": 1.5,
+   "zicht": 4,
+   "alleenBouw": true,
+   "pijlDekking": 0.15
+  },
+  "ladder": {
+   "naam": "Ladderdrager",
+   "soort": "LADDER",
+   "kosten": {
+    "goud": 4,
+    "hout": 4
+   },
+   "snelheid": 2.4,
+   "leven": 25,
+   "schade": 0,
+   "schadeBouw": 0,
+   "slagTijd": 2,
+   "bereik": 1.5,
+   "zicht": 4,
+   "ladder": true
+  },
+  "katapult": {
+   "naam": "Katapult",
+   "soort": "KATAPULT",
+   "kosten": {
+    "goud": 30,
+    "hout": 30
+   },
+   "snelheid": 0.8,
+   "leven": 90,
+   "schade": 0,
+   "schadeBouw": 35,
+   "slagTijd": 5,
+   "bereik": 9,
+   "zicht": 10,
+   "alleenBouw": true,
+   "pijlDekking": 0.5
+  },
+  "toren": {
+   "naam": "Belegeringstoren",
+   "soort": "TOREN",
+   "kosten": {
+    "goud": 40,
+    "hout": 60
+   },
+   "snelheid": 0.7,
+   "leven": 300,
+   "schade": 0,
+   "schadeBouw": 0,
+   "slagTijd": 4,
+   "bereik": 1.5,
+   "zicht": 4,
+   "ladder": true,
+   "vast": true,
+   "pijlDekking": 0.3
+  }
+ },
+ "legerMax": 40,
+ "strijd": {
+  "eersteGolf": 240,
+  "tussenGolven": 150,
+  "golven": [
+   {
+    "ridder": 2
+   },
+   {
+    "ridder": 3,
+    "boogschutter": 1
+   },
+   {
+    "ridder": 4,
+    "boogschutter": 2
+   },
+   {
+    "ridder": 6,
+    "boogschutter": 3,
+    "ram": 1,
+    "ladder": 1
+   },
+   {
+    "ridder": 8,
+    "boogschutter": 4,
+    "ram": 2,
+    "ladder": 2
+   }
+  ],
+  "burchtLeven": 1200,
+  "burchtSchade": 4,
+  "burchtSlagTijd": 1.5,
+  "burchtBereik": 6,
+  "herstelNa": 10,
+  "herstelElke": 1,
+  "gebouwLeven": 60,
+  "muurBereik": 2,
+  "muurDekking": 0.5,
+  "roodBurchtLeven": 1000,
+  "wachter": "boogschutter",
+  "wachters": 4,
+  "omduwen": 3,
+  "omduwenVast": 10
+ },
+ "heer": {
+  "_uitleg": [
+   "De rode heer heeft zijn eigen economie (js/rood.js). Hij koopt soldaten en valt aan als zijn reserve sterk genoeg is.",
+   "begin: zijn voorraad bij de start. burchtGoud: goud per seconde uit zijn burcht. werken: wat elk werk van rood per seconde oplevert.",
+   "eersteAanval en tussen: het minimum aantal seconden voor de eerste aanval en tussen twee aanvallen.",
+   "doelBegin, doelPerAanval, doelMax: hoe sterk zijn reserve moet zijn om aan te vallen (ridder telt 1, zie gewicht).",
+   "kooptElke en herbouwElke: om de zoveel seconden koopt hij iets of herstelt hij een stuk.",
+   "herbouwVrij: hij herstelt niets als een soldaat van jou binnen zoveel tegels staat. uitvalAfstand en uitvalPauze: zie rood.js.",
+   "extra: hij koopt niet door als zijn reserve al zoveel boven het doel zit."
+  ],
+  "begin": {
+   "hout": 10,
+   "steen": 10,
+   "goud": 24
+  },
+  "burchtGoud": 0.3,
+  "werken": {
+   "HOUTHAKKER": {
+    "hout": 0.5
+   },
+   "STEENGROEVE": {
+    "steen": 0.4
+   },
+   "BOOMGAARD": {
+    "goud": 0.5
+   }
+  },
+  "voorraadMax": 300,
+  "eersteAanval": 200,
+  "tussen": 100,
+  "doelBegin": 2.5,
+  "doelPerAanval": 1.5,
+  "doelMax": 20,
+  "gewicht": {
+   "ridder": 1,
+   "boogschutter": 0.7,
+   "ram": 2,
+   "ladder": 0.5,
+   "katapult": 2.5,
+   "toren": 1.5
+  },
+  "ridderPerSchutter": 2,
+  "rammenVanaf": 3,
+  "rammenMax": 2,
+  "kooptElke": 2,
+  "herbouwElke": 3,
+  "herbouwVrij": 6,
+  "uitvalAfstand": 14,
+  "uitvalPauze": 25,
+  "extra": 1.5,
+  "extra_soorten": {
+   "katapult": {
+    "vanaf": 5,
+    "max": 1
+   },
+   "toren": {
+    "vanaf": 6,
+    "max": 1
+   }
+  }
+ }
+}
