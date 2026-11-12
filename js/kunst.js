@@ -480,6 +480,128 @@ export function tekenBoogschutter(naam, def) {
   return beelden;
 }
 
+// De bijlridder: breder en lager dan de ridder, met bontkraag, een open
+// helm en een grote bijl met halvemaanvormige kop. Teamkleur op de rok.
+// zwaai: -1 = lopen (bijl over de schouder), 0 = bijl boven het hoofd, 1 = de slag.
+export function tekenBijlridder(naam, def) {
+  const staal = '#b9bec6';
+  const teken = (ctx, beeld, zwaai) => {
+    const vecht = zwaai >= 0;
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 2 : [0, 1.6, 0, -1.6][beeld];
+    const mx = vecht ? 12.5 + zwaai : 13;
+    ovaal(ctx, 13, 34, 8.2, 3.1, 'rgba(0,0,0,0.32)');
+    const kop = (x, y, hoek) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(hoek);
+      vlak(ctx, [[0, -1], [3.2, -4.4], [5.4, -2.4], [5.8, 0], [5.4, 2.4], [3.2, 4.4], [0, 1]], '#d7dbe1');
+      lijn(ctx, 5.4, -2.4, 5.4, 2.4, 'rgba(255,255,255,0.7)', 0.6);
+      ctx.restore();
+    };
+    if (!vecht) {
+      lijn(ctx, mx + 6.5, 27 + wip, mx - 2, 6 + wip, '#5a3d22', 1.5);   // steel over de schouder
+      kop(mx - 2.2, 7 + wip, -2.0);
+    }
+    // Benen, breed
+    blok(ctx, mx - 4.2 + pas, 27.5 + wip, 3.3, 6.5 - wip, '#3d3a36');
+    blok(ctx, mx + 0.9 - pas, 27.5 + wip, 3.3, 6.5 - wip, '#2f2c29');
+    // Rok in teamkleur, lijf in maliën
+    blok(ctx, mx - 5.6, 18 + wip, 11.2, 10.5, '#7d8088');
+    blok(ctx, mx - 5.6, 23 + wip, 11.2, 5.5, def.kleur);
+    blok(ctx, mx - 5.6, 18 + wip, 3.2, 10.5, 'rgba(0,0,0,0.25)');
+    for (let r = 0; r < 3; r++) lijn(ctx, mx - 5.4, 19.4 + r * 1.3 + wip, mx + 5.4, 19.4 + r * 1.3 + wip, 'rgba(255,255,255,0.12)', 0.5);
+    blok(ctx, mx - 5.6, 22.4 + wip, 11.2, 1.3, '#3a2a1a');
+    ovaal(ctx, mx + 0.5, 23 + wip, 1, 0.9, '#c9a24a');
+    // Bontkraag
+    ovaal(ctx, mx, 17.8 + wip, 6.4, 2.8, '#8b6a46');
+    for (const dx of [-4.5, -2, 0.6, 3.2]) ovaal(ctx, mx + dx, 17.2 + wip, 1.4, 1.2, '#a5835c');
+    // Armen
+    ovaal(ctx, mx - 5.6, 19.5 + wip, 2.2, 2.4, tint(staal, -0.25));
+    ovaal(ctx, mx + 5.6, 19.5 + wip, 2.2, 2.4, staal);
+    // Hoofd met open helm en baard
+    ovaal(ctx, mx + 0.6, 12.6 + wip, 3.4, 3.6, '#d9ae88');
+    ovaal(ctx, mx + 0.8, 14.8 + wip, 3, 1.8, '#6a4a2c');
+    ctx.fillStyle = staal;
+    ctx.beginPath();
+    ctx.ellipse(mx, 11.2 + wip, 4.4, 4, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+    blok(ctx, mx - 4.4, 11 + wip, 8.8, 1.2, tint(staal, -0.2));
+    blok(ctx, mx - 0.4, 7.4 + wip, 0.9, 3.8, tint(staal, 0.1));     // neusstuk en kam
+    ovaal(ctx, mx + 1.6, 8.8 + wip, 1.1, 0.8, 'rgba(255,255,255,0.5)');
+    ovaal(ctx, mx + 2, 12.4 + wip, 0.5, 0.5, '#2a1d14');
+    if (vecht) {
+      if (zwaai === 0) {
+        // Bijl hoog boven het hoofd
+        lijn(ctx, mx + 4.5, 20, mx - 3, 3, '#5a3d22', 1.6);
+        kop(mx - 3.2, 3.6, -2.2);
+        ovaal(ctx, mx + 3.8, 18.5, 1.5, 1.5, staal);
+      } else {
+        // De slag: bijl naar voren omlaag
+        lijn(ctx, mx + 3, 19.5, mx + 12, 26, '#5a3d22', 1.6);
+        kop(mx + 11.4, 25.6, 0.6);
+        ovaal(ctx, mx + 4.2, 19.8, 1.5, 1.5, staal);
+        lijn(ctx, mx + 6, 10, mx + 14, 20, 'rgba(255,255,255,0.35)', 0.8);   // zwaaispoor
+      }
+    }
+  };
+  const beelden = loopbeelden((ctx, beeld) => teken(ctx, beeld, -1));
+  beelden.houdingen = { sla: loopbeelden((ctx, beeld) => teken(ctx, 0, beeld), [0, 1]) };
+  return beelden;
+}
+
+// De kruisboogschutter: kleiner, leren kap, een kruisboog op borsthoogte en
+// een koker bolts op de heup. Bruin en donkergroen; teamkleur op de mantel.
+// schot: -1 = lopen, 0 = gespannen en gericht, 1 = net geschoten (opspannen).
+export function tekenKruisboogschutter(naam, def) {
+  const teken = (ctx, beeld, schot) => {
+    const vecht = schot >= 0;
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 1.1 : [0, 1.5, 0, -1.5][beeld];
+    const mx = 13;
+    ovaal(ctx, mx, 34, 6.6, 2.7, 'rgba(0,0,0,0.32)');
+    // Koker met bolts op de heup
+    blok(ctx, mx + 3.6, 21 + wip, 2.2, 6.4, '#4e3a22');
+    for (const dx of [0.3, 1.2]) blok(ctx, mx + 3.6 + dx, 19.6 + wip, 0.6, 1.6, '#9a8a6a');
+    // Benen
+    blok(ctx, mx - 3.2 + pas, 27.5 + wip, 2.7, 6.5 - wip, '#4a3a28');
+    blok(ctx, mx + 0.5 - pas, 27.5 + wip, 2.7, 6.5 - wip, '#3c2f20');
+    // Jas donkergroen met leren riem
+    blok(ctx, mx - 4, 18.5 + wip, 8, 9.5, '#3f5a3a');
+    blok(ctx, mx - 4, 18.5 + wip, 2.6, 9.5, 'rgba(0,0,0,0.25)');
+    blok(ctx, mx - 4, 23.6 + wip, 8, 1.1, '#5a3d22');
+    // Korte mantel in teamkleur over de schouders
+    ovaal(ctx, mx - 0.5, 18.6 + wip, 5, 2.6, def.kleur);
+    blok(ctx, mx - 5, 18.6 + wip, 2.4, 5, tint(def.kleur, -0.2));
+    // Leren kap en gezicht
+    ovaal(ctx, mx - 0.4, 12.6 + wip, 4.2, 4.4, '#7a5636');
+    ovaal(ctx, mx - 1.6, 12.4 + wip, 3, 4, 'rgba(0,0,0,0.2)');
+    ovaal(ctx, mx + 1.2, 13.4 + wip, 2.5, 2.7, '#e0b892');
+    vlak(ctx, [[mx - 3.5, 10 + wip], [mx - 6, 15 + wip], [mx - 3, 14 + wip]], '#6a4a2c');
+    // De kruisboog
+    const kb = (x, y, gespannen) => {
+      blok(ctx, x - 1, y - 0.7, 9, 1.4, '#5a3d22');            // de lade
+      lijn(ctx, x + 6.5, y - 4.5, x + 6.5, y + 4.5, '#3d2c18', 1.3);   // de boog
+      lijn(ctx, x + 6.5, y - 4.5, gespannen ? x + 1.5 : x + 6, y, 'rgba(240,240,230,0.9)', 0.5);
+      lijn(ctx, x + 6.5, y + 4.5, gespannen ? x + 1.5 : x + 6, y, 'rgba(240,240,230,0.9)', 0.5);
+      if (gespannen) {
+        lijn(ctx, x + 1.5, y - 0.9, x + 9, y - 0.9, '#2b2118', 0.8);
+        vlak(ctx, [[x + 10.2, y - 0.9], [x + 8.6, y - 1.8], [x + 8.6, y]], '#d7dbe1');
+      }
+    };
+    if (!vecht) kb(mx - 3, 21 + wip, false);
+    else if (schot === 0) kb(mx - 1, 20, true);
+    else {
+      kb(mx - 2.5, 22.5, false);
+      ovaal(ctx, mx + 6, 18.5, 1.2, 1, 'rgba(255,255,255,0.4)');
+    }
+    ovaal(ctx, mx + 1, 20.6 + (vecht ? 0 : wip), 1.3, 1.3, '#e0b892');
+  };
+  const beelden = loopbeelden((ctx, beeld) => teken(ctx, beeld, -1));
+  beelden.houdingen = { schiet: loopbeelden((ctx, beeld) => teken(ctx, 0, beeld), [0, 1]) };
+  return beelden;
+}
+
 // Een stormram: een houten afdak op wielen met een zware balk eronder. Het
 // dak is bekleed met huiden in teamkleur. Lopen = de wielen draaien,
 // houdingen.sla: beeld 0 = de balk naar achteren, beeld 1 = de stoot.

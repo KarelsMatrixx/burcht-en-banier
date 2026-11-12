@@ -80,3 +80,12 @@
 - Meer kaarten toevoegen: een recept in data/kaarten.json en in data/missies.json bij een level kaart: naam.
 - De missie-intro noemt de kaart. Een bewaard spel van een level dat nog op de oude kaart is begonnen, start opnieuw (de stand past niet op de nieuwe kaart).
 - Test: tests/kaarten24.mjs (grootte, weg tussen de poorten, drie werken van rood, steen en koper bereikbaar, voor alle vier kaarten).
+
+## 0.26.0 (stap 26): bijlridder en kruisboogschutter (ronde A van Karels legerontwerp)
+- Bijlridder (16 goud, 3 koper): leven 66, schade 16, slagtijd 1,6 s, snelheid 1,9. Raakt ook één vijand direct naast zijn doelwit (volle schade). Dubbele schade aan poorten en houten gebouwen (lijst in economie.json, bouwBonus).
+- Kruisboog (12 goud, 2 planken, 2 koper): leven 42, schade 18, slagtijd 2 s, bereik 6. Zijn bolt gaat door schild en dak heen (doorboort: pijlDekking telt niet).
+- Waarden zijn Karels percentages toegepast op de ridder (leven 60, schade 10, slagtijd 1, snelheid 2).
+- Eigen tekeningen: bijlridder breed, met bontkraag, baard, open helm en een bijl met halvemaankop die hij boven het hoofd zwaait; kruisboogschutter met leren kap, donkergroene jas en koker bolts.
+- Selectieknoppen: één schuifbare rij. Groepen: bijlridder bij Dichtbij, kruisboog bij Afstand.
+- Niet gedaan uit het ontwerp: opleidingstijd (het spel kent nog geen opleidingstijd, soldaten staan er direct), de 1,5x schade tegen de steenwachter (die bestaat nog niet), de speerman-aanpassing (ronde B). Rood gebruikt de nieuwe soldaten nog niet (stap 28).
+- Test: tests/soldaten26.mjs.

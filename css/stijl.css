@@ -785,3 +785,14 @@ button:active {
 #bouw-knoppen::-webkit-scrollbar { display: none; }
 #bouw-knoppen button { flex: 0 0 auto; white-space: nowrap; }
 #bouw-knoppen button:first-child { position: sticky; left: 0; z-index: 1; }
+
+/* Met veel soorten: één rij die je met je vinger schuift. */
+#leger-groepen {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 40vw;
+  justify-content: flex-start;
+}
+#leger-groepen::-webkit-scrollbar { display: none; }
+#leger-groepen button { flex: 0 0 auto; white-space: nowrap; }

@@ -497,9 +497,14 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       pijl(e.x, e.y, 20 + (e.hoogte || 0), doel.x, doel.y, 16 + (doel.hoogte || 0));
       // Wie op de muur staat, heeft dekking van de kantelen.
       if (doel.opMuur) schade = Math.max(1, Math.round(schade * R.muurDekking));
-      schade = Math.max(1, Math.round(schade * dekkingVan(doel)));
+      if (!k.def.doorboort) schade = Math.max(1, Math.round(schade * dekkingVan(doel)));
     }
     raak(doel, schade, e);
+    // Een zwaaiende bijl raakt ook iemand die vlak naast het doelwit staat.
+    if (k.def.zwaai > 0) {
+      const tweede = lijstVan(doel.team).find((a) => a !== doel && !a.dood && !!a.opMuur === !!doel.opMuur && Math.hypot(a.x - doel.x, a.y - doel.y) <= 1.3);
+      if (tweede) raak(tweede, Math.max(1, Math.round(k.def.schade * k.def.zwaai)), e);
+    }
   }
 
   // --- De vijand en je burcht -----------------------------------------------------------
@@ -522,7 +527,13 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (k.afkoel > 0) return;
     slaToe(e, k);
     if (k.def.bereik > 2) pijl(e.x, e.y, 20, b.x, b.y, b.burcht ? 44 : 24, !!k.def.alleenBouw);
-    raakBouw(b, k.def.schadeBouw);
+    raakBouw(b, k.def.schadeBouw * bouwKeer(k.def, b));
+  }
+  // Een bijl doet meer schade aan hout: poorten en houten gebouwen.
+  function bouwKeer(def, b) {
+    const bonus = def.bouwBonus;
+    if (!bonus || b.burcht) return 1;
+    return bonus.objecten.some((naam) => OBJECT[naam] === b.soort) ? bonus.keer : 1;
   }
 
   // De tegels naast een burcht, de dichtstbijzijnde eerst.
