@@ -108,3 +108,19 @@
 - Tekening (Karels campagnebeschrijving): staalgrijs harnas, tabbaard in teamkleur met een wapen (goud bij jou), wapperende mantel, korte baard, smalle gouden kroon, tweehandig zwaard met gouden pareerstang, zwarte rouwband om de linkerarm bij jouw koning. 130% van een ridder.
 - Afwijking van de campagnetekst: daar staat dat de koning na 40 s terugkeert. Karel koos in de chat voor: koning dood = verloren.
 - Test: tests/koning.mjs; test_stap17 wint nu door de rode koning te verslaan.
+
+## 0.29.0 (stap 29): rood leert de nieuwe soldaten, en een balansronde
+- Rood koopt zijn gewone mannen nu volgens een mengsel (heer.leger in economie.json): aandeel per soort en vanaf welke aanval hij die kent. Hij koopt steeds de soort die het verst achterloopt op zijn aandeel. Koper betaalt hij met 2 goud per stuk, planken met 2 hout.
+  - Normaal (vrij spel en level 2): ridder 3, boog 2, bijlridder 1 vanaf aanval 2, kruisboog 1 vanaf 3, sluipmoordenaar 0,5 vanaf 4, vlammenwever 0,5 vanaf 5.
+  - Rustig (level 1): ridder 3, boog 1, bijlridder 1 vanaf aanval 4. Geen kruisboog of mystiek.
+  - Zwaar (level 3): bijlridder vanaf 1, kruisboog vanaf 2, mystiek vanaf aanval 3.
+  - Gewicht voor zijn sterkte: bijlridder 1,4, kruisboog 1,1, sluipmoordenaar 1,5, vlammenwever 2.
+- Balans (gemeten met tests/balans.mjs: gelijke prijs, open veld, beide kanten gespiegeld): de nieuwe soldaten waren per goudstuk veel zwakker dan ridders. Aangepast:
+  | Soldaat | Was | Nu |
+  |---|---|---|
+  | Bijlridder | 16 goud 3 koper, leven 66, schade 16, slag 1,6 s | 14 goud 2 koper, leven 80, schade 17, slag 1,5 s |
+  | Kruisboog | 12 goud 2 planken 2 koper, leven 42, schade 18, slag 2 s | 10 goud 2 planken 1 koper, slag 1,9 s |
+  | Sluipmoordenaar | 24 goud 4 koper, leven 36, schade 10 | 18 goud 2 koper, leven 50, schade 12 (eerste slag 36) |
+  | Vlammenwever | 32 goud 6 koper, leven 33, schade 12, slag 2,5 s, gebied 0,5 | 22 goud 3 koper, leven 50, schade 16, slag 2 s, gebied 0,75 |
+- Een koning alleen houdt een aanval van 3 tot 4 man tegen en verliest van 6 (gemeten met tests/koningsim.mjs).
+- Tests: tests/rood29.mjs, balans.mjs, koningsim.mjs.

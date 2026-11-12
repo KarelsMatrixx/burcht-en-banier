@@ -22,7 +22,7 @@ await p.evaluate((pl) => { window.__kv = pl[1] * 64 + pl[0]; }, plek);
 const r1 = await p.evaluate(() => { const s = window.spel; const kv = window.__kv; const a = s.leger.leidOp('bijlridder', kv); const b = s.leger.leidOp('kruisboog', kv); return { a, b, v: { ...s.economie.voorraad } }; });
 console.log('opleiden', JSON.stringify(r1), 'kazerne', kz);
 // 2. Gevecht: bijlridder raakt twee vijanden
-check('opgeleid', r1.a === '' && r1.b === '' && r1.v.koper === 15 && r1.v.goud === 172, JSON.stringify(r1));
+check('opgeleid', r1.a === '' && r1.b === '' && r1.v.koper === 17 && r1.v.goud === 176, JSON.stringify(r1));
 const r2 = await p.evaluate(async ([x, y]) => {
   const s = window.spel; s.strijd.pauzeer(false);
   s.leger.zetStand([['bijlridder', x, y, 9999, 0]]);

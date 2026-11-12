@@ -36,6 +36,18 @@
       "vanaf": 9,
       "max": 1
      }
+    },
+    "leger": {
+     "ridder": {
+      "aandeel": 3
+     },
+     "boogschutter": {
+      "aandeel": 1
+     },
+     "bijlridder": {
+      "aandeel": 1,
+      "vanaf": 4
+     }
     }
    },
    "strijd": {
@@ -80,6 +92,30 @@
      "toren": {
       "vanaf": 6,
       "max": 1
+     }
+    },
+    "leger": {
+     "ridder": {
+      "aandeel": 2
+     },
+     "boogschutter": {
+      "aandeel": 2
+     },
+     "bijlridder": {
+      "aandeel": 1.5,
+      "vanaf": 1
+     },
+     "kruisboog": {
+      "aandeel": 1.5,
+      "vanaf": 2
+     },
+     "sluipmoordenaar": {
+      "aandeel": 1,
+      "vanaf": 3
+     },
+     "vlammenwever": {
+      "aandeel": 1,
+      "vanaf": 3
      }
     }
    },

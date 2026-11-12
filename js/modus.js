@@ -78,6 +78,7 @@ export function pasProfielToe(regels, profiel) {
   regels.heer = { ...regels.heer, ...(profiel.heer || {}) };
   if (profiel.heer && profiel.heer.begin) regels.heer.begin = { ...regels.heer.begin, ...profiel.heer.begin };
   if (profiel.heer && profiel.heer.extra_soorten) regels.heer.extra_soorten = { ...profiel.heer.extra_soorten };
+  if (profiel.heer && profiel.heer.leger) regels.heer.leger = { ...profiel.heer.leger };
   regels.strijd = { ...regels.strijd, ...(profiel.strijd || {}) };
   for (const [k, n] of Object.entries(profiel.begin || {})) {
     if (regels.grondstoffen[k] && Number.isFinite(n)) regels.grondstoffen[k] = { ...regels.grondstoffen[k], begin: n };

@@ -58,7 +58,7 @@ const r4 = await p.evaluate(async ([x, y]) => {
   while (performance.now() - t0 < 3000) { await new Promise((r) => setTimeout(r, 30)); if (v.leven < 60 && eerste === null) eerste = 60 - v.leven; }
   return { eerste };
 }, veld);
-check('eerste slag 30', r4.eerste === 30, JSON.stringify(r4));
+check('eerste slag 36 (3 x 12)', r4.eerste === 36, JSON.stringify(r4));
 // 5. Vlammenwever: gebiedsschade op twee vijanden naast elkaar
 const r5 = await p.evaluate(async ([x, y]) => {
   const s = window.spel; for (const v of s.strijd.vijanden()) v.dood = true;

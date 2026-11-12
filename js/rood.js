@@ -82,10 +82,12 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
 
   // Rood maakt geen planken: wat planken kost, betaalt hij met hout.
   // Eén plank kost hem twee hout, net als de verhouding in de bouwkosten.
-  const g = (k) => (k === 'planken' ? 'hout' : k);
+  // Koper heeft hij ook niet: dat betaalt hij met goud (koperPrijs per stuk).
+  const g = (k) => (k === 'planken' ? 'hout' : k === 'koper' ? 'goud' : k);
+  const keer = (k) => (k === 'planken' ? 2 : k === 'koper' ? H.koperPrijs || 2 : 1);
   const omzet = (kosten) => {
     const u = {};
-    for (const [k, n] of Object.entries(kosten || {})) u[g(k)] = (u[g(k)] || 0) + (k === 'planken' ? n * 2 : n);
+    for (const [k, n] of Object.entries(kosten || {})) u[g(k)] = (u[g(k)] || 0) + n * keer(k);
     return u;
   };
   const kanBetalen = (kosten) => Object.entries(omzet(kosten)).every(([k, n]) => (voorraad[k] || 0) >= n);
@@ -115,9 +117,21 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
         if (alleenGoud) return null;   // sparen
       }
     }
-    const schutter = tel('boogschutter') * H.ridderPerSchutter < tel('ridder');
-    const soort = schutter ? 'boogschutter' : 'ridder';
-    return kanBetalen(soorten[soort].kosten) ? soort : null;
+    // Zijn gewone mannen: een mengsel volgens heer.leger (aandeel per soort,
+    // en vanaf welke aanval hij die soort kent). Hij koopt de soort die het
+    // verst achterloopt op zijn aandeel.
+    const leger = H.leger || { ridder: { aandeel: H.ridderPerSchutter || 2 }, boogschutter: { aandeel: 1 } };
+    const kandidaten = Object.entries(leger).filter(([soort, w]) => soorten[soort] && aanvallen >= (w.vanaf || 0) && w.aandeel > 0);
+    if (!kandidaten.length) return null;
+    const totaal = kandidaten.reduce((som, [, w]) => som + w.aandeel, 0);
+    const aantal = kandidaten.reduce((som, [soort]) => som + tel(soort), 0) + 1;
+    kandidaten.sort((a, b) => tel(a[0]) / aantal - a[1].aandeel / totaal - (tel(b[0]) / aantal - b[1].aandeel / totaal));
+    const soort = kandidaten[0][0];
+    if (kanBetalen(soorten[soort].kosten)) return soort;
+    // Mist hij alleen goud voor een duurdere soort, dan spaart hij; anders
+    // neemt hij een ridder als hij die wel kan betalen.
+    if (soort !== 'ridder' && Object.entries(omzet(soorten[soort].kosten)).every(([k, n]) => k === 'goud' || (voorraad[k] || 0) >= n)) return null;
+    return kanBetalen(soorten.ridder.kosten) ? 'ridder' : null;
   }
 
   function koop() {

@@ -271,14 +271,14 @@
    "naam": "Bijlridder",
    "soort": "BIJLRIDDER",
    "kosten": {
-    "goud": 16,
-    "koper": 3
+    "goud": 14,
+    "koper": 2
    },
    "snelheid": 1.9,
-   "leven": 66,
-   "schade": 16,
+   "leven": 80,
+   "schade": 17,
    "schadeBouw": 5,
-   "slagTijd": 1.6,
+   "slagTijd": 1.5,
    "bereik": 1.5,
    "zicht": 5,
    "zwaai": 1,
@@ -318,15 +318,15 @@
    "naam": "Kruisboog",
    "soort": "KRUISBOOG",
    "kosten": {
-    "goud": 12,
+    "goud": 10,
     "planken": 2,
-    "koper": 2
+    "koper": 1
    },
    "snelheid": 1.8,
    "leven": 42,
    "schade": 18,
    "schadeBouw": 2,
-   "slagTijd": 2.0,
+   "slagTijd": 1.9,
    "bereik": 6,
    "zicht": 7,
    "doorboort": true,
@@ -411,12 +411,12 @@
    "kazerne": "mystiek",
    "boeren": 2,
    "kosten": {
-    "goud": 24,
-    "koper": 4
+    "goud": 18,
+    "koper": 2
    },
    "snelheid": 2.8,
-   "leven": 36,
-   "schade": 10,
+   "leven": 50,
+   "schade": 12,
    "eersteSlag": 3,
    "schadeBouw": 3,
    "slagTijd": 0.7,
@@ -432,17 +432,17 @@
    "kazerne": "mystiek",
    "boeren": 2,
    "kosten": {
-    "goud": 32,
-    "koper": 6
+    "goud": 22,
+    "koper": 3
    },
    "snelheid": 1.8,
-   "leven": 33,
-   "schade": 12,
+   "leven": 50,
+   "schade": 16,
    "schadeBouw": 8,
-   "slagTijd": 2.5,
+   "slagTijd": 2.0,
    "bereik": 7,
    "zicht": 8,
-   "gebied": 0.5,
+   "gebied": 0.75,
    "brand": {
     "duur": 8,
     "perSeconde": 3
@@ -526,7 +526,8 @@
    "doelBegin, doelPerAanval, doelMax: hoe sterk zijn reserve moet zijn om aan te vallen (ridder telt 1, zie gewicht).",
    "kooptElke en herbouwElke: om de zoveel seconden koopt hij iets of herstelt hij een stuk.",
    "herbouwVrij: hij herstelt niets als een soldaat van jou binnen zoveel tegels staat. uitvalAfstand en uitvalPauze: zie rood.js.",
-   "extra: hij koopt niet door als zijn reserve al zoveel boven het doel zit."
+   "extra: hij koopt niet door als zijn reserve al zoveel boven het doel zit.",
+   "leger: zijn gewone mannen. aandeel: hoeveel van elke soort (verhouding), vanaf: vanaf welke aanval hij die soort kent (0 = meteen). koperPrijs: hij heeft geen koper en betaalt elk koper met zoveel goud; planken betaalt hij met 2 hout."
   ],
   "begin": {
    "hout": 10,
@@ -557,7 +558,11 @@
    "ram": 2,
    "ladder": 0.5,
    "katapult": 2.5,
-   "toren": 1.5
+   "toren": 1.5,
+   "bijlridder": 1.4,
+   "kruisboog": 1.1,
+   "sluipmoordenaar": 1.5,
+   "vlammenwever": 2
   },
   "ridderPerSchutter": 2,
   "rammenVanaf": 3,
@@ -576,6 +581,31 @@
    "toren": {
     "vanaf": 6,
     "max": 1
+   }
+  },
+  "koperPrijs": 2,
+  "leger": {
+   "ridder": {
+    "aandeel": 3
+   },
+   "boogschutter": {
+    "aandeel": 2
+   },
+   "bijlridder": {
+    "aandeel": 1,
+    "vanaf": 2
+   },
+   "kruisboog": {
+    "aandeel": 1,
+    "vanaf": 3
+   },
+   "sluipmoordenaar": {
+    "aandeel": 0.5,
+    "vanaf": 4
+   },
+   "vlammenwever": {
+    "aandeel": 0.5,
+    "vanaf": 5
    }
   }
  },
