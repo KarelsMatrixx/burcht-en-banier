@@ -20,7 +20,7 @@
 
     "object.boom":         { "vorm": "boom", "kleur": "#3f7a36", "sprite": "", "spreiding": 6 },
     "object.steen":        { "vorm": "rots", "kleur": "#a3a199", "sprite": "" },
-    "object.ijzer":        { "vorm": "rots", "kleur": "#6b5a52", "accent": "#b8612c", "sprite": "" },
+    "object.ijzer":        { "vorm": "rots", "kleur": "#6e6458", "accent": "#d07a3a", "patina": "#4fa88a", "sprite": "" },
 
     "kasteel.muur":          { "vorm": "muur",       "kleur": "#b9ad94", "hoogte": 40, "sprite": "" },
     "kasteel.toren":         { "vorm": "toren",      "kleur": "#b9ad94", "hoogte": 78, "sprite": "" },
@@ -45,6 +45,7 @@
     "werk.zagerij":   { "vorm": "huis", "wand": "#b58c5a", "daken": ["#7a5a3a"], "hoogte": 22, "sprite": "" },
     "werk.tarweveld": { "vorm": "tarweveld", "aar": "#d9b44a", "hoogte": 10, "sprite": "" },
     "werk.bakkerij":  { "vorm": "bakkerij", "wand": "#b4573a", "schoorsteen": true, "pannen": true, "daken": ["#5b4636"], "hoogte": 24, "sprite": "" },
+    "werk.kopermijn": { "vorm": "kopermijn", "kleur": "#7d7368", "hoogte": 24, "sprite": "" },
     "dorp.woning":     { "vorm": "huis", "wand": "#e0d2b4", "vakwerk": true, "pannen": true, "schoorsteen": true, "daken": ["#3f5e96"], "hoogte": 24, "sprite": "" },
 
     "eenheid.ridder_blauw":        { "vorm": "ridder",       "kleur": "#2f5fc4", "sprite": "" },
@@ -71,6 +72,8 @@
     "eenheid.tarweboer_rood":      { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#b8a46a", "gereedschap": "bijl",    "vracht": "tarwe", "sprite": "" },
     "eenheid.bakker_blauw":        { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#ece4d2", "gereedschap": "geen",    "vracht": "brood", "sprite": "" },
     "eenheid.bakker_rood":         { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#ece4d2", "gereedschap": "geen",    "vracht": "brood", "sprite": "" },
+    "eenheid.mijnwerker_blauw":    { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#6f6152", "gereedschap": "houweel", "vracht": "koper", "sprite": "" },
+    "eenheid.mijnwerker_rood":     { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#6f6152", "gereedschap": "houweel", "vracht": "koper", "sprite": "" },
     "eenheid.boer_blauw":          { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#a9835a", "gereedschap": "geen",    "vracht": "",       "sprite": "" },
     "eenheid.boer_rood":           { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#a9835a", "gereedschap": "geen",    "vracht": "",       "sprite": "" }
   }

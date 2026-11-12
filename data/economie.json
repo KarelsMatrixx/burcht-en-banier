@@ -60,6 +60,10 @@
    "naam": "Brood",
    "begin": 0
   },
+  "koper": {
+   "naam": "Koper",
+   "begin": 0
+  },
   "goud": {
    "naam": "Goud",
    "begin": 30
@@ -72,7 +76,8 @@
    "steen",
    "voedsel",
    "tarwe",
-   "brood"
+   "brood",
+   "koper"
   ],
   "burcht": 150,
   "voorraadkamer": 150
@@ -225,6 +230,22 @@
    "bezig": "bakt brood",
    "mist": "wacht op tarwe in de voorraad",
    "raad": "Zet een tarweveld neer."
+  },
+  "mijnwerker": {
+   "naam": "mijnwerker",
+   "soort": "MIJNWERKER",
+   "haalt": "koper",
+   "bij": "IJZER",
+   "ruimtOp": false,
+   "last": 4,
+   "werkTijd": 10,
+   "snelheid": 1.5,
+   "snelheidMetLast": 1.0,
+   "bereik": 10,
+   "plek": "het kopererts",
+   "bezig": "hakt koper uit de rots",
+   "mist": "vindt geen kopererts in de buurt",
+   "raad": "Zet de mijn dichter bij de rotsen met oranje aders."
   }
  },
  "soldaten": {
@@ -438,7 +459,8 @@
    "steen": 3,
    "voedsel": 2,
    "tarwe": 2,
-   "brood": 4
+   "brood": 4,
+   "koper": 8
   }
  }
 }

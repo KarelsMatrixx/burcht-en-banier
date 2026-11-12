@@ -64,3 +64,11 @@
 - Tik op een voorraadkamer die je hebt gebouwd: een paneel om overschot voor goud te verkopen, per 10 stuks. Prijzen: hout 2, planken 4, steen 3, voedsel 2, tarwe 2, brood 4 goud (data/economie.json, handel). Een grondstof waarvan je minder dan 10 hebt staat dof.
 - Steen hakken duurt nu 9 seconden (was 4) en een steenhouwer loopt trager met zijn last (1.0 in plaats van 1.1). Hout blijft 3 seconden. Rood is niet veranderd.
 - Test: tests/handel.mjs.
+
+## 0.23.0 (stap 23): koper en de kopermijn
+- De ijzerrotsen op de kaart zijn nu kopererts: grijze rots met oranje aders en groene vlekjes. Er ligt een veld bij jouw burcht, een bij rood en een in het midden. (In de code heet het object nog IJZER, zodat bewaarde spellen blijven werken.)
+- Nieuwe grondstof Koper (begin 0, met opslaggrens) en nieuw gebouw Kopermijn (Werk, 20 hout en 10 planken), dat naast kopererts moet staan. De mijnwerker hakt 10 seconden en brengt 4 koper naar de voorraad.
+- Koper heeft nog geen gebruik behalve verkopen (8 goud per 10). Betere soldaten met koper komen in stap 26.
+- De bouwknoppen staan nu op één rij die je met je vinger schuift; de eerste knop (Terug) blijft staan.
+- Eigen tekening: een heuvel met stollenmond van balken, rails, een karretje met erts en een lantaarn; mijnwerker met een mand koper.
+- Test: tests/koper23.mjs.

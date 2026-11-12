@@ -45,6 +45,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     [assets.haal('eenheid.zager_blauw'), assets.haal('eenheid.zager_rood')],
     [assets.haal('eenheid.tarweboer_blauw'), assets.haal('eenheid.tarweboer_rood')],
     [assets.haal('eenheid.bakker_blauw'), assets.haal('eenheid.bakker_rood')],
+    [assets.haal('eenheid.mijnwerker_blauw'), assets.haal('eenheid.mijnwerker_rood')],
   ];
   let pixelRatio = 1;
   let getekend = 0;

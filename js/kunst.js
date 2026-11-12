@@ -332,10 +332,12 @@ export function tekenRots(naam, def) {
   ovaal(ctx, mx - 9, voet + 3, 5, 1.8, 'rgba(78,104,46,0.5)');
 
   if (def.accent) {
-    // IJzererts: roestkleurige aders.
+    // Kopererts: oranje aders met groene vlekjes (patina).
     for (const [x, y, lang] of [[-9, -12, 5], [-2, -5, 6], [4, -12, 5], [11, -3, 5], [-5, -17, 4], [15, -5, 4]]) {
       lijn(ctx, mx + x, voet + y, mx + x + lang, voet + y + 2, def.accent, 2);
+      ovaal(ctx, mx + x + lang * 0.5, voet + y + 1, 0.9, 0.9, tint(def.accent, 0.35));
     }
+    if (def.patina) for (const [x, y] of [[-6, -9], [7, -14], [12, 0], [-11, -3], [1, -17]]) ovaal(ctx, mx + x, voet + y, 1.6, 1.1, def.patina);
   }
   return { beeld: doek, b, h, ax: b / 2, ay: h };
 }
@@ -817,6 +819,11 @@ export function tekenWerker(naam, def) {
       vlak(ctx, [[mx + 8, 17.4 + wip], [mx + 9.4, 15.8 + wip], [mx + 9.4, 21.4 + wip], [mx + 8, 23 + wip]], '#8b887f');
       blok(ctx, mx + 0.6, 20.6 + wip, 6, 1.7, kiel);
       ovaal(ctx, mx + 6.9, 21.4 + wip, 1.2, 1.2, huid);
+    } else if (houding === 'last' && def.vracht === 'koper') {
+      // Een mand met koperbrokken op de rug
+      vlak(ctx, [[mx - 3, 12.5 + wip], [mx + 5, 12.5 + wip], [mx + 4, 19 + wip], [mx - 2, 19 + wip]], '#8a6a3c');
+      for (let j = 0; j < 3; j++) lijn(ctx, mx - 2.6 + j * 0.3, 14.5 + j * 1.8 + wip, mx + 4.6 - j * 0.3, 14.5 + j * 1.8 + wip, 'rgba(60,40,20,0.45)', 0.5);
+      for (const [dx, dy, kl] of [[-1, 12, '#d07a3a'], [1.6, 11.4, '#e09050'], [3.6, 12.2, '#c26a2e'], [0.4, 10.6, '#4fa88a']]) ovaal(ctx, mx + dx, dy + wip, 1.5, 1.2, kl);
     } else if (houding === 'last' && def.vracht === 'tarwe') {
       // Een schoof tarwe onder de arm
       vlak(ctx, [[mx - 1, 14 + wip], [mx + 8, 13 + wip], [mx + 9, 22 + wip], [mx + 1, 23 + wip]], '#d9b44a');
@@ -1604,6 +1611,54 @@ export function tekenBakkerij(naam, def) {
     blok(ctx, zak[0] + dx - 1.2, zak[1] + dy - 3.2, 2.4, 0.8, '#b8a888');
   }
   return huis;
+}
+
+// Een kopermijn: een heuvel van rots met een stollenmond van balken,
+// rails met een karretje vol oranje erts en een lantaarn.
+export function tekenKopermijn(naam, def) {
+  const b = TB + 6;
+  const h = TH + 40;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const toeval = toevalVoor(naam);
+  const balk = '#5a3d22';
+  ovaal(ctx, cx, cy + 1, 28, 12.5, 'rgba(110,96,80,0.55)');
+  // De heuvel
+  vlak(ctx, [[cx - 27, cy + 1], [cx - 20, cy - 16], [cx - 6, cy - 27], [cx + 9, cy - 24], [cx + 22, cy - 12], [cx + 27, cy + 1], [cx, cy + 10]], def.kleur);
+  vlak(ctx, [[cx - 20, cy - 16], [cx - 6, cy - 27], [cx + 9, cy - 24], [cx, cy - 15], [cx - 11, cy - 13]], 'rgba(255,250,235,0.2)');
+  vlak(ctx, [[cx - 27, cy + 1], [cx - 20, cy - 16], [cx - 11, cy - 13], [cx - 12, cy + 6]], 'rgba(0,0,0,0.2)');
+  for (let i = 0; i < 7; i++) {
+    const x = cx - 18 + toeval() * 36;
+    const y = cy - 20 + toeval() * 16;
+    lijn(ctx, x, y, x + 4, y + 1.5, '#d07a3a', 1.6);
+  }
+  for (let i = 0; i < 4; i++) ovaal(ctx, cx - 16 + toeval() * 30, cy - 20 + toeval() * 14, 1.4, 1, '#4fa88a');
+  // Stollenmond: donker gat met twee stijlen en een bovenbalk
+  const mx = cx + 4;
+  const my = cy - 2;
+  vlak(ctx, [[mx - 7, my], [mx - 7, my - 11], [mx - 4, my - 14], [mx + 4, my - 14], [mx + 7, my - 11], [mx + 7, my]], '#1c1712');
+  blok(ctx, mx - 8.5, my - 13, 2.4, 13, balk);
+  blok(ctx, mx + 6.1, my - 13, 2.4, 13, balk);
+  blok(ctx, mx - 10, my - 15.5, 20, 2.8, tint(balk, 0.15));
+  lijn(ctx, mx - 10, my - 12.8, mx + 10, my - 12.8, 'rgba(0,0,0,0.35)', 0.6);
+  // Rails naar voren
+  lijn(ctx, mx - 3, my, mx - 9, my + 9, '#4a4038', 0.9);
+  lijn(ctx, mx + 3, my, mx + 0, my + 10.5, '#4a4038', 0.9);
+  for (let i = 1; i < 5; i++) lijn(ctx, mx - 3 - i * 1.5 - 1.2, my + i * 2.3, mx + 3 - i * 0.75 + 1.2, my + i * 2.6, balk, 0.8);
+  // Karretje met erts
+  const kx = mx - 6;
+  const ky = my + 7;
+  vlak(ctx, [[kx - 5, ky - 4], [kx + 5, ky - 4], [kx + 4, ky + 1], [kx - 4, ky + 1]], '#6b5a48');
+  blok(ctx, kx - 5, ky - 4.4, 10, 1, '#3e342a');
+  for (const [dx, kl] of [[-3, '#d07a3a'], [-0.5, '#e39258'], [2.2, '#c26a2e'], [0.8, '#4fa88a']]) ovaal(ctx, kx + dx, ky - 5, 1.7, 1.3, kl);
+  ovaal(ctx, kx - 3, ky + 1.6, 1.3, 1.3, '#2a241e');
+  ovaal(ctx, kx + 3, ky + 1.6, 1.3, 1.3, '#2a241e');
+  // Lantaarn aan de stijl
+  lijn(ctx, mx + 8.6, my - 10, mx + 11, my - 10, '#2b2118', 0.7);
+  blok(ctx, mx + 10.2, my - 10, 2, 3, '#2b2118');
+  ovaal(ctx, mx + 11.2, my - 8.5, 0.8, 1, '#ffd36a');
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
 }
 
 export function tekenBoomgaard(naam, def) {
