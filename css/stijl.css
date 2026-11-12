@@ -796,3 +796,14 @@ button:active {
 }
 #leger-groepen::-webkit-scrollbar { display: none; }
 #leger-groepen button { flex: 0 0 auto; white-space: nowrap; }
+
+/* Levelkaart met elf punten en portretten (stap 30) */
+#kaart-doek .pad.af { stroke: #c9a227; stroke-dasharray: none; stroke-width: 3.5; }
+#kaart-doek .punt .rond { stroke-width: 2.5; }
+#kaart-doek .punt .gezicht { pointer-events: none; }
+#kaart-doek .punt.later .gezicht, #kaart-doek .punt.dicht .gezicht { filter: grayscale(1); opacity: 0.55; }
+#kaart-doek .punt.later .rond { fill: #8b8b82; stroke-dasharray: 3 2; }
+#kaart-doek .punt .nummer { fill: #2a1d0b; stroke: #d9c18a; stroke-width: 1; pointer-events: none; }
+#kaart-doek .punt .cijfer { font: 700 8px sans-serif; fill: #f3d37a; text-anchor: middle; pointer-events: none; }
+#kaart-doek .punt .teken { font: 9px sans-serif; text-anchor: middle; pointer-events: none; }
+#kaart-doek .naam { font-size: 9px; }

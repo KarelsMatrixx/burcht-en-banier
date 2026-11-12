@@ -124,3 +124,11 @@
   | Vlammenwever | 32 goud 6 koper, leven 33, schade 12, slag 2,5 s, gebied 0,5 | 22 goud 3 koper, leven 50, schade 16, slag 2 s, gebied 0,75 |
 - Een koning alleen houdt een aanval van 3 tot 4 man tegen en verliest van 6 (gemeten met tests/koningsim.mjs).
 - Tests: tests/rood29.mjs, balans.mjs, koningsim.mjs.
+
+## 0.30.0 (stap 30): campagnegegevens, levelkaart met elf punten, ontgrendelen
+- Nieuw bestand data/campagne.json met de proloog en tien levels (naar campagne-verhaal.md): naam, titel, heer, portret, profiel, kaart, plek op de levelkaart, speelbaar, nieuw (wat je vanaf dat level hebt), intro, slottekst en het voorwerp van Wessel. missies.json houdt alleen de profielen en vrij spel.
+- Levelkaart: elf punten van Elzendaal naar de Rouwburcht, elk met het portret van de heer (proloog: Wessel). Gewonnen: groen met vinkje en de weg kleurt goud. Dicht: grijs met slot ("win eerst level n"). Nog niet gebouwd: gestippelde rand, "komt later". Nu speelbaar: level 1 tot 3.
+- Ontgrendelen in de campagne: level 1 ridder, boogschutter, ram, ladder; level 2 erbij de belegeringstoren; level 3 katapult, bijlridder, kruisboog en de kopermijn; vanaf level 4 de magiertoren met sluipmoordenaar en vlammenwever. De bouwbalk en de kazerne tonen alleen wat je hebt. Vrij spel heeft alles.
+- Na het winnen: de slottekst van de heer en wat je van Wessel vindt.
+- De 22 portretten staan in beelden/portretten (256 pixels, samen 255 KB) en worden offline bewaard.
+- Test: tests/campagne30.mjs.

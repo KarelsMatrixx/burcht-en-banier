@@ -18,7 +18,7 @@ import { maakStrijd } from './strijd.js';
 import { maakRood } from './rood.js';
 import { maakOpslag } from './opslag.js';
 import { maakUi } from './ui.js';
-import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe } from './modus.js';
+import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, ontgrendeld } from './modus.js';
 
 const GEEN_TITEL = 'burcht-banier.geenTitel';
 
@@ -34,6 +34,8 @@ async function start() {
   const missies = await laadMissies();
   const modus = leesModus(missies);
   const missie = modus.soort === 'campagne' ? missies.campagne.find((c) => c.id === modus.missie) : null;
+  // In de campagne heb je alleen wat het verhaal al heeft vrijgegeven.
+  const mag = ontgrendeld(missies.campagne, missie ? missie.id : null);
   const kaarten = await laadKaarten();
   const kaartNaam = (missie && missie.kaart) || 'standaard';
   const kaart = maakKaart(kaarten[kaartNaam] || { ...CONFIG.kaart });
@@ -253,7 +255,7 @@ async function start() {
   ui.maakBouwbalk(
     groepen,
     [
-      ...Object.values(bouwwerken).map((werk) => ({ sleutel: werk.sleutel, naam: werk.naam, kost: economie.kostTekst(werk.kosten), groep: werk.groep })),
+      ...Object.values(bouwwerken).filter((werk) => mag(werk.sleutel)).map((werk) => ({ sleutel: werk.sleutel, naam: werk.naam, kost: economie.kostTekst(werk.kosten), groep: werk.groep })),
       { sleutel: SLOOP, naam: 'Slopen' },
     ],
     kiesBouw,
@@ -322,7 +324,7 @@ async function start() {
         `${gebouw.naam}. Soldaten: ${leger.aantal()} van ${leger.max}. Goud: ${economie.voorraad.goud}. Boeren zonder werk: ${Math.max(0, volk.vrij)}.`,
         kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystieke soldaten kosten goud, koper en twee boeren zonder werk.' : 'Een soldaat kost goud en een boer zonder werk.'),
       ],
-      knoppen: Object.values(leger.soorten).filter((def) => (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
+      knoppen: Object.values(leger.soorten).filter((def) => mag(def.sleutel) && (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
     });
   };
   const sluitKazerne = () => {
@@ -557,8 +559,8 @@ async function start() {
       const na = s.golf ? ` Je hebt ${s.golf} ${s.golf === 1 ? 'aanval' : 'aanvallen'} doorstaan.` : '';
       if (missie) {
         missieGewonnen(missie.id);
-        const volgende = missies.campagne.find((c) => c.id === missie.id + 1);
-        ui.toonEinde({ open: true, titel: `Missie ${missie.id} gewonnen!`, tekst: `${missie.uit}${na}`, verder: true, volgende: !!volgende });
+        const volgende = missies.campagne.find((c) => c.id === missie.id + 1 && c.speelbaar);
+        ui.toonEinde({ open: true, titel: `${missie.naam} gewonnen!`, tekst: `${missie.uit}${missie.wessel ? ` Je vindt iets van Wessel: ${missie.wessel.charAt(0).toLowerCase()}${missie.wessel.slice(1)}` : ""}${na}`, verder: true, volgende: !!volgende });
       } else {
         ui.toonEinde({ open: true, titel: 'Gewonnen!', tekst: `De koning van rood is verslagen en de jouwe leeft nog.${na}`, verder: true });
       }
@@ -580,10 +582,10 @@ async function start() {
   document.getElementById('versie').textContent += ` · ${missie ? 'missie ' + missie.id : missies.profielen[modus.profiel].naam.toLowerCase()}`;
   const gewonnen = voortgang();
   const menuItems = () => [
-    ...missies.campagne.map((c) => ({
+    ...missies.campagne.filter((c) => c.speelbaar).map((c) => ({
       groep: 'Campagne', sleutel: `missie:${c.id}`, naam: `${c.titel}${gewonnen.includes(c.id) ? ' (gewonnen)' : ''}`,
-      tekst: c.id === 1 || gewonnen.includes(c.id - 1) ? c.intro.split('. ')[0] + '.' : `Win eerst missie ${c.id - 1}.`,
-      kan: c.id === 1 || gewonnen.includes(c.id - 1),
+      tekst: isOpen(c, gewonnen) ? c.intro.split('. ')[0] + '.' : `Win eerst level ${c.id - 1}.`,
+      kan: isOpen(c, gewonnen),
       nu: modus.soort === 'campagne' && modus.missie === c.id,
     })),
     ...missies.vrij.map((v) => ({
@@ -605,15 +607,17 @@ async function start() {
   const openMenu = () => ui.toonMenu({ open: true, nu: `Nu: ${modusNaam}. Elke modus bewaart zijn eigen spel.`, items: menuItems() });
   const kanVerder = !!bewaard || !!missie;   // is er al iets gespeeld?
   const toonKaart = () => {
-    const open = (c) => c.id === 1 || gewonnen.includes(c.id - 1);
+    const open = (c) => isOpen(c, gewonnen);
     ui.toonTitel({ open: true, weergave: 'kaart' });
     ui.toonLevelkaart(missies.campagne.map((c, i) => ({
-      id: c.id, naam: c.heer.replace(/^(Heer|Vrouwe|Graaf)\s+/, ''),
-      x: c.punt ? c.punt.x : 15 + (i * 35) % 70, y: c.punt ? c.punt.y : (i % 2 ? 35 : 65),
-      staat: gewonnen.includes(c.id) ? 'gewonnen' : !open(c) ? 'dicht' : modus.soort === 'campagne' && modus.missie === c.id ? 'nu' : 'open',
+      id: c.id, naam: c.naam, portret: c.portret,
+      x: c.punt ? c.punt.x : 10 + i * 8, y: c.punt ? c.punt.y : 50,
+      staat: gewonnen.includes(c.id) ? 'gewonnen' : !c.speelbaar ? 'later' : !open(c) ? 'dicht' : modus.soort === 'campagne' && modus.missie === c.id ? 'nu' : 'open',
     })), (id) => {
       const c = missies.campagne.find((m) => m.id === id);
-      if (!open(c)) { document.getElementById('kaart-tekst').textContent = `Win eerst level ${id - 1}.`; return; }
+      const tekst = document.getElementById('kaart-tekst');
+      if (!c.speelbaar) { tekst.textContent = `${c.titel}${c.heer ? ` (${c.heer})` : ''}: komt later.`; return; }
+      if (!open(c)) { tekst.textContent = `${c.titel}: win eerst level ${id - 1}.`; return; }
       if (modus.soort === 'campagne' && modus.missie === id) { sluitTitel(); return; }
       kiesModus(`missie:${id}`);
     }, 'Tik op een level om het te starten. Een gewonnen level kun je opnieuw spelen.');

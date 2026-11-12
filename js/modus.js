@@ -18,8 +18,24 @@ export async function laadMissies() {
     if (!p.naam) throw new Error(`missies.json: profiel ${sleutel} mist een naam`);
   }
   for (const v of m.vrij) if (!m.profielen[v.profiel]) throw new Error(`missies.json: vrij spel verwijst naar onbekend profiel ${v.profiel}`);
-  for (const c of m.campagne) if (!m.profielen[c.profiel]) throw new Error(`missies.json: missie ${c.id} verwijst naar onbekend profiel ${c.profiel}`);
+  const ca = await fetch('data/campagne.json');
+  if (!ca.ok) throw new Error('Kon data/campagne.json niet laden.');
+  m.campagne = (await ca.json()).levels;
+  for (const c of m.campagne) if (!m.profielen[c.profiel]) throw new Error(`campagne.json: level ${c.id} verwijst naar onbekend profiel ${c.profiel}`);
   return m;
+}
+
+// Is dit level open? Level 1 altijd (de proloog is nog niet speelbaar),
+// daarna als het vorige level gewonnen is.
+export const isOpen = (c, gewonnen) => c.id <= 1 || gewonnen.includes(c.id - 1);
+
+// Wat je in dit level al hebt: alles uit "nieuw" van dit level en de levels
+// ervoor. Wat in geen enkel level staat, heb je altijd. Zonder level: alles.
+export function ontgrendeld(campagne, levelId) {
+  if (levelId === null || levelId === undefined) return () => true;
+  const ergens = new Set(campagne.flatMap((c) => c.nieuw || []));
+  const al = new Set(campagne.filter((c) => c.id <= levelId).flatMap((c) => c.nieuw || []));
+  return (sleutel) => !ergens.has(sleutel) || al.has(sleutel);
 }
 
 const lees = (sleutel) => {
@@ -42,7 +58,7 @@ const schrijf = (sleutel, waarde) => {
 // Wat niet klopt wordt vrij spel op Normaal.
 export function leesModus(missies) {
   const m = lees(MODUS);
-  if (m && m.soort === 'campagne' && missies.campagne.some((c) => c.id === m.missie)) return { soort: 'campagne', missie: m.missie };
+  if (m && m.soort === 'campagne' && missies.campagne.some((c) => c.id === m.missie && c.speelbaar)) return { soort: 'campagne', missie: m.missie };
   if (m && m.soort === 'vrij' && missies.profielen[m.profiel]) return { soort: 'vrij', profiel: m.profiel };
   return { soort: 'vrij', profiel: 'normaal' };
 }

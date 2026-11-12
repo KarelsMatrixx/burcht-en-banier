@@ -21,14 +21,14 @@ await p.tap('#titel-campagne');
 check('levelkaart open', await zicht('titel-kaart'));
 const pt = await p.$$eval('#kaart-doek .punt', (g) => g.map((x) => x.getAttribute('class')));
 console.log(pt.join(' | '));
-check('3 punten: 1 open, 2 en 3 dicht', pt.length === 3 && /open/.test(pt[0]) && /dicht/.test(pt[1]) && /dicht/.test(pt[2]), pt.join('|'));
+check('11 punten: 1 open, 2 en 3 dicht', pt.length === 11 && /open/.test(pt[1]) && /dicht/.test(pt[2]) && /dicht/.test(pt[3]), pt.join('|'));
 await p.screenshot({ path: '/home/claude/stap19-kaart.png' });
 // dicht level aantikken: melding, geen start
 const bx = async (i) => { const r = await (await p.$$('#kaart-doek .punt .tikvlak'))[i].boundingBox(); return [r.x + r.width / 2, r.y + r.height / 2]; };
-let [x, y] = await bx(1); await p.touchscreen.tap(x, y);
-check('dicht level geeft uitleg', /Win eerst/.test(await p.textContent('#kaart-tekst')), await p.textContent('#kaart-tekst'));
+let [x, y] = await bx(2); await p.touchscreen.tap(x, y);
+check('dicht level geeft uitleg', /win eerst/.test(await p.textContent('#kaart-tekst')), await p.textContent('#kaart-tekst'));
 // level 1 starten
-[x, y] = await bx(0);
+[x, y] = await bx(1);
 await Promise.all([p.waitForNavigation(), p.touchscreen.tap(x, y)]); await wacht();
 check('na level kiezen geen beginscherm', !(await zicht('titelscherm')));
 const m = await p.evaluate(() => window.spel.modus);
@@ -39,10 +39,10 @@ await p.tap('#missie-begin');
 await p.tap('#knop-menu');
 check('menu opent levelkaart', await zicht('titel-kaart'));
 const pt2 = await p.$$eval('#kaart-doek .punt', (g) => g.map((x) => x.getAttribute('class')));
-check('level 1 is nu', /nu/.test(pt2[0]), pt2.join('|'));
+check('level 1 is nu', /nu/.test(pt2[1]), pt2.join('|'));
 const k0 = await p.evaluate(() => JSON.stringify(window.spel.strijd.stand().heer.voorraad)); await p.waitForTimeout(2000);
 check('spel stil bij open kaart', k0 === (await p.evaluate(() => JSON.stringify(window.spel.strijd.stand().heer.voorraad))));
-[x, y] = await bx(0); await p.touchscreen.tap(x, y);   // nu-level: gewoon verder
+[x, y] = await bx(1); await p.touchscreen.tap(x, y);   // nu-level: gewoon verder
 check('tik op huidig level sluit kaart', !(await zicht('titelscherm')));
 await p.waitForTimeout(1500);
 check('spel loopt weer', (await p.evaluate(() => JSON.stringify(window.spel.strijd.stand().heer.voorraad))) > k0);
@@ -55,6 +55,6 @@ check('vrij spel opent menu', await zicht('menu') && !(await zicht('titelscherm'
 await p.evaluate(() => { localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [1] })); }); await p.reload(); await wacht();
 await p.tap('#titel-campagne');
 const pt3 = await p.$$eval('#kaart-doek .punt', (g) => g.map((x) => x.getAttribute('class')));
-check('level 1 gewonnen, 2 open, 3 dicht', /gewonnen/.test(pt3[0]) && /(open|nu)/.test(pt3[1]) && /dicht/.test(pt3[2]), pt3.join('|'));
+check('level 1 gewonnen, 2 open, 3 dicht', /gewonnen/.test(pt3[1]) && /(open|nu)/.test(pt3[2]) && /dicht/.test(pt3[3]), pt3.join('|'));
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);
 await b.close(); srv.kill();

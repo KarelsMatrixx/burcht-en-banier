@@ -1,7 +1,7 @@
 {
  "_uitleg": [
   "Hier staan de spelmodi. profielen zijn de moeilijkheidsgraden: heer en strijd overschrijven de getallen in economie.json (heer en strijd), begin overschrijft de beginvoorraad.",
-  "vrij: de keuzes voor vrij spel. campagne: de missies in volgorde; elke missie hoort bij een profiel en heeft een eigen heer, intro en slottekst.",
+  "vrij: de keuzes voor vrij spel. De campagne staat in data/campagne.json; elk level verwijst naar een profiel hier.",
   "Een profiel met strijd.golven = [] betekent: geen aanvallen, niets te winnen. kaart: de naam van een kaart uit data/kaarten.json. Vrij spel speelt op de standaardkaart."
  ],
  "profielen": {
@@ -155,47 +155,6 @@
   {
    "profiel": "vrede",
    "tekst": "Geen aanvallen en niets te winnen. Alleen bouwen, een volk laten groeien en je soldaten oefenen."
-  }
- ],
- "campagne": [
-  {
-   "id": 1,
-   "punt": {
-    "x": 18,
-    "y": 66
-   },
-   "titel": "Missie 1: Heer Reinout van Dorre Heide",
-   "heer": "Heer Reinout van Dorre Heide",
-   "profiel": "rustig",
-   "intro": "Heer Reinout heerst over de Dorre Heide, en hij is trots maar voorzichtig. Hij verzamelt zijn mannen langzaam en valt pas aan als hij zeker is. Bouw je volk op, leid soldaten op en neem zijn burcht in voordat hij sterk wordt.",
-   "uit": "Heer Reinout is verslagen. De Dorre Heide is van jou.",
-   "kaart": "dal"
-  },
-  {
-   "id": 2,
-   "punt": {
-    "x": 50,
-    "y": 34
-   },
-   "titel": "Missie 2: Vrouwe Mechteld Zevenwind",
-   "heer": "Vrouwe Mechteld Zevenwind",
-   "profiel": "normaal",
-   "intro": "Vrouwe Mechteld stuurt haar boogschutters vooruit en laat haar ridders de muren beuken. Ze herstelt wat je vernield en ze doet uitvallen zodra je te dichtbij komt. Houd je werkers veilig en val haar werken buiten de muur aan.",
-   "uit": "Vrouwe Mechteld heeft de Zevenwind verloren. Haar werken zijn van jou.",
-   "kaart": "meren"
-  },
-  {
-   "id": 3,
-   "punt": {
-    "x": 80,
-    "y": 60
-   },
-   "titel": "Missie 3: Graaf Hademar van IJzerbroek",
-   "heer": "Graaf Hademar van IJzerbroek",
-   "profiel": "zwaar",
-   "intro": "Graaf Hademar heeft IJzerbroek rijk gemaakt en gebruikt dat. Hij koopt snel, rammen en katapulten komen vroeg, en zijn belegeringstorens volgen. Je begint met weinig. Sloop zijn werken en hou je burcht overeind.",
-   "uit": "Graaf Hademar is gevallen. Alle drie de heren zijn verslagen: de campagne is uitgespeeld.",
-   "kaart": "grensland"
   }
  ]
 }

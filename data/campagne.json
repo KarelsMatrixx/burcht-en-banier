@@ -1,0 +1,226 @@
+{
+ "_uitleg": [
+  "De campagne: de proloog (id 0) en tien levels, naar claude/campagne-verhaal.md in het project.",
+  "heer: de naam van de tegenstander (de rode koning is de heer zelf). portret: bestand in beelden/portretten. profiel: uit missies.json. kaart: uit kaarten.json. punt: plek op de levelkaart in procenten.",
+  "speelbaar: false zolang het level nog niet gebouwd is; het staat dan op de kaart als 'komt later'.",
+  "nieuw: soldaten en gebouwen die je vanaf dit level hebt. Alles uit eerdere levels blijft. Wat in geen enkel level staat, heb je altijd (de economie, kazerne, muren).",
+  "intro en uit: de korte tekst voor en na het level (de verhaalbalk komt in stap 31). wessel: het voorwerp van Wessel dat je na het winnen vindt."
+ ],
+ "levels": [
+  {
+   "id": 0,
+   "naam": "Elzendaal",
+   "titel": "Proloog: De laatste vredige dag",
+   "heer": null,
+   "portret": "wessel",
+   "profiel": "rustig",
+   "kaart": "standaard",
+   "punt": {
+    "x": 7,
+    "y": 80
+   },
+   "speelbaar": false,
+   "nieuw": [
+    "ridder",
+    "boogschutter"
+   ],
+   "intro": "Wessel wordt negen. Bartholt leert je bouwen en soldaten opleiden. Die nacht gaat de poort van binnenuit open.",
+   "uit": "",
+   "wessel": ""
+  },
+  {
+   "id": 1,
+   "naam": "Dorre Heide",
+   "titel": "Level 1: Dorre Heide",
+   "heer": "Heer Reinout van Dorre Heide",
+   "portret": "reinout",
+   "profiel": "rustig",
+   "kaart": "dal",
+   "punt": {
+    "x": 15.5,
+    "y": 56
+   },
+   "speelbaar": true,
+   "nieuw": [
+    "ram",
+    "ladder"
+   ],
+   "intro": "Dorre Heide ligt als eerste op de weg naar het noorden. Reinout zat gisteren nog aan Wessels tafel. Versla hem en vraag hem waar je zoon is.",
+   "uit": "Reinout geeft zich over. Ottger liet hem zijn land houden in ruil voor het verraad. Het kind is ongedeerd naar het noorden gebracht.",
+   "wessel": "Een houten paardje, zorgvuldig op een kussen gelegd in Reinouts tent."
+  },
+  {
+   "id": 2,
+   "naam": "Zevenwind",
+   "titel": "Level 2: Zevenwind",
+   "heer": "Vrouwe Mechteld Zevenwind",
+   "portret": "mechteld",
+   "profiel": "normaal",
+   "kaart": "meren",
+   "punt": {
+    "x": 24.5,
+    "y": 82
+   },
+   "speelbaar": true,
+   "nieuw": [
+    "toren"
+   ],
+   "intro": "Er is maar één weg naar het noorden, en die loopt door de pas van Vrouwe Mechteld. Haar schutters zijn de beste van het land.",
+   "uit": "Mechteld: \"Niemand zei mij dat er een kind in het spel was.\" Ze laat je door, maar zegt nog geen steun toe.",
+   "wessel": "Een houtskooltekening van de wind op de muur van de wachtkamer."
+  },
+  {
+   "id": 3,
+   "naam": "IJzerbroek",
+   "titel": "Level 3: IJzerbroek",
+   "heer": "Graaf Hademar van IJzerbroek",
+   "portret": "hademar",
+   "profiel": "zwaar",
+   "kaart": "grensland",
+   "punt": {
+    "x": 33,
+    "y": 54
+   },
+   "speelbaar": true,
+   "nieuw": [
+    "katapult",
+    "bijlridder",
+    "kruisboog",
+    "kopermijn"
+   ],
+   "intro": "Hademar levert wapens aan wie betaalt, en Ottger betaalde goed. Zijn mijnstad heeft dubbele muren en vroege stormrammen.",
+   "uit": "Hademar koopt zijn vrijheid met de plattegrond van de Rouwburcht: drie ringen, en een toren aan de oostkant waar niemand komt.",
+   "wessel": "Een kleine handschoen, op maat gesmeed. Een cadeau van de hertog voor een jongen die hij nooit heeft ontmoet."
+  },
+  {
+   "id": 4,
+   "naam": "Het Veen",
+   "titel": "Level 4: Het Veen",
+   "heer": "Jachtmeester Folkert Brandt",
+   "portret": "brandt",
+   "profiel": "normaal",
+   "kaart": "standaard",
+   "punt": {
+    "x": 42,
+    "y": 80
+   },
+   "speelbaar": false,
+   "nieuw": [
+    "magiertoren",
+    "sluipmoordenaar",
+    "vlammenwever"
+   ],
+   "intro": "In het moeras staat de hut van Moeder Gesina. Ze heeft acht minuten nodig om het Stille Volk te roepen. Houd de hut.",
+   "uit": "",
+   "wessel": "De eerste brief: \"Ik ben niet bang. Het is hier erg groot.\""
+  },
+  {
+   "id": 5,
+   "naam": "Stille Water",
+   "titel": "Level 5: Abdij van Stille Water",
+   "heer": "Commandant Aleid van Kolkwaard",
+   "portret": "aleid",
+   "profiel": "normaal",
+   "kaart": "standaard",
+   "punt": {
+    "x": 51,
+    "y": 48
+   },
+   "speelbaar": false,
+   "nieuw": [],
+   "intro": "Aleid houdt de abdij van de Orde van de Witte Banier bezet, en Broeder Ludolf gevangen.",
+   "uit": "",
+   "wessel": "Zijn naam in het gastenboek van de abdij, in kinderhandschrift."
+  },
+  {
+   "id": 6,
+   "naam": "Reuzenrug",
+   "titel": "Level 6: De Reuzenrug",
+   "heer": "Bouwmeester Lambrecht Kuyper",
+   "portret": "lambrecht",
+   "profiel": "normaal",
+   "kaart": "standaard",
+   "punt": {
+    "x": 60,
+    "y": 74
+   },
+   "speelbaar": false,
+   "nieuw": [],
+   "intro": "Op de kale rotsrug bouwt Lambrecht Ottgers machines. Vernietig zijn twee bouwloodsen.",
+   "uit": "",
+   "wessel": "Een houten ram van twee handen groot."
+  },
+  {
+   "id": 7,
+   "naam": "Grauwvoort",
+   "titel": "Level 7: Grauwvoort",
+   "heer": "Landvoogd Everhard van Grauwvoort",
+   "portret": "everhard",
+   "profiel": "zwaar",
+   "kaart": "standaard",
+   "punt": {
+    "x": 69,
+    "y": 40
+   },
+   "speelbaar": false,
+   "nieuw": [],
+   "intro": "Het tolhuis sluit de enige weg met drie poorten achter elkaar.",
+   "uit": "",
+   "wessel": "Een brief aan zijn vader: \"Opa is oud. Hij huilt als hij denkt dat ik slaap.\""
+  },
+  {
+   "id": 8,
+   "naam": "Witte Dijk",
+   "titel": "Level 8: De Witte Dijk",
+   "heer": "Dijkgraaf Rutger van Westerdijk",
+   "portret": "rutger",
+   "profiel": "zwaar",
+   "kaart": "standaard",
+   "punt": {
+    "x": 78,
+    "y": 66
+   },
+   "speelbaar": false,
+   "nieuw": [],
+   "intro": "Achter de dijk ligt laag land. Een stenen sluis houdt de rode burcht droog en bereikbaar.",
+   "uit": "",
+   "wessel": "Een zeilbootje van schors, in het riet gevonden."
+  },
+  {
+   "id": 9,
+   "naam": "Rouwpoort",
+   "titel": "Level 9: De Rouwpoort",
+   "heer": "Drost Evert Valkenier",
+   "portret": "valkenier",
+   "profiel": "zwaar",
+   "kaart": "standaard",
+   "punt": {
+    "x": 85,
+    "y": 36
+   },
+   "speelbaar": false,
+   "nieuw": [],
+   "intro": "Een groot bergfort sluit de laatste weg naar Zwartenmark. Valkenier voert de Rouwgarde.",
+   "uit": "",
+   "wessel": "Een tekening van twee banieren naast elkaar."
+  },
+  {
+   "id": 10,
+   "naam": "Rouwburcht",
+   "titel": "Level 10: De Rouwburcht",
+   "heer": "Hertog Ottger van Zwartenmark",
+   "portret": "ottger",
+   "profiel": "zwaar",
+   "kaart": "standaard",
+   "punt": {
+    "x": 91.5,
+    "y": 12
+   },
+   "speelbaar": false,
+   "nieuw": [],
+   "intro": "Drie ringen en de Raaftoren aan de oostkant, waar Wessel verblijft.",
+   "uit": "",
+   "wessel": ""
+  }
+ ]
+}
