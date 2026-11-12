@@ -13,7 +13,7 @@ import {
   tekenGrond, tekenBoom, tekenRots, tekenRidder, tekenBoogschutter, tekenRam, tekenLadderdrager, tekenKatapult, tekenBelegeringstoren,
   tekenMuur, tekenToren, tekenWachttoren, tekenPoort, tekenBurcht,
   tekenHuis, tekenTent, tekenHooiberg, tekenPut, tekenVaten,
-  tekenWerker, tekenHouthakker, tekenSteengroeve, tekenBoomgaard, tekenKazerne,
+  tekenWerker, tekenHouthakker, tekenSteengroeve, tekenBoomgaard, tekenTarweveld, tekenKazerne,
 } from './kunst.js';
 
 const VORMEN = {
@@ -40,6 +40,7 @@ const VORMEN = {
   houthakker: tekenHouthakker,
   steengroeve: tekenSteengroeve,
   boomgaard: tekenBoomgaard,
+  tarweveld: tekenTarweveld,
   kazerne: tekenKazerne,
 };
 

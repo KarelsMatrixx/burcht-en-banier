@@ -22,6 +22,7 @@
   "alleenBouw: deze soldaat vecht niet met soldaten, hij beukt alleen op bouwwerken (de stormram). pijlDekking: het deel van een pijl dat bij hem doorkomt (0.15 is iets meer dan een zesde). ladder: deze soldaat zet een ladder tegen een muur van rood (slagTijd is hoe lang dat duurt); langs die ladder kunnen je soldaten de muur op en aan de andere kant weer af.",
   "opslag: de grondstoffen in de lijst hebben een grens. De burcht geeft plek aan het getal bij burcht, elke voorraadkamer voegt het getal bij voorraadkamer toe. Is alles vol, dan wachten je werkers met hun last. Goud heeft geen grens.",
   "neemt: een werker die iets verwerkt (de zager) haalt dit eerst uit de voorraad, loopt terug naar zijn werkplaats, werkt werkTijd seconden en brengt dan last van haalt naar de voorraad. 4 hout wordt zo 4 planken.",
+  "Voedsel: eet is een lijst (brood en voedsel, dat zijn de appels). Je volk eet om de beurt van elke soort. stemming.afwisseling telt per ronde bij de populariteit als er van meer dan één soort te eten is. De bakker maakt van 4 tarwe 8 brood.",
   "legerMax: zoveel soldaten kun je hoogstens hebben.",
   "strijd: de aanvallen van de rode heer. eersteGolf is na hoeveel seconden de eerste aanval komt, tussenGolven de tijd tussen twee aanvallen.",
   "golven: wie er per aanval komt. Na de laatste regel blijft die laatste aanval terugkomen, tot de burcht van rood valt.",
@@ -50,6 +51,14 @@
    "naam": "Voedsel",
    "begin": 30
   },
+  "tarwe": {
+   "naam": "Tarwe",
+   "begin": 0
+  },
+  "brood": {
+   "naam": "Brood",
+   "begin": 0
+  },
   "goud": {
    "naam": "Goud",
    "begin": 30
@@ -60,7 +69,9 @@
    "hout",
    "planken",
    "steen",
-   "voedsel"
+   "voedsel",
+   "tarwe",
+   "brood"
   ],
   "burcht": 150,
   "voorraadkamer": 150
@@ -71,16 +82,20 @@
   "plekBurcht": 6,
   "komtElke": 15,
   "maaltijdElke": 30,
-  "eet": "voedsel",
+  "eet": [
+   "brood",
+   "voedsel"
+  ],
   "eetPerPersoon": 1,
-  "raadHonger": "Zet een boomgaard neer.",
+  "raadHonger": "Zet een boomgaard of een tarweveld met een bakkerij neer.",
   "munt": "goud",
   "stemming": {
    "begin": 60,
    "grens": 50,
    "eten": 3,
    "honger": -6,
-   "krap": -3
+   "krap": -3,
+   "afwisseling": 2
   },
   "belasting": [
    {
@@ -174,6 +189,41 @@
    "bezig": "zaagt planken",
    "mist": "wacht op hout in de voorraad",
    "raad": "Zet een houthakker aan het werk."
+  },
+  "tarweboer": {
+   "naam": "tarweboer",
+   "soort": "TARWEBOER",
+   "haalt": "tarwe",
+   "bij": "TARWEVELD",
+   "ruimtOp": false,
+   "last": 6,
+   "werkTijd": 6,
+   "snelheid": 1.6,
+   "snelheidMetLast": 1.3,
+   "bereik": 3,
+   "plek": "het tarweveld",
+   "bezig": "oogst tarwe",
+   "mist": "kan niet bij zijn tarweveld",
+   "raad": "Maak er een tegel naast vrij."
+  },
+  "bakker": {
+   "naam": "bakker",
+   "soort": "BAKKER",
+   "haalt": "brood",
+   "bij": "BAKKERIJ",
+   "neemt": {
+    "tarwe": 4
+   },
+   "ruimtOp": false,
+   "last": 8,
+   "werkTijd": 6,
+   "snelheid": 1.6,
+   "snelheidMetLast": 1.4,
+   "bereik": 0,
+   "plek": "de bakkerij",
+   "bezig": "bakt brood",
+   "mist": "wacht op tarwe in de voorraad",
+   "raad": "Zet een tarweveld neer."
   }
  },
  "soldaten": {

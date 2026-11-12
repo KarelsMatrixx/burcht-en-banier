@@ -162,6 +162,10 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   }
   const bijBurcht = (vak) => (afleverplek[vak] ? { sta: vak } : null);
 
+  // Wat je volk eet: één grondstof of een lijst (brood en fruit).
+  const eetSoorten = Array.isArray(regels.bevolking.eet) ? regels.bevolking.eet : [regels.bevolking.eet];
+  const eten = () => eetSoorten.reduce((som, n) => som + (voorraad[n] || 0), 0);
+
   // --- Opslag: de burcht en je voorraadkamers --------------------------------------
   // Werkers brengen hun last naar de dichtstbijzijnde plek: de burcht of een
   // voorraadkamer. De voorraad zelf is één totaal, met een grens per soort:
@@ -355,7 +359,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     if (!nieuw) return;
     let raad = 'Er komt vanzelf een nieuwe boer.';
     if (volk >= ruimte()) raad = 'Zet een woning neer, dan komen er meer.';
-    else if (voorraad[volkRegels.eet] <= 0) raad = 'Zonder voedsel komt er niemand bij.';
+    else if (eten() <= 0) raad = 'Zonder voedsel komt er niemand bij.';
     opMelding(`Er is geen boer vrij voor de ${beroep.naam}. ${raad}`);
   }
 
@@ -568,7 +572,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   // Er komt een boer bij, als er plek en voedsel is en je populair genoeg
   // bent. Hij komt aan bij de burcht.
   function nieuweBoer() {
-    if (volk >= ruimte() || voorraad[volkRegels.eet] <= 0 || populariteit < stem.grens) return;
+    if (volk >= ruimte() || eten() <= 0 || populariteit < stem.grens) return;
     volk++;
     nieuweLoper(pleinVak());
     deelIn();
@@ -595,11 +599,14 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     opVerandering();
   }
 
-  // Wat de populariteit de volgende ronde doet, per oorzaak.
+  // Wat de populariteit de volgende ronde doet, per oorzaak. Wie brood én
+  // fruit te eten heeft, is extra tevreden.
   function stemFactoren() {
-    const genoeg = voorraad[volkRegels.eet] >= volk * volkRegels.eetPerPersoon;
+    const genoeg = eten() >= volk * volkRegels.eetPerPersoon;
+    const soorten = eetSoorten.filter((n) => voorraad[n] > 0).length;
     return [
       { naam: 'eten', waarde: genoeg ? stem.eten : stem.honger },
+      { naam: 'afwisseling', waarde: genoeg && soorten > 1 ? stem.afwisseling || 0 : 0 },
       { naam: 'belasting', waarde: tarieven[belasting].effect },
       { naam: 'wonen', waarde: volk > ruimte() ? stem.krap : 0 },
     ];
@@ -610,14 +617,19 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   // meer bij tot er weer voedsel is.
   function maaltijd() {
     const factoren = stemFactoren();   // hoe het er nu voor staat, vóór het eten
-    const nodig = volk * volkRegels.eetPerPersoon;
-    if (voorraad[volkRegels.eet] >= nodig) {
-      voorraad[volkRegels.eet] -= nodig;
+    let nodig = volk * volkRegels.eetPerPersoon;
+    if (eten() >= nodig) {
+      // Om de beurt van elke soort, zodat de voorraden gelijk opgaan.
+      while (nodig > 0) {
+        for (const n of eetSoorten) {
+          if (nodig > 0 && voorraad[n] > 0) { voorraad[n]--; nodig--; }
+        }
+      }
       honger = false;
     } else {
-      voorraad[volkRegels.eet] = 0;
+      for (const n of eetSoorten) voorraad[n] = 0;
       if (!honger) {
-        const heeftBron = [...werkplaatsen.values()].some((e) => e.werk.beroep.haalt === volkRegels.eet);
+        const heeftBron = [...werkplaatsen.values()].some((e) => eetSoorten.includes(e.werk.beroep.haalt));
         opMelding(`Het voedsel is op. Er komen geen boeren meer bij.${heeftBron ? '' : ` ${volkRegels.raadHonger}`}`);
       }
       honger = true;
@@ -740,7 +752,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   werkLopersBij();
 
   return {
-    voorraad, opslagMax, opslagKamers: () => kamers, herzieOpslag, kostTekst, tekort, tekortAan, betaal, geefTerug,
+    voorraad, opslagMax, maakt: (naam) => [...werkplaatsen.values()].some((e) => e.werk.beroep.haalt === naam) || wachtend.some((w) => regels.beroepen[w.beroepNaam] && regels.beroepen[w.beroepNaam].haalt === naam), opslagKamers: () => kamers, herzieOpslag, kostTekst, tekort, tekortAan, betaal, geefTerug,
     nieuweWerkplaats, werkplaatsWeg, stap, beschrijf,
     bewaarStand, zetStand, herstel,
     // Woonruimte erbij (een woning gebouwd) of eraf (gesloopt).

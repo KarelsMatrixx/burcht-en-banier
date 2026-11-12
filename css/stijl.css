@@ -741,3 +741,20 @@ button:active {
   background: linear-gradient(#dbb97f 0 30%, #7a5632 30% 36%, #c9a36a 36% 66%, #7a5632 66% 72%, #dbb97f 72% 100%);
   border-radius: 1px;
 }
+
+/* Tarwe: een gouden aar. Brood: een bruin broodje. */
+.icoon-tarwe {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  border-radius: 4px 4px 1px 1px;
+  background: linear-gradient(#e6c45a 0 70%, #8a6a2a 70% 100%);
+}
+.icoon-brood {
+  display: inline-block;
+  width: 15px;
+  height: 9px;
+  border-radius: 7px 7px 3px 3px;
+  background: #b9773a;
+  box-shadow: inset 0 2px 0 #d9a066, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}

@@ -260,10 +260,14 @@ async function start() {
   naVoorraad = () => {
     const volk = economie.bevolking();
     const stem = economie.stemming();
-    const grondstoffen = Object.entries(regels.grondstoffen).map(([naam, def]) => {
-      const max = economie.opslagMax(naam);
-      return { naam: def.naam, aantal: Number.isFinite(max) ? `${economie.voorraad[naam]}/${max}` : economie.voorraad[naam], slecht: Number.isFinite(max) && economie.voorraad[naam] >= max };
-    });
+    // Een grondstof die je (nog) niet hebt en niet maakt, laat de balk weg:
+    // anders past hij niet op een telefoon. Is hij vol, dan staat hij in het rood.
+    const grondstoffen = Object.entries(regels.grondstoffen)
+      .filter(([naam, def]) => def.begin > 0 || economie.voorraad[naam] > 0 || economie.maakt(naam))
+      .map(([naam, def]) => {
+        const max = economie.opslagMax(naam);
+        return { naam: def.naam, aantal: economie.voorraad[naam], slecht: Number.isFinite(max) && economie.voorraad[naam] >= max };
+      });
     ui.toonVoorraad([
       ...grondstoffen,
       // Je boeren en voor hoeveel er plek is, en hoe populair je bent.
@@ -275,9 +279,9 @@ async function start() {
     const wacht = volk.wachtend ? ` ${volk.wachtend} ${volk.wachtend === 1 ? 'gebouw wacht' : 'gebouwen wachten'} op een boer.` : '';
     ui.toonVolk({
       regels: [
-        grondstoffen.map((g) => `${g.naam} ${g.aantal}`).join(' · '),
+        grondstoffen.map((g) => { const sl = Object.keys(regels.grondstoffen).find((k) => regels.grondstoffen[k].naam === g.naam); const m = economie.opslagMax(sl); return `${g.naam} ${g.aantal}${Number.isFinite(m) ? ' van ' + m : ''}`; }).join(' · '),
         `Boeren: ${volk.volk}, plek voor ${volk.ruimte}. ${stem.lopers} zonder werk.${wacht}`,
-        `Populariteit ${stem.populariteit}. Elke halve minuut ${plus(stem.totaal)}: ` + stem.factoren.map((f) => `${f.naam} ${plus(f.waarde)}`).join(', ') + '.',
+        `Populariteit ${stem.populariteit}. Elke halve minuut ${plus(stem.totaal)}: ` + stem.factoren.filter((f) => f.waarde || f.naam !== 'afwisseling').map((f) => `${f.naam} ${plus(f.waarde)}`).join(', ') + '.',
         `Vanaf ${stem.grens} komen er boeren bij, daaronder vertrekken ze.`,
       ],
       tarieven: stem.tarieven.map((t) => ({ naam: t.naam, uitleg: `${volk.volk * t.goud} goud, ${plus(t.effect)}` })),

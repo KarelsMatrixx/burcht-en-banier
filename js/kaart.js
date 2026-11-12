@@ -12,7 +12,7 @@ export const OBJECT = {
   GEEN: 0, BOOM: 1, STEEN: 2, IJZER: 3,
   MUUR: 4, TOREN: 5, POORT: 6, BURCHT: 7, BANIER_BLAUW: 8, BANIER_ROOD: 9, WACHTTOREN: 10,
   HUIS: 11, HUT: 12, TENT: 13, HOOIBERG: 14, PUT: 15, VATEN: 16,
-  HOUTHAKKER: 17, STEENGROEVE: 18, BOOMGAARD: 19, WONING: 20, KAZERNE: 21, VOORRAADKAMER: 22, ZAGERIJ: 23,
+  HOUTHAKKER: 17, STEENGROEVE: 18, BOOMGAARD: 19, WONING: 20, KAZERNE: 21, VOORRAADKAMER: 22, ZAGERIJ: 23, TARWEVELD: 24, BAKKERIJ: 25,
 };
 
 // Namen waarmee de tekenlaag het juiste plaatje opzoekt in data/assets.json.
@@ -24,13 +24,13 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij',
 ];
 
 const GROND_TEKST = ['gras', 'gras', 'zand', 'water', 'aarde', 'akker'];
 const OBJECT_TEKST = [
   '', 'bos', 'steen', 'ijzererts', 'muur', 'toren', 'poort', 'burcht', 'burcht', 'burcht', 'wachttoren',
-  'huis', 'hut', 'tent', 'hooiberg', 'waterput', 'vaten', 'houthakkershut', 'steengroeve', 'boomgaard', 'woning', 'kazerne', 'voorraadkamer', 'zagerij',
+  'huis', 'hut', 'tent', 'hooiberg', 'waterput', 'vaten', 'houthakkershut', 'steengroeve', 'boomgaard', 'woning', 'kazerne', 'voorraadkamer', 'zagerij', 'tarweveld', 'bakkerij',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.

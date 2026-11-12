@@ -817,6 +817,19 @@ export function tekenWerker(naam, def) {
       vlak(ctx, [[mx + 8, 17.4 + wip], [mx + 9.4, 15.8 + wip], [mx + 9.4, 21.4 + wip], [mx + 8, 23 + wip]], '#8b887f');
       blok(ctx, mx + 0.6, 20.6 + wip, 6, 1.7, kiel);
       ovaal(ctx, mx + 6.9, 21.4 + wip, 1.2, 1.2, huid);
+    } else if (houding === 'last' && def.vracht === 'tarwe') {
+      // Een schoof tarwe onder de arm
+      vlak(ctx, [[mx - 1, 14 + wip], [mx + 8, 13 + wip], [mx + 9, 22 + wip], [mx + 1, 23 + wip]], '#d9b44a');
+      for (let j = 0; j < 4; j++) lijn(ctx, mx + 0.5 + j * 2, 13.5 + wip, mx + 1 + j * 2, 22.5 + wip, 'rgba(120,90,30,0.45)', 0.5);
+      blok(ctx, mx, 18 + wip, 8.5, 1.2, '#8a6a2a');
+      blok(ctx, mx + 2.7, 17.6 + wip, 2.3, 3.4, kiel);
+      ovaal(ctx, mx + 3.9, 20.6 + wip, 1.3, 1.3, huid);
+    } else if (houding === 'last' && def.vracht === 'brood') {
+      // Een plank met broden voor de borst
+      blok(ctx, mx - 1, 18.8 + wip, 10, 1.4, '#9c7446');
+      for (const bx of [0.8, 3.8, 6.8]) ovaal(ctx, mx + bx, 17.6 + wip, 1.6, 1.3, '#b9773a');
+      blok(ctx, mx + 0.6, 20.4 + wip, 6, 1.7, kiel);
+      ovaal(ctx, mx + 6.9, 21 + wip, 1.2, 1.2, huid);
     } else if (houding === 'last' && def.vracht === 'planken') {
       // Een stapel lichte planken op de schouder
       for (const [hoog, kleur] of [[0, '#c9a36a'], [1.6, '#dbb97f'], [3.2, '#c9a36a']]) {
@@ -1490,6 +1503,33 @@ export function tekenKazerne(naam, def) {
 
 // Een boomgaard: drie appelboompjes achter een laag hek, met een mand
 // appels vooraan.
+// Een tarweveld: omgeploegde aarde met rijen gouden aren en een laag hek.
+export function tekenTarweveld(naam, def) {
+  const b = TB + 4;
+  const h = TH + 18;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const toeval = toevalVoor(naam);
+  vlak(ctx, [[cx, cy - 15], [cx + 30, cy], [cx, cy + 15], [cx - 30, cy]], '#8a6a3e');
+  // Voren en aren, van achter naar voren
+  for (let i = 0; i < 9; i++) {
+    const t = (i + 0.5) / 9;
+    const P = [cx - 30 + 30 * t, cy - 15 * t];          // linkerrand naar achterhoek
+    const Q = [P[0] + 30, P[1] + 15];                    // evenwijdig naar voren rechts
+    lijn(ctx, P[0], P[1], Q[0], Q[1], 'rgba(60,40,20,0.35)', 0.8);
+    for (let j = 1; j < 9; j++) {
+      const s = j / 9;
+      const x = P[0] + (Q[0] - P[0]) * s;
+      const y = P[1] + (Q[1] - P[1]) * s;
+      const hoog = 5 + toeval() * 2.5;
+      lijn(ctx, x, y, x + 0.4, y - hoog, tint(def.aar, -0.25), 0.7);
+      ovaal(ctx, x + 0.5, y - hoog, 0.9, 1.8, toeval() < 0.5 ? def.aar : tint(def.aar, 0.15));
+    }
+  }
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
 export function tekenBoomgaard(naam, def) {
   const b = TB + 4;
   const h = TH + 30;

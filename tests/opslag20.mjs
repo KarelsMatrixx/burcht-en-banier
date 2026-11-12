@@ -14,7 +14,7 @@ const e = () => p.evaluate(() => { const s = window.spel.economie; return { v: {
 let i = await e();
 check('grens 150 zonder kamer', i.max === 150 && i.k === 0, JSON.stringify(i));
 const hud = await p.textContent('#voorraad-lijst');
-check('hud toont grens', /60\/150/.test(hud), hud);
+check('hud toont 60', /60/.test(hud), hud);
 const knop = async (t) => { for (const x of await p.$$('#bouwbalk button')) { if ((await x.textContent()).startsWith(t) && await x.isVisible()) { await x.tap(); return true; } } return false; };
 await p.evaluate(async () => { window.__iso = await import('/js/iso.js'); window.spel.economie.voorraad.hout = 150; });
 // vrije tegel naast de burcht binnen de ring vinden
@@ -30,7 +30,7 @@ check('voorraadkamer staat (object 22)', o === 22, o);
 await p.waitForTimeout(1500);
 i = await e();
 check('grens 300 met kamer', i.max === 300 && i.k === 1, JSON.stringify(i));
-check('hud toont /300', /\/300/.test(await p.textContent('#voorraad-lijst')));
+check('paneel toont van 300', /van 300/.test(await p.textContent('#volk-tekst')), await p.textContent('#volk-tekst'));
 // werker met vol magazijn
 const hk = await p.evaluate(() => {
   const s = window.spel; const k = s.kaart; const w = s.bouwwerken.voorraadkamer ? (s.bouwer.werken ? null : null) : null;
