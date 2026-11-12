@@ -14,7 +14,7 @@ await p.goto(url + '/?x=' + Date.now()); await laad();
 await p.evaluate(() => localStorage.clear()); await p.reload(); await laad();
 // 1. standaard: vrij normaal, bestaande bewaarsleutel
 let i = await p.evaluate(() => ({ v: window.spel.CONFIG.versie, m: window.spel.modus, eerste: window.spel.regels.heer.eersteAanval, hout: window.spel.regels.grondstoffen.hout.begin }));
-check('versie', i.v === '0.27.0', i.v);
+check('versie', i.v === '0.28.0', i.v);
 check('standaard vrij normaal', i.m.soort === 'vrij' && i.m.profiel === 'normaal', JSON.stringify(i.m));
 check('normaal: ongewijzigde regels', i.eerste === 200 && i.hout === 60, JSON.stringify(i));
 await p.evaluate(() => window.spel.bouwer && 0);
@@ -36,7 +36,7 @@ await p.screenshot({ path: '/home/claude/stap17-missie1.png' });
 await p.click('#missie-begin');
 check('intro dicht na Begin', await p.evaluate(() => document.getElementById('missie').hidden));
 // 4. winnen: missie 1 klaar, volgende missie vrij
-await p.evaluate(() => { const s = window.spel; s.strijd.zetRood(0); s.strijd.stap(); });
+await p.evaluate(() => { const s = window.spel; s.strijd.koning(1).dood = true; s.strijd.stap(); });
 const e1 = await p.evaluate(() => ({ titel: document.getElementById('einde-titel').textContent, tekst: document.getElementById('einde-tekst').textContent, volgende: !document.getElementById('einde-volgende').hidden, klaar: localStorage.getItem('burcht-banier.campagne') }));
 console.log('einde:', JSON.stringify(e1));
 check('missie 1 gewonnen scherm', /Missie 1 gewonnen/.test(e1.titel) && /Reinout/.test(e1.tekst), JSON.stringify(e1));

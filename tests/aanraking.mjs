@@ -13,6 +13,7 @@ const laad = () => p.waitForFunction(() => window.spel && window.spel.strijd, nu
 await p.goto('http://localhost:8123/?x=' + Date.now()); await laad();
 await p.evaluate(() => localStorage.clear()); await p.reload(); await laad();
 const soort = process.argv[2] || 'katapult';
+await p.evaluate((s) => { window.soortNaam = s; }, soort);
 const doelVak = process.argv[3] ? process.argv[3].split(',').map(Number) : [49, 13];
 await p.evaluate(async (soort) => {
   const iso = await import('/js/iso.js'); window.__iso = iso;
@@ -25,7 +26,7 @@ const naarTegel = (x, y) => p.evaluate(([x, y]) => {
   s.camera.x = w.x; s.camera.y = w.y; s.camera.begrens && s.camera.begrens();
   return s.camera.wereldNaarScherm(w.x, w.y);
 }, [x, y]);
-const e0 = await p.evaluate(() => { const e = window.spel.leger.soldaten()[0]; return { x: e.x, y: e.y }; });
+const e0 = await p.evaluate(() => { const e = window.spel.leger.soldaten().find((a) => a.soldaat.sleutel === window.soortNaam); return { x: e.x, y: e.y }; });
 let sp = await naarTegel(Math.floor(e0.x), Math.floor(e0.y));
 await p.touchscreen.tap(sp.x, sp.y - 6);
 let g = await p.evaluate(() => window.spel.leger.aantalGekozen());
@@ -35,12 +36,12 @@ console.log('doel scherm', JSON.stringify(sp));
 await p.touchscreen.tap(sp.x, sp.y);
 await p.waitForTimeout(300);
 const melding = await p.evaluate(() => document.getElementById('meldingen').textContent);
-const stand = await p.evaluate(() => { const e = window.spel.leger.soldaten()[0]; return { x: e.x, y: e.y, pad: !!e.pad }; });
+const stand = await p.evaluate(() => { const e = window.spel.leger.soldaten().find((a) => a.soldaat.sleutel === window.soortNaam); return { x: e.x, y: e.y, pad: !!e.pad }; });
 console.log('na tik', JSON.stringify(stand), 'melding:', melding);
 const l0 = await p.evaluate(([x, y]) => (window.spel.strijd.levenOp(y * 64 + x) || window.spel.strijd.stand().rood), doelVak);
-for (let i = 0; i < 12; i++) { await p.waitForTimeout(4000); console.log(i * 4, JSON.stringify(await p.evaluate(([x, y]) => { const e = window.spel.leger.soldaten()[0]; return e ? { m: window.spel.melding || 0, x: +e.x.toFixed(1), y: +e.y.toFixed(1), pad: !!e.pad, l: e.soldaat.leven, t: (window.spel.strijd.levenOp(y * 64 + x) || window.spel.strijd.stand().rood).leven, v: window.spel.strijd.stand().vijanden } : null; }, doelVak))); }
+for (let i = 0; i < 12; i++) { await p.waitForTimeout(4000); console.log(i * 4, JSON.stringify(await p.evaluate(([x, y]) => { const e = window.spel.leger.soldaten().find((a) => a.soldaat.sleutel === window.soortNaam); return e ? { m: window.spel.melding || 0, x: +e.x.toFixed(1), y: +e.y.toFixed(1), pad: !!e.pad, l: e.soldaat.leven, t: (window.spel.strijd.levenOp(y * 64 + x) || window.spel.strijd.stand().rood).leven, v: window.spel.strijd.stand().vijanden } : null; }, doelVak))); }
 const l1 = await p.evaluate(([x, y]) => (window.spel.strijd.levenOp(y * 64 + x) || window.spel.strijd.stand().rood), doelVak);
-const e1 = await p.evaluate(() => { const e = window.spel.leger.soldaten()[0]; return e ? { x: e.x, y: e.y, opMuur: e.opMuur } : null; });
+const e1 = await p.evaluate(() => { const e = window.spel.leger.soldaten().find((a) => a.soldaat.sleutel === window.soortNaam); return e ? { x: e.x, y: e.y, opMuur: e.opMuur } : null; });
 console.log('leven', JSON.stringify(l0), '->', JSON.stringify(l1), 'soldaat', JSON.stringify(e1), 'ladders', JSON.stringify(await p.evaluate(() => window.spel.strijd.ladders())));
 check('doel kreeg schade (katapult)', soort !== 'katapult' || (l1 && l0 && l1.leven < l0.leven), JSON.stringify([l0, l1]));
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);

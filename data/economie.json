@@ -26,10 +26,11 @@
   "handel: bij een voorraadkamer verkoop je per keer 'per' stuks van een grondstof voor 'prijs' goud.",
   "zwaai: deze soldaat raakt ook één vijand naast zijn doelwit, met dit deel van zijn schade (1 = volle schade). bouwBonus: keer zoveel schade aan de genoemde bouwwerken. doorboort: pijlDekking van het doelwit telt niet (de bolt gaat door een schild).",
   "kazerne: klassiek of mystiek, bij welke kazerne je hem opleidt. boeren: zoveel boeren zonder werk kost hij (anders 1). eersteSlag: zijn eerste slag op een nieuw doelwit doet zoveel keer schade. klimMuur: hij klimt in zoveel seconden een gewone muur op zonder ladder. verborgen: vijanden zien hem pas binnen zoveel tegels, tot hij slaat. gebied: dit deel van zijn schade raakt ook wie naast het doelwit staat. brand: hout dat hij raakt brandt duur seconden en verliest perSeconde leven per seconde.",
+  "koning: er is er één voor jou en één voor rood, niet op te leiden. Valt jouw koning, dan heb je verloren; valt de koning van rood, dan heb je gewonnen. zwaaiAantal: zoveel vijanden naast het doelwit raakt zijn slag. vaandel: eigen soldaten binnen bereik doen extra meer schade. zwak: zijn schade als zijn burcht kapot is. thuisBereik: de koning van rood verdedigt alleen binnen zoveel tegels van zijn burcht. Een koning geneest alleen bij zijn eigen burcht.",
   "legerMax: zoveel soldaten kun je hoogstens hebben.",
   "strijd: de aanvallen van de rode heer. eersteGolf is na hoeveel seconden de eerste aanval komt, tussenGolven de tijd tussen twee aanvallen.",
   "golven: wie er per aanval komt. Na de laatste regel blijft die laatste aanval terugkomen, tot de burcht van rood valt.",
-  "burchtLeven is hoeveel je burcht kan hebben. Valt hij, dan heb je verloren. De wacht op de burcht schiet zelf: burchtSchade per schot, om de burchtSlagTijd seconden, tot burchtBereik tegels ver.",
+  "burchtLeven is hoeveel je burcht kan hebben. Valt hij, dan wordt je koning zwakker. Met burchtSchiet true schiet de wacht op de burcht zelf: burchtSchade per schot, om de burchtSlagTijd seconden, tot burchtBereik tegels ver.",
   "roodBurchtLeven is hoeveel de burcht van rood kan hebben. Valt hij, dan heb je gewonnen. Zijn burcht schiet net zo terug als de jouwe. wachter is de soldaat die op de muren van rood loopt, wachters hoeveel het er zijn (hooguit 8: één per half stuk muur).",
   "herstelNa: zoveel seconden zonder gevecht en je burcht en je soldaten herstellen langzaam (1 leven per herstelElke seconden).",
   "muurBereik: zoveel tegels verder schiet een boogschutter die op de muur staat. muurDekking: het deel van de schade van een pijl dat iemand op de muur nog krijgt (0.5 is de helft).",
@@ -447,6 +448,29 @@
     "perSeconde": 3
    },
    "tip": "Gooit een vuurbal: halve schade ook om het doelwit heen. Hout gaat in brand."
+  },
+  "koning": {
+   "naam": "Koning",
+   "soort": "KONING",
+   "kazerne": "geen",
+   "koning": true,
+   "kosten": {},
+   "snelheid": 1.8,
+   "leven": 240,
+   "schade": 22,
+   "schadeBouw": 10,
+   "slagTijd": 1.8,
+   "bereik": 1.9,
+   "zicht": 6,
+   "zwaai": 1,
+   "zwaaiAantal": 2,
+   "vaandel": {
+    "bereik": 4,
+    "extra": 0.1
+   },
+   "zwak": 0.6,
+   "thuisBereik": 4.5,
+   "tip": "Je koning. Veel sterker dan een ridder; zijn zwaai raakt het doelwit en twee vijanden ernaast. Soldaten binnen 4 tegels doen 10% meer schade. Valt hij, dan heb je verloren. Is je burcht kapot, dan wordt hij zwakker en geneest hij niet meer."
   }
  },
  "legerMax": 40,
@@ -491,7 +515,8 @@
   "wachter": "boogschutter",
   "wachters": 4,
   "omduwen": 3,
-  "omduwenVast": 10
+  "omduwenVast": 10,
+  "burchtSchiet": false
  },
  "heer": {
   "_uitleg": [

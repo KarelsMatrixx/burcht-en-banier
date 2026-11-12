@@ -81,11 +81,25 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     return e;
   }
 
+  // De koning: er is er altijd één, bij de burcht. Hij wordt niet opgeleid.
+  let koningThuis = -1;
+  function zetKoning(burchtVak) {
+    koningThuis = burchtVak;
+    const sleutel = Object.keys(soorten).find((s) => soorten[s].koning);
+    if (!sleutel || soldaten.some((e) => e.soldaat.sleutel === sleutel)) return null;
+    const vak = plekBij(burchtVak, 6);
+    if (vak < 0) return null;
+    const e = maak(sleutel, vak);
+    opLeger();
+    return e;
+  }
+
   // --- Opleiden ---------------------------------------------------------------------
   // Lege tekst als je deze soldaat kunt opleiden, anders de reden.
   function waaromNiet(sleutel) {
     const def = soorten[sleutel];
     if (!def) return 'die soldaat bestaat niet';
+    if (def.koning) return 'er is maar één koning';
     if (soldaten.length >= max) return `je leger is vol (${max} soldaten)`;
     const tekort = economie.tekort(def.kosten);
     if (tekort) return tekort;
@@ -122,7 +136,9 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // Soldaten in drie groepen: wie van dichtbij vecht, wie van verre schiet
   // en de belegeringsmachines (ram, katapult, toren, ladderdrager).
   const groepVan = (def) => (def.alleenBouw || def.ladder ? 'belegering' : def.bereik > 2 ? 'afstand' : 'melee');
-  const kiesGroep = (groep) => kies(soldaten.filter((e) => groepVan(soorten[e.soldaat.sleutel]) === groep));
+  // De koning valt buiten de groepen en buiten Alle: die stuur je bewust, met zijn eigen knop of een tik.
+  const isKoning = (e) => !!soorten[e.soldaat.sleutel].koning;
+  const kiesGroep = (groep) => kies(soldaten.filter((e) => !isKoning(e) && groepVan(soorten[e.soldaat.sleutel]) === groep));
   const kiesSoort = (sleutel) => kies(soldaten.filter((e) => e.soldaat.sleutel === sleutel));
   // Hoeveel soldaten er zijn (en gekozen zijn) per groep en per soort.
   function telling() {
@@ -130,7 +146,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const perSoort = {};
     for (const e of soldaten) {
       const g = groepVan(soorten[e.soldaat.sleutel]);
-      const t = (groepen[g] = groepen[g] || { n: 0, gekozen: 0 });
+      const t = isKoning(e) ? { n: 0, gekozen: 0 } : (groepen[g] = groepen[g] || { n: 0, gekozen: 0 });
       const u = (perSoort[e.soldaat.sleutel] = perSoort[e.soldaat.sleutel] || { n: 0, gekozen: 0, groep: g });
       t.n++; u.n++;
       if (e.gekozen) { t.gekozen++; u.gekozen++; }
@@ -296,6 +312,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   function herstel() {
     for (const e of soldaten) eenheden.verwijder(e);
     soldaten.length = 0;
+    if (koningThuis >= 0) zetKoning(koningThuis);   // de koning staat weer bij de burcht
     opLeger();
   }
 
@@ -329,7 +346,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
 
   return {
     soorten, max, waaromNiet, leidOp, vind, kies, stuur, stap,
-    kiesAlles: () => kies(soldaten),
+    kiesAlles: () => kies(soldaten.filter((e) => !isKoning(e))),
+    zetKoning,
     groepVan, kiesGroep, kiesSoort, telling,
     kiesGeen: () => kies([]),
     bewaarStand, zetStand, herstel, sneuvel, kaartVeranderd,

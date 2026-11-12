@@ -59,6 +59,8 @@
     "eenheid.sluip_rood":          { "vorm": "sluipmoordenaar", "kleur": "#c23a2e", "sprite": "" },
     "eenheid.vlam_blauw":          { "vorm": "vlammenwever", "kleur": "#2f5fc4", "sprite": "" },
     "eenheid.vlam_rood":           { "vorm": "vlammenwever", "kleur": "#c23a2e", "sprite": "" },
+    "eenheid.koning_blauw":        { "vorm": "koning", "kleur": "#2f5fc4", "wapen": "#e3c04a", "rouwband": true, "sprite": "" },
+    "eenheid.koning_rood":         { "vorm": "koning", "kleur": "#c23a2e", "wapen": "#1d1d22", "rouwband": false, "sprite": "" },
     "eenheid.boogschutter_blauw":  { "vorm": "boogschutter", "kleur": "#2f5fc4", "sprite": "" },
     "eenheid.boogschutter_rood":   { "vorm": "boogschutter", "kleur": "#c23a2e", "sprite": "" },
     "eenheid.ram_blauw":           { "vorm": "ram",          "kleur": "#2f5fc4", "sprite": "" },

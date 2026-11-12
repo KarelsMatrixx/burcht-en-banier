@@ -348,9 +348,7 @@ export function tekenRots(naam, def) {
 // Vechten heeft twee eigen beelden (houdingen.sla of houdingen.schiet):
 // beeld 0 is klaarstaan, beeld 1 is de klap of het schot.
 
-function loopbeelden(tekenBeeld, lijst = [0, 1, 2, 3]) {
-  const b = 26;
-  const h = 38;
+function loopbeelden(tekenBeeld, lijst = [0, 1, 2, 3], b = 26, h = 38, ay = 34) {
   const maak = (beeld, spiegel) => {
     const { doek, ctx } = nieuwDoek(b, h);
     if (spiegel) {
@@ -366,7 +364,7 @@ function loopbeelden(tekenBeeld, lijst = [0, 1, 2, 3]) {
     b,
     h,
     ax: b / 2,
-    ay: 34,
+    ay,
   };
 }
 
@@ -695,6 +693,84 @@ export function tekenVlammenwever(naam, def) {
   };
   const beelden = loopbeelden((ctx, beeld) => teken(ctx, beeld, -1));
   beelden.houdingen = { schiet: loopbeelden((ctx, beeld) => teken(ctx, 0, beeld), [0, 1]) };
+  return beelden;
+}
+
+// De koning: 130% van een ridder. Staalgrijs harnas, tabbaard in teamkleur
+// met een wapen, lange wapperende mantel, smalle gouden kroonband en een
+// tweehandig zwaard met gouden pareerstang. Bij de koning van jou een
+// zwarte rouwband om de linkerarm.
+// slag: -1 = lopen (zwaard op de schouder), 0 = zwaard hoog, 1 = de brede zwaai.
+export function tekenKoning(naam, def) {
+  const staal = '#c3c8d0';
+  const goud = '#e3c04a';
+  const teken = (ctx, beeld, slag) => {
+    const vecht = slag >= 0;
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 2 : [0, 1.7, 0, -1.7][beeld];
+    const wapper = vecht ? 0 : [0, 1.5, 0, -1.5][beeld];
+    const mx = 13;
+    ovaal(ctx, 13, 34, 8.5, 3.2, 'rgba(0,0,0,0.34)');
+    const zwaard = (x1, y1, x2, y2) => {
+      lijn(ctx, x1, y1, x2, y2, '#e6e9ee', 1.6);
+      lijn(ctx, x1, y1, x2, y2, 'rgba(255,255,255,0.6)', 0.5);
+      const hoek = Math.atan2(y2 - y1, x2 - x1);
+      const px = Math.cos(hoek + Math.PI / 2) * 2.4;
+      const py = Math.sin(hoek + Math.PI / 2) * 2.4;
+      lijn(ctx, x1 - px, y1 - py, x1 + px, y1 + py, goud, 1.2);   // pareerstang
+      lijn(ctx, x1, y1, x1 - Math.cos(hoek) * 3, y1 - Math.sin(hoek) * 3, '#5a3d22', 1.4);
+      ovaal(ctx, x1 - Math.cos(hoek) * 3.4, y1 - Math.sin(hoek) * 3.4, 0.8, 0.8, goud);
+    };
+    // Mantel achter het lijf, wapperend
+    vlak(ctx, [[mx - 5, 17 + wip], [mx + 5, 17 + wip], [mx + 4 - wapper, 32], [mx - 8 - wapper * 1.5, 31.5]], tint(def.kleur, -0.28));
+    if (!vecht) zwaard(mx + 4, 21 + wip, mx - 6, 1 + wip);   // op de schouder
+    // Benen
+    blok(ctx, mx - 3.8 + pas, 27 + wip, 3, 7 - wip, '#4a4a54');
+    blok(ctx, mx + 0.8 - pas, 27 + wip, 3, 7 - wip, '#3a3a42');
+    blok(ctx, mx - 3.8 + pas, 29.5 + wip, 3, 2, 'rgba(210,215,222,0.5)');
+    // Tabbaard in teamkleur met wapen
+    blok(ctx, mx - 5, 17 + wip, 10, 11.5, def.kleur);
+    blok(ctx, mx - 5, 17 + wip, 3, 11.5, 'rgba(0,0,0,0.22)');
+    blok(ctx, mx - 5, 23.4 + wip, 10, 1.2, '#3a2a1a');
+    ovaal(ctx, mx + 0.4, 20.6 + wip, 1.8, 2.2, def.wapen || goud);   // het wapen (blad)
+    lijn(ctx, mx + 0.4, 18.8 + wip, mx + 0.4, 22.6 + wip, 'rgba(0,0,0,0.35)', 0.4);
+    // Schouders en armen in staal
+    ovaal(ctx, mx - 4.8, 18 + wip, 2.6, 2.4, tint(staal, -0.2));
+    ovaal(ctx, mx + 4.8, 18 + wip, 2.6, 2.4, staal);
+    blok(ctx, mx - 6.6, 18.8 + wip, 2.4, 5.2, tint(staal, -0.2));
+    if (def.rouwband) blok(ctx, mx - 6.7, 20.6 + wip, 2.6, 1.3, '#141418');
+    // Hoofd: kort donker haar, korte baard met grijs, smalle gouden kroonband
+    ovaal(ctx, mx + 0.4, 12.4 + wip, 3.8, 4.1, '#ddb48e');
+    ovaal(ctx, mx + 0.2, 9.6 + wip, 3.9, 2.4, '#2e241c');
+    ovaal(ctx, mx + 0.8, 15 + wip, 3.1, 1.9, '#3a2e24');
+    ovaal(ctx, mx + 2, 15.3 + wip, 0.9, 0.6, '#8a8a8a');
+    blok(ctx, mx - 3.6, 9.2 + wip, 7.6, 1.3, goud);
+    for (const dx of [-2.6, 0.2, 3]) vlak(ctx, [[mx + dx - 0.9, 9.3 + wip], [mx + dx, 7.4 + wip], [mx + dx + 0.9, 9.3 + wip]], goud);
+    ovaal(ctx, mx + 1.8, 12.2 + wip, 0.5, 0.5, '#2a1d14');
+    if (vecht) {
+      if (slag === 0) {
+        zwaard(mx + 3.5, 16, mx - 2, -3);   // hoog geheven
+        ovaal(ctx, mx + 3.5, 17, 1.6, 1.6, staal);
+      } else {
+        zwaard(mx + 4, 21, mx + 22, 25);    // brede zwaai opzij
+        ovaal(ctx, mx + 4.4, 21, 1.6, 1.6, staal);
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.arc(mx + 4, 18, 15, -1.3, 0.35);
+        ctx.stroke();
+      }
+    }
+  };
+  const groot = (ctx, beeld, slag) => {
+    // 130% van de ridder, met de voeten op dezelfde plek
+    ctx.translate(17, 44);
+    ctx.scale(1.3, 1.3);
+    ctx.translate(-13, -34);
+    teken(ctx, beeld, slag);
+  };
+  const beelden = loopbeelden((ctx, beeld) => groot(ctx, beeld, -1), [0, 1, 2, 3], 34, 48, 44);
+  beelden.houdingen = { sla: loopbeelden((ctx, beeld) => groot(ctx, 0, beeld), [0, 1], 34, 48, 44) };
   return beelden;
 }
 

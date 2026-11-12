@@ -110,6 +110,22 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const thuis = kaart.start[SPELER];
   const thuisVak = burcht.vak;
   const burchtDoel = burcht.doel;
+  // --- De koningen ------------------------------------------------------------------
+  // Eén voor jou (in je leger) en één voor rood. Valt jouw koning, dan heb je
+  // verloren; valt die van rood, dan heb je gewonnen.
+  const koningSleutel = Object.keys(soorten).find((s) => soorten[s].koning) || null;
+  let roodKoning = null;
+  const koningVan = (team) => (team === SPELER ? leger.lijst.find((e) => e.soldaat && soorten[e.soldaat.sleutel].koning && !e.dood) || null : roodKoning && !roodKoning.dood ? roodKoning : null);
+  const bijThuis = (e, r) => Math.hypot(e.x - burchten[e.team].x, e.y - burchten[e.team].y) <= r;
+  function maakRoodKoning(leven) {
+    if (!koningSleutel || roodKoning) return;
+    for (const vak of rood.plekken) {
+      if (!wegvinder.isVrij(vak % B, Math.floor(vak / B), VIJAND)) continue;
+      roodKoning = maakVijand(koningSleutel, vak, leven);
+      roodKoning.koning = true;
+      return;
+    }
+  }
   const inBurcht = (vak, b) => Math.abs((vak % B) - b.vx) <= 1 && Math.abs(Math.floor(vak / B) - b.vy) <= 1 && isBurcht(kaart.object[vak]);
 
   // Het kasteel van rood zoals het er aan het begin staat, om het bij
@@ -504,6 +520,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     // De eerste slag op een nieuw doelwit (de sluipmoordenaar).
     if (k.def.eersteSlag && k.laatsteDoel !== doel) schade *= k.def.eersteSlag;
     k.laatsteDoel = doel;
+    schade = Math.max(1, Math.round(schade * sterkteVan(e, k)));
     if (k.def.gebied !== undefined) {
       vuurbal(e, doel.x, doel.y, 16 + (doel.hoogte || 0));
       if (doel.opMuur) schade = Math.max(1, Math.round(schade * R.muurDekking));
@@ -525,8 +542,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     raak(doel, schade, e);
     // Een zwaaiende bijl raakt ook iemand die vlak naast het doelwit staat.
     if (k.def.zwaai > 0) {
-      const tweede = lijstVan(doel.team).find((a) => a !== doel && !a.dood && !!a.opMuur === !!doel.opMuur && Math.hypot(a.x - doel.x, a.y - doel.y) <= 1.3);
-      if (tweede) raak(tweede, Math.max(1, Math.round(k.def.schade * k.def.zwaai)), e);
+      const naast = lijstVan(doel.team).filter((a) => a !== doel && !a.dood && !!a.opMuur === !!doel.opMuur && Math.hypot(a.x - doel.x, a.y - doel.y) <= 1.3);
+      for (const a of naast.slice(0, k.def.zwaaiAantal || 1)) raak(a, Math.max(1, Math.round(k.def.schade * k.def.zwaai * sterkteVan(e, k))), e);
     }
   }
 
@@ -591,6 +608,16 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         raak(a, ka.brandPer, null);
       }
     }
+  }
+
+  // Hoe sterk iemand slaat: een koning zonder burcht is zwakker, en een
+  // soldaat bij zijn koning doet iets meer (het koninklijk vaandel).
+  function sterkteVan(e, k) {
+    if (k.def.koning) return burchten[e.team].leven > 0 ? 1 : k.def.zwak || 1;
+    const kon = koningVan(e.team);
+    const v = kon && kon.krijg && kon.krijg.def.vaandel;
+    if (!v || Math.hypot(kon.x - e.x, kon.y - e.y) > v.bereik) return 1;
+    return 1 + v.extra;
   }
 
   // Een bijl doet meer schade aan hout: poorten en houten gebouwen.
@@ -972,8 +999,35 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.schuif = true;
   }
 
+  // De koning van rood verlaat zijn kasteel niet: hij valt alleen aan wie
+  // dicht bij zijn burcht komt, en loopt daarna terug.
+  function koningDenk(e, k, anderen) {
+    const thuis = burchten[e.team];
+    const r = k.def.thuisBereik || 7;
+    const dichtbij = anderen.filter((a) => Math.hypot(a.x - thuis.x, a.y - thuis.y) <= r);
+    k.doelwit = dichtbij.length ? kiesDoelwit(e, k, dichtbij) : null;
+    if (k.doelwit) {
+      if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) jaag(e, k);
+      return;
+    }
+    if (e.pad || bijThuis(e, 2.6)) return;
+    for (const vak of plekkenBij(e, thuis)) {
+      if (bezetDoorVriend(vak, e)) continue;
+      const pad = zoekPad(e, vak);
+      if (pad) {
+        zetPad(e, pad);
+        return;
+      }
+    }
+  }
+
   // --- Eén krijger, één rekenstap -----------------------------------------------------------
   function denk(e, k, anderen) {
+    if (e.koning && e.team === VIJAND) {
+      koningDenk(e, k, anderen);
+      schuifOp(e, k);
+      return;
+    }
     k.doelwit = kiesDoelwit(e, k, anderen);
     if (k.doelwit) {
       k.bouw = null;
@@ -1004,7 +1058,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (!e.pad) k.schuif = false;
     k.rust++;
     // Soldaten van de speler komen na een gevecht langzaam weer op krachten.
-    if (e.team === SPELER && e.leven < e.levenMax && k.rust > herstelNa && stapNr % herstelElke === 0) e.leven++;
+    if (k.def.koning) {
+      // Een koning geneest alleen bij zijn eigen burcht, en alleen als die nog staat.
+      if (e.leven < e.levenMax && burchten[e.team].leven > 0 && bijThuis(e, 4) && k.rust > herstelNa && stapNr % Math.max(1, Math.floor(herstelElke / 3)) === 0) e.leven++;
+    } else if (e.team === SPELER && e.leven < e.levenMax && k.rust > herstelNa && stapNr % herstelElke === 0) e.leven++;
     // Een soldaat die op jouw bevel ergens heen loopt, vecht onderweg niet.
     if (e.soldaat && e.soldaat.doel >= 0) {
       k.ladder = -1;
@@ -1059,7 +1116,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     b.rust++;
     if (b.afkoel > 0) {
       b.afkoel--;
-    } else if (doelen.length) {
+    } else if (R.burchtSchiet && doelen.length) {
       let beste = null;
       let min = R.burchtBereik + 1.5;
       for (let i = 0; i < doelen.length; i++) {
@@ -1134,10 +1191,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // Wie er op je af komt: alle vijanden behalve de wachters op de muur van rood.
-  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined);
+  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning);
   function aantalAanvallers() {
     let n = 0;
-    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined) n++;
+    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning) n++;
     return n;
   }
 
@@ -1229,16 +1286,22 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     burchtStap(rood, eigen);
     brandStap();
     ruimOp();
-    if (burcht.leven <= 0) {
+    if (koningSleutel ? !koningVan(SPELER) : burcht.leven <= 0) {
       einde('verloren');
       return;
     }
-    if (!vrede && rood.leven <= 0) {
+    if (!vrede && (koningSleutel ? !koningVan(VIJAND) : rood.leven <= 0)) {
       // De rode heer is verslagen: zijn mannen geven het op.
       for (const e of vijanden) e.dood = true;
       ruimOp();
       einde('gewonnen');
       return;
+    }
+    // Een burcht die net is gevallen: dat merkt de koning.
+    for (const b of burchten) {
+      if (b.leven > 0 || b.gemeldKapot) continue;
+      b.gemeldKapot = true;
+      if (koningSleutel) opMelding(b.team === SPELER ? 'Je burcht is kapot! Je koning is nu zwakker en geneest niet meer. Bescherm hem.' : 'De burcht van rood is kapot: zijn koning is zwakker. Versla hem!');
     }
     if (stapNr % perSeconde === 0) opStand();
   }
@@ -1352,6 +1415,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     burcht: Math.round(burcht.leven),
     vrede: vrede ? 1 : 0,
     heer: heer ? heer.bewaar() : undefined,
+    koningRood: koningSleutel ? (koningVan(VIJAND) ? Math.max(1, Math.round(roodKoning.leven)) : 0) : undefined,
     schade: [...schade].map(([vak, s]) => [vak, Math.max(1, Math.round(s.leven))]),
     vijanden: aanvallers().map((e) => [e.vijand, Math.floor(e.x), Math.floor(e.y), Math.max(1, Math.round(e.leven))]),
     // Het kasteel van rood: zijn burcht, wat er vernield is en wie er nog op de muur loopt.
@@ -1431,8 +1495,13 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     balkenBij();
     opStand();
-    if (burcht.leven <= 0) einde('verloren');
-    else if (rood.leven <= 0 && !vrede) einde('gewonnen');
+    // De koning van rood: met zijn bewaarde leven, of nieuw.
+    if (koningSleutel) {
+      const rk = s.koningRood;
+      if (rk !== 0) maakRoodKoning(Number.isFinite(rk) ? rk : undefined);
+    }
+    if (koningSleutel ? s.koningRood === 0 && !vrede : rood.leven <= 0 && !vrede) einde('gewonnen');
+    else if (!koningSleutel && burcht.leven <= 0) einde('verloren');
   }
 
   // Het dichtstbijzijnde vak waar een vijand kan staan, of -1.
@@ -1454,13 +1523,17 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function herstel() {
     for (const e of vijanden) eenheden.verwijder(e);
     vijanden.length = 0;
+    roodKoning = null;
     effecten.length = 0;
     schade.clear();
+    branden.clear();
     golf = 0;
     klok = stappen(R.eersteGolf);
     if (heer) heer.herstel();
+    maakRoodKoning();
     for (const b of burchten) {
       b.leven = b.max;
+      b.gemeldKapot = false;
       b.afkoel = 0;
       b.rust = 0;
     }
@@ -1522,6 +1595,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     vijanden: aanvallers,
     wachters: () => vijanden.filter((e) => e.wachter !== undefined),
     rood: () => ({ leven: rood.leven, max: rood.max, x: rood.vx, y: rood.vy, plekken: rood.plekken.slice(), weg: [...roodWeg] }),
+    koning: (team = SPELER) => koningVan(team),
+    maakRoodKoning,
     zetRood(leven) {
       rood.leven = klem(leven, 0, rood.max);
       balkenBij();

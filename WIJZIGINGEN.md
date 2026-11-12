@@ -97,3 +97,14 @@
 - Vlammenwever (32 goud, 6 koper): leven 33, schade 12, slagtijd 2,5 s, bereik 7. Vuurbal met staart en ontploffing; halve schade op wie binnen 1,5 tegel van het doelwit staat. Houten machines (ram, ladder, toren, katapult) en houten gebouwen (poort, werken) branden 8 seconden met 3 schade per seconde, met vlammetjes.
 - Waarden: Karels percentages op de ridder. Opleidingstijd en legerplaatsen bestaan nog niet; beide tellen als 1 legerplaats.
 - Test: tests/mystiek27.mjs.
+
+## 0.28.0 (stap 28): de koning
+- Jij en rood hebben elk een koning (soldaat "koning" in economie.json, niet op te leiden). Hij staat bij de start voor je burcht. Leven 240 (4x ridder), schade 22, slagtijd 1,8 s, snelheid 1,8, bereik 1,9 (lang zwaard). Zijn zwaai raakt het doelwit en twee vijanden ernaast. Eigen soldaten binnen 4 tegels doen 10% meer schade (koninklijk vaandel).
+- Winnen en verliezen gaan nu over de koningen: valt de koning van rood, dan heb je gewonnen; valt de jouwe, dan heb je verloren.
+- De burcht schiet niet meer (strijd.burchtSchiet false). Een burcht die kapot is maakt zijn koning zwakker (60% schade) en hij geneest niet meer. Een koning geneest alleen bij zijn eigen burcht (sneller dan een soldaat).
+- De koning van rood blijft thuis: hij valt alleen aan wie binnen 4,5 tegels van zijn burcht komt en loopt daarna terug.
+- Jouw koning kies je met een tik op hem, met het kader of met de knop Koning; hij valt buiten Dichtbij en buiten Alle, zodat je hem niet per ongeluk meestuurt.
+- Bewaren: leven van de rode koning; jouw koning zit in je leger. Een oud bewaard spel krijgt beide koningen erbij. Naar start zet beide koningen terug.
+- Tekening (Karels campagnebeschrijving): staalgrijs harnas, tabbaard in teamkleur met een wapen (goud bij jou), wapperende mantel, korte baard, smalle gouden kroon, tweehandig zwaard met gouden pareerstang, zwarte rouwband om de linkerarm bij jouw koning. 130% van een ridder.
+- Afwijking van de campagnetekst: daar staat dat de koning na 40 s terugkeert. Karel koos in de chat voor: koning dood = verloren.
+- Test: tests/koning.mjs; test_stap17 wint nu door de rode koning te verslaan.

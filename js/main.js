@@ -125,7 +125,11 @@ async function start() {
     if (teruggezet) ui.toonMelding(`Je kasteel staat er weer: ${teruggezet} ${teruggezet === 1 ? 'bouwwerk' : 'bouwwerken'}.`);
     leger.zetStand(bewaard.leger);
     strijd.zetStand(bewaard.strijd);
+  } else {
+    strijd.maakRoodKoning();
   }
+  // Jouw koning: hij staat altijd bij de burcht als hij er nog niet is.
+  if (!strijd.uitslag()) leger.zetKoning((kaart.start[0].y + 2) * kaart.breedte + kaart.start[0].x + 2);   // voor de burcht, zodat je hem ziet
   bewaren = true;
 
   // Alles wat de tekenlaag moet weten. doel = waar je soldaten heen stuurt
@@ -556,10 +560,10 @@ async function start() {
         const volgende = missies.campagne.find((c) => c.id === missie.id + 1);
         ui.toonEinde({ open: true, titel: `Missie ${missie.id} gewonnen!`, tekst: `${missie.uit}${na}`, verder: true, volgende: !!volgende });
       } else {
-        ui.toonEinde({ open: true, titel: 'Gewonnen!', tekst: `De burcht van de rode heer is gevallen en de jouwe staat nog.${na}`, verder: true });
+        ui.toonEinde({ open: true, titel: 'Gewonnen!', tekst: `De koning van rood is verslagen en de jouwe leeft nog.${na}`, verder: true });
       }
     } else {
-      ui.toonEinde({ open: true, titel: 'Verloren', tekst: `Je burcht is gevallen bij aanval ${s.golf}. Begin opnieuw en probeer het nog eens.`, verloren: true });
+      ui.toonEinde({ open: true, titel: 'Verloren', tekst: `Je koning is gesneuveld bij aanval ${s.golf}. Begin opnieuw en probeer het nog eens.`, verloren: true });
     }
   };
   ui.opVerder(() => {
