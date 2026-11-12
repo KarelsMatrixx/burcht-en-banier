@@ -7,9 +7,41 @@
  "profielen": {
   "rustig": {
    "naam": "Rustig",
-   "begin": { "hout": 80, "steen": 40, "voedsel": 40, "goud": 40 },
-   "heer": { "begin": { "hout": 5, "steen": 5, "goud": 10 }, "burchtGoud": 0.2, "eersteAanval": 330, "tussen": 150, "doelBegin": 2, "doelPerAanval": 1, "doelMax": 12, "rammenVanaf": 5, "extra_soorten": { "katapult": { "vanaf": 8, "max": 1 }, "toren": { "vanaf": 9, "max": 1 } } },
-   "strijd": { "roodBurchtLeven": 700, "wachters": 2 }
+   "begin": {
+    "hout": 80,
+    "steen": 40,
+    "voedsel": 40,
+    "goud": 40,
+    "planken": 30
+   },
+   "heer": {
+    "begin": {
+     "hout": 5,
+     "steen": 5,
+     "goud": 10
+    },
+    "burchtGoud": 0.2,
+    "eersteAanval": 330,
+    "tussen": 150,
+    "doelBegin": 2,
+    "doelPerAanval": 1,
+    "doelMax": 12,
+    "rammenVanaf": 5,
+    "extra_soorten": {
+     "katapult": {
+      "vanaf": 8,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 9,
+      "max": 1
+     }
+    }
+   },
+   "strijd": {
+    "roodBurchtLeven": 700,
+    "wachters": 2
+   }
   },
   "normaal": {
    "naam": "Normaal",
@@ -19,27 +51,83 @@
   },
   "zwaar": {
    "naam": "Zwaar",
-   "begin": { "hout": 40, "steen": 20, "voedsel": 20, "goud": 20 },
-   "heer": { "begin": { "hout": 20, "steen": 20, "goud": 40 }, "burchtGoud": 0.4, "eersteAanval": 150, "tussen": 75, "doelBegin": 3.5, "doelPerAanval": 2, "doelMax": 26, "rammenVanaf": 2, "ridderPerSchutter": 1, "extra_soorten": { "katapult": { "vanaf": 4, "max": 1 }, "toren": { "vanaf": 6, "max": 1 } } },
-   "strijd": { "roodBurchtLeven": 1400, "wachters": 4 }
+   "begin": {
+    "hout": 40,
+    "steen": 20,
+    "voedsel": 20,
+    "goud": 20,
+    "planken": 10
+   },
+   "heer": {
+    "begin": {
+     "hout": 20,
+     "steen": 20,
+     "goud": 40
+    },
+    "burchtGoud": 0.4,
+    "eersteAanval": 150,
+    "tussen": 75,
+    "doelBegin": 3.5,
+    "doelPerAanval": 2,
+    "doelMax": 26,
+    "rammenVanaf": 2,
+    "ridderPerSchutter": 1,
+    "extra_soorten": {
+     "katapult": {
+      "vanaf": 4,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 6,
+      "max": 1
+     }
+    }
+   },
+   "strijd": {
+    "roodBurchtLeven": 1400,
+    "wachters": 4
+   }
   },
   "vrede": {
    "naam": "Zonder aanvallen",
-   "begin": { "hout": 120, "steen": 80, "voedsel": 60, "goud": 80 },
+   "begin": {
+    "hout": 120,
+    "steen": 80,
+    "voedsel": 60,
+    "goud": 80,
+    "planken": 60
+   },
    "heer": {},
-   "strijd": { "golven": [] }
+   "strijd": {
+    "golven": []
+   }
   }
  },
  "vrij": [
-  { "profiel": "normaal", "tekst": "Je bouwt en vecht tegen de rode heer. Dit is het spel zoals het was." },
-  { "profiel": "rustig", "tekst": "Meer grondstoffen om mee te beginnen. De rode heer verzamelt langzaam en zijn burcht is zwakker." },
-  { "profiel": "zwaar", "tekst": "Weinig grondstoffen, een snelle en rijke rode heer met een sterke burcht." },
-  { "profiel": "vrede", "tekst": "Geen aanvallen en niets te winnen. Alleen bouwen, een volk laten groeien en je soldaten oefenen." }
+  {
+   "profiel": "normaal",
+   "tekst": "Je bouwt en vecht tegen de rode heer. Dit is het spel zoals het was."
+  },
+  {
+   "profiel": "rustig",
+   "tekst": "Meer grondstoffen om mee te beginnen. De rode heer verzamelt langzaam en zijn burcht is zwakker."
+  },
+  {
+   "profiel": "zwaar",
+   "tekst": "Weinig grondstoffen, een snelle en rijke rode heer met een sterke burcht."
+  },
+  {
+   "profiel": "vrede",
+   "tekst": "Geen aanvallen en niets te winnen. Alleen bouwen, een volk laten groeien en je soldaten oefenen."
+  }
  ],
  "campagne": [
   {
    "id": 1,
-   "punt": { "x": 18, "y": 66 },
+   "punt": {
+    "x": 18,
+    "y": 66
+   },
    "titel": "Missie 1: Heer Reinout van Dorre Heide",
    "heer": "Heer Reinout van Dorre Heide",
    "profiel": "rustig",
@@ -48,7 +136,10 @@
   },
   {
    "id": 2,
-   "punt": { "x": 50, "y": 34 },
+   "punt": {
+    "x": 50,
+    "y": 34
+   },
    "titel": "Missie 2: Vrouwe Mechteld Zevenwind",
    "heer": "Vrouwe Mechteld Zevenwind",
    "profiel": "normaal",
@@ -57,7 +148,10 @@
   },
   {
    "id": 3,
-   "punt": { "x": 80, "y": 60 },
+   "punt": {
+    "x": 80,
+    "y": 60
+   },
    "titel": "Missie 3: Graaf Hademar van IJzerbroek",
    "heer": "Graaf Hademar van IJzerbroek",
    "profiel": "zwaar",

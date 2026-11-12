@@ -732,3 +732,12 @@ button:active {
 #kaart-doek .punt.nu .rond { stroke: #c8372b; stroke-width: 4; }
 #kaart-doek .cijfer { text-anchor: middle; font: 700 15px sans-serif; fill: #2a1d0b; pointer-events: none; }
 #kaart-doek .naam { text-anchor: middle; font: 700 10px sans-serif; fill: #2a1d0b; pointer-events: none; paint-order: stroke; stroke: #d9c18a; stroke-width: 3px; }
+
+/* Planken: drie lichte latten op elkaar. */
+.icoon-planken {
+  display: inline-block;
+  width: 16px;
+  height: 10px;
+  background: linear-gradient(#dbb97f 0 30%, #7a5632 30% 36%, #c9a36a 36% 66%, #7a5632 66% 72%, #dbb97f 72% 100%);
+  border-radius: 1px;
+}

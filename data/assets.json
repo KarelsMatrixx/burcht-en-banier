@@ -42,6 +42,7 @@
     "werk.boomgaard":  { "vorm": "boomgaard", "blad": "#4f8a3c", "appel": "#c8402f", "hoogte": 15, "sprite": "" },
     "leger.kazerne":   { "vorm": "kazerne", "wand": "#b9b3a3", "pannen": true, "daken": ["#4d5564"], "kleur": "#2f5fc4", "hoogte": 26, "sprite": "" },
     "dorp.voorraadkamer": { "vorm": "huis", "wand": "#9a7a4e", "pannen": true, "daken": ["#8a4a34"], "hoogte": 22, "sprite": "" },
+    "werk.zagerij":   { "vorm": "huis", "wand": "#b58c5a", "daken": ["#7a5a3a"], "hoogte": 22, "sprite": "" },
     "dorp.woning":     { "vorm": "huis", "wand": "#e0d2b4", "vakwerk": true, "pannen": true, "schoorsteen": true, "daken": ["#3f5e96"], "hoogte": 24, "sprite": "" },
 
     "eenheid.ridder_blauw":        { "vorm": "ridder",       "kleur": "#2f5fc4", "sprite": "" },
@@ -62,6 +63,8 @@
     "eenheid.steenhouwer_rood":    { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#8d8678", "gereedschap": "houweel", "vracht": "steen", "sprite": "" },
     "eenheid.fruitteler_blauw":    { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#8a9a62", "gereedschap": "mand",    "vracht": "appels", "sprite": "" },
     "eenheid.fruitteler_rood":     { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#8a9a62", "gereedschap": "mand",    "vracht": "appels", "sprite": "" },
+    "eenheid.zager_blauw":         { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#c49a5e", "gereedschap": "bijl",    "vracht": "planken", "sprite": "" },
+    "eenheid.zager_rood":          { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#c49a5e", "gereedschap": "bijl",    "vracht": "planken", "sprite": "" },
     "eenheid.boer_blauw":          { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#a9835a", "gereedschap": "geen",    "vracht": "",       "sprite": "" },
     "eenheid.boer_rood":           { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#a9835a", "gereedschap": "geen",    "vracht": "",       "sprite": "" }
   }

@@ -80,9 +80,17 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
     return uit;
   }
 
-  const kanBetalen = (kosten) => Object.entries(kosten).every(([k, n]) => (voorraad[k] || 0) >= n);
+  // Rood maakt geen planken: wat planken kost, betaalt hij met hout.
+  // Eén plank kost hem twee hout, net als de verhouding in de bouwkosten.
+  const g = (k) => (k === 'planken' ? 'hout' : k);
+  const omzet = (kosten) => {
+    const u = {};
+    for (const [k, n] of Object.entries(kosten || {})) u[g(k)] = (u[g(k)] || 0) + (k === 'planken' ? n * 2 : n);
+    return u;
+  };
+  const kanBetalen = (kosten) => Object.entries(omzet(kosten)).every(([k, n]) => (voorraad[k] || 0) >= n);
   function betaal(kosten) {
-    for (const [k, n] of Object.entries(kosten)) voorraad[k] -= n;
+    for (const [k, n] of Object.entries(omzet(kosten))) voorraad[k] -= n;
   }
 
   // Wat koopt hij nu? Rammen en ladders pas na de derde aanval. Wil hij een
@@ -95,7 +103,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
       if (aanvallen < w.vanaf || tel(soort) >= w.max) continue;
       const kosten = soorten[soort].kosten;
       if (kanBetalen(kosten)) return soort;
-      if (Object.entries(kosten).every(([k, n]) => k === 'goud' || (voorraad[k] || 0) >= n)) return null;   // sparen
+      if (Object.entries(omzet(kosten)).every(([k, n]) => k === 'goud' || (voorraad[k] || 0) >= n)) return null;   // sparen
     }
     if (aanvallen >= H.rammenVanaf) {
       const max = Math.min(H.rammenMax, aanvallen - H.rammenVanaf + 1);
@@ -103,7 +111,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
         if (tel(soort) >= max) continue;
         const kosten = soorten[soort].kosten;
         if (kanBetalen(kosten)) return soort;
-        const alleenGoud = Object.entries(kosten).every(([k, n]) => k === 'goud' || (voorraad[k] || 0) >= n);
+        const alleenGoud = Object.entries(omzet(kosten)).every(([k, n]) => k === 'goud' || (voorraad[k] || 0) >= n);
         if (alleenGoud) return null;   // sparen
       }
     }

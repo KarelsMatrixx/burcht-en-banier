@@ -817,6 +817,14 @@ export function tekenWerker(naam, def) {
       vlak(ctx, [[mx + 8, 17.4 + wip], [mx + 9.4, 15.8 + wip], [mx + 9.4, 21.4 + wip], [mx + 8, 23 + wip]], '#8b887f');
       blok(ctx, mx + 0.6, 20.6 + wip, 6, 1.7, kiel);
       ovaal(ctx, mx + 6.9, 21.4 + wip, 1.2, 1.2, huid);
+    } else if (houding === 'last' && def.vracht === 'planken') {
+      // Een stapel lichte planken op de schouder
+      for (const [hoog, kleur] of [[0, '#c9a36a'], [1.6, '#dbb97f'], [3.2, '#c9a36a']]) {
+        blok(ctx, mx - 9, 15.4 - hoog + wip, 17, 1.5, kleur);
+        blok(ctx, mx - 9, 16.5 - hoog + wip, 17, 0.4, 'rgba(0,0,0,0.25)');
+      }
+      blok(ctx, mx + 2.7, 16.8 + wip, 2.3, 3.4, kiel);
+      ovaal(ctx, mx + 3.9, 16.6 + wip, 1.3, 1.3, huid);
     } else if (houding === 'last') {
       // Twee stammetjes op de schouder, met een arm eromheen
       for (const [hoog, kleur] of [[0, stam], [2.7, tint(stam, 0.14)]]) {

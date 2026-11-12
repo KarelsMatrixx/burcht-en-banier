@@ -21,6 +21,7 @@
   "bereik is hoe ver hij kan raken (tegels; boven de 2 is het een schutter), zicht is van hoe ver hij een vijand opmerkt.",
   "alleenBouw: deze soldaat vecht niet met soldaten, hij beukt alleen op bouwwerken (de stormram). pijlDekking: het deel van een pijl dat bij hem doorkomt (0.15 is iets meer dan een zesde). ladder: deze soldaat zet een ladder tegen een muur van rood (slagTijd is hoe lang dat duurt); langs die ladder kunnen je soldaten de muur op en aan de andere kant weer af.",
   "opslag: de grondstoffen in de lijst hebben een grens. De burcht geeft plek aan het getal bij burcht, elke voorraadkamer voegt het getal bij voorraadkamer toe. Is alles vol, dan wachten je werkers met hun last. Goud heeft geen grens.",
+  "neemt: een werker die iets verwerkt (de zager) haalt dit eerst uit de voorraad, loopt terug naar zijn werkplaats, werkt werkTijd seconden en brengt dan last van haalt naar de voorraad. 4 hout wordt zo 4 planken.",
   "legerMax: zoveel soldaten kun je hoogstens hebben.",
   "strijd: de aanvallen van de rode heer. eersteGolf is na hoeveel seconden de eerste aanval komt, tussenGolven de tijd tussen twee aanvallen.",
   "golven: wie er per aanval komt. Na de laatste regel blijft die laatste aanval terugkomen, tot de burcht van rood valt.",
@@ -37,6 +38,10 @@
    "naam": "Hout",
    "begin": 60
   },
+  "planken": {
+   "naam": "Planken",
+   "begin": 20
+  },
   "steen": {
    "naam": "Steen",
    "begin": 30
@@ -50,7 +55,16 @@
    "begin": 30
   }
  },
- "opslag": { "grondstoffen": ["hout", "steen", "voedsel"], "burcht": 150, "voorraadkamer": 150 },
+ "opslag": {
+  "grondstoffen": [
+   "hout",
+   "planken",
+   "steen",
+   "voedsel"
+  ],
+  "burcht": 150,
+  "voorraadkamer": 150
+ },
  "sloopTerug": 0.5,
  "bevolking": {
   "begin": 4,
@@ -141,6 +155,25 @@
    "bezig": "plukt appels",
    "mist": "kan niet bij zijn boomgaard",
    "raad": "Maak er een tegel naast vrij."
+  },
+  "zager": {
+   "naam": "zager",
+   "soort": "ZAGER",
+   "haalt": "planken",
+   "bij": "ZAGERIJ",
+   "neemt": {
+    "hout": 4
+   },
+   "ruimtOp": false,
+   "last": 4,
+   "werkTijd": 4,
+   "snelheid": 1.6,
+   "snelheidMetLast": 1.3,
+   "bereik": 0,
+   "plek": "de zagerij",
+   "bezig": "zaagt planken",
+   "mist": "wacht op hout in de voorraad",
+   "raad": "Zet een houthakker aan het werk."
   }
  },
  "soldaten": {
@@ -177,7 +210,7 @@
    "soort": "RAM",
    "kosten": {
     "goud": 20,
-    "hout": 20
+    "planken": 10
    },
    "snelheid": 0.9,
    "leven": 240,
@@ -194,7 +227,7 @@
    "soort": "LADDER",
    "kosten": {
     "goud": 4,
-    "hout": 4
+    "planken": 2
    },
    "snelheid": 2.4,
    "leven": 25,
@@ -210,7 +243,7 @@
    "soort": "KATAPULT",
    "kosten": {
     "goud": 30,
-    "hout": 30
+    "planken": 15
    },
    "snelheid": 0.8,
    "leven": 90,
@@ -227,7 +260,7 @@
    "soort": "TOREN",
    "kosten": {
     "goud": 40,
-    "hout": 60
+    "planken": 30
    },
    "snelheid": 0.7,
    "leven": 300,

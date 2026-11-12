@@ -380,6 +380,8 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     const e = werkplaatsen.get(werkVak);
     if (!e) return;
     laatBronLos(e.werk);
+    // Liep hij met grondstof uit de voorraad, dan komt die terug.
+    if (e.werk.genomen) for (const [naam, n] of Object.entries(e.werk.beroep.neemt || {})) voorraad[naam] += n;
     eenheden.verwijder(e);
     werkplaatsen.delete(werkVak);
     // Hij is weer een boer zonder werk, op de plek waar hij stond.
@@ -415,6 +417,65 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     w.staat = w.last ? 'breng' : 'zoek';
   }
 
+  function verwerk(e, hier) {
+    const w = e.werk;
+    const beroep = w.beroep;
+    const thuis = thuisVan(w.plaats);
+    if (w.staat === 'zoek') {
+      if (!wegvinder.isVrij(hier % B, Math.floor(hier / B), TEAM)) {
+        if (thuis < 0) return klem(e, 'is ingebouwd');
+        zetOp(e, thuis);
+        hier = thuis;
+      }
+      // Eerst kijken of er genoeg is: anders hoeft hij niet te lopen.
+      for (const [naam, n] of Object.entries(beroep.neemt)) if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3);
+      if (afleverplek[hier]) w.staat = 'haal';
+      else {
+        const doel = zoekDichtbij(hier, bijBurcht, B * H);
+        if (!doel || !loopNaar(e, hier, doel.sta)) return klem(e, 'kan niet bij de voorraad', 'Zet een poort in je muur of bouw een voorraadkamer dichterbij.');
+        w.klem = '';
+        w.staat = 'haal';
+        return;
+      }
+    }
+    if (w.staat === 'haal') {
+      if (e.pad) return;
+      if (!afleverplek[hier]) { w.staat = 'zoek'; return; }
+      for (const [naam, n] of Object.entries(beroep.neemt)) if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3);
+      for (const [naam, n] of Object.entries(beroep.neemt)) voorraad[naam] -= n;
+      opVoorraad();
+      opVerandering();
+      w.klem = '';
+      w.genomen = true;
+      e.houding = 'last';
+      e.snelheid = beroep.snelheidMetLast;
+      if (thuis < 0 || !loopNaar(e, hier, thuis)) {
+        // Kan hij niet terug, dan legt hij het weer neer.
+        for (const [naam, n] of Object.entries(beroep.neemt)) voorraad[naam] += n;
+        w.genomen = false;
+        e.houding = null;
+        e.snelheid = beroep.snelheid;
+        return klem(e, `kan niet terug naar ${beroep.plek}`, '', 3);
+      }
+      w.staat = 'terug';
+      return;
+    }
+    // terug
+    if (e.pad) return;
+    if (hier !== thuis) {
+      if (thuis < 0 || !loopNaar(e, hier, thuis)) return klem(e, `kan niet terug naar ${beroep.plek}`, '', 3);
+      return;
+    }
+    w.staat = 'werk';
+    w.genomen = false;
+    w.tel = Math.round(beroep.werkTijd * stappenPerSeconde);
+    e.houding = 'hak';
+    e.snelheid = beroep.snelheid;
+    const dx = (w.plaats % B) - (hier % B);
+    const dy = Math.floor(w.plaats / B) - Math.floor(hier / B);
+    e.kijkt = dx - dy >= 0 ? 1 : -1;
+  }
+
   // Eén stap voor één werker.
   function werk(e) {
     const w = e.werk;
@@ -424,6 +485,10 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       return;
     }
     let hier = Math.floor(e.y) * B + Math.floor(e.x);
+
+    // Een verwerker (de zager): haalt grondstof uit de voorraad, verwerkt
+    // die in zijn werkplaats en brengt het product terug.
+    if (beroep.neemt && (w.staat === 'zoek' || w.staat === 'haal' || w.staat === 'terug')) return verwerk(e, hier);
 
     if (w.staat === 'zoek') {
       const thuis = thuisVan(w.plaats);
@@ -459,7 +524,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     }
 
     if (w.staat === 'werk') {
-      if (kaart.object[w.bron] !== beroep.bron) return opnieuw(e);
+      if (!beroep.neemt && kaart.object[w.bron] !== beroep.bron) return opnieuw(e);
       if (--w.tel > 0) return;
       const bron = w.bron;
       laatBronLos(w);
@@ -602,8 +667,10 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     const bezig = {
       zoek: 'zoekt werk',
       heen: `loopt naar ${w.beroep.plek}`,
+      haal: `haalt ${Object.keys(w.beroep.neemt || {}).join(' en ')} uit de voorraad`,
+      terug: `brengt ${Object.keys(w.beroep.neemt || {}).join(' en ')} naar ${w.beroep.plek}`,
       werk: w.beroep.bezig,
-      breng: `brengt ${w.beroep.haalt} naar de burcht`,
+      breng: `brengt ${w.beroep.haalt} naar de voorraad`,
     };
     return `de ${w.beroep.naam} ${w.klem || bezig[w.staat]}`;
   }
