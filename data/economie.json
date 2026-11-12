@@ -25,6 +25,7 @@
   "Voedsel: eet is een lijst (brood en voedsel, dat zijn de appels). Je volk eet om de beurt van elke soort. stemming.afwisseling telt per ronde bij de populariteit als er van meer dan één soort te eten is. De bakker maakt van 4 tarwe 8 brood.",
   "handel: bij een voorraadkamer verkoop je per keer 'per' stuks van een grondstof voor 'prijs' goud.",
   "zwaai: deze soldaat raakt ook één vijand naast zijn doelwit, met dit deel van zijn schade (1 = volle schade). bouwBonus: keer zoveel schade aan de genoemde bouwwerken. doorboort: pijlDekking van het doelwit telt niet (de bolt gaat door een schild).",
+  "kazerne: klassiek of mystiek, bij welke kazerne je hem opleidt. boeren: zoveel boeren zonder werk kost hij (anders 1). eersteSlag: zijn eerste slag op een nieuw doelwit doet zoveel keer schade. klimMuur: hij klimt in zoveel seconden een gewone muur op zonder ladder. verborgen: vijanden zien hem pas binnen zoveel tegels, tot hij slaat. gebied: dit deel van zijn schade raakt ook wie naast het doelwit staat. brand: hout dat hij raakt brandt duur seconden en verliest perSeconde leven per seconde.",
   "legerMax: zoveel soldaten kun je hoogstens hebben.",
   "strijd: de aanvallen van de rode heer. eersteGolf is na hoeveel seconden de eerste aanval komt, tussenGolven de tijd tussen twee aanvallen.",
   "golven: wie er per aanval komt. Na de laatste regel blijft die laatste aanval terugkomen, tot de burcht van rood valt.",
@@ -262,7 +263,8 @@
    "schadeBouw": 5,
    "slagTijd": 1.0,
    "bereik": 1.5,
-   "zicht": 5
+   "zicht": 5,
+   "kazerne": "klassiek"
   },
   "bijlridder": {
    "naam": "Bijlridder",
@@ -293,7 +295,8 @@
      "BAKKERIJ"
     ]
    },
-   "tip": "Raakt ook de vijand naast zijn doelwit. Dubbele schade aan poorten en houten gebouwen."
+   "tip": "Raakt ook de vijand naast zijn doelwit. Dubbele schade aan poorten en houten gebouwen.",
+   "kazerne": "klassiek"
   },
   "boogschutter": {
    "naam": "Boogschutter",
@@ -307,7 +310,8 @@
    "schadeBouw": 1,
    "slagTijd": 1.6,
    "bereik": 6,
-   "zicht": 7
+   "zicht": 7,
+   "kazerne": "klassiek"
   },
   "kruisboog": {
    "naam": "Kruisboog",
@@ -325,7 +329,8 @@
    "bereik": 6,
    "zicht": 7,
    "doorboort": true,
-   "tip": "Schiet traag maar hard. Een schild of dak helpt niet tegen zijn bolt."
+   "tip": "Schiet traag maar hard. Een schild of dak helpt niet tegen zijn bolt.",
+   "kazerne": "klassiek"
   },
   "ram": {
    "naam": "Stormram",
@@ -342,7 +347,8 @@
    "bereik": 1.5,
    "zicht": 4,
    "alleenBouw": true,
-   "pijlDekking": 0.15
+   "pijlDekking": 0.15,
+   "kazerne": "klassiek"
   },
   "ladder": {
    "naam": "Ladderdrager",
@@ -358,7 +364,8 @@
    "slagTijd": 2,
    "bereik": 1.5,
    "zicht": 4,
-   "ladder": true
+   "ladder": true,
+   "kazerne": "klassiek"
   },
   "katapult": {
    "naam": "Katapult",
@@ -375,7 +382,8 @@
    "bereik": 9,
    "zicht": 10,
    "alleenBouw": true,
-   "pijlDekking": 0.5
+   "pijlDekking": 0.5,
+   "kazerne": "klassiek"
   },
   "toren": {
    "naam": "Belegeringstoren",
@@ -393,7 +401,52 @@
    "zicht": 4,
    "ladder": true,
    "vast": true,
-   "pijlDekking": 0.3
+   "pijlDekking": 0.3,
+   "kazerne": "klassiek"
+  },
+  "sluipmoordenaar": {
+   "naam": "Sluipmoordenaar",
+   "soort": "SLUIP",
+   "kazerne": "mystiek",
+   "boeren": 2,
+   "kosten": {
+    "goud": 24,
+    "koper": 4
+   },
+   "snelheid": 2.8,
+   "leven": 36,
+   "schade": 10,
+   "eersteSlag": 3,
+   "schadeBouw": 3,
+   "slagTijd": 0.7,
+   "bereik": 1.5,
+   "zicht": 6,
+   "klimMuur": 2,
+   "verborgen": 3,
+   "tip": "Klimt zonder ladder op een gewone muur. Vijanden zien hem pas van dichtbij. Zijn eerste slag doet driedubbel."
+  },
+  "vlammenwever": {
+   "naam": "Vlammenwever",
+   "soort": "VLAM",
+   "kazerne": "mystiek",
+   "boeren": 2,
+   "kosten": {
+    "goud": 32,
+    "koper": 6
+   },
+   "snelheid": 1.8,
+   "leven": 33,
+   "schade": 12,
+   "schadeBouw": 8,
+   "slagTijd": 2.5,
+   "bereik": 7,
+   "zicht": 8,
+   "gebied": 0.5,
+   "brand": {
+    "duur": 8,
+    "perSeconde": 3
+   },
+   "tip": "Gooit een vuurbal: halve schade ook om het doelwit heen. Hout gaat in brand."
   }
  },
  "legerMax": 40,

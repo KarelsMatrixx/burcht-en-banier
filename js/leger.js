@@ -89,7 +89,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     if (soldaten.length >= max) return `je leger is vol (${max} soldaten)`;
     const tekort = economie.tekort(def.kosten);
     if (tekort) return tekort;
-    if (economie.bevolking().vrij <= 0) return 'er is geen boer zonder werk';
+    const boeren = def.boeren || 1;
+    if (economie.bevolking().vrij < boeren) return boeren > 1 ? `hij kost ${boeren} boeren zonder werk` : 'er is geen boer zonder werk';
     return '';
   }
 
@@ -101,7 +102,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const vak = plekBij(kazerneVak, 4);
     if (vak < 0) return 'er is geen plek bij de kazerne';
     economie.betaal(soorten[sleutel].kosten);
-    economie.boerWeg();
+    for (let i = soorten[sleutel].boeren || 1; i > 0; i--) economie.boerWeg();
     maak(sleutel, vak);
     opVerandering();
     opLeger();

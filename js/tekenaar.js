@@ -48,6 +48,8 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     [assets.haal('eenheid.mijnwerker_blauw'), assets.haal('eenheid.mijnwerker_rood')],
     [assets.haal('eenheid.bijlridder_blauw'), assets.haal('eenheid.bijlridder_rood')],
     [assets.haal('eenheid.kruisboog_blauw'), assets.haal('eenheid.kruisboog_rood')],
+    [assets.haal('eenheid.sluip_blauw'), assets.haal('eenheid.sluip_rood')],
+    [assets.haal('eenheid.vlam_blauw'), assets.haal('eenheid.vlam_rood')],
   ];
   let pixelRatio = 1;
   let getekend = 0;
@@ -414,7 +416,11 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         else if (e.houding === 'hak') beeld = Math.floor(nu / 210 + i) % beelden.length;
         else if (e.houding === 'sla' || e.houding === 'schiet') beeld = e.pose ? 1 : 0;
         else if (e.loopt) beeld = Math.floor(nu / 115 + i * 1.3) % beelden.length;
+        // Een verborgen sluipmoordenaar: van jou half doorzichtig, van rood
+        // alleen van dichtbij te zien (dat bepaalt strijd.js; hier vaag).
+        if (e.verborgen) ctx.globalAlpha = 0.5;
         ctx.drawImage(beelden[beeld], plekX[i] - s.ax, plekY[i] - s.ay, s.b, s.h);
+        ctx.globalAlpha = 1;
         // Wie geraakt is, heeft een balkje boven zijn hoofd.
         if (e.levenMax && e.leven < e.levenMax) balk(plekX[i], plekY[i] - s.ay - 5, 14, e.leven / e.levenMax);
       }
@@ -515,6 +521,25 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         };
         const kop = punt(t);
         const staart = punt(Math.max(0, t - 0.16));
+        if (f.vuur) {
+          // Een vuurbal met een gloeiende staart
+          for (let s = 4; s >= 1; s--) {
+            const q = punt(Math.max(0, t - s * 0.04));
+            ctx.fillStyle = `rgba(255, ${120 + s * 20}, 40, ${0.15 * (5 - s)})`;
+            ctx.beginPath();
+            ctx.arc(q[0], q[1], 1.5 + (4 - s) * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.fillStyle = '#ffd36a';
+          ctx.beginPath();
+          ctx.arc(kop[0], kop[1], 3.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ff7a2a';
+          ctx.beginPath();
+          ctx.arc(kop[0] + 0.6, kop[1] + 0.6, 2, 0, Math.PI * 2);
+          ctx.fill();
+          continue;
+        }
         if (f.steen) {
           ctx.fillStyle = '#6b6a66';
           ctx.beginPath();
@@ -534,6 +559,39 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         ctx.fillRect(kop[0] - 0.9, kop[1] - 0.9, 1.8, 1.8);
       }
       ctx.lineCap = 'butt';
+      // Ontploffingen van vuur en brandend hout
+      for (let i = 0; i < effecten.length; i++) {
+        const f = effecten[i];
+        if (f.soort !== 'vuur' && f.soort !== 'brand') continue;
+        const wx = (f.x - f.y) * HALVE_BREEDTE;
+        const wy = (f.x + f.y) * HALVE_HOOGTE;
+        if (f.soort === 'vuur') {
+          const t = (nu - f.van - (f.wacht || 0)) / (f.duur - (f.wacht || 0));
+          if (t < 0 || t > 1) continue;
+          const r = 6 + t * 26;
+          ctx.fillStyle = `rgba(255, 140, 40, ${0.45 * (1 - t)})`;
+          ctx.beginPath();
+          ctx.ellipse(wx, wy, r, r * 0.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = `rgba(255, 220, 110, ${0.8 * (1 - t)})`;
+          ctx.beginPath();
+          ctx.arc(wx, wy - 6 - t * 8, 5 * (1 - t) + 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Een paar flakkerende vlammetjes
+          for (let j = 0; j < 4; j++) {
+            const fl = Math.sin(nu / 90 + j * 1.7 + f.x * 3) * 0.5 + 0.5;
+            const fx = wx - 9 + j * 6;
+            const fy = wy - 10 - (j % 2) * 6;
+            ctx.fillStyle = `rgba(255, ${110 + fl * 90}, 30, 0.85)`;
+            ctx.beginPath();
+            ctx.moveTo(fx - 3, fy + 4);
+            ctx.quadraticCurveTo(fx - 2, fy - 4 - fl * 5, fx, fy - 9 - fl * 5);
+            ctx.quadraticCurveTo(fx + 2, fy - 4 - fl * 5, fx + 3, fy + 4);
+            ctx.fill();
+          }
+        }
+      }
     }
 
     // Het kader waarmee je soldaten kiest, in schermmaat over alles heen.

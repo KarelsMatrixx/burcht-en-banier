@@ -602,6 +602,102 @@ export function tekenKruisboogschutter(naam, def) {
   return beelden;
 }
 
+// De sluipmoordenaar: slank, licht gebogen, donkere kap met sjaal voor het
+// gezicht, twee korte dolken. Donkergrijs met paars accent; de teamkleur
+// zit op de sjaal. slag: -1 = lopen, 0 = dolken klaar, 1 = de kruisbeweging.
+export function tekenSluipmoordenaar(naam, def) {
+  const paars = '#7a4fb8';
+  const teken = (ctx, beeld, slag) => {
+    const vecht = slag >= 0;
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 2.2 : [0, 2, 0, -2][beeld];
+    const mx = vecht ? 12.5 + slag : 13.5;   // licht voorovergebogen
+    ovaal(ctx, 13, 34, 6, 2.5, 'rgba(0,0,0,0.3)');
+    blok(ctx, mx - 3 + pas, 27.5 + wip, 2.4, 6.5 - wip, '#2a2a30');
+    blok(ctx, mx + 0.6 - pas, 27.5 + wip, 2.4, 6.5 - wip, '#202026');
+    // Slank lijf in donkere stof, schuin naar voren
+    vlak(ctx, [[mx - 3.6, 28 + wip], [mx + 3.6, 28 + wip], [mx + 4.4, 18 + wip], [mx - 2, 17.5 + wip]], '#3a3a44');
+    vlak(ctx, [[mx - 3.6, 28 + wip], [mx - 1.4, 28 + wip], [mx - 0.2, 17.6 + wip], [mx - 2, 17.5 + wip]], 'rgba(0,0,0,0.3)');
+    blok(ctx, mx - 3.4, 23.2 + wip, 7.4, 1, paars);
+    // Kap en sjaal (teamkleur)
+    ovaal(ctx, mx + 1, 13.2 + wip, 4, 4.3, '#2c2c34');
+    ovaal(ctx, mx + 2.2, 13.6 + wip, 2.2, 2.3, '#1a1a1f');
+    blok(ctx, mx + 1.4, 12.6 + wip, 2.6, 0.9, '#d9c0a0');            // ogen in de spleet
+    ovaal(ctx, mx + 2.6, 13 + wip, 0.4, 0.4, '#b48cff');
+    vlak(ctx, [[mx - 2.4, 15.6 + wip], [mx + 4.8, 15.4 + wip], [mx + 4, 18.2 + wip], [mx - 2.2, 18.4 + wip]], def.kleur);
+    vlak(ctx, [[mx - 2.4, 16 + wip], [mx - 5.6, 21 + wip], [mx - 3.4, 21.4 + wip], [mx - 1.2, 17.8 + wip]], tint(def.kleur, -0.2));   // wapperend eind
+    const dolk = (x, y, hoek) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(hoek);
+      blok(ctx, -0.6, -0.4, 1.6, 0.8, '#4a3020');
+      vlak(ctx, [[1, -0.7], [5.2, 0], [1, 0.7]], '#d7dbe1');
+      ctx.restore();
+    };
+    if (!vecht) {
+      dolk(mx + 3.6, 22 + wip, 0.5);
+      dolk(mx - 3, 22.5 + wip, 2.6);
+    } else if (slag === 0) {
+      dolk(mx + 4, 19, -0.6);
+      dolk(mx + 3, 22, 0.6);
+      ovaal(ctx, mx + 3.8, 19.6, 1, 1, '#d9c0a0');
+    } else {
+      dolk(mx + 5, 21, 0.9);
+      dolk(mx + 5, 20, -0.9);
+      lijn(ctx, mx + 6, 16, mx + 11, 25, 'rgba(180,140,255,0.5)', 0.7);
+      lijn(ctx, mx + 6, 25, mx + 11, 16, 'rgba(180,140,255,0.5)', 0.7);
+    }
+  };
+  const beelden = loopbeelden((ctx, beeld) => teken(ctx, beeld, -1));
+  beelden.houdingen = { sla: loopbeelden((ctx, beeld) => teken(ctx, 0, beeld), [0, 1]) };
+  return beelden;
+}
+
+// De vlammenwever: lange rode en oranje mantel met opstaande kraag, een
+// staf met een gloeiende bol, vonken rond de handen. Teamkleur op de sjerp.
+// worp: -1 = lopen, 0 = bol klaar in de hand, 1 = de bol gegooid.
+export function tekenVlammenwever(naam, def) {
+  const teken = (ctx, beeld, worp) => {
+    const vecht = worp >= 0;
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const zwier = vecht ? 0 : [0, 1, 0, -1][beeld];
+    const mx = 13;
+    ovaal(ctx, mx, 34, 7, 2.8, 'rgba(0,0,0,0.3)');
+    // Staf met gloeiende bol
+    lijn(ctx, mx - 6, 33, mx - 6, 6 + wip, '#4a3020', 1.3);
+    ovaal(ctx, mx - 6, 5 + wip, 3.4, 3.4, 'rgba(255,170,60,0.35)');
+    ovaal(ctx, mx - 6, 5 + wip, 2, 2, '#ffb347');
+    ovaal(ctx, mx - 6.5, 4.4 + wip, 0.8, 0.8, '#fff2c0');
+    // Lange mantel tot de grond
+    vlak(ctx, [[mx - 5, 18 + wip], [mx + 5, 18 + wip], [mx + 6.5 + zwier, 33], [mx - 5.5 + zwier, 33]], '#b83a22');
+    vlak(ctx, [[mx - 1, 19 + wip], [mx + 5, 18 + wip], [mx + 6.5 + zwier, 33], [mx + 1 + zwier, 33]], '#e0702a');
+    vlak(ctx, [[mx - 5, 18 + wip], [mx - 2.4, 18 + wip], [mx - 3 + zwier, 33], [mx - 5.5 + zwier, 33]], 'rgba(0,0,0,0.25)');
+    blok(ctx, mx - 4.6, 23.5 + wip, 9.6, 1.6, def.kleur);           // sjerp in teamkleur
+    // Opstaande kraag en hoofd
+    vlak(ctx, [[mx - 5, 18 + wip], [mx - 4, 12 + wip], [mx - 1.5, 16.5 + wip]], '#8a2a18');
+    vlak(ctx, [[mx + 5, 18 + wip], [mx + 4, 12 + wip], [mx + 1.5, 16.5 + wip]], '#c84a26');
+    ovaal(ctx, mx + 0.4, 13 + wip, 3.2, 3.4, '#e2b896');
+    ovaal(ctx, mx + 0.2, 10.4 + wip, 3.6, 2.2, '#3a2418');           // haar
+    ovaal(ctx, mx + 1.6, 13 + wip, 0.5, 0.5, '#2a1d14');
+    // Hand met vuur
+    if (!vecht) {
+      ovaal(ctx, mx + 5, 22 + wip, 1.3, 1.3, '#e2b896');
+      ovaal(ctx, mx + 5.6, 20.6 + wip, 1, 1, 'rgba(255,200,80,0.8)');
+    } else if (worp === 0) {
+      ovaal(ctx, mx + 6, 15, 1.4, 1.4, '#e2b896');
+      ovaal(ctx, mx + 6.6, 12.8, 3.4, 3.4, 'rgba(255,150,40,0.45)');
+      ovaal(ctx, mx + 6.6, 12.8, 2.2, 2.2, '#ffcc55');
+      for (const [dx, dy] of [[9, 10], [4, 10.5], [8.5, 15]]) ovaal(ctx, mx + dx, dy, 0.6, 0.6, '#ffe28a');
+    } else {
+      ovaal(ctx, mx + 8, 19, 1.4, 1.4, '#e2b896');
+      lijn(ctx, mx + 9, 18.6, mx + 13, 17.6, 'rgba(255,170,60,0.6)', 1.2);
+    }
+  };
+  const beelden = loopbeelden((ctx, beeld) => teken(ctx, beeld, -1));
+  beelden.houdingen = { schiet: loopbeelden((ctx, beeld) => teken(ctx, 0, beeld), [0, 1]) };
+  return beelden;
+}
+
 // Een stormram: een houten afdak op wielen met een zware balk eronder. Het
 // dak is bekleed met huiden in teamkleur. Lopen = de wielen draaien,
 // houdingen.sla: beeld 0 = de balk naar achteren, beeld 1 = de stoot.
@@ -1591,6 +1687,72 @@ export function tekenSteengroeve(naam, def) {
 
 // De kazerne: een stenen gebouw met een banier in jouw kleur, een schild
 // aan de wand en een rek met speren.
+// De magiertoren (mystieke kazerne): een ronde stenen toren met een spits
+// paars dak, een gloeiend raam, lila rook en een banier met een ster.
+export function tekenMagiertoren(naam, def) {
+  const b = TB + 6;
+  const h = TH + 92;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const r = 15;
+  const hoog = 44;
+  ovaal(ctx, cx + 3, cy + 3, 26, 11, 'rgba(0,0,0,0.25)');
+  // Voet en ronde muur
+  ovaal(ctx, cx, cy, r + 3, (r + 3) / 2, tint(def.kleur, -0.2));
+  blok(ctx, cx - r, cy - hoog, r * 2, hoog, def.kleur);
+  ovaal(ctx, cx, cy, r, r / 2, def.kleur);
+  const grad = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
+  grad.addColorStop(0, 'rgba(0,0,0,0.35)');
+  grad.addColorStop(0.55, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(255,255,255,0.12)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(cx - r, cy - hoog, r * 2, hoog);
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, r, r / 2, 0, 0, Math.PI);
+  ctx.fill();
+  // Stenen voegen
+  for (let rij = 1; rij < 8; rij++) {
+    const y = cy - rij * 5.5;
+    ctx.strokeStyle = 'rgba(40,36,30,0.25)';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.ellipse(cx, y, r, r / 2, 0, 0.15, Math.PI - 0.15);
+    ctx.stroke();
+  }
+  // Deur en gloeiende ramen
+  ctx.fillStyle = '#2a1d14';
+  ctx.beginPath();
+  ctx.ellipse(cx + 3, cy + 1, 3.6, 5.5, 0, Math.PI, Math.PI * 2);
+  ctx.fill();
+  blok(ctx, cx - 0.6, cy + 1, 7.2, 5, '#2a1d14');
+  for (const [x, y] of [[cx + 4, cy - 24], [cx - 6, cy - 34]]) {
+    ovaal(ctx, x, y, 3.6, 4.4, 'rgba(180,120,255,0.35)');
+    blok(ctx, x - 1.5, y - 2.6, 3, 5, '#e8c8ff');
+    blok(ctx, x - 0.2, y - 2.6, 0.4, 5, '#5a3a8a');
+  }
+  // Spits dak
+  const top = cy - hoog;
+  vlak(ctx, [[cx - r - 3, top + 2], [cx, top - 36], [cx + r + 3, top + 2]], def.dak);
+  vlak(ctx, [[cx, top - 36], [cx + r + 3, top + 2], [cx + 4, top + 4]], tint(def.dak, 0.18));
+  ovaal(ctx, cx, top + 2, r + 3, 4, tint(def.dak, -0.25));
+  // Banier met ster op de punt
+  lijn(ctx, cx, top - 36, cx, top - 48, '#2b2118', 1);
+  vlak(ctx, [[cx, top - 48], [cx + 10, top - 46], [cx, top - 42]], '#5a3aa8');
+  ctx.fillStyle = '#ffe28a';
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const hoek = -Math.PI / 2 + (i * Math.PI) / 5;
+    const rr = i % 2 ? 0.9 : 2;
+    ctx.lineTo(cx + 4 + Math.cos(hoek) * rr, top - 45.4 + Math.sin(hoek) * rr);
+  }
+  ctx.fill();
+  // Lila rook uit een schoorsteentje
+  blok(ctx, cx + 7, top - 14, 2.6, 6, tint(def.kleur, -0.1));
+  for (const [dx, dy, rr] of [[8.5, -17, 2], [10, -21, 2.6], [9, -25.5, 3]]) ovaal(ctx, cx + dx, top + dy, rr, rr * 0.85, 'rgba(200,170,255,0.5)');
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
 export function tekenKazerne(naam, def) {
   const huis = huisVariant(naam, def, 0);
   const ctx = huis.beeld.getContext('2d');

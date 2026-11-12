@@ -155,6 +155,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const d = doel.krijg && doel.krijg.def.pijlDekking;
     return d > 0 && d < 1 ? d : 1;
   };
+  // Een sluipmoordenaar die al even niet heeft geslagen, zie je pas van dichtbij.
+  const verborgenVoor = (a, d) => {
+    const ka = krijgVan(a);
+    return !!(ka && ka.def.verborgen && stapNr >= (ka.gezienTot || 0) && d > ka.def.verborgen);
+  };
   const N = B * H;
   const knoopVan = (e) => vakVan(e) + (e.opMuur ? N : 0);
   // De ladders: vak -> [dx, dy], de kant van de muur waar hij tegenaan staat.
@@ -179,6 +184,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         pose: 0,
         negeer: null, negeerTot: 0,      // bij wie hij net niet kon komen
         ladder: -1,                      // het stuk muur waar hij een ladder tegen zet
+        klim: -1,                        // het stuk muur waar een sluipmoordenaar op klimt
         ladderKlok: 0,
         duw: 0,                          // hoe lang hij al aan een ladder van rood duwt
       };
@@ -437,7 +443,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (a.dood || a.klimt || (a === k.negeer && stapNr < k.negeerTot)) continue;
       if (!kanRaken(e, k, a)) continue;
       const d = Math.hypot(a.x - e.x, a.y - e.y);
-      if (d >= min) continue;
+      if (d >= min || verborgenVoor(a, d)) continue;
       if (d > bereik && !kanBij(e, a)) continue;   // hij kan er niet bij en niet op schieten
       min = d;
       beste = a;
@@ -493,6 +499,23 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (k.afkoel > 0) return;
     slaToe(e, k);
     let schade = k.def.schade;
+    // Wie slaat, laat zich zien.
+    if (k.def.verborgen) k.gezienTot = stapNr + stappen(3);
+    // De eerste slag op een nieuw doelwit (de sluipmoordenaar).
+    if (k.def.eersteSlag && k.laatsteDoel !== doel) schade *= k.def.eersteSlag;
+    k.laatsteDoel = doel;
+    if (k.def.gebied !== undefined) {
+      vuurbal(e, doel.x, doel.y, 16 + (doel.hoogte || 0));
+      if (doel.opMuur) schade = Math.max(1, Math.round(schade * R.muurDekking));
+      raak(doel, schade, e);
+      steekAan(doel, k.def);
+      for (const a of lijstVan(doel.team)) {
+        if (a === doel || a.dood || Math.hypot(a.x - doel.x, a.y - doel.y) > 1.5) continue;
+        raak(a, Math.max(1, Math.round(k.def.schade * k.def.gebied)), e);
+        steekAan(a, k.def);
+      }
+      return;
+    }
     if (isSchutter(k)) {
       pijl(e.x, e.y, 20 + (e.hoogte || 0), doel.x, doel.y, 16 + (doel.hoogte || 0));
       // Wie op de muur staat, heeft dekking van de kantelen.
@@ -526,9 +549,50 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.rust = 0;
     if (k.afkoel > 0) return;
     slaToe(e, k);
-    if (k.def.bereik > 2) pijl(e.x, e.y, 20, b.x, b.y, b.burcht ? 44 : 24, !!k.def.alleenBouw);
+    if (k.def.verborgen) k.gezienTot = stapNr + stappen(3);
+    if (k.def.gebied !== undefined) {
+      vuurbal(e, b.x, b.y, b.burcht ? 44 : 24);
+      if (k.def.brand && !b.burcht && HOUT.has(b.soort)) zetBrand(b, k.def.brand);
+    } else if (k.def.bereik > 2) pijl(e.x, e.y, 20, b.x, b.y, b.burcht ? 44 : 24, !!k.def.alleenBouw);
     raakBouw(b, k.def.schadeBouw * bouwKeer(k.def, b));
   }
+  // --- Vuur: de vlammenwever ---------------------------------------------------------
+  // Wat van hout is: de poort en de werken. Dat gaat in brand.
+  const HOUT = new Set(['POORT', 'HOUTHAKKER', 'BOOMGAARD', 'ZAGERIJ', 'TARWEVELD', 'STEENGROEVE', 'VOORRAADKAMER', 'WONING', 'KAZERNE', 'BAKKERIJ', 'KOPERMIJN'].map((n) => OBJECT[n]));
+  const branden = new Map();   // vak -> { b, tot, per }
+  function vuurbal(e, x, y, h) {
+    effect({ soort: 'pijl', vuur: true, x1: e.x, y1: e.y, h1: 22 + (e.hoogte || 0), x2: x, y2: y, h2: h, duur: 300 + 50 * Math.hypot(x - e.x, y - e.y) });
+    effect({ soort: 'vuur', x, y, duur: 700 + 50 * Math.hypot(x - e.x, y - e.y), wacht: 300 + 50 * Math.hypot(x - e.x, y - e.y) });
+  }
+  // Een houten belegeringsmachine (ram, ladder, toren, katapult) vat vlam.
+  function steekAan(a, def) {
+    const ka = krijgVan(a);
+    if (!def.brand || !(ka.def.alleenBouw || ka.def.ladder)) return;
+    ka.brand = stappen(def.brand.duur);
+    ka.brandPer = def.brand.perSeconde;
+    ka.brandDoor = null;
+  }
+  function zetBrand(b, brand) {
+    branden.set(b.vak, { b, tot: stapNr + stappen(brand.duur), per: brand.perSeconde });
+    effect({ soort: 'brand', x: b.x, y: b.y, duur: brand.duur * 1000 });
+  }
+  function brandStap() {
+    if (stapNr % perSeconde !== 0) return;
+    for (const [vak, br] of branden) {
+      if (stapNr > br.tot || !staatNog(br.b)) { branden.delete(vak); continue; }
+      raakBouw(br.b, br.per);
+    }
+    for (const lijst of [vijanden, leger.lijst]) {
+      for (const a of lijst) {
+        const ka = a.krijg;
+        if (!ka || !(ka.brand > 0) || a.dood) continue;
+        ka.brand -= perSeconde;
+        effect({ soort: 'brand', x: a.x, y: a.y, duur: 1000 });
+        raak(a, ka.brandPer, null);
+      }
+    }
+  }
+
   // Een bijl doet meer schade aan hout: poorten en houten gebouwen.
   function bouwKeer(def, b) {
     const bonus = def.bouwBonus;
@@ -685,6 +749,74 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     else if (e.team === SPELER) opMelding('De ladder staat tegen de muur van rood. Kies soldaten en tik die muur aan: dan klimmen ze erop.');
     else opMelding('Rood zet een ladder tegen je muur! Zet soldaten op dat stuk muur: zij duwen hem om.');
     opVerandering();
+  }
+
+  // Een sluipmoordenaar loopt naar de muur, klimt erop (klimMuur seconden)
+  // en staat dan boven, zonder ladder.
+  function klimStap(e, k) {
+    const vak = k.klim;
+    const ander = e.team === SPELER ? VIJAND : SPELER;
+    const mx = (vak % B) + 0.5;
+    const my = Math.floor(vak / B) + 0.5;
+    if (!isMuurVan(vak, ander) || e.opMuur) {
+      k.klim = -1;
+      zetHouding(e, null);
+      return;
+    }
+    const ver = Math.max(Math.abs(e.x - mx), Math.abs(e.y - my));
+    if (ver > 1.3) {
+      zetHouding(e, null);
+      k.klimKlok = stappen(k.def.klimMuur);
+      if (e.pad) return;
+      const sta = plekRond(e, vak, 1);
+      const pad = sta < 0 ? null : zoekPad(e, sta);
+      if (!pad) {
+        k.klim = -1;
+        if (e.team === SPELER) opMelding('Je sluipmoordenaar kan niet bij dat stuk muur komen.');
+        return;
+      }
+      zetPad(e, pad);
+      return;
+    }
+    if (e.pad) return;
+    kijkNaar(e, mx, my);
+    zetHouding(e, 'sla');
+    e.pose = k.klimKlok % 4 < 2 ? 1 : 0;
+    if (--k.klimKlok > 0) return;
+    // Boven: staat er al iemand van zijn eigen kant, dan wacht hij nog even.
+    if (lijstVan(e.team).some((a) => a !== e && a.opMuur && vakVan(a) === vak)) {
+      k.klimKlok = 2;
+      return;
+    }
+    e.x = e.vorigeX = mx;
+    e.y = e.vorigeY = my;
+    e.opMuur = true;
+    e.hoogte = eenheden.hoogteOp(vak);
+    e.pad = null;
+    k.klim = -1;
+    zetHouding(e, null);
+    opVerandering();
+  }
+
+  // Deze sluipmoordenaars klimmen op de muur van rood op dat vak.
+  function klimBevel(lijst, vak) {
+    if (!isMuurVan(vak, VIJAND)) return 0;
+    let aantal = 0;
+    for (const e of lijst) {
+      const k = krijgVan(e);
+      if (!k.def.klimMuur || e.opMuur || e.klimt) continue;
+      if (plekRond(e, vak, 1) < 0) continue;
+      e.soldaat.doel = -1;
+      if (e.pad) e.pad.length = Math.min(e.pad.length, e.stap + 1);
+      k.klim = vak;
+      k.ladder = -1;
+      k.bevel = null;
+      k.doelwit = null;
+      k.bouw = null;
+      k.bouwBevel = null;
+      aantal++;
+    }
+    return aantal;
   }
 
   function haalLadderWeg(vak, team) {
@@ -876,6 +1008,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     // Een soldaat die op jouw bevel ergens heen loopt, vecht onderweg niet.
     if (e.soldaat && e.soldaat.doel >= 0) {
       k.ladder = -1;
+      k.klim = -1;
       k.doelwit = null;
       k.bevel = null;
       k.bouw = null;
@@ -883,8 +1016,13 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       zetHouding(e, null);
       return;
     }
+    if (k.def.verborgen) e.verborgen = stapNr >= (k.gezienTot || 0);
     if (k.ladder >= 0) {
       ladderStap(e, k);
+      return;
+    }
+    if (k.klim >= 0) {
+      klimStap(e, k);
       return;
     }
     // Een soldaat van jou die op een stuk muur staat waar een ladder van
@@ -899,7 +1037,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     } else {
       k.duw = 0;
     }
-    if (k.doelwit && k.doelwit.dood) k.doelwit = null;
+    if (k.doelwit && (k.doelwit.dood || verborgenVoor(k.doelwit, Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y)))) k.doelwit = null;
     if (--k.denk <= 0) {
       k.denk = DENK;
       denk(e, k, anderen);
@@ -928,7 +1066,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         const a = doelen[i];
         if (a.dood || a.klimt) continue;
         const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < min) {
+        if (d < min && !verborgenVoor(a, d)) {
           min = d;
           beste = a;
         }
@@ -1089,6 +1227,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     for (let i = 0; i < eigen.length; i++) krijgerStap(eigen[i], vijanden);
     burchtStap(burcht, vijanden);
     burchtStap(rood, eigen);
+    brandStap();
     ruimOp();
     if (burcht.leven <= 0) {
       einde('verloren');
@@ -1355,6 +1494,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
     zetLadderBevel, ladders,
     zetLadderVoor: (vak, team, dx = 1, dy = 0, vast = false) => zetLadder(vak, team, [dx, dy], vast),
+    klimBevel,
+    isRodeMuur: (vak) => isMuurVan(vak, VIJAND),
     isRodeMuurZonderLadder: (vak) => isMuurVan(vak, VIJAND) && !wegvinder.isLadder(vak, SPELER),
     // Het dichtstbijzijnde stuk gewone muur van rood zonder ladder, binnen r tegels.
     dichtsteRodeMuur(vak, r = 3) {

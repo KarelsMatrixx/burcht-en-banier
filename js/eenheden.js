@@ -17,7 +17,7 @@
 import { CONFIG } from './config.js';
 import { maakToeval } from './toeval.js';
 
-export const SOORT = { RIDDER: 0, BOOGSCHUTTER: 1, HOUTHAKKER: 2, STEENHOUWER: 3, FRUITTELER: 4, BOER: 5, RAM: 6, LADDER: 7, KATAPULT: 8, TOREN: 9, ZAGER: 10, TARWEBOER: 11, BAKKER: 12, MIJNWERKER: 13, BIJLRIDDER: 14, KRUISBOOG: 15 };
+export const SOORT = { RIDDER: 0, BOOGSCHUTTER: 1, HOUTHAKKER: 2, STEENHOUWER: 3, FRUITTELER: 4, BOER: 5, RAM: 6, LADDER: 7, KATAPULT: 8, TOREN: 9, ZAGER: 10, TARWEBOER: 11, BAKKER: 12, MIJNWERKER: 13, BIJLRIDDER: 14, KRUISBOOG: 15, SLUIP: 16, VLAM: 17 };
 
 // hoogteOp(vak) geeft hoe hoog je staat boven op het bouwwerk op dat vak.
 export function maakEenheden(kaart, wegvinder, muurHoogte, hoogteOp = () => muurHoogte) {

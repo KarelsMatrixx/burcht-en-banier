@@ -283,7 +283,10 @@ export function maakUi() {
         el('leger-tekst').appendChild(p);
       }
       const balk = el('leger-opleiden');
-      if (!balk.children.length) {
+      const teken = knoppen.map((k) => k.sleutel).join();
+      if (balk.dataset.teken !== teken) {
+        balk.dataset.teken = teken;
+        balk.replaceChildren();
         for (const { sleutel, naam } of knoppen) {
           const knop = document.createElement('button');
           knop.type = 'button';

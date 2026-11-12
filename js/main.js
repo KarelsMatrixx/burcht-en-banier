@@ -315,10 +315,10 @@ async function start() {
     ui.toonKazerne({
       open: true,
       regels: [
-        `Kazerne. Soldaten: ${leger.aantal()} van ${leger.max}. Goud: ${economie.voorraad.goud}. Boeren zonder werk: ${Math.max(0, volk.vrij)}.`,
-        kazerneBericht || 'Een soldaat kost goud en een boer zonder werk.',
+        `${gebouw.naam}. Soldaten: ${leger.aantal()} van ${leger.max}. Goud: ${economie.voorraad.goud}. Boeren zonder werk: ${Math.max(0, volk.vrij)}.`,
+        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystieke soldaten kosten goud, koper en twee boeren zonder werk.' : 'Een soldaat kost goud en een boer zonder werk.'),
       ],
-      knoppen: Object.values(leger.soorten).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
+      knoppen: Object.values(leger.soorten).filter((def) => (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
     });
   };
   const sluitKazerne = () => {
@@ -706,6 +706,17 @@ async function start() {
         const groep = leger.gekozen();
         const isDrager = (e) => !!leger.soorten[e.soldaat.sleutel].ladder;
         const isRam = (e) => !!leger.soorten[e.soldaat.sleutel].alleenBouw;
+        // Sluipmoordenaars klimmen zonder ladder op een gewone muur. Tik je op
+        // een toren of de poort, dan kiezen ze het dichtstbijzijnde stuk muur.
+        const klimmers = groep.filter((e) => leger.soorten[e.soldaat.sleutel].klimMuur && !e.opMuur);
+        if (klimmers.length) {
+          const klimVak = strijd.isRodeMuur(vanRood.vak) ? vanRood.vak : strijd.dichtsteRodeMuur(vanRood.vak, 3);
+          if (klimVak >= 0 && strijd.klimBevel(klimmers, klimVak)) {
+            staat.doel = { x: klimVak % kaart.breedte, y: Math.floor(klimVak / kaart.breedte), duur: 900, tot: performance.now() + 900 };
+            ui.toonMelding('Je sluipmoordenaar klimt op de muur van rood.');
+            if (klimmers.length === groep.length) return;
+          }
+        }
         const draagt = groep.some(isDrager);
         // Tik je op een toren of de poort, dan zoekt de drager zelf het
         // dichtstbijzijnde gewone stuk muur.

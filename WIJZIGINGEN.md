@@ -89,3 +89,11 @@
 - Selectieknoppen: één schuifbare rij. Groepen: bijlridder bij Dichtbij, kruisboog bij Afstand.
 - Niet gedaan uit het ontwerp: opleidingstijd (het spel kent nog geen opleidingstijd, soldaten staan er direct), de 1,5x schade tegen de steenwachter (die bestaat nog niet), de speerman-aanpassing (ronde B). Rood gebruikt de nieuwe soldaten nog niet (stap 28).
 - Test: tests/soldaten26.mjs.
+
+## 0.27.0 (stap 27): de magiertoren, sluipmoordenaar en vlammenwever (ronde A, mystiek)
+- Nieuw gebouw Magiertoren (groep Leger, 15 planken, 15 steen, 5 koper): de mystieke kazerne. Ronde stenen toren, spits paars dak, gloeiende ramen, lila rook, vaantje met ster. De klassieke kazerne toont alleen klassieke soldaten, de toren alleen mystieke (veld kazerne in economie.json; leidtOp is nu "klassiek" of "mystiek").
+- Mystieke soldaten kosten twee boeren zonder werk (veld boeren).
+- Sluipmoordenaar (24 goud, 4 koper): leven 36, schade 10, eerste slag op een nieuw doelwit 3x (30), slagtijd 0,7 s, snelheid 2,8. Vijanden en de burcht zien hem pas binnen 3 tegels; na een slag is hij 3 seconden zichtbaar. Jij ziet hem half doorzichtig als hij verborgen is. Tik met hem gekozen op een gewone muur van rood (of een toren, dan kiest hij de muur ernaast): hij loopt erheen, klimt in 2 seconden omhoog zonder ladder en staat boven.
+- Vlammenwever (32 goud, 6 koper): leven 33, schade 12, slagtijd 2,5 s, bereik 7. Vuurbal met staart en ontploffing; halve schade op wie binnen 1,5 tegel van het doelwit staat. Houten machines (ram, ladder, toren, katapult) en houten gebouwen (poort, werken) branden 8 seconden met 3 schade per seconde, met vlammetjes.
+- Waarden: Karels percentages op de ridder. Opleidingstijd en legerplaatsen bestaan nog niet; beide tellen als 1 legerplaats.
+- Test: tests/mystiek27.mjs.

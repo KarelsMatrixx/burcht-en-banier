@@ -33,6 +33,8 @@
                      "tip": "De zager haalt hout uit je voorraad en brengt er planken voor terug." },
     "boomgaard":   { "naam": "Boomgaard",   "groep": "werk",    "object": "BOOMGAARD",   "kosten": { "hout": 15 }, "werker": "fruitteler",
                      "tip": "Appels zijn voedsel voor je boeren." },
+    "magiertoren": { "naam": "Magiertoren", "groep": "leger",   "object": "MAGIERTOREN", "kosten": { "planken": 15, "steen": 15, "koper": 5 }, "leidtOp": "mystiek",
+                     "tip": "De mystieke kazerne: hier leid je sluipmoordenaars en vlammenwevers op. Zij kosten twee boeren." },
     "tarweveld":   { "naam": "Tarweveld",   "groep": "werk",    "object": "TARWEVELD",   "kosten": { "hout": 10 }, "werker": "tarweboer",
                      "tip": "De boer oogst tarwe en brengt die naar de voorraad. Een bakker maakt er brood van." },
     "bakkerij":    { "naam": "Bakkerij",    "groep": "werk",    "object": "BAKKERIJ",    "kosten": { "planken": 10, "steen": 5 }, "werker": "bakker",
@@ -45,7 +47,7 @@
     "voorraadkamer": { "naam": "Voorraad", "groep": "dorp", "leven": 250, "object": "VOORRAADKAMER", "kosten": { "hout": 30 },
                      "handel": true,
                      "tip": "Hier slaan je werkers hout, steen en voedsel op. Elke kamer geeft plek aan 150 van elk. Tik hem aan om overschot voor goud te verkopen." },
-    "kazerne":     { "naam": "Kazerne",     "groep": "leger",   "object": "KAZERNE",     "kosten": { "planken": 10, "steen": 10 }, "leidtOp": true,
+    "kazerne":     { "naam": "Kazerne",     "groep": "leger",   "object": "KAZERNE",     "kosten": { "planken": 10, "steen": 10 }, "leidtOp": "klassiek",
                      "tip": "Tik hem daarna aan om soldaten op te leiden." }
   }
 }
