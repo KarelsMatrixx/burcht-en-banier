@@ -334,6 +334,22 @@ async function start() {
     if (hint && gekozen && !kaderAan && strijd.aantalVijanden()) hint = hint.replace(/\.$/, ', of tik een vijand aan.');
     else if (hint && gekozen && !kaderAan && wegvinder.aantalOpgangen(0)) hint = hint.replace(/\.$/, ', ook boven op je muur.');
     ui.toonLeger({ zichtbaar: !bouwt && leger.aantal() > 0, hint, kader: kaderAan, gekozen: gekozen > 0 });
+    // Groepen (dichtbij, afstand, belegering) en losse soorten kiezen.
+    if (!bouwt && leger.aantal() > 0) {
+      const t = leger.telling();
+      const namenGroep = { melee: 'Dichtbij', afstand: 'Afstand', belegering: 'Belegering' };
+      const lijst = [];
+      const groepen = Object.keys(namenGroep).filter((g) => t.groepen[g]);
+      const soortKeys = Object.keys(t.perSoort);
+      const vol = (x) => x.gekozen === x.n;
+      if (groepen.length > 1) for (const g of groepen) lijst.push({ sleutel: 'g:' + g, tekst: `${namenGroep[g]} ${t.groepen[g].n}`, actief: vol(t.groepen[g]) });
+      if (soortKeys.length > 1) for (const sl of soortKeys) lijst.push({ sleutel: 's:' + sl, tekst: `${leger.soorten[sl].naam} ${t.perSoort[sl].n}`, actief: vol(t.perSoort[sl]), klein: true });
+      ui.toonGroepen(lijst, (sl) => {
+        kaderAan = false;
+        if (sl.startsWith('g:')) leger.kiesGroep(sl.slice(2));
+        else leger.kiesSoort(sl.slice(2));
+      });
+    }
     if (kazerneVak >= 0) toonKazerne();
   };
   ui.opKader(() => {
@@ -613,13 +629,21 @@ async function start() {
         const groep = leger.gekozen();
         const isDrager = (e) => !!leger.soorten[e.soldaat.sleutel].ladder;
         const isRam = (e) => !!leger.soorten[e.soldaat.sleutel].alleenBouw;
-        if (groep.some(isDrager) && strijd.isRodeMuurZonderLadder(vanRood.vak)) {
-          if (strijd.zetLadderBevel(groep.filter(isDrager), vanRood.vak)) {
-            staat.doel = { x: vanRood.x, y: vanRood.y, duur: 900, tot: performance.now() + 900 };
-            ui.toonMelding('Je ladderdrager zet een ladder tegen de muur van rood.');
+        const draagt = groep.some(isDrager);
+        // Tik je op een toren of de poort, dan zoekt de drager zelf het
+        // dichtstbijzijnde gewone stuk muur.
+        const muurVak = !draagt ? -1 : strijd.isRodeMuurZonderLadder(vanRood.vak) ? vanRood.vak : strijd.dichtsteRodeMuur(vanRood.vak, 3);
+        if (draagt && muurVak >= 0) {
+          if (strijd.zetLadderBevel(groep.filter(isDrager), muurVak)) {
+            staat.doel = { x: muurVak % kaart.breedte, y: Math.floor(muurVak / kaart.breedte), duur: 900, tot: performance.now() + 900 };
+            ui.toonMelding(groep.some((e) => leger.soorten[e.soldaat.sleutel].vast) ? 'De belegeringstoren gaat naar de muur van rood. Daarna klimmen je soldaten er overheen.' : 'Je ladderdrager zet een ladder tegen de muur van rood.');
           } else {
             ui.toonMelding('Je ladderdrager kan niet bij die muur komen.');
           }
+          return;
+        }
+        if (draagt && !groep.some((e) => !isDrager(e))) {
+          ui.toonMelding(strijd.isVanRood(vanRood.vak) && !strijd.isRodeMuurZonderLadder(vanRood.vak) ? 'Tik op een stuk gewone muur zonder ladder: daar past de toren of ladder tegen.' : 'Daar staat al een ladder.');
           return;
         }
         if (leger.heeftTrap(vanRood.x, vanRood.y) && groep.some((e) => !isRam(e) && !isDrager(e))) {

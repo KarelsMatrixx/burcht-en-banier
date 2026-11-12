@@ -118,6 +118,25 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     opLeger();
   }
 
+  // Soldaten in drie groepen: wie van dichtbij vecht, wie van verre schiet
+  // en de belegeringsmachines (ram, katapult, toren, ladderdrager).
+  const groepVan = (def) => (def.alleenBouw || def.ladder ? 'belegering' : def.bereik > 2 ? 'afstand' : 'melee');
+  const kiesGroep = (groep) => kies(soldaten.filter((e) => groepVan(soorten[e.soldaat.sleutel]) === groep));
+  const kiesSoort = (sleutel) => kies(soldaten.filter((e) => e.soldaat.sleutel === sleutel));
+  // Hoeveel soldaten er zijn (en gekozen zijn) per groep en per soort.
+  function telling() {
+    const groepen = {};
+    const perSoort = {};
+    for (const e of soldaten) {
+      const g = groepVan(soorten[e.soldaat.sleutel]);
+      const t = (groepen[g] = groepen[g] || { n: 0, gekozen: 0 });
+      const u = (perSoort[e.soldaat.sleutel] = perSoort[e.soldaat.sleutel] || { n: 0, gekozen: 0, groep: g });
+      t.n++; u.n++;
+      if (e.gekozen) { t.gekozen++; u.gekozen++; }
+    }
+    return { groepen, perSoort };
+  }
+
   // De soldaat onder een punt in de wereld (in pixels), of null. marge
   // maakt het raakvlak groter, voor als je ver bent uitgezoomd.
   function vind(wx, wy, marge = 0) {
@@ -310,6 +329,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   return {
     soorten, max, waaromNiet, leidOp, vind, kies, stuur, stap,
     kiesAlles: () => kies(soldaten),
+    groepVan, kiesGroep, kiesSoort, telling,
     kiesGeen: () => kies([]),
     bewaarStand, zetStand, herstel, sneuvel, kaartVeranderd,
     isMuur: (x, y) => x >= 0 && y >= 0 && x < B && y < H && isMuur(y * B + x),

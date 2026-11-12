@@ -671,3 +671,25 @@ button:active {
 #missie-titel { display: block; font-size: 18px; }
 #missie-tekst { margin: 6px 0 4px; }
 #menu-lijst button, #menu-lijst button small { white-space: normal; }
+
+/* Kiezen op groep of soort: een rij knoppen boven de kaderknoppen. */
+#leger-groepen {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  max-width: 60vw;
+  margin-left: auto;
+}
+
+#leger-groepen[hidden] {
+  display: none;
+}
+
+#leger-groepen button {
+  pointer-events: auto;
+}
+
+#leger-groepen button.klein {
+  font-size: 0.85em;
+  opacity: 0.92;
+}

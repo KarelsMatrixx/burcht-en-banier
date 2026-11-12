@@ -528,6 +528,39 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // De tegels naast een burcht, de dichtstbijzijnde eerst.
   const plekkenBij = (e, b = burcht) => b.plekken.slice().sort((p, q) => verVan(e, p) - verVan(e, q));
 
+  // Voor wie van verre schiet: de verste bereikbare plek waar het doel nog
+  // binnen bereik ligt. Zo kan een katapult ook op een gebouw schieten dat
+  // achter de muur staat, zonder dat er een weg naartoe is.
+  function padOpAfstand(e, k, doel) {
+    const straal = doel.straal || 0;
+    const reik = k.def.bereik - 1.5;   // iets binnen het bereik, voor de zekerheid
+    const mx = Math.floor(doel.x);
+    const my = Math.floor(doel.y);
+    const hier = vakVan(e);
+    const lijst = [];
+    const w = Math.ceil(reik + straal);
+    for (let dy = -w; dy <= w; dy++) {
+      for (let dx = -w; dx <= w; dx++) {
+        const nx = mx + dx;
+        const ny = my + dy;
+        if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
+        const ver = Math.hypot(Math.max(0, Math.abs(nx + 0.5 - doel.x) - straal), Math.max(0, Math.abs(ny + 0.5 - doel.y) - straal));
+        if (ver > reik) continue;
+        const vak = ny * B + nx;
+        if (!wegvinder.verbonden(hier, vak, e.team) || bezetDoorVriend(vak, e)) continue;
+        lijst.push({ vak, ver, loop: verVan(e, vak) });
+      }
+    }
+    // Liefst in de buitenste band van het bereik, en daarvan de dichtstbijzijnde.
+    const buiten = lijst.filter((c) => c.ver >= reik - 2).sort((p, q) => p.loop - q.loop);
+    const binnen = lijst.filter((c) => c.ver < reik - 2).sort((p, q) => q.ver - p.ver || p.loop - q.loop);
+    for (const c of buiten.concat(binnen).slice(0, 6)) {
+      const pad = zoekPad(e, c.vak);
+      if (pad) return pad;
+    }
+    return null;
+  }
+
   // Een soldaat van de speler gaat op een bouwwerk van rood af. Geeft
   // terug of hij erbij kan (of er al bij staat).
   function gaNaarBouw(e, k, doel) {
@@ -541,18 +574,23 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const hier = vakVan(e);
     let pad = null;
     if (!e.opMuur) {
-      if (doel.burcht) {
+      if (doel.burcht && k.def.bereik > 2) {
+        pad = padOpAfstand(e, k, doel);
+      } else if (doel.burcht) {
         for (const vak of plekkenBij(e, burchten[doel.team])) {
           if (!wegvinder.verbonden(hier, vak, e.team) || bezetDoorVriend(vak, e)) continue;
           pad = zoekPad(e, vak);
           if (pad) break;
         }
       } else {
-        // Een ridder moet ernaast staan; een schutter mag verder weg blijven.
-        const ringen = isSchutter(k) ? 4 : 2;
-        for (let r = 1; r <= ringen && !pad; r++) {
-          const sta = plekRond(e, doel.vak, r);
-          if (sta >= 0) pad = zoekPad(e, sta);
+        // Een ridder moet ernaast staan; wie van verre schiet, blijft zo ver
+        // mogelijk weg (binnen zijn bereik).
+        if (k.def.bereik > 2) pad = padOpAfstand(e, k, doel);
+        else {
+          for (let r = 1; r <= 2 && !pad; r++) {
+            const sta = plekRond(e, doel.vak, r);
+            if (sta >= 0) pad = zoekPad(e, sta);
+          }
         }
       }
     }
@@ -1307,6 +1345,25 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     zetLadderBevel, ladders,
     zetLadderVoor: (vak, team, dx = 1, dy = 0, vast = false) => zetLadder(vak, team, [dx, dy], vast),
     isRodeMuurZonderLadder: (vak) => isMuurVan(vak, VIJAND) && !wegvinder.isLadder(vak, SPELER),
+    // Het dichtstbijzijnde stuk gewone muur van rood zonder ladder, binnen r tegels.
+    dichtsteRodeMuur(vak, r = 3) {
+      const x = vak % B;
+      const y = Math.floor(vak / B);
+      let beste = -1;
+      let min = Infinity;
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
+          const v = ny * B + nx;
+          if (!isMuurVan(v, VIJAND) || wegvinder.isLadder(v, SPELER)) continue;
+          const d = dx * dx + dy * dy;
+          if (d < min) { min = d; beste = v; }
+        }
+      }
+      return beste;
+    },
     bewaarStand, zetStand, herstel,
     uitslag: () => uitslag,
     aantalVijanden: aantalAanvallers,

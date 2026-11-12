@@ -253,10 +253,29 @@ export function maakUi() {
     //   kader = de knop Kader staat aan, gekozen = er is iemand gekozen
     toonLeger({ zichtbaar, hint, kader, gekozen }) {
       el('leger-balk').hidden = !zichtbaar;
+      if (!zichtbaar) el('leger-groepen').hidden = true;
       el('legerhint').textContent = hint || '';
       el('legerhint').hidden = !hint;
       el('knop-kader').classList.toggle('actief', !!kader);
       el('knop-niets').hidden = !gekozen;
+    },
+    // De knoppen om een groep of soort te kiezen. lijst = [{ tekst, sleutel, actief }].
+    toonGroepen(lijst, opKies) {
+      const doos = el('leger-groepen');
+      const teken = lijst.map((k) => `${k.sleutel}|${k.tekst}|${k.actief ? 1 : 0}`).join(';');
+      if (doos.dataset.teken === teken) return;
+      doos.dataset.teken = teken;
+      doos.hidden = lijst.length === 0;
+      doos.textContent = '';
+      for (const k of lijst) {
+        const knop = document.createElement('button');
+        knop.type = 'button';
+        knop.textContent = k.tekst;
+        if (k.actief) knop.classList.add('actief');
+        if (k.klein) knop.classList.add('klein');
+        knop.addEventListener('click', () => opKies(k.sleutel));
+        doos.appendChild(knop);
+      }
     },
     opKader(functie) {
       el('knop-kader').addEventListener('click', functie);
