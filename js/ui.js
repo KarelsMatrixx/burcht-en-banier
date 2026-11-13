@@ -150,6 +150,45 @@ export function maakUi() {
     el('knop-instellingen').classList.toggle('actief', !el('instellingen').hidden);
   });
 
+  // --- Schuiven met je vinger -------------------------------------------------
+  // De pagina staat op touch-action: none (anders zoomt en scrollt Safari mee
+  // met de kaart). Daardoor schuift een rij knoppen niet vanzelf: dat doen we
+  // hier zelf. Een veeg is geen tik: de knop onder je vinger reageert dan niet.
+  function sleepbaar(doos, as = 'x') {
+    let start = null;
+    let geveegd = false;
+    doos.addEventListener('pointerdown', (e) => {
+      start = { x: e.clientX, y: e.clientY, links: doos.scrollLeft, boven: doos.scrollTop, id: e.pointerId };
+      geveegd = false;
+    });
+    doos.addEventListener('pointermove', (e) => {
+      if (!start || e.pointerId !== start.id) return;
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      if (!geveegd && Math.abs(as === 'x' ? dx : dy) > 8) {
+        geveegd = true;
+        try { doos.setPointerCapture(e.pointerId); } catch (fout) { /* niet erg */ }
+      }
+      if (!geveegd) return;
+      if (as === 'x') doos.scrollLeft = start.links - dx;
+      else doos.scrollTop = start.boven - dy;
+    });
+    const los = () => { start = null; };
+    doos.addEventListener('pointerup', los);
+    doos.addEventListener('pointercancel', los);
+    doos.addEventListener('click', (e) => {
+      if (!geveegd) return;
+      geveegd = false;
+      e.stopPropagation();
+      e.preventDefault();
+    }, true);
+  }
+  sleepbaar(el('bouw-knoppen'));
+  sleepbaar(el('leger-groepen'));
+  sleepbaar(el('leger-opleiden'));
+  sleepbaar(el('logboek-lijst'), 'y');
+  sleepbaar(el('menu-lijst'), 'y');
+
   // --- De bediening rechtsonder ------------------------------------------------
   // Hamer = bouwpaneel, zwaard = legerpaneel. Er staat er hooguit één open.
   // Wat open stond, onthoudt het spel voor deze sessie.

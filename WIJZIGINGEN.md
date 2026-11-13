@@ -228,3 +228,8 @@
 - Rechtsonder vier medaillons in een boog: hamer (bouwbalk), zwaard (legerknoppen), buidel (je volk en belasting), rol (menu met de levelkaart). Hooguit één paneel open; het spel onthoudt welk voor deze sessie. Kies je soldaten op de kaart, dan gaat het zwaard vanzelf open.
 - Rechtsboven het tandwiel: titel, versie, Test en To start. De oude knoppen Menu, Test en To start bovenin zijn weg.
 - Tests: tests/hud35.mjs (27 controles). Andere tests openen de bouwbalk via de sessie en lezen berichten uit het logboek; selectie tikt eerst het zwaard aan.
+
+## 0.41.1: schuiven werkt weer
+- De rijen knoppen (bouwbalk, legergroepen, kazerne) en het logboek en menu schuiven nu met je vinger. De pagina staat op touch-action: none (tegen zoomen van Safari), waardoor de browser zelf niet schoof; js/ui.js doet het nu zelf (sleepbaar). Een veeg telt niet als tik.
+- Het paneel van de kazerne, de voorraadkamer en je volk ligt boven de linten met meldingen.
+- Nieuw: tests/ladder35.mjs: in level 1 zet een ladderdrager met tikken een ladder tegen de muur van Reinout; in level 2 (te hoge muren) niet, met melding.

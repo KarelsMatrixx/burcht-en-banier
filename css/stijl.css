@@ -1149,3 +1149,9 @@ button:active {
 #logboek-filters { flex-wrap: nowrap; align-items: center; }
 .knop-ikoon { width: 26px; height: 26px; vertical-align: middle; margin: -4px 6px -4px -4px; }
 #bouw-knoppen button[data-sleutel="sloop"] { display: inline-flex; flex-direction: row; align-items: center; }
+
+/* Schuiven met je vinger: de rij moet zelf de aanraking krijgen (de HUD laat
+   vingers anders door naar de kaart). */
+#leger-groepen, #bouw-knoppen { pointer-events: auto; }
+/* Panelen (kazerne, voorraadkamer, volk) liggen boven de linten met meldingen. */
+#legerpaneel, #handelpaneel, #volkpaneel { z-index: 28; }
