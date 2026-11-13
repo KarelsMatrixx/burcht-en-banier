@@ -167,7 +167,7 @@
    "heer": "Lady Mechteld Sevenwinds",
    "portret": "mechteld",
    "profiel": "normaal",
-   "kaart": "meren",
+   "kaart": "zevenwind",
    "punt": {
     "x": 20.9,
     "y": 34.4
@@ -253,7 +253,7 @@
    "heer": "Count Hademar of Ironmarsh",
    "portret": "hademar",
    "profiel": "zwaar",
-   "kaart": "grensland",
+   "kaart": "ijzerbroek",
    "punt": {
     "x": 38.5,
     "y": 55.6
@@ -330,7 +330,7 @@
    "heer": "Huntmaster Folkert Brandt",
    "portret": "brandt",
    "profiel": "normaal",
-   "kaart": "standaard",
+   "kaart": "ijzerbroek",
    "punt": {
     "x": 44.7,
     "y": 38.4
@@ -427,7 +427,7 @@
    "heer": "Master Builder Lambrecht Cooper",
    "portret": "lambrecht",
    "profiel": "normaal",
-   "kaart": "standaard",
+   "kaart": "reuzenrug",
    "punt": {
     "x": 61.1,
     "y": 32.3
@@ -481,7 +481,7 @@
    "heer": "Governor Everhard of Greyford",
    "portret": "everhard",
    "profiel": "zwaar",
-   "kaart": "standaard",
+   "kaart": "grauwvoort",
    "punt": {
     "x": 69.9,
     "y": 44.6
@@ -527,7 +527,7 @@
    "heer": "Dike Reeve Rutger of Westerdike",
    "portret": "rutger",
    "profiel": "zwaar",
-   "kaart": "standaard",
+   "kaart": "witte_dijk",
    "punt": {
     "x": 76.1,
     "y": 56.2

@@ -109,7 +109,9 @@ const inval = await p.evaluate(() => {
   for (let i = 0; i < 8; i++) lijst.push(['ridder', m.x - 10 - (i % 3), m.y - 1 + Math.floor(i / 3), 9999, 0]);
   lijst.push(['ram', m.x - 10, m.y + 2, 9999, 0], ['ram', m.x - 11, m.y + 2, 9999, 0]);
   s.leger.zetStand(lijst);
+  const eigen = s.strijd.koning(0); eigen.levenMax = eigen.leven = 99999;   // het gaat hier om de route, niet om de verdediging
   const soldaten = s.leger.soldaten().filter((e) => !s.leger.soorten[e.soldaat.sleutel].koning);
+  for (const e of soldaten) e.levenMax = e.leven = 99999;
   const buitenPoort = m.y * B + m.x - 7, binnenPoort = m.y * B + m.x - 4, burchtVak = m.y * B + m.x;
   let fase = 0;
   s.strijd.valBouwAan(soldaten, buitenPoort);

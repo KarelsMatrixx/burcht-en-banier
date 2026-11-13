@@ -28,7 +28,7 @@ check('verteller Bartholt', /Bartholt/.test(await p.textContent('#missie-wie')),
 check('portret verteller', /bartholt\.jpg/.test(await p.getAttribute('#missie-portret', 'src') || ''));
 check('heer Mechteld', /Mechteld/.test(await p.textContent('#missie-heer-naam')) && /mechteld\.jpg/.test(await p.getAttribute('#missie-heer', 'src') || ''));
 const extra = await p.textContent('#missie-extra');
-check('extra: nieuw en kaart', /New for you: Siege Tower, Copper Mine/.test(extra) && /Map: The Two Lakes/.test(extra), extra);
+check('extra: nieuw en kaart', /New for you: Siege Tower, Copper Mine/.test(extra) && /Map: The Sevenwinds Pass/.test(extra), extra);
 const geladen = await p.evaluate(() => [...document.querySelectorAll('#missie img')].filter((i) => !i.hidden).every((i) => i.complete && i.naturalWidth > 0));
 check('portretten geladen', geladen);
 await p.screenshot({ path: '/home/claude/stap31-briefing.png' });

@@ -10,7 +10,7 @@ let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout
 const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 30000 });
 await p.goto('http://localhost:8145/?x=' + Date.now()); await wacht();
 const vingerafdruk = () => p.evaluate(() => { const k = window.spel.kaart; let h = 0; for (let i = 0; i < k.object.length; i++) h = (h * 31 + k.object[i] * 7 + k.grond[i]) >>> 0; return { h, b: k.breedte, n: k.naam, s: k.start, v: k.verbonden }; });
-for (const [modus, verwacht] of [[{ soort: 'vrij', profiel: 'normaal' }, 64], [{ soort: 'campagne', missie: 1 }, 56], [{ soort: 'campagne', missie: 2 }, 64], [{ soort: 'campagne', missie: 3 }, 72]]) {
+for (const [modus, verwacht] of [[{ soort: 'vrij', profiel: 'normaal' }, 64], [{ soort: 'campagne', missie: 1 }, 56], [{ soort: 'campagne', missie: 2 }, 64], [{ soort: 'campagne', missie: 3 }, 68]]) {
   await p.evaluate((m) => { localStorage.clear(); localStorage.setItem('burcht-banier.modus', JSON.stringify(m)); }, modus);
   await p.reload(); await wacht();
   const v = await vingerafdruk();
