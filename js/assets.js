@@ -15,6 +15,7 @@ import {
   tekenHuis, tekenTent, tekenHooiberg, tekenPut, tekenVaten,
   tekenWerker, tekenHouthakker, tekenSteengroeve, tekenBoomgaard, tekenTarweveld, tekenBakkerij, tekenKopermijn, tekenBijlridder, tekenKruisboogschutter, tekenSluipmoordenaar, tekenVlammenwever, tekenMagiertoren, tekenKoning, tekenKazerne,
 } from './kunst.js';
+import { SOLDATEN, teken as tekenNieuw } from './soldaten.js';
 
 const VORMEN = {
   grond: tekenGrond,
@@ -51,6 +52,9 @@ const VORMEN = {
   kopermijn: tekenKopermijn,
   kazerne: tekenKazerne,
 };
+
+// Stap 33: soldaten en werkers in de nieuwe stijl (soldaten.js).
+for (const vorm of [...Object.keys(SOLDATEN), 'werker']) VORMEN[vorm] = (naam, def) => tekenNieuw(vorm, def, naam);
 
 async function laadSprite(pad) {
   const plaatje = new Image();

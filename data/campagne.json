@@ -145,6 +145,7 @@
     "koning": {
      "leven": 80,
      "uiterlijk": {
+      "figuur": "reinout",
       "tabbaard": "#8a6a44",
       "wapen": "#d6c48a",
       "wapenSoort": "speer",
@@ -221,6 +222,7 @@
     "koning": {
      "leven": 100,
      "uiterlijk": {
+      "figuur": "mechteld",
       "tabbaard": "#3f6b3a",
       "wapen": "#e6e6dc",
       "wapenSoort": "boog",
@@ -305,6 +307,7 @@
     "koning": {
      "leven": 130,
      "uiterlijk": {
+      "figuur": "hademar",
       "tabbaard": "#5c6066",
       "wapen": "#25252a",
       "wapenSoort": "hamer",
@@ -354,6 +357,7 @@
     "koning": {
      "leven": 90,
      "uiterlijk": {
+      "figuur": "brandt",
       "tabbaard": "#2f4a2a",
       "wapen": "#8a6a44",
       "wapenSoort": "speer",
@@ -398,6 +402,7 @@
     "koning": {
      "leven": 120,
      "uiterlijk": {
+      "figuur": "aleid",
       "tabbaard": "#e8e4da",
       "wapen": "#c23a2e",
       "wapenSoort": "zwaard",
@@ -453,6 +458,7 @@
     "koning": {
      "leven": 90,
      "uiterlijk": {
+      "figuur": "lambrecht",
       "tabbaard": "#7a5532",
       "wapen": "#c23a2e",
       "wapenSoort": "moker",
@@ -497,6 +503,7 @@
     "koning": {
      "leven": 110,
      "uiterlijk": {
+      "figuur": "everhard",
       "tabbaard": "#7a7a78",
       "wapen": "#c23a2e",
       "wapenSoort": "hellebaard",
@@ -543,6 +550,7 @@
     "koning": {
      "leven": 110,
      "uiterlijk": {
+      "figuur": "rutger",
       "tabbaard": "#4f6272",
       "wapen": "#c23a2e",
       "wapenSoort": "haak",
@@ -590,6 +598,7 @@
     "koning": {
      "leven": 140,
      "uiterlijk": {
+      "figuur": "valkenier",
       "tabbaard": "#1d1d22",
       "wapen": "#c8ccd2",
       "wapenSoort": "zwaard",
@@ -643,6 +652,7 @@
     "koning": {
      "leven": 100,
      "uiterlijk": {
+      "figuur": "ottger",
       "tabbaard": "#141418",
       "wapen": "#c8ccd2",
       "wapenSoort": "scepter",
