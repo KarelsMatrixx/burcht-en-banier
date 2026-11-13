@@ -13,6 +13,7 @@
 // niet uitziet als een herhaald stempel.
 
 import { CONFIG } from './config.js';
+import { tekenHeer, heeftFiguur } from './heren.js';
 
 const TB = CONFIG.tegel.breedte;
 const TH = CONFIG.tegel.hoogte;
@@ -707,8 +708,12 @@ export function tekenVlammenwever(naam, def) {
 //   wapen      de kleur van het embleem op de tabbaard
 //   wapenSoort zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter
 //   schild     true: een torenschild aan de linkerarm
+//   figuur     sleutel van een heer in js/heren.js (eigen tekening, zonder kroon); zonder
+//              figuur blijft dit de oude koning (zo ziet jouw blauwe koning er nog uit)
 //   haar, baard  kleuren (baard 'geen' = zonder baard); vlecht: true
 export function tekenKoning(naam, def) {
+  // Stap 35: de heren van de campagne hebben een eigen figuur (js/heren.js).
+  if (heeftFiguur(def.figuur)) return tekenHeer(naam, def);
   const staal = '#c3c8d0';
   const goud = '#e3c04a';
   const hout = '#6b4a2b';

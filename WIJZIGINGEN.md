@@ -186,3 +186,17 @@
 - Beloningen verschoven zodat de eenheid die een kasteel vraagt er op tijd is: na Reinout de belegeringstoren en de kopermijn, na Mechteld de katapult en de kruisboog, na Hademar de bijlridder. Slotteksten en berichten van level 1 tot 3 aangepast.
 - Grote kastelen: de werken van rood blijven uit de gang tussen de twee kastelen, en het pad ruimt daar ook rotsen en decor op.
 - Tests: kasteel33 (55 controles, met materiaal, muurleven en hoge muren), campagne30, verhaal31 en test_stap17 aangepast.
+
+## 0.36.0 (sprites, uit een andere chat): nieuwe heren, soldaten, werkers, machines en koning
+- Nieuw: js/heren.js. De tien rode heren in een eigen stijl (herkenbaar aan silhouet, wapen en kleur, zonder kroon; gouden ring onder de voeten). campagne.json: elke heer heeft een veld "figuur" in uiterlijk; kunst.js tekenKoning stuurt door naar tekenHeer als die sleutel bekend is. Jouw blauwe koning en de rode koning in vrij spel blijven het oude beeld.
+- Nieuw: js/soldaten.js. Zeven soldaten (ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager) en acht werkers (houthakker, steenhouwer, fruitteler, zager, tarweboer, bakker, mijnwerker, boer) met zachte schaduw, donkere omlijning, licht van rechts en teamkleur. Werkers verschillen in silhouet door gereedschap en hoofddeksel. assets.js stuurt deze vormen naar soldaten.js; de oude functies in kunst.js blijven als reserve. Ram, katapult, belegeringstoren en beide koningen ongewijzigd.
+- Beeldcontract gelijk (4 loopbeelden, sla of schiet met 2 beelden, last en hak met 4); het canvas van soldaten is 52 bij 40.
+- Tests: tests/heren35.mjs (88 controles) en tests/soldaten36.mjs (260 controles), beide 0 mislukt op de stand voor het samenvoegen met stap 33.
+- Bekend: nog niet op iPhone bekeken; gouden ring van de heer kan botsen met selectie of aanvalsring; levensbalk van de heer ca. 12 px hoger, die van soldaten ca. 2 px; Ottger heeft een zwarte mantel met rode voering; steenhouwer en mijnwerker lijken op elkaar; blauwe koning nog oud beeld met kroon.
+- Machines: js/machines.js geeft ram, katapult en belegeringstoren dezelfde donkere omlijning (de tekeningen zelf blijven die uit kunst.js). Het doek is er 6 pixels ruimer van geworden.
+- Koning: jouw blauwe koning (en de rode koning in vrij spel) is nu "koning" in js/heren.js, dezelfde stijl en maat als de heren: geen kroon, bontkraag met gouden speld, bruin haar en baard, zwaard en schild in teamkleur, zwarte rouwband bij jou, gouden ring onder de voeten. assets.json: veld "figuur": "koning" bij beide koningen. heren35 verwacht nu de nieuwe maat (76 bij 64).
+- Test: soldaten36 heeft nu 318 controles (ook ram, katapult, toren, koning); oude tests nog groen.
+- Bekend: machines zijn omlijnd maar nog niet opnieuw ontworpen; gouden ring bij de koning, nog niet op iPhone gezien.
+
+## 0.37.0: samengevoegd
+- De nieuwe figuren (branch sprites-heren, uit de chat "Gedetailleerder en mooier maken van game") samengevoegd met de kastelen van 0.36.0. Beide waren 0.36.0 genummerd; samen 0.37.0.
