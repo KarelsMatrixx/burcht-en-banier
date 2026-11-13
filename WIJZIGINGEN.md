@@ -178,7 +178,16 @@
 - Nog niet: een palissade van hout (het jachtkamp is nu een kleine stenen ring met vier poorten).
 - Nieuw: tests/kasteel33.mjs (45 controles: elk ontwerp op elke kaart). kaarten24 kijkt nu voor de buitenste poort.
 
-## 0.36.0 (stap 34): nieuwe heren, soldaten, werkers, machines en koning
+## 0.36.0: kastelen volgens het kastelenontwerp
+- Uitgewerkt naar claude/kastelenontwerp.md (chat vijandkastelen per level). Elk kasteel heeft een materiaal: steen, dor bruin, ruwe rots, grijs steen, abdijsteen, zwart, hout. Muur, torens, poort en burcht van rood krijgen die kleur (eigen plaatjes rood.muur enzovoort; js/tekenaar.js kiest ze op eigenaar).
+- Level 1 Reinout: het bestaande kasteel in dorre bruine tinten, 4 wachters. Level 2 Mechteld: rotsvesting met ronde torens ook midden op de muren, muren te hoog voor ladders (alleen de belegeringstoren; melding als je het met ladders probeert). Level 3 Hademar: mijnburcht van grijs steen met twee ringen.
+- Levels 4 tot 10 kregen hun voorlopige vorm en materiaal: jachtkamp (hout), abdij met twee ringen en gracht (wit), belegeringswerf (rots), tolkasteel met drie poorten (grijs), dijkburcht met twee ringen en brede gracht (grijs), bergfort met ringen op 5 en 9 (zwart), Rouwburcht met drie ringen (zwart).
+- Muren, torens en poorten van rood: leven per level volgens de kolom sterkte rood (100% in level 1, 115% in 2, 130% in 3, tot 240% in 10). Veld rood.muur in campagne.json.
+- Beloningen verschoven zodat de eenheid die een kasteel vraagt er op tijd is: na Reinout de belegeringstoren en de kopermijn, na Mechteld de katapult en de kruisboog, na Hademar de bijlridder. Slotteksten en berichten van level 1 tot 3 aangepast.
+- Grote kastelen: de werken van rood blijven uit de gang tussen de twee kastelen, en het pad ruimt daar ook rotsen en decor op.
+- Tests: kasteel33 (55 controles, met materiaal, muurleven en hoge muren), campagne30, verhaal31 en test_stap17 aangepast.
+
+## 0.36.0 (sprites, uit een andere chat): nieuwe heren, soldaten, werkers, machines en koning
 - Nieuw: js/heren.js. De tien rode heren in een eigen stijl (herkenbaar aan silhouet, wapen en kleur, zonder kroon; gouden ring onder de voeten). campagne.json: elke heer heeft een veld "figuur" in uiterlijk; kunst.js tekenKoning stuurt door naar tekenHeer als die sleutel bekend is. Jouw blauwe koning en de rode koning in vrij spel blijven het oude beeld.
 - Nieuw: js/soldaten.js. Zeven soldaten (ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager) en acht werkers (houthakker, steenhouwer, fruitteler, zager, tarweboer, bakker, mijnwerker, boer) met zachte schaduw, donkere omlijning, licht van rechts en teamkleur. Werkers verschillen in silhouet door gereedschap en hoofddeksel. assets.js stuurt deze vormen naar soldaten.js; de oude functies in kunst.js blijven als reserve. Ram, katapult, belegeringstoren en beide koningen ongewijzigd.
 - Beeldcontract gelijk (4 loopbeelden, sla of schiet met 2 beelden, last en hak met 4); het canvas van soldaten is 52 bij 40.
@@ -187,4 +196,10 @@
 - Machines: js/machines.js tekent ram, katapult en belegeringstoren opnieuw in dezelfde stijl (huiden in teamkleur, ijzerbeslag, draaiende wielen, vlag en schilden). De belegeringstoren is veel hoger (doek 74 bij 114, voorheen 52 bij 60) met drie verdiepingen, kantelen en een valbrug. De oude tekenfuncties in kunst.js blijven als reserve.
 - Koning: jouw blauwe koning (en de rode koning in vrij spel) is nu "koning" in js/heren.js, dezelfde stijl en maat als de heren: geen kroon, bontkraag met gouden speld, bruin haar en baard, zwaard en schild in teamkleur, zwarte rouwband bij jou, gouden ring onder de voeten. assets.json: veld "figuur": "koning" bij beide koningen. heren35 verwacht nu de nieuwe maat (76 bij 64).
 - Test: soldaten36 heeft nu 318 controles (ook ram, katapult, toren, koning); oude tests nog groen.
-- Bekend: valbrug van de toren is klein getekend; levensbalk van de toren staat ca. 108 px boven de voeten; contragewicht van de katapult is een los grijs blok; nog niet op iPhone gezien.
+- Bekend: valbrug van de toren is klein getekend; levensbalk van de toren staat ca. 108 px boven de voeten; contragewicht van de katapult is een los grijs blok; gouden ring bij heren en koning; nog niet op iPhone gezien.
+
+## 0.37.0: samengevoegd
+- De nieuwe figuren (branch sprites-heren, uit de chat "Gedetailleerder en mooier maken van game") samengevoegd met de kastelen van 0.36.0. Beide waren 0.36.0 genummerd; samen 0.37.0.
+
+## 0.38.0: machines en koning
+- Ram, katapult, belegeringstoren (veel hoger) en de koning in de nieuwe stijl, bovenop 0.37.0 (main bevatte de heren, soldaten en werkers al).

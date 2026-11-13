@@ -34,18 +34,28 @@ async function start() {
   const modus = leesModus(missies);
   const missie = modus.soort === 'campagne' ? missies.campagne.find((c) => c.id === modus.missie) : null;
 
+  // Het kasteel van rood: in de campagne het ontwerp van het level (stap 33).
+  const { kastelen, materialen } = await laadKastelen();
+  const ontwerp = missie && missie.kasteel ? kastelen[missie.kasteel] : null;
+  if (missie && missie.kasteel && !ontwerp) throw new Error(`campagne.json: level ${missie.id} kent geen kasteel ${missie.kasteel}`);
+  // Het materiaal van dat kasteel: eigen plaatjes voor muur, torens, poort en burcht van rood.
+  const materiaal = ontwerp && ontwerp.materiaal ? materialen[ontwerp.materiaal] : null;
+  const roodKasteel = {};
+  if (materiaal) {
+    const hoger = ontwerp.hoog ? 1.25 : 1;
+    for (const deel of ['muur', 'toren', 'wachttoren', 'poort']) roodKasteel['rood.' + deel] = { basis: 'kasteel.' + deel, kleur: materiaal.kleur, hoogteFactor: hoger };
+    roodKasteel['rood.burcht'] = { basis: 'kasteel.burcht', kleur: materiaal.burcht || materiaal.kleur };
+    roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', kleur: materiaal.burcht || materiaal.kleur };
+  }
+
   // De rode koning is in de campagne de heer zelf: zijn kleding en wapen.
   const heerKoning = missie && missie.rood && missie.rood.koning;
-  const assets = await laadAssets(heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {});
+  const assets = await laadAssets(heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {}, roodKasteel);
   assets.meldingen.forEach((tekst) => ui.toonMelding(tekst));
   // In de campagne heb je alleen wat het verhaal al heeft vrijgegeven.
   const mag = ontgrendeld(missies.campagne, missie ? missie.id : null);
   const kaarten = await laadKaarten();
   const kaartNaam = (missie && missie.kaart) || 'standaard';
-  // Het kasteel van rood: in de campagne het ontwerp van het level (stap 33).
-  const kastelen = await laadKastelen();
-  const ontwerp = missie && missie.kasteel ? kastelen[missie.kasteel] : null;
-  if (missie && missie.kasteel && !ontwerp) throw new Error(`campagne.json: level ${missie.id} kent geen kasteel ${missie.kasteel}`);
   const kaart = maakKaart({ ...(kaarten[kaartNaam] || CONFIG.kaart), ...(ontwerp ? { kasteel: ontwerp } : {}) });
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
@@ -53,7 +63,8 @@ async function start() {
   const wegvinder = maakWegvinder(kaart);
   // Hoe hoog je staat boven op een muur, een toren of een poort.
   const hoogtes = OBJECT_ASSET.map((naam) => (naam ? assets.haal(naam).hoogte || 0 : 0));
-  const hoogteOp = (vak) => hoogtes[kaart.object[vak]] || 0;
+  const hoogtesRood = OBJECT_ASSET.map((naam) => (naam && assets.heeft('rood.' + naam.split('.')[1]) ? assets.haal('rood.' + naam.split('.')[1]).hoogte || 0 : 0));
+  const hoogteOp = (vak) => (kaart.eigenaar[vak] === 2 && hoogtesRood[kaart.object[vak]]) || hoogtes[kaart.object[vak]] || 0;
   const eenheden = maakEenheden(kaart, wegvinder, assets.haal('kasteel.muur').hoogte, hoogteOp);
   const meting = maakMeting({ kaart, camera, eenheden, ui });
   const { bouwwerken, groepen } = await laadBouwwerken();
@@ -72,6 +83,7 @@ async function start() {
   const regels = await laadEconomie();
   // Vrij spel of een missie: de regels van die modus over de gewone regels heen.
   pasProfielToe(regels, profielVan(missies, modus), missie && missie.rood);
+  if (ontwerp && ontwerp.hoog) regels.strijd.roodMuurHoog = true;   // te hoog voor ladders
   const opslag = maakOpslag(kaart.zaad, opslagSleutel(modus));
 
   // Bewaren: na elke keer bouwen, slopen, hakken of afleveren.
@@ -776,6 +788,10 @@ async function start() {
         // dichtstbijzijnde gewone stuk muur.
         const muurVak = !draagt ? -1 : strijd.isRodeMuurZonderLadder(vanRood.vak) ? vanRood.vak : strijd.dichtsteRodeMuur(vanRood.vak, 3);
         if (draagt && muurVak >= 0) {
+          if (strijd.muurTeHoog() && !groep.some((e) => isDrager(e) && leger.soorten[e.soldaat.sleutel].vast)) {
+            ui.toonMelding('These walls are too high for ladders. Bring a siege tower.');
+            return;
+          }
           if (strijd.zetLadderBevel(groep.filter(isDrager), muurVak)) {
             staat.doel = { x: muurVak % kaart.breedte, y: Math.floor(muurVak / kaart.breedte), duur: 900, tot: performance.now() + 900 };
             ui.toonMelding(groep.some((e) => leger.soorten[e.soldaat.sleutel].vast) ? 'The siege tower rolls to the red wall. Then your soldiers climb over it.' : 'Your ladder bearer sets a ladder against the red wall.');

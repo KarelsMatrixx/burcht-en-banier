@@ -129,6 +129,10 @@ function pasRoodToe(regels, rood) {
     if (Number.isFinite(regels.strijd.roodBurchtLeven)) regels.strijd.roodBurchtLeven = Math.round(regels.strijd.roodBurchtLeven * f);
     else if (Number.isFinite(regels.strijd.burchtLeven)) regels.strijd.roodBurchtLeven = Math.round(regels.strijd.burchtLeven * f);
   }
+  // Muren, torens en poorten van rood: muur in procenten (stap 33, kastelenontwerp).
+  if (Number.isFinite(rood.muur)) regels.strijd.roodMuurFactor = rood.muur / 100;
+  // hoog: ladders passen niet, alleen een belegeringstoren.
+  if (rood.hoog) regels.strijd.roodMuurHoog = true;
   if (Number.isFinite(rood.eersteAanval)) h.eersteAanval = rood.eersteAanval;
   if (Number.isFinite(rood.tempo) && rood.tempo > 0) h.tussen = Math.round((h.tussen * 100) / rood.tempo);
   if (rood.leger) h.leger = { ...rood.leger };

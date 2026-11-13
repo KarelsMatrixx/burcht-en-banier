@@ -30,6 +30,10 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
   const ctx = canvas.getContext('2d', { alpha: false });
   const grond = GROND_ASSET.map((naam) => assets.haal(naam));
   const objecten = OBJECT_ASSET.map((naam) => (naam ? assets.haal(naam) : null));
+  // Het kasteel van rood kan in de campagne een eigen materiaal hebben (stap 33):
+  // dan staan er plaatjes onder 'rood.muur', 'rood.toren', enzovoort.
+  const objectenRood = OBJECT_ASSET.map((naam) => (naam && assets.heeft('rood.' + naam.split('.')[1]) ? assets.haal('rood.' + naam.split('.')[1]) : null));
+  const objectOp = (i) => (kaart.eigenaar[i] === 2 && objectenRood[kaart.object[i]]) || objecten[kaart.object[i]];
   // soldaten[soort][team]
   const soldaten = [
     [assets.haal('eenheid.ridder_blauw'), assets.haal('eenheid.ridder_rood')],
@@ -121,7 +125,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         const i = y * kaart.breedte + x;
         const eigen = grond[kaart.grond[i]];
         grondBeeld[i] = kies(eigen, x, y, 3);
-        objectBeeld[i] = kies(objecten[kaart.object[i]], x, y, 4) || null;
+        objectBeeld[i] = kies(objectOp(i), x, y, 4) || null;
 
         // Grond met een hogere rang loopt met een zachte rand over deze tegel.
         let randen = null;
@@ -137,7 +141,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         randBeelden[i] = randen;
 
         // Slagschaduw: de voet van het object, opgeschoven naar linksboven.
-        const hoog = objecten[kaart.object[i]] ? objecten[kaart.object[i]].hoogte : 0;
+        const hoog = objectOp(i) ? objectOp(i).hoogte : 0;
         if (hoog > 0) {
           const wx = (x - y) * HALVE_BREEDTE;
           const wy = (x + y) * HALVE_HOOGTE;
@@ -432,7 +436,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     const ladderOp = new Map();
     if (staat.ladders) for (const l of staat.ladders()) ladderOp.set(l.y * kaart.breedte + l.x, l);
     const tekenLadder = (l) => {
-      const asset = objecten[kaart.object[l.y * kaart.breedte + l.x]];
+      const asset = objectOp(l.y * kaart.breedte + l.x);
       const muurH = (asset && asset.hoogte) || 40;
       const punt = (rx, ry, h) => [(rx - ry) * HALVE_BREEDTE, (rx + ry) * HALVE_HOOGTE - h];
       const [vx, vy] = punt(l.x + 0.5 + l.dx * 1.05, l.y + 0.5 + l.dy * 1.05, 0);
@@ -470,7 +474,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         const wx = (t.x - t.y) * HALVE_BREEDTE;
         const wy = (t.x + t.y) * HALVE_HOOGTE;
         if (schim.sloop) {
-          const staand = objecten[kaart.object[t.y * kaart.breedte + t.x]];
+          const staand = objectOp(t.y * kaart.breedte + t.x);
           const hoog = t.ok && staand ? staand.hoogte : 0;
           ruit(wx, wy - hoog, t.ok ? 'rgba(235, 70, 50, 0.6)' : 'rgba(150, 150, 150, 0.45)', '#ffd6cf');
         } else if (t.ok) {
@@ -498,7 +502,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     if (balken && balken.length) {
       for (let i = 0; i < balken.length; i++) {
         const b = balken[i];
-        const asset = objecten[kaart.object[b.y * kaart.breedte + b.x]];
+        const asset = objectOp(b.y * kaart.breedte + b.x);
         const hoog = asset && asset.hoogte ? asset.hoogte : 24;
         const wx = (b.x - b.y) * HALVE_BREEDTE;
         const wy = (b.x + b.y) * HALVE_HOOGTE + HALVE_HOOGTE - hoog - (b.groot ? 18 : 12);
@@ -610,7 +614,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
   // Voor het testen: welke variant van een plaatje er op een tegel staat.
   const variantOp = (x, y) => {
     const i = y * kaart.breedte + x;
-    const asset = objecten[kaart.object[i]];
+    const asset = objectOp(i);
     return asset && asset.varianten ? asset.varianten.indexOf(objectBeeld[i]) : -1;
   };
 

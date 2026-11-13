@@ -50,21 +50,21 @@ const knoppen = () => p.$$eval('#bouw-knoppen button', (k) => k.map((x) => x.tex
 await zet([1], 2);
 const b2 = await knoppen();
 check('level 2: kopermijn wel, magiertoren niet', b2.some((t) => /Copper Mine/.test(t)) && !b2.some((t) => /Mage Tower/.test(t)), b2.join('|'));
-check('level 2 intro: nieuw kopermijn', /New for you: Copper Mine/.test(await p.textContent('#missie-extra')), await p.textContent('#missie-extra'));
+check('level 2 intro: nieuw kopermijn', /New for you: Siege Tower, Copper Mine/.test(await p.textContent('#missie-extra')), await p.textContent('#missie-extra'));
 // level 2 winnen: het eindscherm noemt de kruisboog
 await p.evaluate(() => { document.getElementById('missie').hidden = true; window.spel.strijd.koning(1).dood = true; });
 await p.waitForTimeout(1500);
 const eind = await p.textContent('#einde-erbij');
-check('winst level 2: Unlocked: Crossbowman', /Unlocked: Crossbowman/.test(eind), eind);
+check('winst level 2: Unlocked: Catapult, Crossbowman', /Unlocked: Catapult, Crossbowman/.test(eind), eind);
 check('wintitel Engels', /Victory at Sevenwinds!/.test(await p.textContent('#einde-titel')), await p.textContent('#einde-titel'));
 // level 3: kruisboog erbij; bijlridder, katapult en toren nog niet
 await zet([1, 2], 3);
 const b3 = await knoppen();
 check('level 3: kopermijn wel, magiertoren niet', b3.some((t) => /Copper Mine/.test(t)) && !b3.some((t) => /Mage Tower/.test(t)), b3.join('|'));
 const mod = await p.evaluate(async () => { const m = await import('/js/modus.js'); const c = window.spel.missies.campagne; const f = m.ontgrendeld(c, 3); return ['kruisboog', 'bijlridder', 'katapult', 'toren', 'ram', 'ridder', 'sluipmoordenaar'].map((k) => k + ':' + f(k)).join(); });
-check('level 3 soldaten', mod === 'kruisboog:true,bijlridder:false,katapult:false,toren:false,ram:true,ridder:true,sluipmoordenaar:false', mod);
+check('level 3 soldaten', mod === 'kruisboog:true,bijlridder:false,katapult:true,toren:true,ram:true,ridder:true,sluipmoordenaar:false', mod);
 const mod4 = await p.evaluate(async () => { const m = await import('/js/modus.js'); const f = m.ontgrendeld(window.spel.missies.campagne, 4); return ['bijlridder', 'katapult', 'toren', 'magiertoren'].map((k) => k + ':' + f(k)).join(); });
-check('level 4 soldaten', mod4 === 'bijlridder:true,katapult:true,toren:false,magiertoren:false', mod4);
+check('level 4 soldaten', mod4 === 'bijlridder:true,katapult:true,toren:true,magiertoren:false', mod4);
 // vrij spel: alles
 await p.evaluate(() => { localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'vrij', profiel: 'normaal' })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); });
 await p.reload(); await wacht();
