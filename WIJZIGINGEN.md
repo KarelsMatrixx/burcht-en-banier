@@ -169,3 +169,11 @@
 ## 0.34.1: Mechteld schiet pijlen
 - Een rode koning met een boog schiet nu echt: koning.schiet in campagne.json (bereik 5,5 tegels, schade 14, om de 1,7 s, let op wie binnen 7 tegels van haar burcht komt). Alleen Mechteld (level 2). De andere heren slaan.
 - Voorbereiding stap 33 in js/kaart.js: het kasteel van rood kan uit een ontwerp komen (ringen, poorten, gracht). Nog niet aangesloten; zonder ontwerp blijft alles gelijk.
+
+## 0.35.0 (stap 33): kastelen voor rood
+- Nieuw: data/kastelen.json met tien ontwerpen: ring, klein, dubbel, jachtkamp (vier poorten), abdij, werkplaats (twee poorten), drie poorten achter elkaar, gracht (water met dam), bergfort, drie ringen met poorten aan steeds een andere kant.
+- Een ontwerp is een lijst ringen (maat, poorten) en eventueel een gracht. Hoeken worden torens, het midden van een zijde zonder poort een wachttoren. Elk level kiest er een in campagne.json (kasteel). Level 1 Reinout: klein. Level 2 Mechteld: ring. Level 3 Hademar: dubbele muur.
+- js/kaart.js bouwt het kasteel van rood uit het ontwerp: maakt eerst de plek vrij, zet de ringen, de gracht met dammen, en zoekt de werken van rood rondom (ook aan de rand van de kaart). Wachters krijgen routes over alle ringen, de buitenste eerst. Zonder ontwerp (vrij spel) blijft het oude kasteel.
+- Wegvinden en herbouw van rood werkten al met elk muurstuk; ze zijn niet veranderd. Getest: rood komt eruit, jij komt er pas in als de poorten weg zijn, en in level 3 breek je door twee poorten en win je.
+- Nog niet: een palissade van hout (het jachtkamp is nu een kleine stenen ring met vier poorten).
+- Nieuw: tests/kasteel33.mjs (45 controles: elk ontwerp op elke kaart). kaarten24 kijkt nu voor de buitenste poort.

@@ -20,7 +20,7 @@ for (const [modus, verwacht] of [[{ soort: 'vrij', profiel: 'normaal' }, 64], [{
   check(naam + ' weg tussen de poorten', v.v);
   const r = await p.evaluate(() => {
     const s = window.spel; const k = s.kaart; const B = k.breedte; const [a, z] = k.start;
-    const van = a.y * B + a.x + 6, naar = z.y * B + z.x - 6;
+    const van = a.y * B + a.x + 6, naar = z.y * B + z.x - (k.omvang || 5) - 1;
     const telObj = (o, eig) => { let n = 0; for (let i = 0; i < k.object.length; i++) if (k.object[i] === o && (eig === undefined || k.eigenaar[i] === eig)) n++; return n; };
     // kopererts en steen op redelijke afstand van jouw burcht
     let koper = 999, steen = 999;

@@ -1,7 +1,7 @@
 // MAIN: zet alle onderdelen in elkaar en start het spel.
 
 import { CONFIG } from './config.js';
-import { maakKaart, laadKaarten, binnenKaart, beschrijfTegel, OBJECT_ASSET } from './kaart.js';
+import { maakKaart, laadKaarten, laadKastelen, binnenKaart, beschrijfTegel, OBJECT_ASSET } from './kaart.js';
 import { rasterNaarWereld, wereldNaarRaster, kaartGrenzen } from './iso.js';
 import { maakCamera } from './camera.js';
 import { koppelInvoer } from './invoer.js';
@@ -42,7 +42,11 @@ async function start() {
   const mag = ontgrendeld(missies.campagne, missie ? missie.id : null);
   const kaarten = await laadKaarten();
   const kaartNaam = (missie && missie.kaart) || 'standaard';
-  const kaart = maakKaart(kaarten[kaartNaam] || { ...CONFIG.kaart });
+  // Het kasteel van rood: in de campagne het ontwerp van het level (stap 33).
+  const kastelen = await laadKastelen();
+  const ontwerp = missie && missie.kasteel ? kastelen[missie.kasteel] : null;
+  if (missie && missie.kasteel && !ontwerp) throw new Error(`campagne.json: level ${missie.id} kent geen kasteel ${missie.kasteel}`);
+  const kaart = maakKaart({ ...(kaarten[kaartNaam] || CONFIG.kaart), ...(ontwerp ? { kasteel: ontwerp } : {}) });
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
   const tekenaar = maakTekenaar(canvas, kaart, camera, assets);

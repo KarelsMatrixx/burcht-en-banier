@@ -110,6 +110,21 @@ const STANDAARD = {
   midden: [{ soort: 'IJZER', dx: -4, dy: 3, straal: 2.4 }],
 };
 
+// De kasteelontwerpen voor rood (stap 33).
+export async function laadKastelen() {
+  const antwoord = await fetch('data/kastelen.json');
+  if (!antwoord.ok) throw new Error('Kon data/kastelen.json niet laden.');
+  const k = (await antwoord.json()).kastelen;
+  for (const [naam, o] of Object.entries(k)) {
+    if (!Array.isArray(o.ringen) || !o.ringen.length) throw new Error(`kastelen.json: ${naam} heeft geen ringen`);
+    for (const r of o.ringen) {
+      if (!(r.maat >= 3 && r.maat <= 10)) throw new Error(`kastelen.json: ${naam} heeft een ring met maat ${r.maat} (3 tot 10)`);
+      for (const p of r.poorten || []) if (!['voor', 'achter', 'links', 'rechts'].includes(p)) throw new Error(`kastelen.json: ${naam} kent geen poort ${p}`);
+    }
+  }
+  return k;
+}
+
 export async function laadKaarten() {
   const antwoord = await fetch('data/kaarten.json');
   if (!antwoord.ok) throw new Error('Kon data/kaarten.json niet laden.');
@@ -346,14 +361,20 @@ export function maakKaart(recept) {
     const gekozen = [];
     for (const [soort, dx, dy] of [[OBJECT.HOUTHAKKER, -omvang - 3, -2], [OBJECT.STEENGROEVE, -omvang - 3, 2], [OBJECT.BOOMGAARD, -2, omvang + 3]]) {
       let beste = null;
-      for (let y = m.y + dy - 4; y <= m.y + dy + 4; y++) {
-        for (let x = m.x + dx - 4; x <= m.x + dx + 4; x++) {
-          if (!vrij(x, y) || !vrij(x + 1, y) || !vrij(x - 1, y) || !vrij(x, y + 1) || !vrij(x, y - 1)) continue;
-          if (Math.max(Math.abs(x - m.x), Math.abs(y - m.y)) <= omvang + 1) continue;
-          if (gekozen.some(([gx, gy]) => Math.abs(gx - x) <= 2 && Math.abs(gy - y) <= 2)) continue;
-          const d = Math.abs(x - (m.x + dx)) + Math.abs(y - (m.y + dy));
-          if (!beste || d < beste.d) beste = { x, y, d };
+      // Eerst vlak bij het doel; past het daar niet (een groot kasteel aan de
+      // rand van de kaart), dan de dichtstbijzijnde plek rondom het kasteel.
+      for (const ruim of [4, omvang + 10]) {
+        for (let y = m.y + dy - ruim; y <= m.y + dy + ruim; y++) {
+          for (let x = m.x + dx - ruim; x <= m.x + dx + ruim; x++) {
+            if (!vrij(x, y) || !vrij(x + 1, y) || !vrij(x - 1, y) || !vrij(x, y + 1) || !vrij(x, y - 1)) continue;
+            const afstand = Math.max(Math.abs(x - m.x), Math.abs(y - m.y));
+            if (afstand <= omvang + 1 || (ruim > 4 && afstand > omvang + 9)) continue;
+            if (gekozen.some(([gx, gy]) => Math.abs(gx - x) <= 2 && Math.abs(gy - y) <= 2)) continue;
+            const d = Math.abs(x - (m.x + dx)) + Math.abs(y - (m.y + dy));
+            if (!beste || d < beste.d) beste = { x, y, d };
+          }
         }
+        if (beste) break;
       }
       if (!beste) continue;
       gekozen.push([beste.x, beste.y]);

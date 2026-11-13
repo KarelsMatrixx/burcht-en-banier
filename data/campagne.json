@@ -8,7 +8,8 @@
   "intro en uit: de korte tekst voor en na het level. wessel: het voorwerp van Wessel dat je na het winnen vindt.",
   "figuren: wie er praat in de briefing en de verhaalbalk (naam en portret). verteller: wie de briefing vertelt (standaard bartholt).",
   "berichten: wat figuren zeggen tijdens het level. bij = tijd (seconden), aanval (nummer), burcht, koning, roodBurcht, roodKoning (onder dit percentage leven). wie = een figuur of heer. portret mag een andere uitdrukking kiezen. Hooguit 40 woorden. berichtenAltijd geldt in elk level.",
-  "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team. koning.schiet = { bereik, schade, slagTijd }: de koning schiet pijlen (Mechteld)."
+  "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team. koning.schiet = { bereik, schade, slagTijd }: de koning schiet pijlen (Mechteld).",
+  "kasteel (stap 33): het ontwerp van het kasteel van rood, uit data/kastelen.json."
  ],
  "figuren": {
   "karel": {
@@ -152,7 +153,8 @@
      }
     },
     "extra_soorten": {}
-   }
+   },
+   "kasteel": "klein"
   },
   {
    "id": 2,
@@ -234,7 +236,8 @@
      }
     },
     "extra_soorten": {}
-   }
+   },
+   "kasteel": "ring"
   },
   {
    "id": 3,
@@ -309,7 +312,8 @@
       "baard": "#8a8a8a"
      }
     }
-   }
+   },
+   "kasteel": "dubbel"
   },
   {
    "id": 4,
@@ -357,7 +361,8 @@
       "baard": "#4a3a2c"
      }
     }
-   }
+   },
+   "kasteel": "jachtkamp"
   },
   {
    "id": 5,
@@ -401,7 +406,8 @@
       "baard": "geen"
      }
     }
-   }
+   },
+   "kasteel": "abdij"
   },
   {
    "id": 6,
@@ -454,7 +460,8 @@
       "baard": "#6b553a"
      }
     }
-   }
+   },
+   "kasteel": "werkplaats"
   },
   {
    "id": 7,
@@ -497,7 +504,8 @@
       "baard": "geen"
      }
     }
-   }
+   },
+   "kasteel": "drie_poorten"
   },
   {
    "id": 8,
@@ -542,7 +550,8 @@
       "baard": "#9a9a9a"
      }
     }
-   }
+   },
+   "kasteel": "gracht"
   },
   {
    "id": 9,
@@ -588,7 +597,8 @@
       "baard": "geen"
      }
     }
-   }
+   },
+   "kasteel": "bergfort"
   },
   {
    "id": 10,
@@ -640,7 +650,8 @@
       "baard": "#f0f0f0"
      }
     }
-   }
+   },
+   "kasteel": "drie_ringen"
   }
  ]
 }

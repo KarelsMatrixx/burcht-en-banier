@@ -1,0 +1,20 @@
+{
+  "_uitleg": [
+    "Kasteelontwerpen voor de rode heer (stap 33). Een level kiest er een in data/campagne.json (kasteel: naam). Zonder keuze krijgt rood de gewone ringmuur.",
+    "ringen: van binnen naar buiten. maat = hoeveel tegels de muur van het midden af ligt (de burcht is 3 bij 3, dus minstens 3). poorten: voor (naar jou toe), achter, links, rechts. Hoeken worden torens, het midden van een zijde zonder poort een wachttoren.",
+    "gracht: water rondom de buitenste muur. afstand = tegels van de muur tot het water, breedte = hoe breed het water is. Voor elke poort van de buitenste ring loopt een dam van aarde.",
+    "Het kasteel moet op de kaart passen: maat plus gracht tot ongeveer 10 tegels."
+  ],
+  "kastelen": {
+    "ring":         { "naam": "Ring wall",           "ringen": [{ "maat": 5, "poorten": ["voor"] }] },
+    "klein":        { "naam": "Small keep",          "ringen": [{ "maat": 4, "poorten": ["voor"] }] },
+    "dubbel":       { "naam": "Double walls",        "ringen": [{ "maat": 4, "poorten": ["voor"] }, { "maat": 7, "poorten": ["voor"] }] },
+    "jachtkamp":    { "naam": "Hunting camp",        "ringen": [{ "maat": 4, "poorten": ["voor", "achter", "links", "rechts"] }] },
+    "abdij":        { "naam": "Abbey",               "ringen": [{ "maat": 6, "poorten": ["voor"] }] },
+    "werkplaats":   { "naam": "Workshops",           "ringen": [{ "maat": 5, "poorten": ["voor", "achter"] }] },
+    "drie_poorten": { "naam": "Three gates",         "ringen": [{ "maat": 3, "poorten": ["voor"] }, { "maat": 5, "poorten": ["voor"] }, { "maat": 7, "poorten": ["voor"] }] },
+    "gracht":       { "naam": "Moat",                "ringen": [{ "maat": 5, "poorten": ["voor"] }], "gracht": { "afstand": 2, "breedte": 2 } },
+    "bergfort":     { "naam": "Mountain fort",       "ringen": [{ "maat": 6, "poorten": ["voor", "achter"] }] },
+    "drie_ringen":  { "naam": "Three rings",         "ringen": [{ "maat": 3, "poorten": ["achter"] }, { "maat": 5, "poorten": ["links"] }, { "maat": 8, "poorten": ["voor"] }] }
+  }
+}
