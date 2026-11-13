@@ -1056,3 +1056,27 @@ button:active {
 #scene .kaartkop { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 #scene .portret { width: 64px; height: 64px; }
 #scene .knoppen { justify-content: flex-end; margin-top: 10px; }
+
+/* De hamer zet neer: hij gloeit en zegt Place (of Demolish). */
+#knop-bevestig[hidden] { display: none; }
+#knop-hamer.plaats { animation: hamer-gloed 1.1s ease-in-out infinite; }
+#knop-hamer.plaats.sloop { animation-name: hamer-gloed-rood; }
+@keyframes hamer-gloed { 0%, 100% { filter: drop-shadow(0 0 3px #f3d37a); } 50% { filter: drop-shadow(0 0 12px #ffe58a); } }
+@keyframes hamer-gloed-rood { 0%, 100% { filter: drop-shadow(0 0 3px #e2604e); } 50% { filter: drop-shadow(0 0 12px #ff7a62); } }
+#hamer-label {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  transform: translateX(-50%);
+  padding: 1px 7px;
+  border-radius: 8px;
+  background: #2a1f14;
+  border: 1px solid #f3d37a;
+  color: #f8ecc8;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+}
+#hamer-label[hidden] { display: none; }
+#knop-hamer.sloop #hamer-label { border-color: #e2604e; }

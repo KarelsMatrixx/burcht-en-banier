@@ -217,7 +217,14 @@ export function maakUi() {
     el('leger-leeg').hidden = !(paneel === 'leger' && !legerStand.zichtbaar);
   }
   zetPaneel(paneel);
-  el('knop-hamer').addEventListener('click', () => zetPaneel(paneel === 'bouw' ? null : 'bouw'));
+  // De hamer: staat er iets klaar om neer te zetten (of te slopen), dan zet een
+  // tik op de hamer het neer. Anders opent en sluit hij de bouwbalk.
+  let kanPlaatsen = false;
+  const bijPlaatsen = [];
+  el('knop-hamer').addEventListener('click', () => {
+    if (bouwtNu && kanPlaatsen) { for (const f of bijPlaatsen) f(); return; }
+    zetPaneel(paneel === 'bouw' ? null : 'bouw');
+  });
   el('knop-zwaard').addEventListener('click', () => zetPaneel(paneel === 'leger' ? null : 'leger'));
 
   // Tip om de app op het beginscherm te zetten. Alleen als je nog in
@@ -846,12 +853,20 @@ export function maakUi() {
       zetPaneel(paneel);
       el('knop-bevestig').textContent = bevestigTekst || 'Place';
       el('knop-bevestig').disabled = !kanBevestigen;
+      // De hamer gloeit als je hem kunt aantikken om neer te zetten.
+      kanPlaatsen = !!actief && !!kanBevestigen;
+      el('knop-hamer').classList.toggle('plaats', kanPlaatsen);
+      el('knop-hamer').classList.toggle('sloop', kanPlaatsen && actief === 'sloop');
+      el('hamer-label').textContent = kanPlaatsen ? (bevestigTekst || 'Place') : '';
+      el('hamer-label').hidden = !kanPlaatsen;
+      el('knop-hamer').setAttribute('aria-label', kanPlaatsen ? (bevestigTekst || 'Place') : 'Build');
       el('knop-bevestig').classList.toggle('gevaar', actief === 'sloop');
       // Tijdens het bouwen is de ruimte onderin nodig voor de uitleg.
       el('tip').classList.toggle('weg', !!actief);
     },
     opBevestig(functie) {
       el('knop-bevestig').addEventListener('click', functie);
+      bijPlaatsen.push(functie);
     },
     opKlaar(functie) {
       el('knop-klaar').addEventListener('click', functie);

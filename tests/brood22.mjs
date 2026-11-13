@@ -19,10 +19,10 @@ const vrijeTegels = await p.evaluate(() => { const s = window.spel; const k = s.
 console.log('tegels', JSON.stringify(vrijeTegels));
 await p.evaluate(() => { const v = window.spel.economie.voorraad; v.hout = 100; v.planken = 50; v.steen = 50; });
 await knop('Work'); check('knop Tarweveld', await knop('Wheat Field'));
-let sp = await naar(...vrijeTegels[0]); await p.touchscreen.tap(sp.x, sp.y); await knop('Place'); await knop('Done');
+let sp = await naar(...vrijeTegels[0]); await p.touchscreen.tap(sp.x, sp.y); await p.tap('#knop-hamer'); await knop('Done');
 check('tarweveld staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], vrijeTegels[0])) === 24);
 await knop('Work'); check('knop Bakkerij', await knop('Bakery'));
-sp = await naar(...vrijeTegels[1]); await p.touchscreen.tap(sp.x, sp.y); await knop('Place'); await knop('Done');
+sp = await naar(...vrijeTegels[1]); await p.touchscreen.tap(sp.x, sp.y); await p.tap('#knop-hamer'); await knop('Done');
 check('bakkerij staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], vrijeTegels[1])) === 25);
 await p.waitForTimeout(500);
 check('tarwe en brood in balk zodra je ze maakt', /Wheat/.test(await p.evaluate(() => [...document.querySelectorAll('#voorraad-lijst .grondstof')].map((g) => g.dataset.naam).join())));

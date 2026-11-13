@@ -464,6 +464,72 @@
    },
    "tip": "Throws a fireball: half damage around the target as well. Wood catches fire."
   },
+  "zwaardvechter": {
+   "naam": "Swordsman",
+   "meervoud": "Swordsmen",
+   "soort": "ZWAARD",
+   "kosten": {
+    "goud": 14,
+    "koper": 2
+   },
+   "snelheid": 1.9,
+   "leven": 72,
+   "schade": 9,
+   "schadeBouw": 5,
+   "slagTijd": 0.9,
+   "bereik": 1.5,
+   "zicht": 5,
+   "pijlDekking": 0.5,
+   "tip": "Tough and quick with his short sword. His round shield halves arrow damage.",
+   "kazerne": "klassiek"
+  },
+  "banierdrager": {
+   "naam": "Banner Bearer",
+   "meervoud": "Banner Bearers",
+   "soort": "BANIER",
+   "kosten": {
+    "goud": 20,
+    "koper": 2
+   },
+   "snelheid": 2.0,
+   "leven": 54,
+   "schade": 0,
+   "schadeBouw": 0,
+   "slagTijd": 1,
+   "bereik": 1.5,
+   "zicht": 5,
+   "steun": true,
+   "vaandel": {
+    "bereik": 4,
+    "extra": 0.15
+   },
+   "tip": "Does not fight. Your soldiers within 4 tiles deal 15% more damage. Two banners do not add up.",
+   "kazerne": "klassiek"
+  },
+  "heler": {
+   "naam": "Healer",
+   "meervoud": "Healers",
+   "soort": "HELER",
+   "kazerne": "mystiek",
+   "boeren": 2,
+   "kosten": {
+    "goud": 20,
+    "brood": 10
+   },
+   "snelheid": 2.0,
+   "leven": 42,
+   "schade": 0,
+   "schadeBouw": 0,
+   "slagTijd": 1,
+   "bereik": 1.5,
+   "zicht": 5,
+   "steun": true,
+   "heelt": {
+    "bereik": 3,
+    "perSeconde": 0.04
+   },
+   "tip": "Does not fight. Heals the most wounded soldier within 3 tiles, but not himself."
+  },
   "koning": {
    "naam": "King",
    "meervoud": "Kings",
@@ -578,7 +644,10 @@
    "bijlridder": 1.4,
    "kruisboog": 1.1,
    "sluipmoordenaar": 1.5,
-   "vlammenwever": 2
+   "vlammenwever": 2,
+   "zwaardvechter": 1.2,
+   "banierdrager": 1,
+   "heler": 1
   },
   "ridderPerSchutter": 2,
   "rammenVanaf": 3,

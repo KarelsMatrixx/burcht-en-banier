@@ -15,7 +15,7 @@ const SLEUTEL = 'burcht-banier.proloog';
 
 // De taken. telt: hoeveel van dit bouwwerk er bij moeten komen.
 const TAKEN = [
-  { taak: "Build a Woodcutter's Hut", bouw: { houthakker: 1 }, tekst: "Happy birthday to Wessel, Sire! The whole of Aldervale is here. While the cooks work, let us put the land to work. Tap the hammer, then Work, and build a woodcutter's hut near the forest." },
+  { taak: "Build a Woodcutter's Hut", bouw: { houthakker: 1 }, tekst: "Happy birthday to Wessel, Sire! The whole of Aldervale is here. While the cooks work, let us put the land to work. Tap the hammer, then Work, and choose the woodcutter's hut. Tap a spot near the forest, then tap the glowing hammer to build it." },
   { taak: 'Build a Quarry', bouw: { steengroeve: 1 }, tekst: 'Good. Wood we have, now stone. Build a quarry close to the grey rocks.' },
   { taak: 'Build an Orchard', bouw: { boomgaard: 1 }, tekst: 'A feast needs food, and so does an army. Build an orchard on open grass.' },
   { taak: 'Build a House', bouw: { woning: 1 }, tekst: 'More hands, more work. Build a house: new villagers will come to live in it.' },

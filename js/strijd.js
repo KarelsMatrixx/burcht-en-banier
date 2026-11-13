@@ -59,8 +59,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   for (const [sleutel, def] of Object.entries(soorten)) {
     // Een stormram vecht niet (schade 0), een ladderdrager vecht niet en beukt niet.
     const nodig = ['leven', 'slagTijd', 'bereik', 'zicht'];
-    if (!def.alleenBouw && !def.ladder) nodig.push('schade');
-    if (!def.ladder) nodig.push('schadeBouw');
+    // Een banierdrager en een heler (steun) vechten ook niet.
+    if (!def.alleenBouw && !def.ladder && !def.steun) nodig.push('schade');
+    if (!def.ladder && !def.steun) nodig.push('schadeBouw');
     for (const veld of nodig) {
       if (!(def[veld] > 0)) throw new Error(`economie.json: soldaat ${sleutel} mist een goed getal bij ${veld}`);
     }
@@ -180,7 +181,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // Het vak waar iemand staat, of waar hij naar op weg is.
   const staVak = (a) => (a.pad && a.pad.length ? a.pad[a.pad.length - 1] % (B * H) : vakVan(a));
   // Een stormram en een ladderdrager vechten niet met soldaten.
-  const vreedzaam = (k) => !!(k.def.alleenBouw || k.def.ladder);
+  const vreedzaam = (k) => !!(k.def.alleenBouw || k.def.ladder || k.def.steun);
   // Hoeveel van een pijl er doorkomt: een stormram heeft een dak.
   const dekkingVan = (doel) => {
     const d = doel.krijg && doel.krijg.def.pijlDekking;
@@ -592,6 +593,27 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     } else if (k.def.bereik > 2) pijl(e.x, e.y, 20, b.x, b.y, b.burcht ? 44 : 24, !!k.def.alleenBouw);
     raakBouw(b, k.def.schadeBouw * bouwKeer(k.def, b));
   }
+  // --- De heler: geneest elke seconde de zwaarst gewonde soldaat bij hem in de buurt.
+  function helerStap() {
+    for (const lijst of [leger.lijst, vijanden]) {
+      for (const h of lijst) {
+        const hl = !h.dood && h.krijg && h.krijg.def.heelt;
+        if (!hl) continue;
+        let beste = null;
+        let deel = 1;
+        for (const a of lijst) {
+          if (a === h || a.dood || !a.levenMax || a.leven >= a.levenMax) continue;
+          if (Math.hypot(a.x - h.x, a.y - h.y) > hl.bereik) continue;
+          const d = a.leven / a.levenMax;
+          if (d < deel) { deel = d; beste = a; }
+        }
+        if (!beste) continue;
+        beste.leven = Math.min(beste.levenMax, beste.leven + Math.max(1, Math.round(beste.levenMax * hl.perSeconde)));
+        effect({ soort: 'heel', x: beste.x, y: beste.y, h: beste.hoogte || 0, duur: 700 });
+      }
+    }
+  }
+
   // --- Vuur: de vlammenwever ---------------------------------------------------------
   // Wat van hout is: de poort en de werken. Dat gaat in brand.
   const HOUT = new Set(['POORT', 'HOUTHAKKER', 'BOOMGAARD', 'ZAGERIJ', 'TARWEVELD', 'STEENGROEVE', 'VOORRAADKAMER', 'WONING', 'KAZERNE', 'BAKKERIJ', 'KOPERMIJN'].map((n) => OBJECT[n]));
@@ -633,10 +655,15 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // soldaat bij zijn koning doet iets meer (het koninklijk vaandel).
   function sterkteVan(e, k) {
     if (k.def.koning) return burchten[e.team].leven > 0 ? 1 : k.def.zwak || 1;
-    const kon = koningVan(e.team);
-    const v = kon && kon.krijg && kon.krijg.def.vaandel;
-    if (!v || Math.hypot(kon.x - e.x, kon.y - e.y) > v.bereik) return 1;
-    return 1 + v.extra;
+    // Een vaandel in de buurt (de koning, een banierdrager): de sterkste telt, ze stapelen niet.
+    let extra = 0;
+    for (const a of lijstVan(e.team)) {
+      if (a.dood || a === e) continue;
+      const v = a.krijg && a.krijg.def.vaandel;
+      if (!v || v.extra <= extra) continue;
+      if (Math.hypot(a.x - e.x, a.y - e.y) <= v.bereik) extra = v.extra;
+    }
+    return 1 + extra;
   }
 
   // Een bijl doet meer schade aan hout: poorten en houten gebouwen.
@@ -1324,7 +1351,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     for (let i = 0; i < vijanden.length; i++) krijgerStap(vijanden[i], eigen);
     for (let i = 0; i < eigen.length; i++) krijgerStap(eigen[i], vijanden);
     burchtStap(burcht, vijanden);
-    if (!R.proloog) burchtStap(rood, eigen);   // in de proloog staat er geen kasteel van rood
+    if (!R.proloog) burchtStap(rood, eigen);
+    if (stapNr % stappen(1) === 0) helerStap();   // in de proloog staat er geen kasteel van rood
     brandStap();
     ruimOp();
     if (R.proloog) {
@@ -1613,6 +1641,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   return {
     stap, stand, effecten, balken, kaartVeranderd,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
+    // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
+    sterkteVan: (e) => sterkteVan(e, krijgVan(e)),
     zetLadderBevel, ladders,
     zetLadderVoor: (vak, team, dx = 1, dy = 0, vast = false) => zetLadder(vak, team, [dx, dy], vast),
     klimBevel,

@@ -208,7 +208,7 @@ async function start() {
     if (sloop) {
       if (bouw.begin) tegels = [{ ...bouw.begin, ok: bouwer.isVanSpeler(bouw.begin.x, bouw.begin.y) }];
       if (!bouw.begin) hint = 'Tap something you built yourself.';
-      else if (tegels[0].ok) hint = 'Tap Demolish to tear this down. You get half the price back.';
+      else if (tegels[0].ok) hint = 'Tap the hammer to tear this down. You get half the price back.';
       else hint = 'You cannot demolish this. Only what you built yourself.';
     } else {
       const naam = werk.naam.toLowerCase();
@@ -242,11 +242,11 @@ async function start() {
           hint += bron === werk ? ' Demolish something: you get half back.' : ` First build ${metLidwoord(bron.naam.toLowerCase())}.`;
         }
       } else if (werk.lijn && !bouw.eind) {
-        hint = `Tap where it ends, or place this one piece for ${kost}.`;
+        hint = `Tap where it ends, or tap the hammer to place this one piece for ${kost}.`;
       } else if (werk.lijn) {
-        hint = `${goed} ${goed === 1 ? 'piece' : 'pieces'} for ${kost}` + (fout ? `, ${fout} not possible (red)` : '') + '. Tap another end point or place it.';
+        hint = `${goed} ${goed === 1 ? 'piece' : 'pieces'} for ${kost}` + (fout ? `, ${fout} not possible (red)` : '') + '. Tap another end point, or tap the hammer to place it.';
       } else {
-        hint = `This costs ${kost}. Tap another spot or place it.`;
+        hint = `This costs ${kost}. Tap another spot, or tap the hammer to place it.`;
         // Een werkgebouw zonder boer doet niets: dat wil je vooraf weten.
         if (werk.werker && economie.bevolking().vrij <= 0) hint += ' Note: no peasant is free, the building waits until one arrives.';
       }

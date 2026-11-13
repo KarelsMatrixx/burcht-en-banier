@@ -431,28 +431,35 @@
    "heer": "Commander Aleid of Whirlward",
    "portret": "aleid",
    "profiel": "normaal",
-   "kaart": "standaard",
+   "kaart": "meren",
    "punt": {
     "x": 51.2,
     "y": 44.2
    },
-   "speelbaar": false,
-   "intro": "Aleid holds the abbey of the Order of the White Banner, and keeps Brother Ludolf prisoner.",
-   "uit": "",
+   "speelbaar": true,
+   "intro": "Commander Aleid holds the abbey of the Order of the White Banner, and keeps Brother Ludolf prisoner. A wide moat lies around her walls, with narrow dams to the gates. Her swordsmen fight in close ranks behind their banners.",
+   "uit": "Aleid lays down her sword. \"I had no orders about a child. But I heard the duke say he had his heir back.\" The word stays in the air. Brother Ludolf is free: \"The banner serves whoever serves the realm. Carry it well.\"",
    "wessel": "His name in the abbey guestbook, in a child's handwriting.",
-   "beloning": [],
-   "beloningLater": "zwaardvechter en banierdrager (Aleid), heler (Ludolf)",
+   "beloning": [
+    "zwaardvechter",
+    "banierdrager",
+    "heler"
+   ],
    "rood": {
     "sterkte": 110,
     "leger": {
-     "ridder": {
+     "zwaardvechter": {
       "aandeel": 3
      },
-     "bijlridder": {
-      "aandeel": 1
+     "banierdrager": {
+      "aandeel": 1,
+      "vanaf": 2
      },
      "boogschutter": {
       "aandeel": 2
+     },
+     "ridder": {
+      "aandeel": 1
      }
     },
     "koning": {
@@ -469,7 +476,33 @@
     },
     "muur": 145
    },
-   "kasteel": "abdij"
+   "kasteel": "abdij",
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 20,
+     "wie": "bartholt",
+     "tekst": "Her swordsmen carry round shields, Sire: our arrows do only half the harm. Crossbows go straight through."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 2,
+     "wie": "heer",
+     "tekst": "Keep in line! A banner in front, and nobody breaks ranks."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 2,
+     "wie": "bartholt",
+     "tekst": "See the banner bearer? While he lives, her men strike harder. Kill him first."
+    },
+    {
+     "bij": "roodBurcht",
+     "waarde": 50,
+     "wie": "ludolf",
+     "tekst": "King Karel! I can hear you from my cell. The Order has not forgotten Aldervale."
+    }
+   ]
   },
   {
    "id": 6,

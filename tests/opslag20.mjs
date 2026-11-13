@@ -23,7 +23,7 @@ console.log('vrij', vrij);
 await knop('Village'); check('knop Voorraad', await knop('Storehouse'));
 const sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.begrens && s.camera.begrens(); return s.camera.wereldNaarScherm(w.x, w.y); }, vrij);
 await p.touchscreen.tap(sp.x, sp.y);
-await knop('Place'); await knop('Done');
+await p.tap('#knop-hamer'); await knop('Done');
 await p.waitForTimeout(300);
 const o = await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], vrij);
 check('voorraadkamer staat (object 22)', o === 22, o);
@@ -45,7 +45,7 @@ console.log('houthakker op', hk);
 await p.evaluate(() => { window.spel.economie.voorraad.hout = 300; window.spel.economie.voorraad.goud = 500; });
 await knop('‹ Back'); await knop('Work'); check('knop Houthakker', await knop("Woodcutter's Hut"));
 const sp2 = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.begrens && s.camera.begrens(); return s.camera.wereldNaarScherm(w.x, w.y); }, hk);
-await p.touchscreen.tap(sp2.x, sp2.y); await knop('Place'); await knop('Done');
+await p.touchscreen.tap(sp2.x, sp2.y); await p.tap('#knop-hamer'); await knop('Done');
 const werkers = () => p.evaluate(() => [...window.spel.eenheden.lijst ? window.spel.eenheden.lijst() : []].length);
 let klem = '';
 for (let t = 0; t < 120 && !/full/.test(klem); t++) {

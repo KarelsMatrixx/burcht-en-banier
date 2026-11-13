@@ -135,7 +135,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
 
   // Soldaten in drie groepen: wie van dichtbij vecht, wie van verre schiet
   // en de belegeringsmachines (ram, katapult, toren, ladderdrager).
-  const groepVan = (def) => (def.alleenBouw || def.ladder ? 'belegering' : def.bereik > 2 ? 'afstand' : 'melee');
+  // Steun (banierdrager, heler) staat bij Afstand: die blijven achter de linie.
+  const groepVan = (def) => (def.alleenBouw || def.ladder ? 'belegering' : def.bereik > 2 || def.steun ? 'afstand' : 'melee');
   // De koning valt buiten de groepen en buiten Alle: die stuur je bewust, met zijn eigen knop of een tik.
   const isKoning = (e) => !!soorten[e.soldaat.sleutel].koning;
   const kiesGroep = (groep) => kies(soldaten.filter((e) => !isKoning(e) && groepVan(soorten[e.soldaat.sleutel]) === groep));

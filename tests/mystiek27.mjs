@@ -18,13 +18,13 @@ await p.evaluate(() => { const v = window.spel.economie.voorraad; v.planken = 10
 const knop = async (t) => { for (const x of await p.$$('#bouwbalk button')) { if ((await x.textContent()).startsWith(t) && await x.isVisible()) { await x.tap(); return true; } } return false; };
 await knop('Army'); check('knop Magiertoren', await knop('Mage Tower'));
 let sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.zetZoom(1); return s.camera.wereldNaarScherm(w.x, w.y); }, plek);
-await p.touchscreen.tap(sp.x, sp.y); await knop('Place'); await knop('Done');
+await p.touchscreen.tap(sp.x, sp.y); await p.tap('#knop-hamer'); await knop('Done');
 check('magiertoren staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], plek)) === 27);
 await p.waitForTimeout(400);
 sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); return s.camera.wereldNaarScherm(w.x, w.y + 4); }, plek);
 await p.touchscreen.tap(sp.x, sp.y); await p.waitForTimeout(300);
 const kn = await p.$$eval('#leger-opleiden button', (k) => k.map((x) => x.dataset.soldaat));
-check('paneel: alleen sluip en vlam', kn.join() === 'sluipmoordenaar,vlammenwever', kn.join());
+check('paneel: sluip, vlam en heler', kn.join() === 'sluipmoordenaar,vlammenwever,heler', kn.join());
 const boer0 = await p.evaluate(() => window.spel.economie.bevolking().vrij);
 await p.tap('#leger-opleiden button[data-soldaat="sluipmoordenaar"]');
 const boer1 = await p.evaluate(() => window.spel.economie.bevolking().vrij);

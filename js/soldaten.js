@@ -612,9 +612,135 @@ function werker(def, sleutel) {
   return pakket(teken, { last: VIER('last'), hak: VIER('hak') });
 }
 
+
+// ---------------------------------------------------------- zwaardvechter
+// Stevig, rond houten schild in teamkleur, kort zwaard, helm met lage kam.
+function zwaardvechter(def) {
+  const K = def.kleur;
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const hoog = houding === 'hoog';
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 1.8 : LOOP[beeld];
+    const mx = 13;
+    benen(ctx, mx, wip, pas, { top: 27, b: 3.4, sp: 2.3, been: ['#4a4a54', '#3a3a44'], laars: '#2b2b32', laarsH: 3 });
+    blok(ctx, mx - 5, 26 + wip, 10, 2.4, '#8a909a');
+    for (let i = 0; i < 6; i++) blok(ctx, mx - 4.8 + i * 1.65, 27.2 + wip, 0.7, 0.6, 'rgba(0,0,0,0.35)');
+    // wapenrok: grijs met een teamkleurige band
+    romp(ctx, mx, wip, 10.2, 17, 10, '#7d828c');
+    blok(ctx, mx - 5.1, 20 + wip, 10.2, 2, K);
+    ovaal(ctx, mx - 4.8, 18.2 + wip, 2.5, 2.3, tint(STAAL, -0.25));
+    ovaal(ctx, mx + 4.8, 18.2 + wip, 2.6, 2.4, STAAL);
+    // helm met lage kam
+    ovaal(ctx, mx + 0.4, 12.4 + wip, 2.9, 3.1, HUID);
+    ovaal(ctx, mx, 10.4 + wip, 4.7, 4.1, STAAL);
+    blok(ctx, mx - 4.7, 10.4 + wip, 9.4, 2.4, STAAL);
+    blok(ctx, mx - 4.7, 10.4 + wip, 3, 2.4, 'rgba(0,0,0,0.22)');
+    blok(ctx, mx - 1.2, 11.4 + wip, 4, 1, '#23232a');
+    vlak(ctx, [[mx - 3.6, 7 + wip], [mx + 3.4, 7 + wip], [mx + 2.8, 5.4 + wip], [mx - 3, 5.4 + wip]], tint(K, -0.1));
+    ovaal(ctx, mx + 1.8, 8.4 + wip, 1.3, 0.9, 'rgba(255,255,255,0.5)');
+    // rond schild met rand en knop
+    const sx = mx - 5.6, sy = 22.5 + wip;
+    ovaal(ctx, sx, sy, 5, 5.4, '#7a5530');
+    ovaal(ctx, sx, sy, 4.1, 4.5, K);
+    ovaal(ctx, sx + 1.2, sy - 1.2, 2.2, 2.4, tint(K, 0.2));
+    ovaal(ctx, sx, sy, 1.2, 1.3, '#d8c27a');
+    // zwaard
+    if (!vecht) {
+      lijn(ctx, mx + 6, 23 + wip, mx + 7.4, 31 + wip, '#e2e6ec', 1.3);
+      blok(ctx, mx + 4.6, 22.2 + wip, 3, 0.9, '#c9a24a');
+      hand(ctx, mx + 5.8, 22.4 + wip, STAAL, 1.5);
+    } else if (hoog) {
+      lijn(ctx, mx + 5, 17, mx + 9.5, 7.5, '#e2e6ec', 1.4);
+      blok(ctx, mx + 3.6, 16.8, 3, 0.9, '#c9a24a');
+      hand(ctx, mx + 5, 17.4, STAAL, 1.5);
+    } else {
+      lijn(ctx, mx + 6, 21, mx + 16, 23.5, '#e2e6ec', 1.4);
+      blok(ctx, mx + 5.4, 19.8, 0.9, 3, '#c9a24a');
+      hand(ctx, mx + 5.6, 21, STAAL, 1.5);
+    }
+  };
+  return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
+}
+
+// ----------------------------------------------------------- banierdrager
+// De langste klassieke figuur: tabbaard, lange stok met een groot vaandel in
+// teamkleur dat wappert.
+function banierdrager(def) {
+  const K = def.kleur;
+  const teken = (ctx, houding, beeld) => {
+    const wip = houding === 'lopen' && beeld % 2 ? -1 : 0;
+    const pas = houding === 'lopen' ? LOOP[beeld] : 0;
+    const golf = [0, 1, 0, -1][beeld % 4];
+    const mx = 12.5;
+    // stok en vaandel achter de figuur
+    lijn(ctx, mx + 6.5, 32, mx + 6.5, -3 + wip, HOUT, 1.3);
+    ovaal(ctx, mx + 6.5, -3.4 + wip, 1, 1, '#d8b24a');
+    const v = [[mx + 7, -1.5 + wip], [mx + 17, 0.5 + wip + golf], [mx + 16, 6 + wip], [mx + 18, 11.5 + wip - golf], [mx + 7, 10 + wip]];
+    vlak(ctx, v, K);
+    vlak(ctx, [[mx + 7, 4 + wip], [mx + 16.5, 5.2 + wip], [mx + 16, 6 + wip], [mx + 7, 5.6 + wip]], tint(K, -0.25));
+    vlak(ctx, [[mx + 7, -1.5 + wip], [mx + 17, 0.5 + wip + golf], [mx + 16.6, 2 + wip + golf], [mx + 7, 0.2 + wip]], tint(K, 0.25));
+    ovaal(ctx, mx + 11.5, 4.6 + wip, 1.8, 1.8, '#efe6c8');
+    benen(ctx, mx, wip, pas, { top: 27, b: 3, sp: 2.1, been: ['#5a4a38', '#4a3c2c'], laars: '#2b2218', laarsH: 3 });
+    // lange tabbaard in teamkleur over een maliënhemd
+    romp(ctx, mx, wip, 9.2, 16, 12, '#8a909a');
+    vlak(ctx, [[mx - 3.6, 16.2 + wip], [mx + 3.6, 16.2 + wip], [mx + 4, 29 + wip], [mx - 4, 29 + wip]], K);
+    blok(ctx, mx - 0.4, 16.2 + wip, 0.8, 12.8, '#efe6c8');
+    blok(ctx, mx - 3, 21 + wip, 6, 0.8, '#efe6c8');
+    ovaal(ctx, mx - 4.4, 17.4 + wip, 2.3, 2.1, tint(STAAL, -0.25));
+    ovaal(ctx, mx + 4.4, 17.4 + wip, 2.4, 2.2, STAAL);
+    // hoofd met kapje
+    gezichtje(ctx, mx + 0.4, 11.4 + wip, { haar: '#5a3a20' });
+    vlak(ctx, [[mx - 3.6, 10.6 + wip], [mx - 3.2, 7.4 + wip], [mx, 6.2 + wip], [mx + 3.2, 7.4 + wip], [mx + 3.6, 9.6 + wip], [mx - 1, 9.4 + wip]], '#6b6f78');
+    // handen aan de stok
+    hand(ctx, mx + 6.5, 17 + wip, HUID, 1.4);
+    hand(ctx, mx + 6.5, 22 + wip, HUID, 1.4);
+  };
+  return pakket(teken, { sla: [['lopen', 0], ['lopen', 2]] });
+}
+
+// ------------------------------------------------------------------ heler
+// Witte en crème pij met capuchon, een staf met een lantaarn, een gouden
+// gloed rond de voeten. Mystiek: blauwe accenten; teamkleur in de sjerp.
+function heler(def) {
+  const K = def.kleur;
+  const teken = (ctx, houding, beeld) => {
+    const wip = houding === 'lopen' && beeld % 2 ? -1 : 0;
+    const pas = houding === 'lopen' ? LOOP[beeld] * 0.6 : 0;
+    const mx = 12.5;
+    const g = ctx.createRadialGradient(mx, 33, 0.5, mx, 33, 9);
+    g.addColorStop(0, 'rgba(255,220,120,0.45)');
+    g.addColorStop(1, 'rgba(255,220,120,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(mx, 33, 9, 3.4, 0, 0, Math.PI * 2); ctx.fill();
+    // staf met lantaarn
+    lijn(ctx, mx + 6.8, 32, mx + 6.8, 7 + wip, HOUT, 1.2);
+    lijn(ctx, mx + 6.8, 7 + wip, mx + 9, 8 + wip, HOUT, 0.9);
+    blok(ctx, mx + 8.2, 8.4 + wip, 2.4, 3, '#3a2a1c');
+    blok(ctx, mx + 8.6, 8.8 + wip, 1.6, 2.2, '#ffd56a');
+    ovaal(ctx, mx + 9.4, 9.9 + wip, 3, 3, 'rgba(255,214,106,0.25)');
+    // pij tot op de grond
+    vlak(ctx, [[mx - 4.4, 16 + wip], [mx + 4.4, 16 + wip], [mx + 5.6 + pas * 0.3, 33], [mx - 5.6 - pas * 0.3, 33]], '#ebe4d2');
+    vlak(ctx, [[mx - 4.4, 16 + wip], [mx - 1.6, 16 + wip], [mx - 2.4, 33], [mx - 5.6 - pas * 0.3, 33]], 'rgba(0,0,0,0.12)');
+    vlak(ctx, [[mx + 2.6, 16 + wip], [mx + 4.4, 16 + wip], [mx + 5.6, 33], [mx + 3.8, 33]], 'rgba(255,255,255,0.35)');
+    blok(ctx, mx - 0.5, 18 + wip, 1, 14, '#5b7bc4');
+    // sjerp in teamkleur
+    vlak(ctx, [[mx - 4.4, 22 + wip], [mx + 4.6, 22 + wip], [mx + 4.6, 23.6 + wip], [mx - 4.4, 23.6 + wip]], K);
+    // capuchon met gezicht in de schaduw
+    vlak(ctx, [[mx - 4.6, 17 + wip], [mx - 4.4, 9 + wip], [mx, 5.6 + wip], [mx + 4.4, 9 + wip], [mx + 4.6, 17 + wip]], '#ddd5c0');
+    ovaal(ctx, mx + 0.4, 12 + wip, 2.8, 3.2, tint(HUID, -0.15));
+    ovaal(ctx, mx - 0.7, 11.9 + wip, 0.5, 0.45, '#2a1b12');
+    ovaal(ctx, mx + 1.5, 11.9 + wip, 0.5, 0.45, '#2a1b12');
+    vlak(ctx, [[mx - 4.4, 9 + wip], [mx, 5.6 + wip], [mx - 1, 8 + wip], [mx - 3, 13 + wip]], 'rgba(0,0,0,0.12)');
+    hand(ctx, mx + 6.8, 19 + wip, HUID, 1.4);
+  };
+  return pakket(teken, { sla: [['lopen', 0], ['lopen', 2]] });
+}
+
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
+  zwaardvechter, banierdrager, heler,
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

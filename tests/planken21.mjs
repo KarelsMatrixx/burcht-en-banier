@@ -20,7 +20,10 @@ const naar = (x, y) => p.evaluate(([x, y]) => { const s = window.spel; const w =
 const vrij = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; for (let r = 3; r < 9; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = st.x + dx, y = st.y + dy; if (s.wegvinder.isVrij(x, y, 0) && k.object[y * 64 + x] === 0 && Math.max(Math.abs(dx), Math.abs(dy)) === r && dx > 0) return [x, y]; } return null; });
 await p.evaluate(() => { window.spel.economie.voorraad.hout = 100; });
 await knop('Work'); check('knop Zagerij', await knop('Sawmill'));
-let sp = await naar(...vrij); await p.touchscreen.tap(sp.x, sp.y); await knop('Place'); await knop('Done');
+let sp = await naar(...vrij); await p.touchscreen.tap(sp.x, sp.y);
+check('hamer gloeit en zegt Place', await p.evaluate(() => document.getElementById('knop-hamer').classList.contains('plaats') && document.getElementById('hamer-label').textContent === 'Place'));
+check('geen losse Place-knop meer', await p.isHidden('#knop-bevestig'));
+await p.tap('#knop-hamer'); await knop('Done');
 check('zagerij staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], vrij)) === 23);
 // hout 100 - 25 = 75; volgen tot planken stijgen
 let staten = new Set(); let pl = 20, hout;

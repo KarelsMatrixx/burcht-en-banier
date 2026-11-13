@@ -25,7 +25,7 @@ await p.evaluate(() => { const v = window.spel.economie.voorraad; v.hout = 100; 
 const knop = async (t) => { for (const x of await p.$$('#bouwbalk button')) { if ((await x.textContent()).startsWith(t) && await x.isVisible()) { await x.tap(); return true; } } return false; };
 await knop('Work'); check('knop Kopermijn', await knop('Copper Mine'));
 const sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.zetZoom(1); return s.camera.wereldNaarScherm(w.x, w.y); }, [vak.x, vak.y]);
-await p.touchscreen.tap(sp.x, sp.y); await knop('Place'); await knop('Done');
+await p.touchscreen.tap(sp.x, sp.y); await p.tap('#knop-hamer'); await knop('Done');
 check('mijn staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], [vak.x, vak.y])) === 26);
 let koper = 0; const st = new Set();
 for (let t = 0; t < 90 && koper === 0; t++) { await p.waitForTimeout(1000); const r = await p.evaluate(([x, y]) => ({ k: window.spel.economie.voorraad.koper, b: window.spel.economie.beschrijf(y * 64 + x) }), [vak.x, vak.y]); koper = r.k; st.add(r.b); }

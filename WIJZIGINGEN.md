@@ -267,3 +267,13 @@
 - Level 4 The Fen is speelbaar (doeltype B, js/doel.js): de hut van Moeder Gesina staat midden in het moeras en is van jou (niet te slopen). Houd hem 8 minuten. Jagers van Brandt komen in golven (eerst na 40 s, dan elke 55 s, 4 tot 10 man: sluipmoordenaars, boogschutters, ridders) en gaan eerst op de hut af. Valt de hut, dan verlies je. De klok staat rechtsboven. Nieuwe kaart The Fen (moeras). De hut komt nooit op een pad te staan dat de enige doorgang is.
 - strijd.js: zetHut, hut, beslis; vijanden gaan eerst op de hut af. bouwen.js: zetVast (beschermd bouwwerk).
 - Tests: proloog35 (39), hut36 (21).
+
+## 0.47.0 (stap 37): zwaardvechter, banierdrager, heler; level 5 Stillwater Abbey; neerzetten met de hamer
+- Neerzetten met de hamer (wens van Karel): staat er iets klaar om te bouwen of te slopen, dan gloeit de hamer rechtsonder en staat er Place (of Demolish) onder. Tik de hamer om het neer te zetten. De losse knop Place is weg; Done blijft.
+- Nieuwe soldaten (legerontwerp ronde B, zelf getekend in soldaten.js):
+  - Swordsman (klassiek, 14 goud en 2 koper): 72 leven, snelle korte slag, rond schild halveert pijlschade.
+  - Banner Bearer (klassiek, 20 goud en 2 koper): vecht niet; jouw soldaten binnen 4 tegels slaan 15% harder. Vaandels stapelen niet (ook niet met dat van de koning: de sterkste telt).
+  - Healer (mystiek, 20 goud en 10 brood, twee boeren): vecht niet; geneest elke seconde de zwaarst gewonde soldaat binnen 3 tegels met 4% van diens leven, niet zichzelf. Een gouden gloed laat zien wie hij geneest.
+  - Banierdrager en heler staan bij Afstand in de legerknoppen. Rood kan ze ook kopen.
+- Level 5 Stillwater Abbey speelbaar: kaart The Two Lakes, de abdij met twee witte ringen en een bredere gracht (2), Aleid met zwaardvechters, banierdragers, boogschutters en ridders. Berichten van Bartholt, Aleid en broeder Ludolf. Win je, dan krijg je zwaardvechter, banierdrager en heler.
+- Tests: ronde37 (15); planken21 controleert de hamer; tests die Place aantikten tikken nu de hamer.

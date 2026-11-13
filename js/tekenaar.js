@@ -56,6 +56,9 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     [assets.haal('eenheid.sluip_blauw'), assets.haal('eenheid.sluip_rood')],
     [assets.haal('eenheid.vlam_blauw'), assets.haal('eenheid.vlam_rood')],
     [assets.haal('eenheid.koning_blauw'), assets.haal('eenheid.koning_rood')],
+    [assets.haal('eenheid.zwaard_blauw'), assets.haal('eenheid.zwaard_rood')],
+    [assets.haal('eenheid.banier_blauw'), assets.haal('eenheid.banier_rood')],
+    [assets.haal('eenheid.heler_blauw'), assets.haal('eenheid.heler_rood')],
   ];
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
@@ -587,6 +590,21 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         ctx.fillRect(kop[0] - 0.9, kop[1] - 0.9, 1.8, 1.8);
       }
       ctx.lineCap = 'butt';
+      // Genezen: een gouden gloed die opstijgt bij wie de heler geneest
+      for (let i = 0; i < effecten.length; i++) {
+        const f = effecten[i];
+        if (f.soort !== 'heel') continue;
+        const t = Math.min(1, Math.max(0, (nu - f.van) / f.duur));
+        const wx = (f.x - f.y) * HALVE_BREEDTE;
+        const wy = (f.x + f.y) * HALVE_HOOGTE - (f.h || 0) - 10 - t * 10;
+        ctx.fillStyle = `rgba(255, 224, 120, ${0.55 * (1 - t)})`;
+        ctx.beginPath();
+        ctx.arc(wx, wy, 5 + t * 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(255, 255, 220, ${0.9 * (1 - t)})`;
+        ctx.fillRect(wx - 0.6, wy - 3, 1.2, 6);
+        ctx.fillRect(wx - 3, wy - 0.6, 6, 1.2);
+      }
       // Ontploffingen van vuur en brandend hout
       for (let i = 0; i < effecten.length; i++) {
         const f = effecten[i];

@@ -14,7 +14,7 @@ await p.waitForTimeout(500);
 const pt = await p.$$eval('#kaart-doek .punt', (g) => g.map((x) => x.getAttribute('class').replace('punt ', '')));
 console.log(pt.join(' | '));
 check('elf punten', pt.length === 11);
-check('proloog open, 1 open, 2 tot 4 dicht, 5+ later', pt[0] === 'open' && pt[1] === 'open' && pt[2] === 'dicht' && pt[3] === 'dicht' && pt[4] === 'dicht' && pt.slice(5).every((x) => x === 'later'), pt.join());
+check('proloog open, 1 open, 2 tot 5 dicht, 6+ later', pt[0] === 'open' && pt[1] === 'open' && [2, 3, 4, 5].every((i) => pt[i] === 'dicht') && pt.slice(6).every((x) => x === 'later'), pt.join());
 const img = await p.$$eval('#kaart-doek image', (x) => x.length);
 check('portretten op de kaart', img === 11, img);
 await p.waitForTimeout(800);
@@ -22,8 +22,8 @@ const geladen = await p.evaluate(() => Promise.all([...document.querySelectorAll
 check('alle portretten te laden', geladen.every(Boolean));
 await p.screenshot({ path: '/home/claude/stap30-kaart.png' });
 const bx = async (i) => { const r = await (await p.$$('#kaart-doek .punt .tikvlak'))[i].boundingBox(); return [r.x + r.width / 2, r.y + r.height / 2]; };
-let [x, y] = await bx(5); await p.touchscreen.tap(x, y);
-check('level 5: coming later', /coming later/.test(await p.textContent('#kaart-tekst')), await p.textContent('#kaart-tekst'));
+let [x, y] = await bx(6); await p.touchscreen.tap(x, y);
+check('level 6: coming later', /coming later/.test(await p.textContent('#kaart-tekst')), await p.textContent('#kaart-tekst'));
 [x, y] = await bx(2); await p.touchscreen.tap(x, y);
 check('level 2: win level 1 first', /win level 1 first/.test(await p.textContent('#kaart-tekst')));
 [x, y] = await bx(1);
@@ -71,7 +71,7 @@ await p.reload(); await wacht();
 const bv = await p.$$eval('#bouw-knoppen button', (k) => k.map((x) => x.textContent));
 check('vrij spel: magiertoren en kopermijn', bv.some((t) => /Mage Tower/.test(t)) && bv.some((t) => /Copper Mine/.test(t)));
 // oude moduswaarde naar een niet-speelbaar level valt terug op vrij spel
-await p.evaluate(() => { localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 5 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); });
+await p.evaluate(() => { localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 6 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); });
 await p.reload(); await wacht();
 check('niet-speelbaar level valt terug', (await p.evaluate(() => window.spel.modus.soort)) === 'vrij');
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);
