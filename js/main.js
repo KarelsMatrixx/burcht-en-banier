@@ -29,13 +29,15 @@ async function start() {
   const ui = maakUi();
   registreerOffline(ui);
 
-  const assets = await laadAssets();
-  assets.meldingen.forEach((tekst) => ui.toonMelding(tekst));
-
   // Vrij spel of een missie: dat bepaalt ook welke kaart je krijgt.
   const missies = await laadMissies();
   const modus = leesModus(missies);
   const missie = modus.soort === 'campagne' ? missies.campagne.find((c) => c.id === modus.missie) : null;
+
+  // De rode koning is in de campagne de heer zelf: zijn kleding en wapen.
+  const heerKoning = missie && missie.rood && missie.rood.koning;
+  const assets = await laadAssets(heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {});
+  assets.meldingen.forEach((tekst) => ui.toonMelding(tekst));
   // In de campagne heb je alleen wat het verhaal al heeft vrijgegeven.
   const mag = ontgrendeld(missies.campagne, missie ? missie.id : null);
   const kaarten = await laadKaarten();
@@ -65,7 +67,7 @@ async function start() {
   };
   const regels = await laadEconomie();
   // Vrij spel of een missie: de regels van die modus over de gewone regels heen.
-  pasProfielToe(regels, profielVan(missies, modus));
+  pasProfielToe(regels, profielVan(missies, modus), missie && missie.rood);
   const opslag = maakOpslag(kaart.zaad, opslagSleutel(modus));
 
   // Bewaren: na elke keer bouwen, slopen, hakken of afleveren.

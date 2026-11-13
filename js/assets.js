@@ -59,7 +59,9 @@ async function laadSprite(pad) {
   return plaatje;
 }
 
-export async function laadAssets() {
+// aanpassing: per naam velden die over assets.json heen gaan (stap 32: de
+// rode koning krijgt per level de kleding en het wapen van de heer).
+export async function laadAssets(aanpassing = {}) {
   const antwoord = await fetch('data/assets.json');
   if (!antwoord.ok) throw new Error('Kan data/assets.json niet laden');
   const lijst = (await antwoord.json()).assets;
@@ -67,7 +69,8 @@ export async function laadAssets() {
   const tabel = new Map();
   const meldingen = [];
 
-  for (const [naam, def] of Object.entries(lijst)) {
+  for (const [naam, basis] of Object.entries(lijst)) {
+    const def = { ...basis, ...(aanpassing[naam] || {}) };
     const maak = VORMEN[def.vorm];
     if (!maak) throw new Error(`assets.json: onbekende vorm "${def.vorm}" bij ${naam}`);
     const asset = maak(naam, def);

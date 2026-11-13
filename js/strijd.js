@@ -123,6 +123,12 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (!wegvinder.isVrij(vak % B, Math.floor(vak / B), VIJAND)) continue;
       roodKoning = maakVijand(koningSleutel, vak, leven);
       roodKoning.koning = true;
+      // In de campagne heeft elke heer zijn eigen kracht (stap 32).
+      const f = R.roodKoningLeven || 1;
+      if (f !== 1) {
+        roodKoning.levenMax = Math.max(1, Math.round(soorten[koningSleutel].leven * f));
+        roodKoning.leven = Number.isFinite(leven) ? klem(Math.round(leven), 1, roodKoning.levenMax) : roodKoning.levenMax;
+      }
       return;
     }
   }

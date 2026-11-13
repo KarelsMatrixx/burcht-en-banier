@@ -158,3 +158,10 @@
 - Wat al getoond is, onthoudt het spel per level; na herladen komt het niet terug. Opnieuw beginnen wist dat.
 - Terugblik bij winst: portret van de verslagen heer, slottekst, een apart blok met Wessels portret en het voorwerp, en wat je vrijspeelt. Bij verlies het rouwende portret van Karel.
 - Nieuw: js/verhaal.js, tests/verhaal31.mjs (20 controles).
+
+## 0.34.0 (stap 32): elke heer speelt anders en is zelf de rode koning
+- campagne.json heeft per level een blok rood: sterkte (procent), eerste aanval, tempo (procent), legermengsel, wachters, rammen en extra soorten. Dit komt bovenop het profiel (js/modus.js, pasRoodToe).
+- Levels 1 tot 3: Reinout valt na 4 minuten aan met alleen ridders en schutters, zonder katapult of toren, en zijn koning heeft 80% leven. Mechteld heeft veel schutters en kruisbogen, houdt 5 man thuis en valt trager aan (tempo 70). Hademar stuurt bijlridders en vroege rammen, iets minder sterk dan het profiel zwaar (90%), maar zijn koning heeft 130% leven.
+- Levels 4 tot 10 hebben hun blok rood al, voor later.
+- De rode koning draagt de kleuren en het wapen van de heer: speer, boog, strijdhamer, jachtspies, zwaard met torenschild, moker, hellebaard, boothaak, zwaard, rouwscepter. Haar en baard per heer; Mechteld met vlecht. De mantel en een zoom blijven rood: dat is het team.
+- Nieuw: tests/rood32.mjs (10 controles, en een plaat van alle tien heren). test_stap17 en rood29 aangepast op de nieuwe waarden.

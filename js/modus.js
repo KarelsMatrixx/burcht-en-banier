@@ -99,7 +99,14 @@ export function profielVan(missies, modus) {
 
 // De regels van het profiel over economie.json heen leggen. Alleen de
 // onderdelen die het profiel noemt veranderen.
-export function pasProfielToe(regels, profiel) {
+//
+// rood (stap 32, uit campagne.json per level) komt daar nog overheen:
+//   sterkte       procent: doel van zijn reserve, leven van zijn burcht, goud uit zijn burcht
+//   eersteAanval  seconden tot zijn eerste aanval
+//   tempo         procent: 150 = anderhalf keer zo vaak aanvallen
+//   leger, extra_soorten, rammenVanaf, wachters: zoals in een profiel
+//   koning.leven  procent van het leven van de rode koning
+export function pasProfielToe(regels, profiel, rood = null) {
   regels.heer = { ...regels.heer, ...(profiel.heer || {}) };
   if (profiel.heer && profiel.heer.begin) regels.heer.begin = { ...regels.heer.begin, ...profiel.heer.begin };
   if (profiel.heer && profiel.heer.extra_soorten) regels.heer.extra_soorten = { ...profiel.heer.extra_soorten };
@@ -108,4 +115,25 @@ export function pasProfielToe(regels, profiel) {
   for (const [k, n] of Object.entries(profiel.begin || {})) {
     if (regels.grondstoffen[k] && Number.isFinite(n)) regels.grondstoffen[k] = { ...regels.grondstoffen[k], begin: n };
   }
+  if (rood) pasRoodToe(regels, rood);
+}
+
+function pasRoodToe(regels, rood) {
+  const h = regels.heer;
+  if (Number.isFinite(rood.sterkte)) {
+    const f = rood.sterkte / 100;
+    h.doelBegin *= f;
+    h.doelPerAanval *= f;
+    h.doelMax = Math.round(h.doelMax * f);
+    h.burchtGoud *= f;
+    if (Number.isFinite(regels.strijd.roodBurchtLeven)) regels.strijd.roodBurchtLeven = Math.round(regels.strijd.roodBurchtLeven * f);
+    else if (Number.isFinite(regels.strijd.burchtLeven)) regels.strijd.roodBurchtLeven = Math.round(regels.strijd.burchtLeven * f);
+  }
+  if (Number.isFinite(rood.eersteAanval)) h.eersteAanval = rood.eersteAanval;
+  if (Number.isFinite(rood.tempo) && rood.tempo > 0) h.tussen = Math.round((h.tussen * 100) / rood.tempo);
+  if (rood.leger) h.leger = { ...rood.leger };
+  if (rood.extra_soorten) h.extra_soorten = { ...rood.extra_soorten };
+  if (Number.isFinite(rood.rammenVanaf)) h.rammenVanaf = rood.rammenVanaf;
+  if (Number.isFinite(rood.wachters)) regels.strijd.wachters = rood.wachters;
+  if (rood.koning && Number.isFinite(rood.koning.leven)) regels.strijd.roodKoningLeven = rood.koning.leven / 100;
 }

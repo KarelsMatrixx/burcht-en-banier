@@ -32,10 +32,10 @@ console.log('normaal, aanval 5', JSON.stringify(n5));
 check('normaal aanval 5: alle zes', ['ridder', 'boogschutter', 'bijlridder', 'kruisboog', 'sluipmoordenaar', 'vlammenwever'].every((k) => n5[k] > 0), JSON.stringify(n5));
 const r9 = await proef({ soort: 'campagne', missie: 1 }, 9);
 console.log('level 1, aanval 9', JSON.stringify(r9));
-check('level 1: geen kruisboog of mystiek', !r9.kruisboog && !r9.sluipmoordenaar && !r9.vlammenwever && r9.bijlridder > 0, JSON.stringify(r9));
+check('level 1 (Reinout): alleen ridders, schutters en belegering', !r9.kruisboog && !r9.sluipmoordenaar && !r9.vlammenwever && !r9.bijlridder && r9.ridder > 0, JSON.stringify(r9));
 const z3 = await proef({ soort: 'campagne', missie: 3 }, 3);
 console.log('level 3, aanval 3', JSON.stringify(z3));
-check('level 3 aanval 3: mystiek erbij', z3.sluipmoordenaar > 0 && z3.vlammenwever > 0, JSON.stringify(z3));
+check('level 3 (Hademar): bijlridders, geen mystiek', z3.bijlridder > 0 && !z3.sluipmoordenaar && !z3.vlammenwever, JSON.stringify(z3));
 // rood stuurt een gemengd leger: geen fouten, alle soorten op de kaart
 await koopt({ soort: 'vrij', profiel: 'normaal' }, 0); await p.reload(); await wacht();
 const st = await p.evaluate(async () => {

@@ -7,7 +7,8 @@
   "beloningLater: ideeen voor soldaten die nog niet bestaan (alleen voor ons, het spel leest dit niet).",
   "intro en uit: de korte tekst voor en na het level. wessel: het voorwerp van Wessel dat je na het winnen vindt.",
   "figuren: wie er praat in de briefing en de verhaalbalk (naam en portret). verteller: wie de briefing vertelt (standaard bartholt).",
-  "berichten: wat figuren zeggen tijdens het level. bij = tijd (seconden), aanval (nummer), burcht, koning, roodBurcht, roodKoning (onder dit percentage leven). wie = een figuur of heer. portret mag een andere uitdrukking kiezen. Hooguit 40 woorden. berichtenAltijd geldt in elk level."
+  "berichten: wat figuren zeggen tijdens het level. bij = tijd (seconden), aanval (nummer), burcht, koning, roodBurcht, roodKoning (onder dit percentage leven). wie = een figuur of heer. portret mag een andere uitdrukking kiezen. Hooguit 40 woorden. berichtenAltijd geldt in elk level.",
+  "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team."
  ],
  "figuren": {
   "karel": {
@@ -127,7 +128,31 @@
      "wie": "heer",
      "tekst": "Enough! I only wanted to keep my land. Ask me anything, I will answer."
     }
-   ]
+   ],
+   "rood": {
+    "sterkte": 100,
+    "eersteAanval": 240,
+    "tempo": 100,
+    "leger": {
+     "ridder": {
+      "aandeel": 3
+     },
+     "boogschutter": {
+      "aandeel": 1
+     }
+    },
+    "koning": {
+     "leven": 80,
+     "uiterlijk": {
+      "tabbaard": "#8a6a44",
+      "wapen": "#d6c48a",
+      "wapenSoort": "speer",
+      "haar": "#6b4a2b",
+      "baard": "geen"
+     }
+    },
+    "extra_soorten": {}
+   }
   },
   {
    "id": 2,
@@ -173,7 +198,37 @@
      "wie": "heer",
      "tekst": "Wait. Why does a king march north with so few men?"
     }
-   ]
+   ],
+   "rood": {
+    "sterkte": 100,
+    "eersteAanval": 300,
+    "tempo": 70,
+    "wachters": 5,
+    "leger": {
+     "boogschutter": {
+      "aandeel": 4
+     },
+     "ridder": {
+      "aandeel": 1
+     },
+     "kruisboog": {
+      "aandeel": 1,
+      "vanaf": 2
+     }
+    },
+    "koning": {
+     "leven": 100,
+     "uiterlijk": {
+      "tabbaard": "#3f6b3a",
+      "wapen": "#e6e6dc",
+      "wapenSoort": "boog",
+      "haar": "#9a9a9a",
+      "baard": "geen",
+      "vlecht": true
+     }
+    },
+    "extra_soorten": {}
+   }
   },
   {
    "id": 3,
@@ -221,7 +276,34 @@
      "wie": "heer",
      "tekst": "Stop! I can give you something worth more than gold: the plan of Mournkeep."
     }
-   ]
+   ],
+   "rood": {
+    "sterkte": 90,
+    "eersteAanval": 260,
+    "tempo": 80,
+    "rammenVanaf": 1,
+    "leger": {
+     "ridder": {
+      "aandeel": 2
+     },
+     "bijlridder": {
+      "aandeel": 3
+     },
+     "boogschutter": {
+      "aandeel": 1
+     }
+    },
+    "koning": {
+     "leven": 130,
+     "uiterlijk": {
+      "tabbaard": "#5c6066",
+      "wapen": "#25252a",
+      "wapenSoort": "hamer",
+      "haar": "#8a8a8a",
+      "baard": "#8a8a8a"
+     }
+    }
+   }
   },
   {
    "id": 4,
@@ -244,7 +326,32 @@
     "magiertoren",
     "vlammenwever"
    ],
-   "beloningLater": "Gesina brengt ook de ziener (idee)"
+   "beloningLater": "Gesina brengt ook de ziener (idee)",
+   "rood": {
+    "sterkte": 90,
+    "tempo": 140,
+    "leger": {
+     "sluipmoordenaar": {
+      "aandeel": 2
+     },
+     "boogschutter": {
+      "aandeel": 2
+     },
+     "ridder": {
+      "aandeel": 1
+     }
+    },
+    "koning": {
+     "leven": 90,
+     "uiterlijk": {
+      "tabbaard": "#2f4a2a",
+      "wapen": "#8a6a44",
+      "wapenSoort": "speer",
+      "haar": "#3a2e24",
+      "baard": "#4a3a2c"
+     }
+    }
+   }
   },
   {
    "id": 5,
@@ -263,7 +370,32 @@
    "uit": "",
    "wessel": "His name in the abbey guestbook, in a child's handwriting.",
    "beloning": [],
-   "beloningLater": "zwaardvechter en banierdrager (Aleid), heler (Ludolf)"
+   "beloningLater": "zwaardvechter en banierdrager (Aleid), heler (Ludolf)",
+   "rood": {
+    "sterkte": 110,
+    "leger": {
+     "ridder": {
+      "aandeel": 3
+     },
+     "bijlridder": {
+      "aandeel": 1
+     },
+     "boogschutter": {
+      "aandeel": 2
+     }
+    },
+    "koning": {
+     "leven": 120,
+     "uiterlijk": {
+      "tabbaard": "#e8e4da",
+      "wapen": "#c23a2e",
+      "wapenSoort": "zwaard",
+      "schild": true,
+      "haar": "#3a2e24",
+      "baard": "geen"
+     }
+    }
+   }
   },
   {
    "id": 6,
@@ -284,7 +416,39 @@
    "beloning": [
     "toren"
    ],
-   "beloningLater": "steenwachter (idee)"
+   "beloningLater": "steenwachter (idee)",
+   "rood": {
+    "sterkte": 100,
+    "leger": {
+     "ridder": {
+      "aandeel": 2
+     },
+     "boogschutter": {
+      "aandeel": 1
+     }
+    },
+    "extra_soorten": {
+     "katapult": {
+      "vanaf": 1,
+      "max": 2
+     },
+     "toren": {
+      "vanaf": 3,
+      "max": 1
+     }
+    },
+    "rammenVanaf": 1,
+    "koning": {
+     "leven": 90,
+     "uiterlijk": {
+      "tabbaard": "#7a5532",
+      "wapen": "#c23a2e",
+      "wapenSoort": "moker",
+      "haar": "#5a4630",
+      "baard": "#6b553a"
+     }
+    }
+   }
   },
   {
    "id": 7,
@@ -302,7 +466,32 @@
    "intro": "The tollhouse closes the only road with three gates, one behind the other.",
    "uit": "",
    "wessel": "A letter to his father: \"Grandpa is old. He cries when he thinks I am asleep.\"",
-   "beloning": []
+   "beloning": [],
+   "rood": {
+    "sterkte": 120,
+    "tempo": 80,
+    "leger": {
+     "ridder": {
+      "aandeel": 2
+     },
+     "boogschutter": {
+      "aandeel": 2
+     },
+     "kruisboog": {
+      "aandeel": 1
+     }
+    },
+    "koning": {
+     "leven": 110,
+     "uiterlijk": {
+      "tabbaard": "#7a7a78",
+      "wapen": "#c23a2e",
+      "wapenSoort": "hellebaard",
+      "haar": "#b0b0b0",
+      "baard": "geen"
+     }
+    }
+   }
   },
   {
    "id": 8,
@@ -321,7 +510,33 @@
    "uit": "",
    "wessel": "A little sailing boat made of bark, found in the reeds.",
    "beloning": [],
-   "beloningLater": "saboteur (idee)"
+   "beloningLater": "saboteur (idee)",
+   "rood": {
+    "sterkte": 110,
+    "tempo": 70,
+    "wachters": 6,
+    "leger": {
+     "boogschutter": {
+      "aandeel": 3
+     },
+     "kruisboog": {
+      "aandeel": 2
+     },
+     "ridder": {
+      "aandeel": 1
+     }
+    },
+    "koning": {
+     "leven": 110,
+     "uiterlijk": {
+      "tabbaard": "#4f6272",
+      "wapen": "#c23a2e",
+      "wapenSoort": "haak",
+      "haar": "#7a7a7a",
+      "baard": "#9a9a9a"
+     }
+    }
+   }
   },
   {
    "id": 9,
@@ -340,7 +555,34 @@
    "uit": "",
    "wessel": "A drawing of two banners side by side.",
    "beloning": [],
-   "beloningLater": "windzanger (idee)"
+   "beloningLater": "windzanger (idee)",
+   "rood": {
+    "sterkte": 130,
+    "leger": {
+     "ridder": {
+      "aandeel": 2
+     },
+     "bijlridder": {
+      "aandeel": 2
+     },
+     "kruisboog": {
+      "aandeel": 2
+     },
+     "sluipmoordenaar": {
+      "aandeel": 1
+     }
+    },
+    "koning": {
+     "leven": 140,
+     "uiterlijk": {
+      "tabbaard": "#1d1d22",
+      "wapen": "#c8ccd2",
+      "wapenSoort": "zwaard",
+      "haar": "#9a9aa0",
+      "baard": "geen"
+     }
+    }
+   }
   },
   {
    "id": 10,
@@ -358,7 +600,41 @@
    "intro": "Three rings, and the Raven Tower on the east side, where Wessel is kept.",
    "uit": "",
    "wessel": "",
-   "beloning": []
+   "beloning": [],
+   "rood": {
+    "sterkte": 150,
+    "tempo": 110,
+    "leger": {
+     "ridder": {
+      "aandeel": 2
+     },
+     "bijlridder": {
+      "aandeel": 2
+     },
+     "boogschutter": {
+      "aandeel": 2
+     },
+     "kruisboog": {
+      "aandeel": 2
+     },
+     "sluipmoordenaar": {
+      "aandeel": 1
+     },
+     "vlammenwever": {
+      "aandeel": 1
+     }
+    },
+    "koning": {
+     "leven": 100,
+     "uiterlijk": {
+      "tabbaard": "#141418",
+      "wapen": "#c8ccd2",
+      "wapenSoort": "scepter",
+      "haar": "#e8e8e8",
+      "baard": "#f0f0f0"
+     }
+    }
+   }
   }
  ]
 }

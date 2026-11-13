@@ -14,7 +14,7 @@ await p.goto(url + '/?x=' + Date.now()); await laad();
 await p.evaluate(() => localStorage.clear()); await p.reload(); await laad();
 // 1. standaard: vrij normaal, bestaande bewaarsleutel
 let i = await p.evaluate(() => ({ v: window.spel.CONFIG.versie, m: window.spel.modus, eerste: window.spel.regels.heer.eersteAanval, hout: window.spel.regels.grondstoffen.hout.begin }));
-check('versie', i.v === '0.33.0', i.v);
+check('versie', i.v === '0.34.0', i.v);
 check('standaard vrij normaal', i.m.soort === 'vrij' && i.m.profiel === 'normaal', JSON.stringify(i.m));
 check('normaal: ongewijzigde regels', i.eerste === 200 && i.hout === 60, JSON.stringify(i));
 await p.evaluate(() => window.spel.bouwer && 0);
@@ -29,7 +29,7 @@ await Promise.all([p.waitForNavigation(), p.click('button[data-sleutel="missie:1
 i = await p.evaluate(() => ({ m: window.spel.modus, eerste: window.spel.regels.heer.eersteAanval, hout: window.spel.regels.grondstoffen.hout.begin, wacht: window.spel.regels.strijd.wachters, burcht: window.spel.strijd.stand().rood, intro: !document.getElementById('missie').hidden, titel: document.getElementById('missie-titel').textContent, voorraadHout: window.spel.economie.voorraad.hout, versie: document.getElementById('versie').textContent, heerStand: window.spel.strijd.stand().heer }));
 console.log('missie1:', JSON.stringify(i));
 check('missie 1 gekozen', i.m.soort === 'campagne' && i.m.missie === 1);
-check('missie 1: regels van profiel rustig', i.eerste === 330 && i.hout === 80 && i.wacht === 2 && i.burcht === 700, JSON.stringify(i));
+check('missie 1: profiel rustig, Reinout eerste aanval 240', i.eerste === 240 && i.hout === 80 && i.wacht === 2 && i.burcht === 700, JSON.stringify(i));
 check('intro zichtbaar', i.intro && /Witherheath/.test(i.titel), i.titel);
 check('versie toont missie', /mission 1/.test(i.versie), i.versie);
 await p.screenshot({ path: '/home/claude/stap17-missie1.png' });
@@ -44,7 +44,7 @@ check('volgende-knop zichtbaar', e1.volgende);
 check('voortgang bewaard', /\[1\]/.test(e1.klaar || ''), e1.klaar);
 await Promise.all([p.waitForNavigation(), p.click('#einde-volgende')]); await laad();
 i = await p.evaluate(() => ({ m: window.spel.modus, eerste: window.spel.regels.heer.eersteAanval, titel: document.getElementById('missie-titel').textContent, ridders: window.spel.regels.heer.ridderPerSchutter }));
-check('missie 2 gestart (normaal)', i.m.missie === 2 && i.eerste === 200 && /Sevenwinds/.test(i.titel), JSON.stringify(i));
+check('missie 2 gestart (normaal)', i.m.missie === 2 && i.eerste === 300 && /Sevenwinds/.test(i.titel), JSON.stringify(i));
 // menu: missie 3 nu dicht, missie 2 open; missie 1 blijft bewaard apart
 const sleutels = await p.evaluate(() => Object.keys(localStorage).sort());
 console.log('opslagsleutels:', sleutels.join(', '));
@@ -62,8 +62,8 @@ const z = await p.evaluate(() => {
   return { hout: r.grondstoffen.hout.begin, burcht: s.strijd.stand().rood, uit };
 });
 for (const r of z.uit) console.log('  zwaar', r.join(' | '));
-check('zwaar: eerste aanval rond 150 s, rammen en katapult vroeg', z.uit.length >= 4 && z.uit[0][1] <= 160 && z.uit.some(([g, , so]) => g <= 4 && /ram/.test(so)), JSON.stringify(z.uit));
-check('zwaar: begin en burcht', z.hout === 40 && z.burcht === 1400, JSON.stringify(z));
+check('zwaar (Hademar): eerste aanval rond 260 s, rammen vroeg', z.uit.length >= 4 && z.uit[0][1] <= 270 && z.uit.some(([g, , so]) => g <= 4 && /ram/.test(so)), JSON.stringify(z.uit));
+check('zwaar: begin en burcht', z.hout === 40 && z.burcht === 1260, JSON.stringify(z));
 // 6. vrede: niets gebeurt, niets te winnen
 await p.evaluate(() => localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'vrij', profiel: 'vrede' })));
 await p.reload(); await laad();

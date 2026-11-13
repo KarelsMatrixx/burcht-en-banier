@@ -696,14 +696,26 @@ export function tekenVlammenwever(naam, def) {
   return beelden;
 }
 
-// De koning: 130% van een ridder. Staalgrijs harnas, tabbaard in teamkleur
-// met een wapen, lange wapperende mantel, smalle gouden kroonband en een
+// De koning: 130% van een ridder. Staalgrijs harnas, tabbaard met een
+// wapen, lange wapperende mantel in teamkleur, smalle gouden kroonband en een
 // tweehandig zwaard met gouden pareerstang. Bij de koning van jou een
 // zwarte rouwband om de linkerarm.
-// slag: -1 = lopen (zwaard op de schouder), 0 = zwaard hoog, 1 = de brede zwaai.
+// slag: -1 = lopen (wapen op de schouder), 0 = wapen hoog, 1 = de brede zwaai.
+//
+// Stap 31: de rode koning is de heer van het level. Uit campagne.json komen
+//   tabbaard   de kleur van zijn kleding (de mantel blijft rood: dat is het team)
+//   wapen      de kleur van het embleem op de tabbaard
+//   wapenSoort zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter
+//   schild     true: een torenschild aan de linkerarm
+//   haar, baard  kleuren (baard 'geen' = zonder baard); vlecht: true
 export function tekenKoning(naam, def) {
   const staal = '#c3c8d0';
   const goud = '#e3c04a';
+  const hout = '#6b4a2b';
+  const tabbaard = def.tabbaard || def.kleur;
+  const soort = def.wapenSoort || 'zwaard';
+  const haar = def.haar || '#2e241c';
+  const baard = def.baard || '#3a2e24';   // 'geen' = geen baard
   const teken = (ctx, beeld, slag) => {
     const vecht = slag >= 0;
     const wip = !vecht && beeld % 2 ? -1 : 0;
@@ -721,16 +733,65 @@ export function tekenKoning(naam, def) {
       lijn(ctx, x1, y1, x1 - Math.cos(hoek) * 3, y1 - Math.sin(hoek) * 3, '#5a3d22', 1.4);
       ovaal(ctx, x1 - Math.cos(hoek) * 3.4, y1 - Math.sin(hoek) * 3.4, 0.8, 0.8, goud);
     };
+    // Een stokwapen van de hand (x1, y1) naar de punt (x2, y2), iets verlengd
+    // naar achteren, met een eigen kop.
+    const wapen = (x1, y1, x2, y2) => {
+      if (soort === 'zwaard') { zwaard(x1, y1, x2, y2); return; }
+      const hoek = Math.atan2(y2 - y1, x2 - x1);
+      const dx = Math.cos(hoek);
+      const dy = Math.sin(hoek);
+      const nx = -dy;   // haaks op de steel
+      const ny = dx;
+      const lang = soort === 'hamer' || soort === 'moker' ? 0.85 : soort === 'scepter' ? 0.75 : 1.1;
+      const px = x1 + (x2 - x1) * lang;   // de kop
+      const py = y1 + (y2 - y1) * lang;
+      const achterX = x1 - dx * 4;
+      const achterY = y1 - dy * 4;
+      if (soort === 'boog') {
+        // Een lange boog, de pees recht ertussen.
+        ctx.strokeStyle = '#7a5532';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(achterX, achterY);
+        ctx.quadraticCurveTo((achterX + px) / 2 + nx * 5, (achterY + py) / 2 + ny * 5, px, py);
+        ctx.stroke();
+        lijn(ctx, achterX, achterY, px, py, 'rgba(240,235,220,0.8)', 0.4);
+        return;
+      }
+      lijn(ctx, achterX, achterY, px, py, soort === 'scepter' ? '#1d1d22' : hout, soort === 'moker' ? 1.6 : 1.1);
+      if (soort === 'speer') {
+        vlak(ctx, [[px + nx * 1.3, py + ny * 1.3], [px + dx * 4, py + dy * 4], [px - nx * 1.3, py - ny * 1.3]], '#dfe3e8');
+      } else if (soort === 'hellebaard') {
+        vlak(ctx, [[px - dx * 3, py - dy * 3], [px - dx * 3 + nx * 3.4, py - dy * 3 + ny * 3.4], [px + dx * 1 + nx * 3, py + dy * 1 + ny * 3], [px, py]], '#d3d7dd');
+        lijn(ctx, px, py, px + dx * 3.5, py + dy * 3.5, '#dfe3e8', 1);
+      } else if (soort === 'haak') {
+        lijn(ctx, px, py, px + dx * 2.5, py + dy * 2.5, '#9aa0a8', 1);
+        ctx.strokeStyle = '#9aa0a8';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(px + nx * 1.6, py + ny * 1.6, 1.8, hoek + Math.PI, hoek + Math.PI * 2);
+        ctx.stroke();
+      } else if (soort === 'hamer') {
+        vlak(ctx, [[px + nx * 3 - dx, py + ny * 3 - dy], [px + nx * 3 + dx * 1.6, py + ny * 3 + dy * 1.6], [px - nx * 2.4 + dx * 1.6, py - ny * 2.4 + dy * 1.6], [px - nx * 2.4 - dx, py - ny * 2.4 - dy]], '#5b5f66');
+        lijn(ctx, px - nx * 2.4, py - ny * 2.4, px - nx * 4, py - ny * 4, '#5b5f66', 1);
+      } else if (soort === 'moker') {
+        vlak(ctx, [[px + nx * 3 - dx * 1.5, py + ny * 3 - dy * 1.5], [px + nx * 3 + dx * 2.2, py + ny * 3 + dy * 2.2], [px - nx * 3 + dx * 2.2, py - ny * 3 + dy * 2.2], [px - nx * 3 - dx * 1.5, py - ny * 3 - dy * 1.5]], '#8a6238');
+      } else if (soort === 'scepter') {
+        ovaal(ctx, px, py, 1.6, 1.6, '#c8ccd2');
+        ovaal(ctx, px - 0.4, py - 0.4, 0.6, 0.6, '#ffffff');
+      }
+    };
     // Mantel achter het lijf, wapperend
     vlak(ctx, [[mx - 5, 17 + wip], [mx + 5, 17 + wip], [mx + 4 - wapper, 32], [mx - 8 - wapper * 1.5, 31.5]], tint(def.kleur, -0.28));
-    if (!vecht) zwaard(mx + 4, 21 + wip, mx - 6, 1 + wip);   // op de schouder
+    if (!vecht) wapen(mx + 4, 21 + wip, mx - 6, 1 + wip);   // op de schouder
     // Benen
     blok(ctx, mx - 3.8 + pas, 27 + wip, 3, 7 - wip, '#4a4a54');
     blok(ctx, mx + 0.8 - pas, 27 + wip, 3, 7 - wip, '#3a3a42');
     blok(ctx, mx - 3.8 + pas, 29.5 + wip, 3, 2, 'rgba(210,215,222,0.5)');
     // Tabbaard in teamkleur met wapen
-    blok(ctx, mx - 5, 17 + wip, 10, 11.5, def.kleur);
+    blok(ctx, mx - 5, 17 + wip, 10, 11.5, tabbaard);
     blok(ctx, mx - 5, 17 + wip, 3, 11.5, 'rgba(0,0,0,0.22)');
+    if (tabbaard !== def.kleur) blok(ctx, mx - 5, 27.6 + wip, 10, 0.9, def.kleur);   // rode zoom: het team
     blok(ctx, mx - 5, 23.4 + wip, 10, 1.2, '#3a2a1a');
     ovaal(ctx, mx + 0.4, 20.6 + wip, 1.8, 2.2, def.wapen || goud);   // het wapen (blad)
     lijn(ctx, mx + 0.4, 18.8 + wip, mx + 0.4, 22.6 + wip, 'rgba(0,0,0,0.35)', 0.4);
@@ -739,20 +800,32 @@ export function tekenKoning(naam, def) {
     ovaal(ctx, mx + 4.8, 18 + wip, 2.6, 2.4, staal);
     blok(ctx, mx - 6.6, 18.8 + wip, 2.4, 5.2, tint(staal, -0.2));
     if (def.rouwband) blok(ctx, mx - 6.7, 20.6 + wip, 2.6, 1.3, '#141418');
+    if (def.schild) {
+      // Een hoog torenschild aan de linkerarm, wit met een rode rand.
+      blok(ctx, mx - 9.5, 17 + wip, 4.6, 10, def.kleur);
+      blok(ctx, mx - 9, 17.6 + wip, 3.6, 8.8, tabbaard);
+      lijn(ctx, mx - 7.2, 18.4 + wip, mx - 7.2, 25.6 + wip, def.kleur, 0.8);
+    }
     // Hoofd: kort donker haar, korte baard met grijs, smalle gouden kroonband
     ovaal(ctx, mx + 0.4, 12.4 + wip, 3.8, 4.1, '#ddb48e');
-    ovaal(ctx, mx + 0.2, 9.6 + wip, 3.9, 2.4, '#2e241c');
-    ovaal(ctx, mx + 0.8, 15 + wip, 3.1, 1.9, '#3a2e24');
-    ovaal(ctx, mx + 2, 15.3 + wip, 0.9, 0.6, '#8a8a8a');
+    ovaal(ctx, mx + 0.2, 9.6 + wip, 3.9, 2.4, haar);
+    if (def.vlecht) {
+      // Een lange vlecht over de schouder.
+      for (let i = 0; i < 4; i++) ovaal(ctx, mx - 3 - i * 0.3, 13 + i * 2 + wip, 1.2, 1.3, tint(haar, i % 2 ? -0.15 : 0));
+    }
+    if (baard !== 'geen') {
+      ovaal(ctx, mx + 0.8, 15 + wip, 3.1, 1.9, baard);
+      if (!def.baard) ovaal(ctx, mx + 2, 15.3 + wip, 0.9, 0.6, '#8a8a8a');
+    }
     blok(ctx, mx - 3.6, 9.2 + wip, 7.6, 1.3, goud);
     for (const dx of [-2.6, 0.2, 3]) vlak(ctx, [[mx + dx - 0.9, 9.3 + wip], [mx + dx, 7.4 + wip], [mx + dx + 0.9, 9.3 + wip]], goud);
     ovaal(ctx, mx + 1.8, 12.2 + wip, 0.5, 0.5, '#2a1d14');
     if (vecht) {
       if (slag === 0) {
-        zwaard(mx + 3.5, 16, mx - 2, -3);   // hoog geheven
+        wapen(mx + 3.5, 16, mx - 2, -3);   // hoog geheven
         ovaal(ctx, mx + 3.5, 17, 1.6, 1.6, staal);
       } else {
-        zwaard(mx + 4, 21, mx + 22, 25);    // brede zwaai opzij
+        wapen(mx + 4, 21, mx + 22, 25);    // brede zwaai opzij
         ovaal(ctx, mx + 4.4, 21, 1.6, 1.6, staal);
         ctx.strokeStyle = 'rgba(255,255,255,0.35)';
         ctx.lineWidth = 0.8;
