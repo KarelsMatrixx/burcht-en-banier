@@ -35,8 +35,16 @@ const m = await p.evaluate(() => window.spel.modus);
 check('missie 1 actief', m.soort === 'campagne' && m.missie === 1, JSON.stringify(m));
 check('missie-intro zichtbaar', await zicht('missie'));
 await p.tap('#missie-begin');
-// Menu-knop opent de kaart; huidige level = nu
+// De rol toont het doel van dit level
 await p.tap('#knop-menu');
+check('rol opent doel', await zicht('doelpaneel'));
+check('doel noemt level en heer', /Level 1/.test(await p.textContent('#doel-titel')) && /Reinout/.test(await p.textContent('#doel-tegen')));
+check('rol opent geen levelkaart', !(await zicht('titelscherm')));
+await p.tap('#doel-sluit');
+check('doel dicht', !(await zicht('doelpaneel')));
+// Tandwiel, Level map opent de kaart; huidige level = nu
+await p.tap('#knop-instellingen');
+await p.tap('#knop-levels');
 check('menu opent levelkaart', await zicht('titel-kaart'));
 const pt2 = await p.$$eval('#kaart-doek .punt', (g) => g.map((x) => x.getAttribute('class')));
 check('level 1 is nu', /nu/.test(pt2[1]), pt2.join('|'));

@@ -93,7 +93,29 @@ check('oog nog eens: uit', await p.evaluate(() => window.spel.tekenaar.doorzicht
 // Instellingen achter het tandwiel
 await p.tap('#knop-instellingen');
 check('tandwiel opent instellingen', await p.isVisible('#instellingen') && /v0\./.test(await p.textContent('#versie')));
+for (const k of ['knop-verder', 'knop-opslaan', 'knop-opnieuw', 'knop-levels', 'knop-hoofdmenu', 'knop-start', 'knop-test']) check(`menu heeft ${k}`, await p.isVisible('#' + k));
 await p.screenshot({ path: '/home/claude/stap35-hud.png' });
+const stil = await p.evaluate(async () => { const a = JSON.stringify(window.spel.strijd.bewaarStand()); await new Promise((r) => setTimeout(r, 1500)); return a === JSON.stringify(window.spel.strijd.bewaarStand()); });
+check('menu open: spel staat stil', stil);
+await p.tap('#knop-verder');
+check('Resume sluit het menu', await p.isHidden('#instellingen'));
+const loopt = await p.evaluate(async () => { const a = JSON.stringify(window.spel.strijd.bewaarStand()); await new Promise((r) => setTimeout(r, 1500)); return a !== JSON.stringify(window.spel.strijd.bewaarStand()); });
+check('menu dicht: spel loopt weer', loopt);
+// Opslaan
+await p.evaluate(() => localStorage.removeItem('burcht-banier.kasteel.1'));
+await p.tap('#knop-instellingen'); await p.tap('#knop-opslaan');
+check('Save sluit het menu', await p.isHidden('#instellingen'));
+check('Save meldt opgeslagen', /Game saved/.test(await p.evaluate(() => window.spel.ui.logboek().at(-1).tekst)));
+check('Save schrijft de stand', await p.evaluate(() => Object.keys(localStorage).some((k) => k.startsWith('burcht-banier.kasteel'))));
+// Opnieuw beginnen vraagt eerst of je het zeker weet
+await p.tap('#knop-instellingen'); await p.tap('#knop-opnieuw');
+check('Start over vraagt bevestiging', /sure/.test(await p.textContent('#knop-opnieuw')) && await p.isVisible('#instellingen'));
+await p.tap('#knop-opnieuw');
+check('Start over na bevestigen: menu dicht', await p.isHidden('#instellingen'));
+check('Start over: melding', /Restarted|Nothing had changed/.test(await p.evaluate(() => window.spel.ui.logboek().at(-1).tekst)));
+// Hoofdmenu
+await p.tap('#knop-instellingen'); await p.tap('#knop-hoofdmenu');
+check('Main menu toont het beginscherm', await p.isVisible('#titelscherm'));
 
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);
 await b.close(); srv.kill();

@@ -145,10 +145,19 @@ export function maakUi() {
   el('adviseur').addEventListener('click', () => klapLogboek(el('logboek').hidden));
 
   // Instellingen achter het tandwiel.
-  el('knop-instellingen').addEventListener('click', () => {
-    el('instellingen').hidden = !el('instellingen').hidden;
-    el('knop-instellingen').classList.toggle('actief', !el('instellingen').hidden);
-  });
+  const klapInstellingen = (open) => {
+    el('instellingen').hidden = !open;
+    el('knop-instellingen').classList.toggle('actief', open);
+  };
+  el('knop-instellingen').addEventListener('click', () => klapInstellingen(el('instellingen').hidden));
+  el('knop-verder').addEventListener('click', () => klapInstellingen(false));
+  el('knop-start').addEventListener('click', () => klapInstellingen(false));
+  // Het doel van dit level, achter de rol rechtsonder.
+  const klapDoel = (open) => {
+    el('doelpaneel').hidden = !open;
+    el('knop-menu').classList.toggle('actief', open);
+  };
+  el('doel-sluit').addEventListener('click', () => klapDoel(false));
 
   // --- Schuiven met je vinger -------------------------------------------------
   // De pagina staat op touch-action: none (anders zoomt en scrollt Safari mee
@@ -257,6 +266,7 @@ export function maakUi() {
 
   // De knop Test klapt het paneel van de prestatietest open en dicht.
   el('knop-test').addEventListener('click', () => {
+    klapInstellingen(false);
     el('proef').hidden = !el('proef').hidden;
     el('knop-test').classList.toggle('actief', !el('proef').hidden);
   });
@@ -511,8 +521,30 @@ export function maakUi() {
         el('menu-lijst').appendChild(knop);
       }
     },
+    // De rol rechtsonder: functie() geeft { titel, tegen, tekst, taak, portret }.
+    opDoel(functie) {
+      el('knop-menu').addEventListener('click', () => {
+        if (!el('doelpaneel').hidden) { klapDoel(false); return; }
+        const d = functie();
+        el('doel-titel').textContent = d.titel || '';
+        el('doel-tegen').textContent = d.tegen || '';
+        el('doel-tegen').hidden = !d.tegen;
+        el('doel-tekst').textContent = d.tekst || '';
+        el('doel-taak').textContent = d.taak || '';
+        el('doel-portret').hidden = !d.portret;
+        if (d.portret) el('doel-portret').src = `beelden/portretten/${d.portret}.jpg`;
+        klapInstellingen(false);
+        klapDoel(true);
+      });
+    },
+    // De knoppen achter het tandwiel. Na een keuze gaat het menu dicht.
+    opMenuActies({ opslaan, levels, hoofdmenu }) {
+      el('knop-opslaan').addEventListener('click', () => { klapInstellingen(false); opslaan(); });
+      el('knop-levels').addEventListener('click', () => { klapInstellingen(false); levels(); });
+      el('knop-hoofdmenu').addEventListener('click', () => { klapInstellingen(false); hoofdmenu(); });
+    },
     opMenu(functie) {
-      el('knop-menu').addEventListener('click', functie);
+      el('knop-levels').addEventListener('click', functie);
       el('menu-sluit').addEventListener('click', () => (el('menu').hidden = true));
     },
     opMenuKeuze(functie) {
@@ -813,6 +845,7 @@ export function maakUi() {
       knop.addEventListener('click', () => {
         if (zeker) {
           rust();
+          klapInstellingen(false);
           functie();
           return;
         }

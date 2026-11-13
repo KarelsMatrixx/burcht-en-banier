@@ -866,6 +866,24 @@ button:active {
 }
 #instellingen[hidden] { display: none; }
 #instellingen small { opacity: 0.75; }
+#instellingen .menu-knoppen { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+#instellingen .menu-knoppen button { min-height: 44px; min-width: 150px; text-align: left; padding: 6px 12px; }
+#instellingen .menu-knoppen button.klein { grid-column: 1 / -1; min-height: 32px; font-size: 0.85em; opacity: 0.8; }
+#instellingen .menu-knoppen button.gevaar { border-color: #c23a2e; color: #ffd9d2; }
+#instellingen { max-height: calc(100vh - 70px); overflow-y: auto; }
+#doelpaneel {
+  background-color: #1f1a14f2;
+  position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(520px, 80vw); max-height: 80vh; overflow-y: auto;
+  display: flex; gap: 12px; align-items: flex-start;
+  pointer-events: auto; z-index: 30;
+}
+#doelpaneel[hidden] { display: none; }
+#doelpaneel .portret { width: 72px; height: 72px; flex: none; }
+#doelpaneel p { margin: 6px 0; line-height: 1.35; }
+#doel-tegen { font-weight: 700; }
+#doel-taak { opacity: 0.9; font-style: italic; }
 
 /* Korte meldingen: een lint met een zegel, rechts van de adviseur. */
 #meldingen {

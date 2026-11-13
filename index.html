@@ -71,9 +71,25 @@
     <div class="plaat" id="instellingen" hidden>
       <strong>Keep &amp; Banner</strong>
       <small id="versie"></small>
-      <div class="knoppen">
-        <button id="knop-test" type="button">Test</button>
-        <button id="knop-start" type="button">To start</button>
+      <div class="menu-knoppen">
+        <button id="knop-verder" type="button">Resume</button>
+        <button id="knop-opslaan" type="button">Save game</button>
+        <button id="knop-opnieuw" type="button">Start over</button>
+        <button id="knop-levels" type="button">Level map</button>
+        <button id="knop-hoofdmenu" type="button">Main menu</button>
+        <button id="knop-start" type="button">Back to my keep</button>
+        <button id="knop-test" class="klein" type="button">Performance test</button>
+      </div>
+    </div>
+    <!-- Het doel van dit level: achter de rol rechtsonder -->
+    <div class="plaat" id="doelpaneel" hidden>
+      <img id="doel-portret" class="portret" alt="" hidden>
+      <div>
+        <strong id="doel-titel"></strong>
+        <p id="doel-tegen"></p>
+        <p id="doel-tekst"></p>
+        <p id="doel-taak"></p>
+        <button id="doel-sluit" type="button">Close</button>
       </div>
     </div>
     <!-- Het logboek: alle berichten op een perkamentrol, met een zegel per soort -->
@@ -88,9 +104,9 @@
       <img id="verhaal-portret" class="portret" alt="" hidden>
       <div><strong id="verhaal-wie"></strong><span id="verhaal-tekst"></span></div>
     </div>
-    <!-- De bediening rechtsonder: hamer (bouwen), zwaard (leger), buidel (je volk), rol (menu) -->
+    <!-- De bediening rechtsonder: hamer (bouwen), zwaard (leger), buidel (je volk), rol (doel van dit level) -->
     <div id="bedien">
-      <button id="knop-menu" class="medaillon klein" type="button" aria-label="Menu"><img src="beelden/hud/rol.webp" alt=""></button>
+      <button id="knop-menu" class="medaillon klein" type="button" aria-label="Your goal"><img src="beelden/hud/rol.webp" alt=""></button>
       <button id="knop-buidel" class="medaillon klein" type="button" aria-label="Your people"><img src="beelden/hud/buidel.webp" alt=""></button>
       <button id="knop-zwaard" class="medaillon" type="button" aria-label="Army"><img src="beelden/hud/zwaard.webp" alt=""></button>
       <button id="knop-hamer" class="medaillon" type="button" aria-label="Build"><img src="beelden/hud/hamer.webp" alt=""></button>
@@ -130,7 +146,6 @@
         <div class="knoppen">
           <button id="knop-meting" type="button">Start measuring</button>
           <button id="knop-aantal" type="button">Figures: 150</button>
-          <button id="knop-opnieuw" type="button">Start over</button>
         </div>
       </div>
       <div class="plaat" id="tip" hidden>

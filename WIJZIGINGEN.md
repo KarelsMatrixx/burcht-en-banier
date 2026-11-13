@@ -244,3 +244,9 @@
 - Zagerij: de zager laat altijd 30 hout liggen voor het bouwen (data/economie.json, beroepen.zager.reserve). Daarboven zaagt hij gewoon door. Zo kun je altijd nog een houthakkershut kopen (20 hout).
 - Nieuw: het oog rechtsboven, naast het tandwiel. Tik erop en alle gebouwen en bomen worden doorzichtig, met hun grondvlak als ruit op de grond (rood voor rood). Zo zie je troepen achter een gebouw. Nog eens tikken zet het terug.
 - Tests: ladder35 (7, nu ook met wachters op de muur), planken21 (reserve), hud35 (31, met het oog).
+
+## 0.44.0: menu achter het tandwiel, de rol toont je doel
+- Het tandwiel rechtsboven opent nu het spelmenu: Resume, Save game, Start over (twee keer tikken), Level map, Main menu, Back to my keep en klein de Performance test. Zolang het menu open staat, staat het spel stil.
+- Start over stond eerst verstopt in de prestatietest; nu in het menu.
+- De rol rechtsonder bracht je meteen naar de levelkaart. Nu toont hij het doel van dit level: titel, tegen wie, de intro en je opdracht. De levelkaart zit in het menu.
+- Tests: hud35 (48), menu19 (rol en Level map), test_stap17 (menu via het tandwiel).

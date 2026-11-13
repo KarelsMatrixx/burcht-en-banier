@@ -680,7 +680,28 @@ async function start() {
     oog.classList.toggle('actief', tekenaar.doorzicht());
     oog.setAttribute('aria-pressed', String(tekenaar.doorzicht()));
   });
-  ui.opMenu(() => { titelOpen = true; toonKaart(); });
+  ui.opMenuActies({
+    opslaan: () => {
+      const was = bewaarFoutGemeld;
+      bewaar();
+      if (bewaarFoutGemeld && !was) return;   // dan staat er al een melding
+      ui.toonMelding(bewaren ? 'Game saved. You continue from here next time.' : 'Nothing to save yet.', { soort: 'uitleg', toon: true });
+    },
+    levels: () => { titelOpen = true; toonKaart(); },
+    hoofdmenu: toonTitel,
+  });
+  // De rol rechtsonder: wat je in dit level moet doen.
+  ui.opDoel(() => missie ? {
+    titel: missie.titel,
+    tegen: missie.heer ? `Against ${missie.heer}` : '',
+    tekst: missie.intro,
+    taak: 'Your goal: defeat the red king. Keep your own king alive.',
+    portret: missie.portret || null,
+  } : {
+    titel: modusNaam,
+    tekst: 'Build your keep and your village, train an army and hold off the attacks of red.',
+    taak: 'Your goal: defeat the red king. Keep your own king alive.',
+  });
   // Het beginscherm komt bij het openen van de pagina, niet na het kiezen van een level.
   let geenTitel = false;
   try { geenTitel = window.sessionStorage.getItem(GEEN_TITEL) === '1'; window.sessionStorage.removeItem(GEEN_TITEL); } catch (fout) { /* geen geheugen: dan toon je het gewoon */ }
@@ -935,11 +956,12 @@ async function start() {
   // Elke halve seconde werken we de cijfers in beeld bij.
   const teller = { beelden: 0, tijd: 0, tekenTijd: 0, stappen: 0, rekenTijd: 0 };
   let totBewaren = 0;
+  const menuPaneel = document.getElementById('instellingen');   // het menu achter het tandwiel zet het spel stil
   let totStrijd = 0;
   maakSpellus({
     stappenPerSeconde: CONFIG.spel.stappenPerSeconde,
     stap: (dt) => {
-      if (strijd.uitslag() || titelOpen) return;   // gewonnen of verloren, of het beginscherm staat open: alles staat stil
+      if (strijd.uitslag() || titelOpen || !menuPaneel.hidden) return;   // gewonnen of verloren, beginscherm of menu open: alles staat stil
       eenheden.stap(dt);
       economie.stap();
       leger.stap();
