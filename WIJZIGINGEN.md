@@ -201,5 +201,11 @@
 ## 0.37.0: samengevoegd
 - De nieuwe figuren (branch sprites-heren, uit de chat "Gedetailleerder en mooier maken van game") samengevoegd met de kastelen van 0.36.0. Beide waren 0.36.0 genummerd; samen 0.37.0.
 
-## 0.38.0: machines en koning
-- Ram, katapult, belegeringstoren (veel hoger) en de koning in de nieuwe stijl, bovenop 0.37.0 (main bevatte de heren, soldaten en werkers al).
+## 0.38.0 (stap 34): kaartvormen
+- Een kaart kan een vorm hebben (veld vorm in data/kaarten.json; js/kaart.js stap 1b): pas (dal tussen rotswanden, smal in het midden), kloof (langer smal stuk), rotsrug (rug van rotsen dwars over het midden met twee openingen), moeras (plassen met paden), polder (water aan beide kanten met een dijk van rotsen). Rond de kastelen blijft het land vrij, de kaart blijft gespiegeld en de weg tussen de kastelen blijft gegarandeerd.
+- Vijf nieuwe kaarten: The Sevenwinds Pass (level 2), The Ironmarsh (level 3 en voorlopig 4), The Giant's Spine (level 6), The Greyford Gorge (level 7), The White Dike (level 8). Level 1 blijft The Green Vale.
+- Rotsen zijn gewone steen: onbegaanbaar, en een steengroeve kan ertegen.
+- Tests: tests/kaartvorm34.mjs (15 controles plus beelden). kasteel33 test nu elk kasteel op alle negen kaarten (110 controles); in de doorbraaktest van level 3 zijn de soldaten nu echt onkwetsbaar (het gaat om de route). kaarten24 en verhaal31 op de nieuwe kaarten.
+
+## 0.39.0: machines en koning
+- Ram, katapult, belegeringstoren (veel hoger) en de koning in de nieuwe stijl, bovenop 0.37.0 en de kaartvormen van 0.38.0 (main bevatte de heren, soldaten en werkers al).

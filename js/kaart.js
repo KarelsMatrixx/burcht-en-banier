@@ -173,6 +173,59 @@ export function maakKaart(recept) {
     }
   }
 
+  // 1b. De vorm van het land (stap 34), uit het recept: vorm.soort is
+  //     pas      een dal tussen rotswanden langs de lijn tussen de kastelen,
+  //              breed bij de kastelen (breed) en smal in het midden (smal)
+  //     kloof    hetzelfde, maar het smalle stuk is langer (lang)
+  //     rotsrug  een rug van rotsen dwars over het midden, met openingen (gaten)
+  //     moeras   veel kleine plassen met smalle paden ertussen (nat)
+  //     polder   water aan beide kanten (zee), met een dijk van rotsen ertegen
+  //     Afstanden zijn een deel van de kaart (0.1 = een tiende). Rond de
+  //     kastelen (vrijRond tegels) blijft het land altijd vrij.
+  if (r.vorm) {
+    const v = r.vorm;
+    const vrijRond = v.vrijRond || 13;
+    for (let y = 0; y < hoogte; y++) {
+      for (let x = 0; x < breedte; x++) {
+        const i = y * breedte + x;
+        if (Math.min(afstand(x, y, start[0]), afstand(x, y, start[1])) <= vrijRond) continue;
+        const px = x / breedte;
+        const py = y / hoogte;
+        const dwars = Math.abs(px + py - 1) / Math.SQRT2;   // afstand tot de lijn tussen de kastelen
+        const langs = Math.abs(px - py) / Math.SQRT2;       // afstand tot het midden, langs die lijn
+        const rand = (fijn(x, y) - 0.5) * 0.05;             // een rafelige rand
+        let rots = false;
+        let water = false;
+        if (v.soort === 'pas' || v.soort === 'kloof') {
+          const lang = v.soort === 'kloof' ? v.lang || 0.22 : v.lang || 0.08;
+          const deel = Math.min(1, Math.max(0, (langs - lang) / 0.18));   // 0 = in het smalle stuk, 1 = bij de kastelen
+          const half = (v.smal || 0.07) + ((v.breed || 0.2) - (v.smal || 0.07)) * deel;
+          rots = dwars > half + rand;
+        } else if (v.soort === 'rotsrug') {
+          const dik = v.dik || 0.035;
+          const gaten = v.gaten || [0];
+          const opRug = langs < dik + rand;
+          const inGat = gaten.some((g) => Math.abs((px + py - 1) / Math.SQRT2 - g) < (v.gat || 0.035));
+          rots = opRug && !inGat;
+        } else if (v.soort === 'moeras') {
+          const nat = grof(x, y) * 0.5 + fijn(x, y) * 0.5;
+          water = nat < (v.nat || 0.45) && fijn(x, y) < 0.55;
+        } else if (v.soort === 'polder') {
+          const zee = v.zee || 0.24;
+          water = dwars > zee + rand;
+          rots = !water && dwars > zee - 0.02 + rand;   // de dijk
+        }
+        if (rots) {
+          grond[i] = GROND.GRAS_DONKER;
+          object[i] = OBJECT.STEEN;
+        } else if (water) {
+          grond[i] = GROND.WATER;
+          object[i] = OBJECT.GEEN;
+        }
+      }
+    }
+  }
+
   // 2. Vaste vindplaatsen bij speler 1. Door het spiegelen krijgt speler 2
   //    precies dezelfde.
   const vlek = (mx, my, straal, soort) => {
