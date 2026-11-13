@@ -28,7 +28,7 @@ check('verteller Bartholt', /Bartholt/.test(await p.textContent('#missie-wie')),
 check('portret verteller', /bartholt\.jpg/.test(await p.getAttribute('#missie-portret', 'src') || ''));
 check('heer Mechteld', /Mechteld/.test(await p.textContent('#missie-heer-naam')) && /mechteld\.jpg/.test(await p.getAttribute('#missie-heer', 'src') || ''));
 const extra = await p.textContent('#missie-extra');
-check('extra: nieuw en kaart', /New for you: Copper Mine/.test(extra) && /Map: The Two Lakes/.test(extra), extra);
+check('extra: nieuw en kaart', /New for you: Siege Tower, Copper Mine/.test(extra) && /Map: The Two Lakes/.test(extra), extra);
 const geladen = await p.evaluate(() => [...document.querySelectorAll('#missie img')].filter((i) => !i.hidden).every((i) => i.complete && i.naturalWidth > 0));
 check('portretten geladen', geladen);
 await p.screenshot({ path: '/home/claude/stap31-briefing.png' });
@@ -40,7 +40,7 @@ await p.tap('#missie-begin');
 
 // Bericht op tijd (na 15 s spelen)
 await p.waitForFunction(() => !document.getElementById('verhaal').hidden, null, { timeout: 25000 });
-check('bericht Bartholt', /Bartholt/.test(await p.textContent('#verhaal-wie')) && /archers/.test(await p.textContent('#verhaal-tekst')), await p.textContent('#verhaal-tekst'));
+check('bericht Bartholt', /Bartholt/.test(await p.textContent('#verhaal-wie')) && /too high for ladders/.test(await p.textContent("#verhaal-tekst")), await p.textContent('#verhaal-tekst'));
 await p.waitForTimeout(500); await p.screenshot({ path: '/home/claude/stap31-balk.png' });
 await p.tap('#verhaal');
 await p.waitForTimeout(200);
@@ -68,7 +68,7 @@ await p.evaluate(() => { window.spel.strijd.koning(1).dood = true; });
 await p.waitForTimeout(1500);
 check('einde portret heer', /mechteld\.jpg/.test(await p.getAttribute('#einde-portret', 'src') || ''));
 check('Wessel-blok', await p.isVisible('#einde-wessel') && /charcoal/.test(await p.textContent('#einde-wessel-tekst')));
-check('beloning', /Unlocked: Crossbowman/.test(await p.textContent('#einde-erbij')));
+check('beloning', /Unlocked: Catapult, Crossbowman/.test(await p.textContent('#einde-erbij')));
 check('balk weg bij einde', await p.isHidden('#verhaal'));
 await p.screenshot({ path: '/home/claude/stap31-einde.png' });
 

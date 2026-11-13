@@ -177,3 +177,12 @@
 - Wegvinden en herbouw van rood werkten al met elk muurstuk; ze zijn niet veranderd. Getest: rood komt eruit, jij komt er pas in als de poorten weg zijn, en in level 3 breek je door twee poorten en win je.
 - Nog niet: een palissade van hout (het jachtkamp is nu een kleine stenen ring met vier poorten).
 - Nieuw: tests/kasteel33.mjs (45 controles: elk ontwerp op elke kaart). kaarten24 kijkt nu voor de buitenste poort.
+
+## 0.36.0: kastelen volgens het kastelenontwerp
+- Uitgewerkt naar claude/kastelenontwerp.md (chat vijandkastelen per level). Elk kasteel heeft een materiaal: steen, dor bruin, ruwe rots, grijs steen, abdijsteen, zwart, hout. Muur, torens, poort en burcht van rood krijgen die kleur (eigen plaatjes rood.muur enzovoort; js/tekenaar.js kiest ze op eigenaar).
+- Level 1 Reinout: het bestaande kasteel in dorre bruine tinten, 4 wachters. Level 2 Mechteld: rotsvesting met ronde torens ook midden op de muren, muren te hoog voor ladders (alleen de belegeringstoren; melding als je het met ladders probeert). Level 3 Hademar: mijnburcht van grijs steen met twee ringen.
+- Levels 4 tot 10 kregen hun voorlopige vorm en materiaal: jachtkamp (hout), abdij met twee ringen en gracht (wit), belegeringswerf (rots), tolkasteel met drie poorten (grijs), dijkburcht met twee ringen en brede gracht (grijs), bergfort met ringen op 5 en 9 (zwart), Rouwburcht met drie ringen (zwart).
+- Muren, torens en poorten van rood: leven per level volgens de kolom sterkte rood (100% in level 1, 115% in 2, 130% in 3, tot 240% in 10). Veld rood.muur in campagne.json.
+- Beloningen verschoven zodat de eenheid die een kasteel vraagt er op tijd is: na Reinout de belegeringstoren en de kopermijn, na Mechteld de katapult en de kruisboog, na Hademar de bijlridder. Slotteksten en berichten van level 1 tot 3 aangepast.
+- Grote kastelen: de werken van rood blijven uit de gang tussen de twee kastelen, en het pad ruimt daar ook rotsen en decor op.
+- Tests: kasteel33 (55 controles, met materiaal, muurleven en hoge muren), campagne30, verhaal31 en test_stap17 aangepast.

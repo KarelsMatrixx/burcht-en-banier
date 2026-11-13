@@ -8,7 +8,7 @@
   "intro en uit: de korte tekst voor en na het level. wessel: het voorwerp van Wessel dat je na het winnen vindt.",
   "figuren: wie er praat in de briefing en de verhaalbalk (naam en portret). verteller: wie de briefing vertelt (standaard bartholt).",
   "berichten: wat figuren zeggen tijdens het level. bij = tijd (seconden), aanval (nummer), burcht, koning, roodBurcht, roodKoning (onder dit percentage leven). wie = een figuur of heer. portret mag een andere uitdrukking kiezen. Hooguit 40 woorden. berichtenAltijd geldt in elk level.",
-  "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team. koning.schiet = { bereik, schade, slagTijd }: de koning schiet pijlen (Mechteld).",
+  "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. muur = leven van zijn muren, torens en poorten in procenten (kastelenontwerp: 100% in level 1 tot 240% in level 10). koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team. koning.schiet = { bereik, schade, slagTijd }: de koning schiet pijlen (Mechteld).",
   "kasteel (stap 33): het ontwerp van het kasteel van rood, uit data/kastelen.json."
  ],
  "figuren": {
@@ -98,9 +98,10 @@
    },
    "speelbaar": true,
    "intro": "Witherheath is the first stop on the road north. Only yesterday Reinout sat at Wessel's table. Defeat him and ask him where your son is.",
-   "uit": "Reinout surrenders. Ottger let him keep his land in exchange for the betrayal. The boy was taken north unharmed. Reinout hands over the copper veins of the heath that he mined for the duke.",
+   "uit": "Reinout surrenders. Ottger let him keep his land in exchange for the betrayal. The boy was taken north unharmed. Reinout hands over the siege tower he built for the duke, and the copper veins of the heath.",
    "wessel": "A wooden horse, carefully laid on a cushion in Reinout's tent.",
    "beloning": [
+    "toren",
     "kopermijn"
    ],
    "berichten": [
@@ -152,9 +153,11 @@
       "baard": "geen"
      }
     },
-    "extra_soorten": {}
+    "extra_soorten": {},
+    "muur": 100,
+    "wachters": 4
    },
-   "kasteel": "klein"
+   "kasteel": "dorre_heide"
   },
   {
    "id": 2,
@@ -170,9 +173,10 @@
    },
    "speelbaar": true,
    "intro": "There is only one road north, and it runs through Lady Mechteld's pass. Her archers are the best in the land.",
-   "uit": "Mechteld: \"Nobody told me there was a child involved.\" She lets you pass, but promises no support yet. A few of her marksmen join you and bring the crossbow.",
+   "uit": "Mechteld: \"Nobody told me there was a child involved.\" She lets you pass, but promises no support yet. Her marksmen bring crossbows, and her engineers a catapult.",
    "wessel": "A charcoal drawing of the wind on the wall of the guardroom.",
    "beloning": [
+    "katapult",
     "kruisboog"
    ],
    "berichten": [
@@ -180,7 +184,7 @@
      "bij": "tijd",
      "waarde": 15,
      "wie": "bartholt",
-     "tekst": "Mechteld's archers hold the high ground. Build a copper mine: copper sells well, and gold buys soldiers."
+     "tekst": "Mechteld's walls stand on the rock, too high for ladders. Roll Reinout's siege tower against them."
     },
     {
      "bij": "aanval",
@@ -235,9 +239,10 @@
       "thuisBereik": 7
      }
     },
-    "extra_soorten": {}
+    "extra_soorten": {},
+    "muur": 115
    },
-   "kasteel": "ring"
+   "kasteel": "rotsvesting"
   },
   {
    "id": 3,
@@ -253,18 +258,17 @@
    },
    "speelbaar": true,
    "intro": "Hademar sells weapons to whoever pays, and Ottger paid well. His mining town has double walls and early battering rams.",
-   "uit": "Hademar buys his freedom with the plan of Mournkeep: three rings, and a tower on the east side where nobody goes. His smiths now forge axes and catapults for you.",
+   "uit": "Hademar buys his freedom with the plan of Mournkeep: three rings, and a tower on the east side where nobody goes. His smiths now forge axes for you.",
    "wessel": "A small gauntlet, forged to fit. A gift from the duke for a boy he had never met.",
    "beloning": [
-    "bijlridder",
-    "katapult"
+    "bijlridder"
    ],
    "berichten": [
     {
      "bij": "tijd",
      "waarde": 15,
      "wie": "bartholt",
-     "tekst": "Hademar's town has double walls and heavy knights. Our crossbows will pierce their armour."
+     "tekst": "Two walls, one behind the other. Our new catapults can break them from a distance."
     },
     {
      "bij": "aanval",
@@ -311,7 +315,8 @@
       "haar": "#8a8a8a",
       "baard": "#8a8a8a"
      }
-    }
+    },
+    "muur": 130
    },
    "kasteel": "dubbel"
   },
@@ -405,7 +410,8 @@
       "haar": "#3a2e24",
       "baard": "geen"
      }
-    }
+    },
+    "muur": 145
    },
    "kasteel": "abdij"
   },
@@ -425,9 +431,7 @@
    "intro": "On the bare ridge Lambrecht builds Ottger's machines. Destroy his two workshops.",
    "uit": "",
    "wessel": "A wooden battering ram the size of two hands.",
-   "beloning": [
-    "toren"
-   ],
+   "beloning": [],
    "beloningLater": "steenwachter (idee)",
    "rood": {
     "sterkte": 100,
@@ -459,7 +463,8 @@
       "haar": "#5a4630",
       "baard": "#6b553a"
      }
-    }
+    },
+    "muur": 150
    },
    "kasteel": "werkplaats"
   },
@@ -503,7 +508,8 @@
       "haar": "#b0b0b0",
       "baard": "geen"
      }
-    }
+    },
+    "muur": 165
    },
    "kasteel": "drie_poorten"
   },
@@ -549,7 +555,8 @@
       "haar": "#7a7a7a",
       "baard": "#9a9a9a"
      }
-    }
+    },
+    "muur": 180
    },
    "kasteel": "gracht"
   },
@@ -596,7 +603,8 @@
       "haar": "#9a9aa0",
       "baard": "geen"
      }
-    }
+    },
+    "muur": 210
    },
    "kasteel": "bergfort"
   },
@@ -649,7 +657,8 @@
       "haar": "#e8e8e8",
       "baard": "#f0f0f0"
      }
-    }
+    },
+    "muur": 240
    },
    "kasteel": "drie_ringen"
   }

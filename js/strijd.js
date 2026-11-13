@@ -153,9 +153,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Hoeveel een bouwwerk kan hebben.
   const werkVan = new Map(Object.values(bouwwerken).map((werk) => [werk.soort, werk]));
-  const maxLeven = (soort) => {
+  // van = 2: van rood. In de campagne zijn zijn muren sterker of zwakker (stap 33).
+  const maxLeven = (soort, van = 0) => {
     const werk = werkVan.get(soort);
-    return (werk && werk.leven) || R.gebouwLeven;
+    const basis = (werk && werk.leven) || R.gebouwLeven;
+    return van === 2 && R.roodMuurFactor ? Math.round(basis * R.roodMuurFactor) : basis;
   };
 
   // --- Hulpjes ----------------------------------------------------------------------
@@ -300,7 +302,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function balkenBij() {
     balken.length = 0;
     for (const [vak, s] of schade) {
-      balken.push({ x: vak % B, y: Math.floor(vak / B), deel: klem(s.leven / maxLeven(s.soort), 0, 1) });
+      balken.push({ x: vak % B, y: Math.floor(vak / B), deel: klem(s.leven / maxLeven(s.soort, s.van), 0, 1) });
     }
     for (const b of burchten) {
       if (b.leven < b.max) balken.push({ x: b.vx, y: b.vy, deel: klem(b.leven / b.max, 0, 1), groot: true });
@@ -417,7 +419,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     let s = schade.get(b.vak);
     if (!s || s.soort !== b.soort) {
-      s = { leven: maxLeven(b.soort), soort: b.soort, van: b.van };
+      s = { leven: maxLeven(b.soort, b.van), soort: b.soort, van: b.van };
       schade.set(b.vak, s);
     }
     s.leven -= hoeveel;
@@ -881,6 +883,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     for (const e of lijst) {
       const k = krijgVan(e);
       if (!k.def.ladder || e.opMuur || e.klimt) continue;
+      if (R.roodMuurHoog && !k.def.vast) continue;   // te hoog voor een ladder: alleen de belegeringstoren
       if (plekRond(e, vak, 1) < 0) continue;
       e.soldaat.doel = -1;
       if (e.pad) e.pad.length = Math.min(e.pad.length, e.stap + 1);
@@ -1395,7 +1398,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     const van = kaart.eigenaar[vak];
     if (!van) return null;
-    const max = maxLeven(kaart.object[vak]);
+    const max = maxLeven(kaart.object[vak], van);
     const s = schade.get(vak);
     return { leven: s && s.soort === kaart.object[vak] ? Math.ceil(s.leven) : max, max, van };
   }
@@ -1485,7 +1488,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         const [vak, leven] = regel;
         if (!Number.isInteger(vak) || vak < 0 || vak >= B * H || !kaart.eigenaar[vak]) continue;
         if (inBurcht(vak, burcht) || inBurcht(vak, rood)) continue;
-        const max = maxLeven(kaart.object[vak]);
+        const max = maxLeven(kaart.object[vak], kaart.eigenaar[vak]);
         if (!Number.isFinite(leven) || leven <= 0 || leven >= max) continue;
         schade.set(vak, { leven: Math.round(leven), soort: kaart.object[vak], van: kaart.eigenaar[vak] });
       }
@@ -1577,6 +1580,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     zetLadderVoor: (vak, team, dx = 1, dy = 0, vast = false) => zetLadder(vak, team, [dx, dy], vast),
     klimBevel,
     isRodeMuur: (vak) => isMuurVan(vak, VIJAND),
+    muurTeHoog: () => !!R.roodMuurHoog,
     isRodeMuurZonderLadder: (vak) => isMuurVan(vak, VIJAND) && !wegvinder.isLadder(vak, SPELER),
     // Het dichtstbijzijnde stuk gewone muur van rood zonder ladder, binnen r tegels.
     dichtsteRodeMuur(vak, r = 3) {

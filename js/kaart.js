@@ -114,15 +114,18 @@ const STANDAARD = {
 export async function laadKastelen() {
   const antwoord = await fetch('data/kastelen.json');
   if (!antwoord.ok) throw new Error('Kon data/kastelen.json niet laden.');
-  const k = (await antwoord.json()).kastelen;
+  const alles = await antwoord.json();
+  const k = alles.kastelen;
+  const materialen = alles.materialen || {};
   for (const [naam, o] of Object.entries(k)) {
+    if (o.materiaal && !materialen[o.materiaal]) throw new Error(`kastelen.json: ${naam} kent geen materiaal ${o.materiaal}`);
     if (!Array.isArray(o.ringen) || !o.ringen.length) throw new Error(`kastelen.json: ${naam} heeft geen ringen`);
     for (const r of o.ringen) {
       if (!(r.maat >= 3 && r.maat <= 10)) throw new Error(`kastelen.json: ${naam} heeft een ring met maat ${r.maat} (3 tot 10)`);
       for (const p of r.poorten || []) if (!['voor', 'achter', 'links', 'rechts'].includes(p)) throw new Error(`kastelen.json: ${naam} kent geen poort ${p}`);
     }
   }
-  return k;
+  return { kastelen: k, materialen };
 }
 
 export async function laadKaarten() {
@@ -300,7 +303,7 @@ export function maakKaart(recept) {
             let soort = OBJECT.MUUR;
             if (hoek) soort = OBJECT.TOREN;
             else if (poorten.has(`${dx},${dy}`)) soort = OBJECT.POORT;
-            else if (midden) soort = OBJECT.WACHTTOREN;
+            else if (midden) soort = ring.middenTorens ? OBJECT.TOREN : OBJECT.WACHTTOREN;
             object[i] = soort;
             grond[i] = GROND.GRAS_DONKER;
           }
@@ -359,6 +362,19 @@ export function maakKaart(recept) {
       x >= 1 && y >= 1 && x < breedte - 1 && y < hoogte - 1 &&
       grond[y * breedte + x] !== GROND.WATER && object[y * breedte + x] === OBJECT.GEEN && !eigenaar[y * breedte + x];
     const gekozen = [];
+    // Niet op de rechte lijn van jouw poort naar die van rood: daar komt zo
+    // nodig het pad (5c), en een werk mag de weg niet versperren.
+    const gang = new Set();
+    {
+      const van = { x: eigen.x + RING + 1, y: eigen.y };
+      const naar = { x: m.x - omvang - 1, y: m.y };
+      const stappen = Math.max(Math.abs(naar.x - van.x), Math.abs(naar.y - van.y));
+      for (let k = 0; k <= stappen; k++) {
+        const x = Math.round(van.x + ((naar.x - van.x) * k) / stappen);
+        const y = Math.round(van.y + ((naar.y - van.y) * k) / stappen);
+        for (let ddy = -1; ddy <= 2; ddy++) for (let ddx = -1; ddx <= 2; ddx++) gang.add((y + ddy) * breedte + x + ddx);
+      }
+    }
     for (const [soort, dx, dy] of [[OBJECT.HOUTHAKKER, -omvang - 3, -2], [OBJECT.STEENGROEVE, -omvang - 3, 2], [OBJECT.BOOMGAARD, -2, omvang + 3]]) {
       let beste = null;
       // Eerst vlak bij het doel; past het daar niet (een groot kasteel aan de
@@ -367,6 +383,7 @@ export function maakKaart(recept) {
         for (let y = m.y + dy - ruim; y <= m.y + dy + ruim; y++) {
           for (let x = m.x + dx - ruim; x <= m.x + dx + ruim; x++) {
             if (!vrij(x, y) || !vrij(x + 1, y) || !vrij(x - 1, y) || !vrij(x, y + 1) || !vrij(x, y - 1)) continue;
+            if (omvang > RING && gang.has(y * breedte + x)) continue;
             const afstand = Math.max(Math.abs(x - m.x), Math.abs(y - m.y));
             if (afstand <= omvang + 1 || (ruim > 4 && afstand > omvang + 9)) continue;
             if (gekozen.some(([gx, gy]) => Math.abs(gx - x) <= 2 && Math.abs(gy - y) <= 2)) continue;
@@ -423,7 +440,7 @@ export function maakKaart(recept) {
           const i = (y + dy) * breedte + x + dx;
           if (x + dx >= breedte || y + dy >= hoogte || eigenaar[i]) continue;
           if (grond[i] === GROND.WATER) grond[i] = GROND.ZAND;
-          if (object[i] === OBJECT.BOOM) object[i] = OBJECT.GEEN;
+          if (object[i] === OBJECT.BOOM || (omvang > RING && object[i] !== OBJECT.GEEN)) object[i] = OBJECT.GEEN;
         }
       }
     }

@@ -69,7 +69,7 @@ const gelijk = await p.evaluate(async () => {
 check('ring-ontwerp wijkt weinig af van het oude kasteel', gelijk.verschil <= 40 && gelijk.routes[0] === gelijk.routes[1], JSON.stringify(gelijk));
 
 // In het spel: level 1 tot 3 met hun kasteel
-for (const [lv, ontwerp] of [[1, 'klein'], [2, 'ring'], [3, 'dubbel']]) {
+for (const [lv, ontwerp] of [[1, 'dorre_heide'], [2, 'rotsvesting'], [3, 'dubbel']]) {
   await p.evaluate((lv) => {
     localStorage.clear();
     localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [1, 2, 3] }));
@@ -84,9 +84,12 @@ for (const [lv, ontwerp] of [[1, 'klein'], [2, 'ring'], [3, 'dubbel']]) {
     const w = rasterNaarWereld(r.x, r.y);
     s.camera.zetZoom(0.75);
     s.camera.kijkNaar(w.x, w.y);
-    return { wachters: s.strijd.wachters().length, koning: !!s.strijd.koning(1), x: r.x, y: r.y };
+    const muur = s.kaart.object.findIndex((o, i) => o === 4 && s.kaart.eigenaar[i] === 2);
+    return { wachters: s.strijd.wachters().length, koning: !!s.strijd.koning(1), x: r.x, y: r.y, hoog: s.strijd.muurTeHoog(), muurMax: s.strijd.levenOp(muur).max, factor: s.regels.strijd.roodMuurFactor };
   });
   check(`level ${lv} (${ontwerp}): koning en wachters`, r.koning && r.wachters > 0, JSON.stringify(r));
+  check(`level ${lv}: muren ${[100, 115, 130][lv - 1]}%`, Math.abs(r.factor - [1, 1.15, 1.3][lv - 1]) < 0.001, JSON.stringify(r));
+  check(`level ${lv}: te hoog voor ladders alleen in level 2`, r.hoog === (lv === 2), JSON.stringify(r));
   await p.waitForTimeout(600);
   await p.screenshot({ path: `/home/claude/stap33-level${lv}.png` });
 }
@@ -110,7 +113,7 @@ const inval = await p.evaluate(() => {
   const buitenPoort = m.y * B + m.x - 7, binnenPoort = m.y * B + m.x - 4, burchtVak = m.y * B + m.x;
   let fase = 0;
   s.strijd.valBouwAan(soldaten, buitenPoort);
-  for (let t = 0; t < 10 * 240 && !s.strijd.uitslag(); t++) {
+  for (let t = 0; t < 10 * 480 && !s.strijd.uitslag(); t++) {
     s.eenheden.stap(0.1); s.economie.stap(); s.leger.stap(); s.strijd.stap();
     if (fase === 0 && k.object[buitenPoort] !== 6) { fase = 1; s.strijd.valBouwAan(soldaten, binnenPoort); }
     if (fase === 1 && k.object[binnenPoort] !== 6) { fase = 2; s.strijd.valBouwAan(soldaten, burchtVak); }

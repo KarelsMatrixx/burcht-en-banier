@@ -61,16 +61,22 @@ async function laadSprite(pad) {
 
 // aanpassing: per naam velden die over assets.json heen gaan (stap 32: de
 // rode koning krijgt per level de kleding en het wapen van de heer).
-export async function laadAssets(aanpassing = {}) {
+// extra: nieuwe namen als kopie van een bestaande, { naam: { basis, ...velden } }
+// (stap 33: het materiaal van het kasteel van rood).
+export async function laadAssets(aanpassing = {}, extra = {}) {
   const antwoord = await fetch('data/assets.json');
   if (!antwoord.ok) throw new Error('Kan data/assets.json niet laden');
-  const lijst = (await antwoord.json()).assets;
+  const lijst = { ...(await antwoord.json()).assets };
+  for (const [naam, { basis, ...velden }] of Object.entries(extra)) {
+    if (lijst[basis]) lijst[naam] = { ...lijst[basis], ...velden };
+  }
 
   const tabel = new Map();
   const meldingen = [];
 
   for (const [naam, basis] of Object.entries(lijst)) {
     const def = { ...basis, ...(aanpassing[naam] || {}) };
+    if (def.hoogteFactor) def.hoogte = Math.round((def.hoogte || 0) * def.hoogteFactor);
     const maak = VORMEN[def.vorm];
     if (!maak) throw new Error(`assets.json: onbekende vorm "${def.vorm}" bij ${naam}`);
     const asset = maak(naam, def);
@@ -101,6 +107,7 @@ export async function laadAssets(aanpassing = {}) {
 
   return {
     meldingen,
+    heeft: (naam) => tabel.has(naam),
     haal(naam) {
       const asset = tabel.get(naam);
       if (!asset) throw new Error(`Asset "${naam}" staat niet in data/assets.json`);
