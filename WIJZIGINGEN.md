@@ -203,3 +203,10 @@
 
 ## 0.38.0: machines en koning
 - Ram, katapult, belegeringstoren (veel hoger) en de koning in de nieuwe stijl, bovenop 0.37.0 (main bevatte de heren, soldaten en werkers al).
+
+## 0.39.0: nieuw landschap
+- Nieuw: js/landschap.js. De grond (gras, zand, water, aarde) is niet meer een rij losse ruitvormige tegels maar één doorlopend beeld. Geen zichtbare ruitjes meer; kusten en stranden zijn zacht en onregelmatig in plaats van trapjes; water wordt dieper en donkerder van de kust af, met schuim langs de rand; waar gras aan water grenst ligt een smal strand; lichte en donkere graskleuren lopen vloeiend in elkaar; grassprieten, bloemen, steentjes en rimpels staan op vaste plekken.
+- Het spel zelf verandert niet: wat water, zand of land is staat nog in kaart.grond. De kust is ten hoogste ca. 0,25 tegel verschoven ten opzichte van de tegelrand.
+- tekenaar.js: de grond komt uit het landschap. Alleen akkers blijven losse tegels (bewust rechthoekig), met hun zachte rand.
+- Stukken van 256 bij 128 wereldpixels worden pas gemaakt als ze in beeld komen. Eerst staat er een vlugge, vage versie; die wordt per beeld binnen 14 ms stuk voor stuk scherp gemaakt. Maximaal 90 stukken (ca. 45 MB) in het geheugen.
+- Bekend: nog niet op iPhone gezien (geheugen en snelheid daar nog niet gemeten); de rand van de kaart is nog een rechte ruit; bij snel scrollen is de grond heel even vaag.
