@@ -280,3 +280,6 @@
 
 ## 0.47.1: de rode heer staat in beeld
 - De heer van rood (in level 2 Mechteld met de boog) verscheen aan de achterkant van zijn burcht en stond daardoor verstopt achter de toren. Hij begint nu aan de voorkant, naar de camera toe.
+
+## 0.47.2: de rode heer loopt rond
+- Zolang er niemand in de buurt komt, loopt de heer van rood rond over zijn binnenplein: om de 4 tot 9 seconden naar een ander plekje 2 of 3 tegels van zijn burcht. Komt er een vijand dichtbij, dan valt hij aan zoals eerst, en daarna loopt hij weer terug.

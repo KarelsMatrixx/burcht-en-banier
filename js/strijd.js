@@ -1077,7 +1077,30 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) jaag(e, k);
       return;
     }
-    if (e.pad || bijThuis(e, 2.6)) return;
+    if (e.pad) return;
+    // Thuis loopt hij rond over zijn binnenplein: om de paar seconden een
+    // ander plekje vlak bij zijn burcht.
+    if (bijThuis(e, 4.5)) {
+      if (stapNr < (k.rondNa || 0)) return;
+      k.rondNa = stapNr + stappen(4 + toeval() * 5);
+      const plekken = [];
+      for (let dy = -3; dy <= 3; dy++) {
+        for (let dx = -3; dx <= 3; dx++) {
+          const ring = Math.max(Math.abs(dx), Math.abs(dy));
+          if (ring < 2) continue;
+          const x = thuis.vx + dx;
+          const y = thuis.vy + dy;
+          const vak = y * B + x;
+          if (!wegvinder.isVrij(x, y, e.team) || bezetDoorVriend(vak, e) || vak === vakVan(e)) continue;
+          if (!wegvinder.verbonden(vakVan(e), vak, e.team)) continue;
+          plekken.push(vak);
+        }
+      }
+      if (!plekken.length) return;
+      const pad = zoekPad(e, plekken[Math.floor(toeval() * plekken.length)]);
+      if (pad) zetPad(e, pad);
+      return;
+    }
     for (const vak of plekkenBij(e, thuis)) {
       if (bezetDoorVriend(vak, e)) continue;
       const pad = zoekPad(e, vak);
