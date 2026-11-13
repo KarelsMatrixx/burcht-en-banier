@@ -18,7 +18,7 @@ const r = await p.evaluate(() => {
   const st = s.strijd.stand();
   return { v: s.CONFIG.versie, heer: !!st.heer, werken: st.heer && st.heer.werkenTotaal, golf: st.golf, w: s.rood.werken() };
 });
-check('versie', r.v === '0.32.0', r.v);
+check('versie', r.v === '0.33.0', r.v);
 check('heer aanwezig', r.heer);
 check('3 werken', r.werken === 3, r.werken);
 const spoel = (sec) => p.evaluate((sec) => { const s = window.spel; for (let i = 0; i < sec * 10; i++) s.strijd.stap(); return s.strijd.stand(); }, sec);

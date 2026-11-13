@@ -5,7 +5,60 @@
   "speelbaar: false zolang het level nog niet gebouwd is; het staat dan op de kaart als 'coming later'.",
   "beloning: soldaten en gebouwen die je krijgt als je dit level wint, zoveel mogelijk iets van de heer die je versloeg. In een level heb je de beloningen van alle levels ervoor. Wat in geen enkele beloning staat, heb je altijd (ridder, boogschutter, de economie, kazerne, muren).",
   "beloningLater: ideeen voor soldaten die nog niet bestaan (alleen voor ons, het spel leest dit niet).",
-  "intro en uit: de korte tekst voor en na het level. wessel: het voorwerp van Wessel dat je na het winnen vindt."
+  "intro en uit: de korte tekst voor en na het level. wessel: het voorwerp van Wessel dat je na het winnen vindt.",
+  "figuren: wie er praat in de briefing en de verhaalbalk (naam en portret). verteller: wie de briefing vertelt (standaard bartholt).",
+  "berichten: wat figuren zeggen tijdens het level. bij = tijd (seconden), aanval (nummer), burcht, koning, roodBurcht, roodKoning (onder dit percentage leven). wie = een figuur of heer. portret mag een andere uitdrukking kiezen. Hooguit 40 woorden. berichtenAltijd geldt in elk level."
+ ],
+ "figuren": {
+  "karel": {
+   "naam": "King Karel",
+   "portret": "karel"
+  },
+  "bartholt": {
+   "naam": "Chamberlain Bartholt",
+   "portret": "bartholt"
+  },
+  "wessel": {
+   "naam": "Wessel",
+   "portret": "wessel"
+  },
+  "gesina": {
+   "naam": "Mother Gesina",
+   "portret": "gesina"
+  },
+  "ludolf": {
+   "naam": "Brother Ludolf",
+   "portret": "ludolf"
+  },
+  "ottger": {
+   "naam": "Duke Ottger",
+   "portret": "ottger"
+  },
+  "ingeborg": {
+   "naam": "Ingeborg",
+   "portret": "ingeborg"
+  }
+ },
+ "berichtenAltijd": [
+  {
+   "bij": "burcht",
+   "waarde": 50,
+   "wie": "bartholt",
+   "tekst": "Our keep is taking a beating, my king. Send soldiers home before the walls give way."
+  },
+  {
+   "bij": "koning",
+   "waarde": 50,
+   "wie": "bartholt",
+   "tekst": "Your Majesty, you are wounded! Pull back behind your men. If you fall, all is lost."
+  },
+  {
+   "bij": "koning",
+   "waarde": 20,
+   "wie": "karel",
+   "portret": "karel_boos",
+   "tekst": "Not yet. Not before I have my son back."
+  }
  ],
  "levels": [
   {
@@ -47,6 +100,33 @@
    "wessel": "A wooden horse, carefully laid on a cushion in Reinout's tent.",
    "beloning": [
     "kopermijn"
+   ],
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 15,
+     "wie": "bartholt",
+     "tekst": "Reinout's workshops stand outside his wall. Burn them and his army goes hungry."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "Forgive me, Karel. I had no choice. Turn back while you still can."
+    },
+    {
+     "bij": "roodBurcht",
+     "waarde": 50,
+     "wie": "karel",
+     "portret": "karel_boos",
+     "tekst": "His walls are crumbling. Push on!"
+    },
+    {
+     "bij": "roodKoning",
+     "waarde": 50,
+     "wie": "heer",
+     "tekst": "Enough! I only wanted to keep my land. Ask me anything, I will answer."
+    }
    ]
   },
   {
@@ -67,6 +147,32 @@
    "wessel": "A charcoal drawing of the wind on the wall of the guardroom.",
    "beloning": [
     "kruisboog"
+   ],
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 15,
+     "wie": "bartholt",
+     "tekst": "Mechteld's archers hold the high ground. Build a copper mine: copper sells well, and gold buys soldiers."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "Nobody passes Sevenwinds without my leave, King Karel. Not even you."
+    },
+    {
+     "bij": "roodBurcht",
+     "waarde": 50,
+     "wie": "heer",
+     "tekst": "You fight like a man with something to lose."
+    },
+    {
+     "bij": "roodKoning",
+     "waarde": 50,
+     "wie": "heer",
+     "tekst": "Wait. Why does a king march north with so few men?"
+    }
    ]
   },
   {
@@ -88,6 +194,33 @@
    "beloning": [
     "bijlridder",
     "katapult"
+   ],
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 15,
+     "wie": "bartholt",
+     "tekst": "Hademar's town has double walls and heavy knights. Our crossbows will pierce their armour."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "Everything has a price, Karel. Even a boy. Shall we talk business?"
+    },
+    {
+     "bij": "roodBurcht",
+     "waarde": 50,
+     "wie": "karel",
+     "portret": "karel_boos",
+     "tekst": "I do not bargain for my son. Break the gate."
+    },
+    {
+     "bij": "roodKoning",
+     "waarde": 50,
+     "wie": "heer",
+     "tekst": "Stop! I can give you something worth more than gold: the plan of Mournkeep."
+    }
    ]
   },
   {

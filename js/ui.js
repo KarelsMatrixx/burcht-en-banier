@@ -11,6 +11,34 @@ export function maakUi() {
 
   el('versie').textContent = `step ${CONFIG.stap} · v${CONFIG.versie}`;
 
+  // Een portret in een <img>: { portret } is de bestandsnaam in beelden/portretten.
+  function zetPortret(id, wie) {
+    const img = el(id);
+    if (!img) return;
+    img.hidden = !wie || !wie.portret;
+    if (wie && wie.portret) {
+      img.src = `beelden/portretten/${wie.portret}.jpg`;
+      img.alt = wie.naam || '';
+    }
+  }
+
+  // De verhaalbalk: één bericht tegelijk, de rest wacht. Een bericht blijft
+  // staan zolang je nodig hebt om het te lezen (minstens 6 seconden).
+  const verhaalRij = [];
+  let verhaalKlok = null;
+  function volgendVerhaal() {
+    clearTimeout(verhaalKlok);
+    const b = verhaalRij.shift();
+    if (!b) { el('verhaal').hidden = true; return; }
+    zetPortret('verhaal-portret', b);
+    el('verhaal-wie').textContent = b.naam;
+    el('verhaal-tekst').textContent = b.tekst;
+    el('verhaal').hidden = false;
+    const woorden = b.tekst.split(/\s+/).length;
+    verhaalKlok = setTimeout(volgendVerhaal, Math.max(6000, woorden * 400));
+  }
+  el('verhaal').addEventListener('click', volgendVerhaal);
+
   const werkStatusBij = () => {
     el('status').textContent = [beelden, offline ? 'offline ready' : 'offline not ready yet']
       .filter(Boolean)
@@ -305,11 +333,36 @@ export function maakUi() {
       });
     },
     // De intro van een missie.
-    toonMissie({ open, titel = '', tekst = '' }) {
+    // De briefing voor een level. spreker = { naam, portret } van wie vertelt,
+    // tegen = { naam, portret } van de heer, extra = regels onder de tekst.
+    toonMissie({ open, titel = '', tekst = '', spreker = null, tegen = null, extra = [] }) {
       el('missie').hidden = !open;
       if (!open) return;
       el('missie-titel').textContent = titel;
       el('missie-tekst').textContent = tekst;
+      zetPortret('missie-portret', spreker);
+      el('missie-wie').textContent = spreker ? spreker.naam : '';
+      zetPortret('missie-heer', tegen);
+      el('missie-heer-naam').textContent = tegen ? tegen.naam : '';
+      el('missie-tegen').hidden = !tegen;
+      const lijst = el('missie-extra');
+      lijst.textContent = '';
+      for (const r of extra) {
+        const regel = document.createElement('div');
+        regel.textContent = r;
+        lijst.appendChild(regel);
+      }
+    },
+    // Een bericht in de verhaalbalk: portret, naam en tekst. Komen er meer
+    // tegelijk, dan wachten ze op hun beurt. Tik om het weg te halen.
+    toonVerhaal({ naam, portret, tekst }) {
+      verhaalRij.push({ naam, portret, tekst });
+      if (el('verhaal').hidden) volgendVerhaal();
+    },
+    verbergVerhaal() {
+      verhaalRij.length = 0;
+      clearTimeout(verhaalKlok);
+      el('verhaal').hidden = true;
     },
     opMissieBegin(functie) {
       el('missie-begin').addEventListener('click', functie);
@@ -318,12 +371,19 @@ export function maakUi() {
       el('einde-volgende').addEventListener('click', functie);
     },
     // Het venster bij winst of verlies. verder = de knop "Verder spelen" tonen.
-    toonEinde({ open, titel = '', tekst = '', verder = false, verloren = false, volgende = false }) {
+    // portret = { naam, portret } bij de terugblik; wessel = het voorwerp van
+    // Wessel (tekst); erbij = wat je vrijspeelt (tekst).
+    toonEinde({ open, titel = '', tekst = '', verder = false, verloren = false, volgende = false, portret = null, wessel = '', erbij = '' }) {
       el('einde').hidden = !open;
       if (!open) return;
       el('einde').classList.toggle('verloren', verloren);
       el('einde-titel').textContent = titel;
       el('einde-tekst').textContent = tekst;
+      zetPortret('einde-portret', portret);
+      el('einde-wessel').hidden = !wessel;
+      el('einde-wessel-tekst').textContent = wessel;
+      el('einde-erbij').hidden = !erbij;
+      el('einde-erbij').textContent = erbij;
       el('einde-verder').hidden = !verder;
       el('einde-volgende').hidden = !volgende;
     },

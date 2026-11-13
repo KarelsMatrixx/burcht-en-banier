@@ -150,3 +150,11 @@
 - Het eindscherm noemt wat je vrijspeelt ("Unlocked: Crossbowman"), de intro van een level wat er nieuw is ("New for you: Copper Mine").
 - Bekend: de belegeringstoren zit nu pas na level 6, dus in de speelbare levels 1 tot 3 niet meer; de balans van level 3 zonder katapult en bijlridder is niet getest. Technische foutmeldingen uit de code (bij een kapot databestand) zijn nog Nederlands.
 - Test: tests/campagne30.mjs aangepast (21 controles); de andere tests op Engelse teksten.
+
+## 0.33.0 (stap 31): verhaalbalk, briefing en terugblik
+- Briefing voor elk level: portret van de verteller (Chamberlain Bartholt) links, de heer met rood omrand portret rechts, daaronder wat er nieuw is en de kaart.
+- Verhaalbalk tijdens het level (links boven, onder de titel): portret, naam en tekst. Blijft minstens 6 seconden staan, tik om weg te halen. Komen er meer tegelijk, dan wachten ze op hun beurt.
+- Momenten (data/campagne.json, berichten per level en berichtenAltijd): tijd, aanval, eigen burcht of koning onder een percentage, burcht of koning van rood onder een percentage. Levels 1 tot 3 hebben elk vier berichten; drie algemene berichten gelden overal.
+- Wat al getoond is, onthoudt het spel per level; na herladen komt het niet terug. Opnieuw beginnen wist dat.
+- Terugblik bij winst: portret van de verslagen heer, slottekst, een apart blok met Wessels portret en het voorwerp, en wat je vrijspeelt. Bij verlies het rouwende portret van Karel.
+- Nieuw: js/verhaal.js, tests/verhaal31.mjs (20 controles).

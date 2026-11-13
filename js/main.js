@@ -19,6 +19,7 @@ import { maakRood } from './rood.js';
 import { maakOpslag } from './opslag.js';
 import { maakUi } from './ui.js';
 import { metLidwoord } from './taal.js';
+import { maakVerhaal } from './verhaal.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, ontgrendeld } from './modus.js';
 
 const GEEN_TITEL = 'burcht-banier.geenTitel';
@@ -52,6 +53,10 @@ async function start() {
   const { bouwwerken, groepen } = await laadBouwwerken();
   // De naam van een soldaat of gebouw, voor wat je in een level vrijspeelt.
   const naamVan = (sleutel) => (regels.soldaten[sleutel] || bouwwerken[sleutel] || {}).naam;
+  // Het verhaal: berichten van de figuren op hun moment (stap 31).
+  const verhaal = maakVerhaal({ campagne: missies, missie, toon: (b) => ui.toonVerhaal(b) });
+  const verhaalStand = () => ({ ...strijd.stand(), koning: strijd.koning(0), roodKoning: strijd.koning(1) });
+
   // Wat er in dit level nieuw is: de beloning van het level ervoor.
   const nieuwHier = () => {
     const vorige = missie ? missies.campagne.find((c) => c.id === missie.id - 1) : null;
@@ -487,6 +492,8 @@ async function start() {
     strijd.herstel();
     sluitKazerne();
     ui.toonEinde({ open: false });
+    ui.verbergVerhaal();
+    verhaal.wis();
     // Wie op de plek van een teruggekomen boom stond, krijgt een nieuwe plek.
     eenheden.zetAantal(aantal(), false);
     opslag.wis();
@@ -570,13 +577,23 @@ async function start() {
         missieGewonnen(missie.id);
         const volgende = missies.campagne.find((c) => c.id === missie.id + 1 && c.speelbaar);
         const erbij = (missie.beloning || []).map(naamVan).filter(Boolean);
-        const vrij = erbij.length ? ` Unlocked: ${erbij.join(', ')}.` : '';
-        ui.toonEinde({ open: true, titel: `Victory at ${missie.naam}!`, tekst: `${missie.uit}${missie.wessel ? ` You find something of Wessel's: ${missie.wessel.charAt(0).toLowerCase()}${missie.wessel.slice(1)}` : ''}${vrij}${na}`, verder: true, volgende: !!volgende });
+        ui.verbergVerhaal();
+        ui.toonEinde({
+          open: true,
+          titel: `Victory at ${missie.naam}!`,
+          tekst: `${missie.uit}${na}`,
+          portret: { naam: missie.heer, portret: missie.portret },
+          wessel: missie.wessel || '',
+          erbij: erbij.length ? `Unlocked: ${erbij.join(', ')}.` : '',
+          verder: true,
+          volgende: !!volgende,
+        });
       } else {
         ui.toonEinde({ open: true, titel: 'Victory!', tekst: `The red king is defeated and yours still lives.${na}`, verder: true });
       }
     } else {
-      ui.toonEinde({ open: true, titel: 'Defeat', tekst: `Your king fell during attack ${s.golf}. Start again and try once more.`, verloren: true });
+      ui.verbergVerhaal();
+      ui.toonEinde({ open: true, titel: 'Defeat', tekst: `Your king fell during attack ${s.golf}. Start again and try once more.`, verloren: true, portret: { naam: 'King Karel', portret: 'karel_rouw' } });
     }
   };
   ui.opVerder(() => {
@@ -644,8 +661,20 @@ async function start() {
   ui.opMenuKeuze(kiesModus);
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
-  ui.opMissieBegin(() => ui.toonMissie({ open: false }));
-  if (missie && !bewaard && !strijd.uitslag()) ui.toonMissie({ open: true, titel: missie.titel, tekst: `${missie.intro}${nieuwHier()}${kaart.naam ? ` Map: ${kaart.naam}.` : ''}` });
+  ui.opMissieBegin(() => { ui.toonMissie({ open: false }); verhaal.start(); });
+  if (missie && !bewaard && !strijd.uitslag()) {
+    const verteller = missies.figuren[missie.verteller || 'bartholt'];
+    ui.toonMissie({
+      open: true,
+      titel: missie.titel,
+      tekst: missie.intro,
+      spreker: verteller || null,
+      tegen: missie.heer ? { naam: missie.heer, portret: missie.portret } : null,
+      extra: [nieuwHier().trim(), kaart.naam ? `Map: ${kaart.naam}.` : ''].filter(Boolean),
+    });
+  } else {
+    verhaal.start();
+  }
   if (strijd.uitslag()) naEinde(strijd.uitslag());
   else if (strijd.stand().golf === 0 && !strijd.stand().vrede) {
     const hh = strijd.stand().heer;
@@ -877,6 +906,7 @@ async function start() {
       economie.stap();
       leger.stap();
       strijd.stap();
+      verhaal.stap(dt, verhaalStand);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),
     meld: {

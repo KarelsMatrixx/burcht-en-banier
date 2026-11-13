@@ -20,7 +20,10 @@ export async function laadMissies() {
   for (const v of m.vrij) if (!m.profielen[v.profiel]) throw new Error(`missies.json: vrij spel verwijst naar onbekend profiel ${v.profiel}`);
   const ca = await fetch('data/campagne.json');
   if (!ca.ok) throw new Error('Kon data/campagne.json niet laden.');
-  m.campagne = (await ca.json()).levels;
+  const cj = await ca.json();
+  m.campagne = cj.levels;
+  m.figuren = cj.figuren || {};
+  m.berichtenAltijd = cj.berichtenAltijd || [];
   for (const c of m.campagne) if (!m.profielen[c.profiel]) throw new Error(`campagne.json: level ${c.id} verwijst naar onbekend profiel ${c.profiel}`);
   // De weg en de brug op het schilderij van de levelkaart.
   const lk = await fetch('data/levelkaart.json');

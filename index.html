@@ -104,6 +104,11 @@
         </div>
       </div>
       <div id="meldingen"></div>
+      <!-- De verhaalbalk: wie er praat tijdens een level (stap 31). Tik om weg te halen. -->
+      <div id="verhaal" hidden>
+        <img id="verhaal-portret" class="portret" alt="" hidden>
+        <div><strong id="verhaal-wie"></strong><span id="verhaal-tekst"></span></div>
+      </div>
       <div class="plaat" id="tip" hidden>
         <span>Tip: in Safari tap Share and choose "Add to Home Screen". Then you play full screen and without internet.</span>
         <button id="tip-sluit" type="button">Close</button>
@@ -136,8 +141,16 @@
 
   <!-- Gewonnen of verloren -->
   <div class="plaat" id="einde" hidden>
-    <strong id="einde-titel"></strong>
+    <div class="kaartkop">
+      <img id="einde-portret" class="portret" alt="" hidden>
+      <strong id="einde-titel"></strong>
+    </div>
     <div id="einde-tekst"></div>
+    <div id="einde-wessel" hidden>
+      <img class="portret klein" src="beelden/portretten/wessel.jpg" alt="Wessel">
+      <div><small>Something of Wessel's</small><span id="einde-wessel-tekst"></span></div>
+    </div>
+    <div id="einde-erbij" hidden></div>
     <div class="knoppen">
       <button id="einde-volgende" type="button" hidden>Next mission</button>
       <button id="einde-verder" type="button">Keep playing</button>
@@ -174,8 +187,13 @@
 
   <!-- De intro van een missie -->
   <div class="plaat" id="missie" hidden>
-    <strong id="missie-titel"></strong>
+    <div class="kaartkop">
+      <img id="missie-portret" class="portret" alt="" hidden>
+      <div class="kaartnaam"><strong id="missie-titel"></strong><small id="missie-wie"></small></div>
+      <div id="missie-tegen" hidden><img id="missie-heer" class="portret heer" alt="" hidden><small id="missie-heer-naam"></small></div>
+    </div>
     <div id="missie-tekst"></div>
+    <div id="missie-extra"></div>
     <div class="knoppen"><button id="missie-begin" type="button">Begin</button></div>
   </div>
 

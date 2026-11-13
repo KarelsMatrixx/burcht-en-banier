@@ -34,7 +34,7 @@ check('kaart Green Vale', (await p.evaluate(() => window.spel.kaart.breedte)) ==
 const bouw = await p.$$eval('#bouw-knoppen button', (k) => k.map((x) => x.textContent));
 check('level 1: geen magiertoren en geen kopermijn', !bouw.some((t) => /Mage Tower|Copper Mine/.test(t)), bouw.join('|'));
 check('level 1: wel kazerne', bouw.some((t) => /Barracks/.test(t)));
-check('level 1 intro: nieuw stormram', /New for you: Battering Ram, Ladder Bearer/.test(await p.textContent('#missie-tekst')), await p.textContent('#missie-tekst'));
+check('level 1 intro: nieuw stormram', /New for you: Battering Ram, Ladder Bearer/.test(await p.textContent('#missie-extra')), await p.textContent('#missie-extra'));
 // kazerne: alleen ridder, boog, ram, ladder
 const kaz = await p.evaluate(() => { const s = window.spel; const mag = Object.values(s.leger.soorten); return null; });
 await p.evaluate(() => { const s = window.spel; const v = s.economie.voorraad; v.planken = 99; v.steen = 99; v.goud = 99; });
@@ -50,11 +50,11 @@ const knoppen = () => p.$$eval('#bouw-knoppen button', (k) => k.map((x) => x.tex
 await zet([1], 2);
 const b2 = await knoppen();
 check('level 2: kopermijn wel, magiertoren niet', b2.some((t) => /Copper Mine/.test(t)) && !b2.some((t) => /Mage Tower/.test(t)), b2.join('|'));
-check('level 2 intro: nieuw kopermijn', /New for you: Copper Mine/.test(await p.textContent('#missie-tekst')), await p.textContent('#missie-tekst'));
+check('level 2 intro: nieuw kopermijn', /New for you: Copper Mine/.test(await p.textContent('#missie-extra')), await p.textContent('#missie-extra'));
 // level 2 winnen: het eindscherm noemt de kruisboog
 await p.evaluate(() => { document.getElementById('missie').hidden = true; window.spel.strijd.koning(1).dood = true; });
 await p.waitForTimeout(1500);
-const eind = await p.textContent('#einde-tekst');
+const eind = await p.textContent('#einde-erbij');
 check('winst level 2: Unlocked: Crossbowman', /Unlocked: Crossbowman/.test(eind), eind);
 check('wintitel Engels', /Victory at Sevenwinds!/.test(await p.textContent('#einde-titel')), await p.textContent('#einde-titel'));
 // level 3: kruisboog erbij; bijlridder, katapult en toren nog niet
