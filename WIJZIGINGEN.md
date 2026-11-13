@@ -234,7 +234,12 @@
 - Het paneel van de kazerne, de voorraadkamer en je volk ligt boven de linten met meldingen.
 - Nieuw: tests/ladder35.mjs: in level 1 zet een ladderdrager met tikken een ladder tegen de muur van Reinout; in level 2 (te hoge muren) niet, met melding.
 
-## 0.42.0: ladder, zagerij en het oog
+## 0.42.0: nieuwe pictogrammen in de voorraadbalk
+- De kleine getekende blokjes (hout, planken, steen, voedsel, boeren, goud, populariteit, aanval, tarwe, brood, koper) zijn vervangen door vectorplaatjes in beelden/hud/res/ (SVG: scherp op elke schermgrootte), in dezelfde stijl als de figuren: donkere omlijning, licht en schaduw. Populariteit heeft een blije en een boze versie (de boze verschijnt als de populariteit slecht is).
+- css/stijl.css: de oude CSS-tekeningen zijn weg; een pictogram is nu 24 px en kiest zijn plaatje via de bestaande klasse (icoon-hout enzovoort). Aan de code en de tests verandert niets.
+- sw.js: de plaatjes staan in de bewaarlijst voor offline gebruik.
+
+## 0.43.0: ladder, zagerij en het oog
 - Ladder: tik je met een ladderdrager gekozen op een stuk muur waar een wachter van rood staat, dan telde dat als aanval op die wachter. Een ladderdrager vecht niet, dus er gebeurde niets en je kreeg geen melding. Nu zet de drager er een ladder tegen en vallen de andere gekozen soldaten de wachter aan. Kan de drager de muur niet bereiken, dan zegt hij dat nu ook.
 - Zagerij: de zager laat altijd 30 hout liggen voor het bouwen (data/economie.json, beroepen.zager.reserve). Daarboven zaagt hij gewoon door. Zo kun je altijd nog een houthakkershut kopen (20 hout).
 - Nieuw: het oog rechtsboven, naast het tandwiel. Tik erop en alle gebouwen en bomen worden doorzichtig, met hun grondvlak als ruit op de grond (rood voor rood). Zo zie je troepen achter een gebouw. Nog eens tikken zet het terug.
