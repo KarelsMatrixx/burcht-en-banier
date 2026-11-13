@@ -292,6 +292,29 @@ button:active {
   white-space: nowrap;
 }
 
+/* De pictogrammen van de voorraad: vectorplaatjes in beelden/hud/res/. */
+.icoon {
+  display: inline-block;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  background: center / contain no-repeat;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.55));
+}
+.icoon-hout { background-image: url(../beelden/hud/res/hout.svg); }
+.icoon-planken { background-image: url(../beelden/hud/res/planken.svg); }
+.icoon-steen { background-image: url(../beelden/hud/res/steen.svg); }
+.icoon-voedsel { background-image: url(../beelden/hud/res/voedsel.svg); }
+.icoon-boeren { background-image: url(../beelden/hud/res/boeren.svg); }
+.icoon-goud { background-image: url(../beelden/hud/res/goud.svg); }
+.icoon-populariteit { background-image: url(../beelden/hud/res/populariteit.svg); }
+.slecht .icoon-populariteit { background-image: url(../beelden/hud/res/populariteit_slecht.svg); }
+.icoon-aanval { background-image: url(../beelden/hud/res/aanval.svg); }
+.icoon-tarwe { background-image: url(../beelden/hud/res/tarwe.svg); }
+.icoon-brood { background-image: url(../beelden/hud/res/brood.svg); }
+.icoon-koper { background-image: url(../beelden/hud/res/koper.svg); }
+
 .grondstof {
   display: inline-flex;
   align-items: center;
@@ -357,16 +380,6 @@ button:active {
   white-space: nowrap;
 }
 
-/* Een blok steen: grijs met een lichte bovenkant. */
-.icoon-steen {
-  display: inline-block;
-  width: 13px;
-  height: 11px;
-  border-radius: 2px;
-  background: #a8a59c;
-  box-shadow: inset 0 3px 0 #d6d3ca, inset -3px 0 0 rgba(0, 0, 0, 0.18);
-}
-
 #bouw-knoppen button[hidden] {
   display: none;
 }
@@ -374,16 +387,6 @@ button:active {
 .grondstof b {
   margin-left: 3px;
   color: #f3d37a;
-}
-
-/* Een stammetje: bruine balk met een lichte kopse kant. */
-.icoon-hout {
-  display: inline-block;
-  width: 16px;
-  height: 9px;
-  border-radius: 4px;
-  background: #8a5f38;
-  box-shadow: inset -5px 0 0 #d9bb88, inset 0 -2px 0 rgba(0, 0, 0, 0.25);
 }
 
 /* De prijs onder de naam op een bouwknop. */
@@ -402,106 +405,7 @@ button:active {
   opacity: 0.85;
 }
 
-/* Een appel: rood rondje met een steeltje. */
-.icoon-voedsel {
-  display: inline-block;
-  position: relative;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #c8402f;
-  box-shadow: inset -3px -2px 0 rgba(0, 0, 0, 0.2);
-}
-
-.icoon-voedsel::before {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: -3px;
-  width: 4px;
-  height: 4px;
-  border-radius: 0 4px 0 4px;
-  background: #5f8a3a;
-}
-
-/* Een boer: hoofd boven een paar schouders. */
-.icoon-boeren {
-  display: inline-block;
-  position: relative;
-  width: 12px;
-  height: 7px;
-  margin-top: 7px;
-  border-radius: 6px 6px 1px 1px;
-  background: #2f5fc4;
-}
-
-.icoon-boeren::before {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: -7px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #e2bd97;
-}
-
-/* Een goudstuk. */
-.icoon-goud {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #e3b53a;
-  box-shadow: inset -2px -2px 0 rgba(120, 80, 0, 0.45), inset 2px 2px 0 rgba(255, 245, 190, 0.6);
-}
-
-/* Populariteit: een gezicht. Groen als het goed gaat, rood als boeren vertrekken. */
-.icoon-populariteit {
-  display: inline-block;
-  position: relative;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: #7fbf5a;
-}
-
-.icoon-populariteit::before {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 4px;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: #1d2a14;
-  box-shadow: 5px 0 0 #1d2a14;
-}
-
-.icoon-populariteit::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 6px;
-  width: 7px;
-  height: 4px;
-  border-bottom: 1.5px solid #1d2a14;
-  border-radius: 0 0 6px 6px;
-  box-sizing: border-box;
-}
-
-.slecht .icoon-populariteit {
-  background: #e0695a;
-}
-
-.slecht .icoon-populariteit::after {
-  top: 8px;
-  border-bottom: 0;
-  border-top: 1.5px solid #1d2a14;
-  border-radius: 6px 6px 0 0;
-}
-
-/* De kazerne: zelfde plek en vorm als het paneel over je volk. */
+.slecht .slecht /* De kazerne: zelfde plek en vorm als het paneel over je volk. */
 #legerpaneel, #handelpaneel {
   position: absolute;
   top: calc(max(8px, env(safe-area-inset-top)) + 54px);
@@ -569,34 +473,6 @@ button:active {
 
 .strijdvak.slecht b {
   color: #ff8d7a;
-}
-
-.icoon-aanval {
-  display: inline-block;
-  position: relative;
-  width: 13px;
-  height: 15px;
-}
-
-.icoon-aanval::before {
-  content: '';
-  position: absolute;
-  left: 1px;
-  top: 0;
-  width: 2px;
-  height: 15px;
-  border-radius: 1px;
-  background: #d8c9a0;
-}
-
-.icoon-aanval::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 1px;
-  border-left: 9px solid #d2493b;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
 }
 
 #volk-strijd {
@@ -817,43 +693,8 @@ button:active {
 #kaart-doek .brug-leuning { fill: #6b4a22; stroke: #2a1d0b; stroke-width: 4; }
 #kaart-doek .brug-paal { fill: #4a3218; stroke: #2a1d0b; stroke-width: 4; }
 
-/* Planken: drie lichte latten op elkaar. */
-.icoon-planken {
-  display: inline-block;
-  width: 16px;
-  height: 10px;
-  background: linear-gradient(#dbb97f 0 30%, #7a5632 30% 36%, #c9a36a 36% 66%, #7a5632 66% 72%, #dbb97f 72% 100%);
-  border-radius: 1px;
-}
-
-/* Tarwe: een gouden aar. Brood: een bruin broodje. */
-.icoon-tarwe {
-  display: inline-block;
-  width: 7px;
-  height: 14px;
-  border-radius: 4px 4px 1px 1px;
-  background: linear-gradient(#e6c45a 0 70%, #8a6a2a 70% 100%);
-}
-.icoon-brood {
-  display: inline-block;
-  width: 15px;
-  height: 9px;
-  border-radius: 7px 7px 3px 3px;
-  background: #b9773a;
-  box-shadow: inset 0 2px 0 #d9a066, inset 0 -2px 0 rgba(0, 0, 0, 0.2);
-}
-
 #handel-knoppen { flex-wrap: wrap; gap: 4px; }
 #handelpaneel[hidden] { display: none; }
-
-/* Koper: een oranje brok met een groen vlekje. */
-.icoon-koper {
-  display: inline-block;
-  width: 12px;
-  height: 11px;
-  border-radius: 45% 55% 40% 50%;
-  background: radial-gradient(circle at 70% 30%, #4fa88a 0 18%, transparent 20%), linear-gradient(135deg, #f0a060, #c26a2e 60%, #8a4a1e);
-}
 
 /* De bouwknoppen op één rij; past het niet, dan schuif je met je vinger. */
 #bouw-knoppen {

@@ -233,3 +233,8 @@
 - De rijen knoppen (bouwbalk, legergroepen, kazerne) en het logboek en menu schuiven nu met je vinger. De pagina staat op touch-action: none (tegen zoomen van Safari), waardoor de browser zelf niet schoof; js/ui.js doet het nu zelf (sleepbaar). Een veeg telt niet als tik.
 - Het paneel van de kazerne, de voorraadkamer en je volk ligt boven de linten met meldingen.
 - Nieuw: tests/ladder35.mjs: in level 1 zet een ladderdrager met tikken een ladder tegen de muur van Reinout; in level 2 (te hoge muren) niet, met melding.
+
+## 0.42.0: nieuwe pictogrammen in de voorraadbalk
+- De kleine getekende blokjes (hout, planken, steen, voedsel, boeren, goud, populariteit, aanval, tarwe, brood, koper) zijn vervangen door vectorplaatjes in beelden/hud/res/ (SVG: scherp op elke schermgrootte), in dezelfde stijl als de figuren: donkere omlijning, licht en schaduw. Populariteit heeft een blije en een boze versie (de boze verschijnt als de populariteit slecht is).
+- css/stijl.css: de oude CSS-tekeningen zijn weg; een pictogram is nu 24 px en kiest zijn plaatje via de bestaande klasse (icoon-hout enzovoort). Aan de code en de tests verandert niets.
+- sw.js: de plaatjes staan in de bewaarlijst voor offline gebruik.
