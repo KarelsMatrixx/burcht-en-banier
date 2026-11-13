@@ -125,7 +125,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const bijThuis = (e, r) => Math.hypot(e.x - burchten[e.team].x, e.y - burchten[e.team].y) <= r;
   function maakRoodKoning(leven) {
     if (!koningSleutel || roodKoning || R.proloog) return;   // in de proloog is er nog geen rode heer
-    for (const vak of rood.plekken) {
+    // Aan de voorkant van de burcht (de kant naar de camera), anders staat de
+    // heer achter zijn eigen toren en zie je hem niet.
+    const voorkant = [...rood.plekken].sort((a, b) => ((b % B) + Math.floor(b / B)) - ((a % B) + Math.floor(a / B)));
+    for (const vak of voorkant) {
       if (!wegvinder.isVrij(vak % B, Math.floor(vak / B), VIJAND)) continue;
       roodKoning = maakVijand(koningSleutel, vak, leven);
       roodKoning.koning = true;

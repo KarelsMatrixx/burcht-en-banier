@@ -277,3 +277,6 @@
   - Banierdrager en heler staan bij Afstand in de legerknoppen. Rood kan ze ook kopen.
 - Level 5 Stillwater Abbey speelbaar: kaart The Two Lakes, de abdij met twee witte ringen en een bredere gracht (2), Aleid met zwaardvechters, banierdragers, boogschutters en ridders. Berichten van Bartholt, Aleid en broeder Ludolf. Win je, dan krijg je zwaardvechter, banierdrager en heler.
 - Tests: ronde37 (15); planken21 controleert de hamer; tests die Place aantikten tikken nu de hamer.
+
+## 0.47.1: de rode heer staat in beeld
+- De heer van rood (in level 2 Mechteld met de boog) verscheen aan de achterkant van zijn burcht en stond daardoor verstopt achter de toren. Hij begint nu aan de voorkant, naar de camera toe.
