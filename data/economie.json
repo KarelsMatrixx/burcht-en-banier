@@ -197,7 +197,12 @@
    "plek": "the sawmill",
    "bezig": "is sawing planks",
    "mist": "is waiting for wood in the stores",
-   "raad": "Put a woodcutter to work."
+   "raad": "Put a woodcutter to work.",
+   "reserve": {
+    "hout": 30
+   },
+   "spaart": "is leaving wood for building",
+   "spaarRaad": "He saws again once the stores hold more than 30 wood."
   },
   "tarweboer": {
    "naam": "wheat farmer",

@@ -765,6 +765,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       const pad = sta < 0 ? null : zoekPad(e, sta);
       if (!pad) {
         k.ladder = -1;
+        if (e.team === SPELER) opMelding(k.def.vast ? 'Your siege tower cannot reach that wall. Try another piece of wall.' : 'Your ladder bearer cannot reach that wall. Try another piece of wall.');
         return;
       }
       zetPad(e, pad);

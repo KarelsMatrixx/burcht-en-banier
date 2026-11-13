@@ -191,6 +191,8 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     ctx.fillRect(wx - breed / 2, wy, breed * vol, 2.5);
   }
 
+  let doorzicht = false;   // het oog: gebouwen en bomen doorzichtig (stap 35)
+
   function ruit(wx, wy, vulling, rand) {
     ctx.beginPath();
     ctx.moveTo(wx, wy);
@@ -473,7 +475,15 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         const dy = o.spreiding ? (tegelToeval(x, y, 2) - 0.5) * o.spreiding : 0;
         const l = ladderOp.size ? ladderOp.get(y * kaart.breedte + x) : null;
         if (l && (l.dx < 0 || l.dy < 0)) tekenLadder(l);
-        ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
+        if (doorzicht) {
+          // Het oog staat aan: natuur en gebouwen bijna doorzichtig, met een
+          // vlak op de grond zodat je ziet waar ze staan. Troepen blijven vol.
+          const soort = kaart.object[y * kaart.breedte + x];
+          if (soort !== OBJECT.BOOM) ruit(wx, wy, kaart.eigenaar[y * kaart.breedte + x] === 2 ? 'rgba(170, 50, 40, 0.35)' : 'rgba(40, 32, 22, 0.35)', 'rgba(241, 234, 216, 0.5)');
+          ctx.globalAlpha = soort === OBJECT.BOOM ? 0.18 : 0.26;
+          ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
+          ctx.globalAlpha = 1;
+        } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
         if (l && !(l.dx < 0 || l.dy < 0)) tekenLadder(l);
       }
     }
@@ -631,5 +641,5 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     return asset && asset.varianten ? asset.varianten.indexOf(objectBeeld[i]) : -1;
   };
 
-  return { pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, aantalGetekend: () => getekend, aantalInPoort: () => inPoort };
+  return { pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, zetDoorzicht: (aan) => { doorzicht = !!aan; }, doorzicht: () => doorzicht, aantalGetekend: () => getekend, aantalInPoort: () => inPoort };
 }

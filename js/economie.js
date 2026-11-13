@@ -436,7 +436,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
         hier = thuis;
       }
       // Eerst kijken of er genoeg is: anders hoeft hij niet te lopen.
-      for (const [naam, n] of Object.entries(beroep.neemt)) if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3);
+      for (const [naam, n] of Object.entries(beroep.neemt)) { const rest = (beroep.reserve || {})[naam] || 0; if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3); if (voorraad[naam] < n + rest) return klem(e, beroep.spaart || beroep.mist, beroep.spaarRaad || '', 3); }
       if (afleverplek[hier]) w.staat = 'haal';
       else {
         const doel = zoekDichtbij(hier, bijBurcht, B * H);
@@ -449,7 +449,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     if (w.staat === 'haal') {
       if (e.pad) return;
       if (!afleverplek[hier]) { w.staat = 'zoek'; return; }
-      for (const [naam, n] of Object.entries(beroep.neemt)) if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3);
+      for (const [naam, n] of Object.entries(beroep.neemt)) { const rest = (beroep.reserve || {})[naam] || 0; if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3); if (voorraad[naam] < n + rest) return klem(e, beroep.spaart || beroep.mist, beroep.spaarRaad || '', 3); }
       for (const [naam, n] of Object.entries(beroep.neemt)) voorraad[naam] -= n;
       opVoorraad();
       opVerandering();

@@ -233,3 +233,9 @@
 - De rijen knoppen (bouwbalk, legergroepen, kazerne) en het logboek en menu schuiven nu met je vinger. De pagina staat op touch-action: none (tegen zoomen van Safari), waardoor de browser zelf niet schoof; js/ui.js doet het nu zelf (sleepbaar). Een veeg telt niet als tik.
 - Het paneel van de kazerne, de voorraadkamer en je volk ligt boven de linten met meldingen.
 - Nieuw: tests/ladder35.mjs: in level 1 zet een ladderdrager met tikken een ladder tegen de muur van Reinout; in level 2 (te hoge muren) niet, met melding.
+
+## 0.42.0: ladder, zagerij en het oog
+- Ladder: tik je met een ladderdrager gekozen op een stuk muur waar een wachter van rood staat, dan telde dat als aanval op die wachter. Een ladderdrager vecht niet, dus er gebeurde niets en je kreeg geen melding. Nu zet de drager er een ladder tegen en vallen de andere gekozen soldaten de wachter aan. Kan de drager de muur niet bereiken, dan zegt hij dat nu ook.
+- Zagerij: de zager laat altijd 30 hout liggen voor het bouwen (data/economie.json, beroepen.zager.reserve). Daarboven zaagt hij gewoon door. Zo kun je altijd nog een houthakkershut kopen (20 hout).
+- Nieuw: het oog rechtsboven, naast het tandwiel. Tik erop en alle gebouwen en bomen worden doorzichtig, met hun grondvlak als ruit op de grond (rood voor rood). Zo zie je troepen achter een gebouw. Nog eens tikken zet het terug.
+- Tests: ladder35 (7, nu ook met wachters op de muur), planken21 (reserve), hud35 (31, met het oog).

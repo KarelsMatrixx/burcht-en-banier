@@ -81,6 +81,15 @@ check('verhaal in logboek', (await p.evaluate(() => window.spel.ui.logboek().at(
 await p.tap('#verhaal');
 check('adviseur terug naar Bartholt', /bartholt\.jpg/.test(await p.getAttribute('#adviseur-portret', 'src')));
 
+// Het oog: alles plat
+check('oog zichtbaar', await p.isVisible('#knop-oog'));
+await p.tap('#knop-oog');
+check('oog zet doorzicht aan', await p.evaluate(() => window.spel.tekenaar.doorzicht()) === true);
+check('oog knop actief', (await p.getAttribute('#knop-oog', 'aria-pressed')) === 'true');
+await p.waitForTimeout(300);
+await p.screenshot({ path: '/home/claude/stap35-oog.png' });
+await p.tap('#knop-oog');
+check('oog nog eens: uit', await p.evaluate(() => window.spel.tekenaar.doorzicht()) === false);
 // Instellingen achter het tandwiel
 await p.tap('#knop-instellingen');
 check('tandwiel opent instellingen', await p.isVisible('#instellingen') && /v0\./.test(await p.textContent('#versie')));

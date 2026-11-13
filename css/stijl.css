@@ -1155,3 +1155,10 @@ button:active {
 #leger-groepen, #bouw-knoppen { pointer-events: auto; }
 /* Panelen (kazerne, voorraadkamer, volk) liggen boven de linten met meldingen. */
 #legerpaneel, #handelpaneel, #volkpaneel { z-index: 28; }
+/* Het oog: rond knopje met het medaillon als achtergrond. */
+.medaillon-klein { background: url(../beelden/hud/medaillon.webp) center / contain no-repeat; border-radius: 50%; padding: 7px; }
+.medaillon-klein svg { width: 100%; height: 100%; display: block; }
+.medaillon-klein:active { background: url(../beelden/hud/medaillon.webp) center / contain no-repeat; }
+.medaillon-klein.actief { filter: drop-shadow(0 0 6px #f3d37a); background: url(../beelden/hud/medaillon.webp) center / contain no-repeat; }
+#knop-oog { margin-left: auto; order: 2; }
+#knop-instellingen { margin-left: 2px; }

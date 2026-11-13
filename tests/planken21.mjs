@@ -39,6 +39,11 @@ await p.evaluate(() => { window.spel.economie.voorraad.hout = 0; });
 await p.waitForTimeout(12000);
 const b2 = await p.evaluate(([x, y]) => window.spel.economie.beschrijf(y * 64 + x), vrij);
 check('zonder hout wacht hij', /waiting for wood|sawing|planks/.test(b2), b2);
+// reserve: met 25 hout laat hij het liggen voor het bouwen
+await p.evaluate(() => { window.spel.economie.voorraad.hout = 25; });
+await p.waitForTimeout(12000);
+const r3 = await p.evaluate(([x, y]) => ({ b: window.spel.economie.beschrijf(y * 64 + x), h: window.spel.economie.voorraad.hout }), vrij);
+check('reserve: hout blijft liggen (25)', r3.h === 25, JSON.stringify(r3));
 // woning kost planken
 await p.evaluate(() => { window.spel.economie.voorraad.planken = 0; });
 await knop('‹ Back'); await knop('Village');

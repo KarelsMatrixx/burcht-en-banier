@@ -673,6 +673,13 @@ async function start() {
   const toonTitel = () => { titelOpen = true; ui.toonTitel({ open: true, weergave: 'voorpagina', kanVerder }); };
   const sluitTitel = () => { titelOpen = false; ui.toonTitel({ open: false }); };
   ui.opTitel({ campagne: toonKaart, vrij: () => { sluitTitel(); openMenu(); }, verder: sluitTitel, terug: toonTitel });
+  // Het oog: gebouwen en bomen doorzichtig, zodat je ziet wie erachter staat.
+  const oog = document.getElementById('knop-oog');
+  oog.addEventListener('click', () => {
+    tekenaar.zetDoorzicht(!tekenaar.doorzicht());
+    oog.classList.toggle('actief', tekenaar.doorzicht());
+    oog.setAttribute('aria-pressed', String(tekenaar.doorzicht()));
+  });
   ui.opMenu(() => { titelOpen = true; toonKaart(); });
   // Het beginscherm komt bij het openen van de pagina, niet na het kiezen van een level.
   let geenTitel = false;
@@ -730,7 +737,7 @@ async function start() {
       }
       // Een bouwwerk van rood onder je vinger gaat voor op wie erachter
       // staat: die zie je niet, dus die bedoel je ook niet.
-      const vanRood = roodOnder(wereld.x, wereld.y);
+      let vanRood = roodOnder(wereld.x, wereld.y);
       const erachter = (e) => !!vanRood && e.hoogte === 0 && e.x + e.y < vanRood.x + vanRood.y + 1;
       // Een eigen soldaat aangetikt: die kies je.
       const soldaat = leger.vind(wereld.x, wereld.y, 8 / camera.zoom);
@@ -745,11 +752,18 @@ async function start() {
         if (leger.aantalGekozen()) {
           strijd.valAan(leger.gekozen(), vijand);
           staat.doel = { x: Math.floor(vijand.x), y: Math.floor(vijand.y), duur: 900, tot: performance.now() + 900, aanval: true };
+          // Staat die vijand op de muur van rood en heb je een ladderdrager
+          // gekozen? Dan bedoel je die muur: de drager zet er een ladder tegen,
+          // de anderen vallen de vijand aan.
+          const vijandVak = Math.floor(vijand.y) * kaart.breedte + Math.floor(vijand.x);
+          const metDrager = leger.gekozen().some((e) => leger.soorten[e.soldaat.sleutel].ladder);
+          if (!(metDrager && (vanRood || strijd.isVanRood(vijandVak)))) return;
+          if (!vanRood) vanRood = { x: Math.floor(vijand.x), y: Math.floor(vijand.y), vak: vijandVak };
         } else {
           staat.gekozen = null;
           ui.toonTegel(`Enemy: ${leger.soorten[vijand.vijand].naam.toLowerCase()}, health ${Math.max(0, Math.ceil(vijand.leven))} of ${vijand.levenMax}`);
+          return;
         }
-        return;
       }
       // De kazerne aangetikt: daar leid je soldaten op.
       const aangetikt = binnenKaart(kaart, x, y) ? bouwer.werkOp(x, y) : null;

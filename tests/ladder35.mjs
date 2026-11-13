@@ -39,5 +39,37 @@ for (const lv of [1, 2]) {
   if (lv === 1) check('level 1: ladder staat tegen de muur', lad > 0, log);
   else check('level 2: muren te hoog, met melding', lad === 0 && /too high/.test(log), log);
 }
+// Level 1 met wachters op de muur: tik op een wachter op de muur, de drager zet er een ladder tegen
+{
+  await p.evaluate(() => {
+    localStorage.clear(); sessionStorage.clear(); localStorage.setItem('tipGesloten', '1');
+    localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [1] }));
+    localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 1 }));
+    sessionStorage.setItem('burcht-banier.geenTitel', '1');
+  });
+  await p.reload(); await wacht(); await p.waitForTimeout(300);
+  await p.tap('#missie-begin');
+  const w = await p.evaluate(async () => {
+    window.__iso = await import('/js/iso.js');
+    const s = window.spel; const m = s.kaart.start[1];
+    const op = s.strijd.wachters().filter((v) => v.opMuur);
+    if (!op.length) return null;
+    const v = op.sort((a, b) => (b.x + b.y) - (a.x + a.y))[0];
+    s.leger.zetStand([['ladder', Math.floor(v.x) + 4, Math.floor(v.y) + 4, 9999, 0]]);
+    setInterval(() => { for (const e of s.leger.soldaten()) e.leven = e.levenMax; }, 100);
+    return { x: v.x, y: v.y, n: op.length };
+  });
+  check('level 1: er staan wachters op de muur', !!w, JSON.stringify(w));
+  if (w) {
+    await p.evaluate(() => window.spel.leger.kies(window.spel.leger.soldaten().filter((e) => e.soldaat.sleutel === 'ladder')));
+    const sp = await p.evaluate(([x, y]) => { const s = window.spel; const v = s.strijd.wachters().filter((v) => v.opMuur).sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0]; const wv = window.__iso.rasterNaarWereld(v.x, v.y); s.camera.x = wv.x; s.camera.y = wv.y; s.camera.zetZoom(1); const sc = s.camera.wereldNaarScherm(wv.x, wv.y); return { x: sc.x, y: sc.y - (16 + (v.hoogte || 0)) * s.camera.zoom, raak: s.strijd.vindVijand(wv.x, wv.y - 16 - (v.hoogte || 0), 8) === v }; }, [w.x, w.y]);
+    check('tik raakt de wachter', sp.raak);
+    await p.touchscreen.tap(sp.x, sp.y);
+    await p.waitForFunction(() => window.spel.strijd.ladders().some((l) => l.team === 0), null, { timeout: 40000 }).catch(() => {});
+    const lad = await p.evaluate(() => window.spel.strijd.ladders().filter((l) => l.team === 0).length);
+    const log = await p.evaluate(() => window.spel.ui.logboek().slice(-3).map((r) => r.tekst).join(' | '));
+    check('level 1: tik op wachter op de muur zet ook een ladder', lad > 0, log);
+  }
+}
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);
 await b.close(); srv.kill();
