@@ -206,10 +206,21 @@
 - Vijf nieuwe kaarten: The Sevenwinds Pass (level 2), The Ironmarsh (level 3 en voorlopig 4), The Giant's Spine (level 6), The Greyford Gorge (level 7), The White Dike (level 8). Level 1 blijft The Green Vale.
 - Rotsen zijn gewone steen: onbegaanbaar, en een steengroeve kan ertegen.
 - Tests: tests/kaartvorm34.mjs (15 controles plus beelden). kasteel33 test nu elk kasteel op alle negen kaarten (110 controles); in de doorbraaktest van level 3 zijn de soldaten nu echt onkwetsbaar (het gaat om de route). kaarten24 en verhaal31 op de nieuwe kaarten.
+
+## 0.39.0: machines en koning
+- Ram, katapult, belegeringstoren (veel hoger) en de koning in de nieuwe stijl, bovenop 0.37.0 en de kaartvormen van 0.38.0 (main bevatte de heren, soldaten en werkers al).
+
+## 0.40.0: nieuw landschap
+- Nieuw: js/landschap.js. De grond (gras, zand, water, aarde) is niet meer een rij losse ruitvormige tegels maar één doorlopend beeld. Geen zichtbare ruitjes meer; kusten en stranden zijn zacht en onregelmatig in plaats van trapjes; water wordt dieper en donkerder van de kust af, met schuim langs de rand; waar gras aan water grenst ligt een smal strand; lichte en donkere graskleuren lopen vloeiend in elkaar; grassprieten, bloemen, steentjes en rimpels staan op vaste plekken.
+- Het spel zelf verandert niet: wat water, zand of land is staat nog in kaart.grond. De kust is ten hoogste ca. 0,25 tegel verschoven ten opzichte van de tegelrand.
+- tekenaar.js: de grond komt uit het landschap. Alleen akkers blijven losse tegels (bewust rechthoekig), met hun zachte rand.
+- Stukken van 256 bij 128 wereldpixels worden pas gemaakt als ze in beeld komen. Eerst staat er een vlugge, vage versie; die wordt per beeld binnen 14 ms stuk voor stuk scherp gemaakt. Maximaal 90 stukken (ca. 45 MB) in het geheugen.
+- Bekend: nog niet op iPhone gezien (geheugen en snelheid daar nog niet gemeten); de rand van de kaart is nog een rechte ruit; bij snel scrollen is de grond heel even vaag.
 ## 0.38.1: machines en koning (uit de sprites-chat)
 - Ram, katapult, belegeringstoren (veel hoger) en de koning in de nieuwe stijl, bovenop 0.37.0 (main bevatte de heren, soldaten en werkers al).
 
-## 0.39.0 (stap 35): adviseur, logboek en nieuwe bediening
+## 0.41.0 (stap 35): adviseur, logboek en nieuwe bediening
+- Samengevoegd met 0.40.0 (landschap, uit een andere chat).
 - Plaatjes van Karel (Gemini): medaillon, hamer, zwaard, buidel, perkamentrol, tandwiel, sloophouweel, rand van de adviseur, teller-zegel, logboekrol, lint en vijf zegels. Magenta weggeknipt en verkleind naar beelden/hud/*.webp (samen ongeveer 120 KB).
 - Linksboven de adviseur: portret van Bartholt in een gouden rand, met een rood zegel dat telt hoeveel nieuwe berichten er zijn. Tik erop voor het logboek: een perkamentrol met alle berichten (nieuwste boven), een zegel per soort en een speeltijd. Tik op een zegel om te filteren.
 - Vijf soorten berichten: vijand (rood), economie (goud), leger (blauw), verhaal (paars), uitleg (groen). Alles gaat in het logboek. In beeld komt alleen wat ertoe doet: vijand, leger en verhaal altijd, economie alleen als het dringend is (voedsel op, volk ontevreden), uitleg alleen als het een antwoord op je actie is. Hooguit twee tegelijk, als rood lint met het zegel ernaast.
