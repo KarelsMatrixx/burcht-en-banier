@@ -235,18 +235,102 @@ export function maakKaart(recept) {
   }
   grond[eigen.y * breedte + eigen.x + RING] = GROND.AARDE;   // waar de poort stond loopt de weg door
 
+  // 5a. Het kasteel van rood volgens een ontwerp (stap 33, data/kastelen.json).
+  //     Zonder ontwerp blijft de gespiegelde ringmuur van hierboven staan.
+  //     In het ontwerp is "voor" de kant naar jou toe; ringen tellen van
+  //     binnen naar buiten. Poorten: voor, achter, links, rechts.
+  const ontwerp = r.kasteel || { ringen: [{ maat: RING, poorten: ['voor'] }] };
+  const ringen = ontwerp.ringen.slice().sort((p, q) => p.maat - q.maat);
+  const buiten = ringen[ringen.length - 1].maat;
+  const gracht = ontwerp.gracht || null;
+  const grachtVan = gracht ? buiten + (gracht.afstand || 2) : 0;
+  const grachtTot = gracht ? grachtVan + (gracht.breedte || 1) - 1 : 0;
+  const omvang = gracht ? grachtTot : buiten;   // tot hoever het kasteel reikt
+  const POORTPLEK = { voor: [1, 0], achter: [-1, 0], links: [0, -1], rechts: [0, 1] };
+  {
+    const m = start[1];
+    const teken = -1;   // rood staat gespiegeld: zijn "voor" is naar jou toe
+    const plek = (dx, dy) => {
+      const x = m.x + teken * dx;
+      const y = m.y + teken * dy;
+      return x >= 0 && y >= 0 && x < breedte && y < hoogte ? y * breedte + x : -1;
+    };
+    if (r.kasteel) {
+      // Eerst alles vrij maken (de gespiegelde ring en het decor), daarna bouwen.
+      const vrijTot = omvang + 1;
+      for (let dy = -vrijTot; dy <= vrijTot; dy++) {
+        for (let dx = -vrijTot; dx <= vrijTot; dx++) {
+          const i = plek(dx, dy);
+          if (i < 0) continue;
+          const kern = Math.abs(dx) <= 1 && Math.abs(dy) <= 1;
+          if (kern) continue;
+          object[i] = OBJECT.GEEN;
+          const d = Math.max(Math.abs(dx), Math.abs(dy));
+          grond[i] = d < buiten ? GROND.AARDE : grond[i] === GROND.WATER ? GROND.GRAS : grond[i];
+        }
+      }
+      for (const ring of ringen) {
+        const M = ring.maat;
+        const poorten = new Set((ring.poorten || ['voor']).map((k) => {
+          const [px, py] = POORTPLEK[k] || POORTPLEK.voor;
+          return `${px * M},${py * M}`;
+        }));
+        for (let dy = -M; dy <= M; dy++) {
+          for (let dx = -M; dx <= M; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== M) continue;
+            const i = plek(dx, dy);
+            if (i < 0) continue;
+            const hoek = Math.abs(dx) === M && Math.abs(dy) === M;
+            const midden = dx === 0 || dy === 0;
+            let soort = OBJECT.MUUR;
+            if (hoek) soort = OBJECT.TOREN;
+            else if (poorten.has(`${dx},${dy}`)) soort = OBJECT.POORT;
+            else if (midden) soort = OBJECT.WACHTTOREN;
+            object[i] = soort;
+            grond[i] = GROND.GRAS_DONKER;
+          }
+        }
+      }
+      // De gracht: water rondom, met een dam van aarde voor elke poort van de buitenste ring.
+      if (gracht) {
+        const dammen = (ringen[ringen.length - 1].poorten || ['voor']).map((k) => POORTPLEK[k] || POORTPLEK.voor);
+        for (let dy = -grachtTot; dy <= grachtTot; dy++) {
+          for (let dx = -grachtTot; dx <= grachtTot; dx++) {
+            const d = Math.max(Math.abs(dx), Math.abs(dy));
+            if (d < grachtVan || d > grachtTot) continue;
+            const i = plek(dx, dy);
+            if (i < 0) continue;
+            const opDam = dammen.some(([px, py]) => (px ? Math.sign(dx) === px && dy === 0 : Math.sign(dy) === py && dx === 0));
+            grond[i] = opDam ? GROND.AARDE : GROND.WATER;
+            object[i] = OBJECT.GEEN;
+          }
+        }
+        // Ook de strook tussen muur en gracht, voor de poort, wordt een pad.
+        for (const [px, py] of dammen) {
+          for (let k = buiten + 1; k < grachtVan; k++) {
+            const i = plek(px * k, py * k);
+            if (i >= 0) grond[i] = GROND.AARDE;
+          }
+        }
+      }
+    }
+  }
+
   // Van wie een bouwwerk is: 0 = van niemand (decor), 1 = door de speler
   // gebouwd. Alleen wat je zelf bouwt kun je slopen.
   // 2 = van de rode heer: zijn ringmuur met torens en poort, en zijn burcht.
   const eigenaar = new Uint8Array(aantal);
-  for (let dy = -RING; dy <= RING; dy++) {
-    for (let dx = -RING; dx <= RING; dx++) {
-      const i = (start[1].y + dy) * breedte + start[1].x + dx;
+  // Alle muren, torens en poorten binnen het kasteel van rood zijn van hem.
+  for (let dy = -buiten; dy <= buiten; dy++) {
+    for (let dx = -buiten; dx <= buiten; dx++) {
+      const x = start[1].x + dx;
+      const y = start[1].y + dy;
+      if (x < 0 || y < 0 || x >= breedte || y >= hoogte) continue;
+      const i = y * breedte + x;
       const soort = object[i];
-      const rand = Math.max(Math.abs(dx), Math.abs(dy)) === RING;
       const kern = Math.abs(dx) <= 1 && Math.abs(dy) <= 1;
       const vesting = soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT;
-      if ((rand && vesting) || (kern && (soort === OBJECT.BURCHT || soort === OBJECT.BANIER_ROOD))) eigenaar[i] = 2;
+      if (vesting || (kern && (soort === OBJECT.BURCHT || soort === OBJECT.BANIER_ROOD))) eigenaar[i] = 2;
     }
   }
 
@@ -260,12 +344,12 @@ export function maakKaart(recept) {
       x >= 1 && y >= 1 && x < breedte - 1 && y < hoogte - 1 &&
       grond[y * breedte + x] !== GROND.WATER && object[y * breedte + x] === OBJECT.GEEN && !eigenaar[y * breedte + x];
     const gekozen = [];
-    for (const [soort, dx, dy] of [[OBJECT.HOUTHAKKER, -RING - 3, -2], [OBJECT.STEENGROEVE, -RING - 3, 2], [OBJECT.BOOMGAARD, -2, RING + 3]]) {
+    for (const [soort, dx, dy] of [[OBJECT.HOUTHAKKER, -omvang - 3, -2], [OBJECT.STEENGROEVE, -omvang - 3, 2], [OBJECT.BOOMGAARD, -2, omvang + 3]]) {
       let beste = null;
       for (let y = m.y + dy - 4; y <= m.y + dy + 4; y++) {
         for (let x = m.x + dx - 4; x <= m.x + dx + 4; x++) {
           if (!vrij(x, y) || !vrij(x + 1, y) || !vrij(x - 1, y) || !vrij(x, y + 1) || !vrij(x, y - 1)) continue;
-          if (Math.max(Math.abs(x - m.x), Math.abs(y - m.y)) <= RING + 1) continue;
+          if (Math.max(Math.abs(x - m.x), Math.abs(y - m.y)) <= omvang + 1) continue;
           if (gekozen.some(([gx, gy]) => Math.abs(gx - x) <= 2 && Math.abs(gy - y) <= 2)) continue;
           const d = Math.abs(x - (m.x + dx)) + Math.abs(y - (m.y + dy));
           if (!beste || d < beste.d) beste = { x, y, d };
@@ -285,7 +369,7 @@ export function maakKaart(recept) {
   //     loopt van poort naar poort en is dus ook gespiegeld.
   {
     const van = { x: eigen.x + RING + 1, y: eigen.y };
-    const naar = { x: start[1].x - RING - 1, y: start[1].y };
+    const naar = { x: start[1].x - omvang - 1, y: start[1].y };   // voor de poort (en de dam) van rood
     const begaanbaar = (i) => grond[i] !== GROND.WATER && (object[i] === OBJECT.GEEN || false);
     const verbonden = () => {
       const gezien = new Uint8Array(aantal);
@@ -327,27 +411,28 @@ export function maakKaart(recept) {
 
   // 6. Looproutes voor de wachters op de muur, per kasteel. Elke muur is
   //    in tweeën gedeeld door een wachttoren of de poort.
-  const routesRond = (m, teken) => {
+  //    Bij meer ringen eerst de buitenste: daar staan de wachters het liefst.
+  const routesRond = (m, teken, M) => {
     const plek = (dx, dy) => (m.y + teken * dy) * breedte + m.x + teken * dx;
     const routes = [];
-    for (const [van, tot] of [[-RING + 1, -1], [1, RING - 1]]) {
+    for (const [van, tot] of [[-M + 1, -1], [1, M - 1]]) {
       const stukken = [[], [], [], []];
       for (let k = van; k <= tot; k++) {
-        stukken[0].push(plek(k, -RING));   // achterste muur
-        stukken[1].push(plek(k, RING));    // voorste muur
-        stukken[2].push(plek(-RING, k));   // muur links
-        stukken[3].push(plek(RING, k));    // muur met de poort
+        stukken[0].push(plek(k, -M));   // achterste muur
+        stukken[1].push(plek(k, M));    // voorste muur
+        stukken[2].push(plek(-M, k));   // muur links
+        stukken[3].push(plek(M, k));    // muur met de poort
       }
-      routes.push(...stukken);
+      routes.push(...stukken.filter((s) => s.length && s.every((i) => i >= 0 && i < aantal && object[i] === OBJECT.MUUR)));
     }
     return routes;
   };
   const kastelen = [
     { team: 0, midden: start[0], routes: [] },   // nog geen muren, dus geen wachters
-    { team: 1, midden: start[1], routes: routesRond(start[1], -1) },
+    { team: 1, midden: start[1], routes: ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat)) },
   ];
 
-  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, verbonden: padGemaakt === 'ja' };
+  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, verbonden: padGemaakt === 'ja' };
 }
 
 export function binnenKaart(kaart, x, y) {

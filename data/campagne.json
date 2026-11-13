@@ -8,7 +8,7 @@
   "intro en uit: de korte tekst voor en na het level. wessel: het voorwerp van Wessel dat je na het winnen vindt.",
   "figuren: wie er praat in de briefing en de verhaalbalk (naam en portret). verteller: wie de briefing vertelt (standaard bartholt).",
   "berichten: wat figuren zeggen tijdens het level. bij = tijd (seconden), aanval (nummer), burcht, koning, roodBurcht, roodKoning (onder dit percentage leven). wie = een figuur of heer. portret mag een andere uitdrukking kiezen. Hooguit 40 woorden. berichtenAltijd geldt in elk level.",
-  "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team."
+  "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team. koning.schiet = { bereik, schade, slagTijd }: de koning schiet pijlen (Mechteld)."
  ],
  "figuren": {
   "karel": {
@@ -225,6 +225,12 @@
       "haar": "#9a9a9a",
       "baard": "geen",
       "vlecht": true
+     },
+     "schiet": {
+      "bereik": 5.5,
+      "schade": 14,
+      "slagTijd": 1.7,
+      "thuisBereik": 7
      }
     },
     "extra_soorten": {}

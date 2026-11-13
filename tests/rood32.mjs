@@ -26,7 +26,7 @@ const lees = async (modus) => {
   return p.evaluate(() => {
     const s = window.spel; const h = s.regels.heer; const k = s.strijd.koning(1);
     return { eerste: h.eersteAanval, tussen: h.tussen, doel: h.doelBegin, leger: Object.keys(h.leger).sort().join(), wachters: s.regels.strijd.wachters,
-      burcht: s.strijd.stand().roodMax, koning: k ? k.levenMax : null, gewoon: s.regels.soldaten.koning.leven };
+      burcht: s.strijd.stand().roodMax, koning: k ? k.levenMax : null, bereik: k ? k.krijg.def.bereik : null, gewoon: s.regels.soldaten.koning.leven };
   });
 };
 
@@ -41,6 +41,8 @@ check('level 1: eerste aanval 240', l1.eerste === 240, l1.eerste);
 check('level 1: Reinout zwakker (80%)', l1.koning === Math.round(l1.gewoon * 0.8), l1.koning);
 check('level 1: ridders en schutters', l1.leger === 'boogschutter,ridder', l1.leger);
 check('level 2: trager (tempo 70)', l2.tussen > vrij.tussen, `${l2.tussen} vs ${vrij.tussen}`);
+check('level 2: Mechteld schiet pijlen', l2.bereik === 5.5, l2.bereik);
+check('level 1: Reinout slaat', l1.bereik === 1.9, l1.bereik);
 check('level 2: veel wachters', l2.wachters === 5, l2.wachters);
 check('level 2: schutters en kruisboog', l2.leger === 'boogschutter,kruisboog,ridder', l2.leger);
 check('level 3: Hademar sterker (130%)', l3.koning === Math.round(l3.gewoon * 1.3), l3.koning);

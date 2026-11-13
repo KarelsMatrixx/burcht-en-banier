@@ -123,6 +123,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (!wegvinder.isVrij(vak % B, Math.floor(vak / B), VIJAND)) continue;
       roodKoning = maakVijand(koningSleutel, vak, leven);
       roodKoning.koning = true;
+      // Een heer met een boog (Mechteld) schiet pijlen in plaats van te slaan.
+      if (R.roodKoningSchiet) roodKoning.krijg.def = { ...roodKoning.krijg.def, ...R.roodKoningSchiet, zwaai: 0, zwaaiAantal: 0 };
       // In de campagne heeft elke heer zijn eigen kracht (stap 32).
       const f = R.roodKoningLeven || 1;
       if (f !== 1) {

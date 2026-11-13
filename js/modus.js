@@ -136,4 +136,6 @@ function pasRoodToe(regels, rood) {
   if (Number.isFinite(rood.rammenVanaf)) h.rammenVanaf = rood.rammenVanaf;
   if (Number.isFinite(rood.wachters)) regels.strijd.wachters = rood.wachters;
   if (rood.koning && Number.isFinite(rood.koning.leven)) regels.strijd.roodKoningLeven = rood.koning.leven / 100;
+  // schiet: { bereik, schade, slagTijd } maakt van de rode koning een schutter.
+  if (rood.koning && rood.koning.schiet) regels.strijd.roodKoningSchiet = { ...rood.koning.schiet };
 }

@@ -844,6 +844,7 @@ export function tekenKoning(naam, def) {
   };
   const beelden = loopbeelden((ctx, beeld) => groot(ctx, beeld, -1), [0, 1, 2, 3], 34, 48, 44);
   beelden.houdingen = { sla: loopbeelden((ctx, beeld) => groot(ctx, 0, beeld), [0, 1], 34, 48, 44) };
+  if (soort === 'boog') beelden.houdingen.schiet = beelden.houdingen.sla;   // een heer met een boog schiet
   return beelden;
 }
 

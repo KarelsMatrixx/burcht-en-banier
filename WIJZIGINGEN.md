@@ -165,3 +165,7 @@
 - Levels 4 tot 10 hebben hun blok rood al, voor later.
 - De rode koning draagt de kleuren en het wapen van de heer: speer, boog, strijdhamer, jachtspies, zwaard met torenschild, moker, hellebaard, boothaak, zwaard, rouwscepter. Haar en baard per heer; Mechteld met vlecht. De mantel en een zoom blijven rood: dat is het team.
 - Nieuw: tests/rood32.mjs (10 controles, en een plaat van alle tien heren). test_stap17 en rood29 aangepast op de nieuwe waarden.
+
+## 0.34.1: Mechteld schiet pijlen
+- Een rode koning met een boog schiet nu echt: koning.schiet in campagne.json (bereik 5,5 tegels, schade 14, om de 1,7 s, let op wie binnen 7 tegels van haar burcht komt). Alleen Mechteld (level 2). De andere heren slaan.
+- Voorbereiding stap 33 in js/kaart.js: het kasteel van rood kan uit een ontwerp komen (ringen, poorten, gracht). Nog niet aangesloten; zonder ontwerp blijft alles gelijk.
