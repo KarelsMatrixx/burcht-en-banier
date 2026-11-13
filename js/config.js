@@ -3,8 +3,8 @@
 // van de code hoeft te zijn.
 
 export const CONFIG = {
-  versie: '0.38.0',
-  stap: 34,
+  versie: '0.39.0',
+  stap: 35,
 
   // Het speelveld. Hetzelfde zaad geeft altijd dezelfde kaart.
   kaart: { breedte: 64, hoogte: 64, zaad: 20261110 },

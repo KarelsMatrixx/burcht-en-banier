@@ -193,10 +193,10 @@
 - Beeldcontract gelijk (4 loopbeelden, sla of schiet met 2 beelden, last en hak met 4); het canvas van soldaten is 52 bij 40.
 - Tests: tests/heren35.mjs (88 controles) en tests/soldaten36.mjs (260 controles), beide 0 mislukt op de stand voor het samenvoegen met stap 33.
 - Bekend: nog niet op iPhone bekeken; gouden ring van de heer kan botsen met selectie of aanvalsring; levensbalk van de heer ca. 12 px hoger, die van soldaten ca. 2 px; Ottger heeft een zwarte mantel met rode voering; steenhouwer en mijnwerker lijken op elkaar; blauwe koning nog oud beeld met kroon.
-- Machines: js/machines.js geeft ram, katapult en belegeringstoren dezelfde donkere omlijning (de tekeningen zelf blijven die uit kunst.js). Het doek is er 6 pixels ruimer van geworden.
+- Machines: js/machines.js tekent ram, katapult en belegeringstoren opnieuw in dezelfde stijl (huiden in teamkleur, ijzerbeslag, draaiende wielen, vlag en schilden). De belegeringstoren is veel hoger (doek 74 bij 114, voorheen 52 bij 60) met drie verdiepingen, kantelen en een valbrug. De oude tekenfuncties in kunst.js blijven als reserve.
 - Koning: jouw blauwe koning (en de rode koning in vrij spel) is nu "koning" in js/heren.js, dezelfde stijl en maat als de heren: geen kroon, bontkraag met gouden speld, bruin haar en baard, zwaard en schild in teamkleur, zwarte rouwband bij jou, gouden ring onder de voeten. assets.json: veld "figuur": "koning" bij beide koningen. heren35 verwacht nu de nieuwe maat (76 bij 64).
 - Test: soldaten36 heeft nu 318 controles (ook ram, katapult, toren, koning); oude tests nog groen.
-- Bekend: machines zijn omlijnd maar nog niet opnieuw ontworpen; gouden ring bij de koning, nog niet op iPhone gezien.
+- Bekend: valbrug van de toren is klein getekend; levensbalk van de toren staat ca. 108 px boven de voeten; contragewicht van de katapult is een los grijs blok; gouden ring bij heren en koning; nog niet op iPhone gezien.
 
 ## 0.37.0: samengevoegd
 - De nieuwe figuren (branch sprites-heren, uit de chat "Gedetailleerder en mooier maken van game") samengevoegd met de kastelen van 0.36.0. Beide waren 0.36.0 genummerd; samen 0.37.0.
@@ -206,3 +206,5 @@
 - Vijf nieuwe kaarten: The Sevenwinds Pass (level 2), The Ironmarsh (level 3 en voorlopig 4), The Giant's Spine (level 6), The Greyford Gorge (level 7), The White Dike (level 8). Level 1 blijft The Green Vale.
 - Rotsen zijn gewone steen: onbegaanbaar, en een steengroeve kan ertegen.
 - Tests: tests/kaartvorm34.mjs (15 controles plus beelden). kasteel33 test nu elk kasteel op alle negen kaarten (110 controles); in de doorbraaktest van level 3 zijn de soldaten nu echt onkwetsbaar (het gaat om de route). kaarten24 en verhaal31 op de nieuwe kaarten.
+## 0.38.1: machines en koning (uit de sprites-chat)
+- Ram, katapult, belegeringstoren (veel hoger) en de koning in de nieuwe stijl, bovenop 0.37.0 (main bevatte de heren, soldaten en werkers al).
