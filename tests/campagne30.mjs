@@ -14,7 +14,7 @@ await p.waitForTimeout(500);
 const pt = await p.$$eval('#kaart-doek .punt', (g) => g.map((x) => x.getAttribute('class').replace('punt ', '')));
 console.log(pt.join(' | '));
 check('elf punten', pt.length === 11);
-check('proloog later, 1 open, 2 en 3 dicht, 4+ later', pt[0] === 'later' && pt[1] === 'open' && pt[2] === 'dicht' && pt[3] === 'dicht' && pt.slice(4).every((x) => x === 'later'), pt.join());
+check('proloog open, 1 open, 2 en 3 dicht, 4+ later', pt[0] === 'open' && pt[1] === 'open' && pt[2] === 'dicht' && pt[3] === 'dicht' && pt.slice(4).every((x) => x === 'later'), pt.join());
 const img = await p.$$eval('#kaart-doek image', (x) => x.length);
 check('portretten op de kaart', img === 11, img);
 await p.waitForTimeout(800);

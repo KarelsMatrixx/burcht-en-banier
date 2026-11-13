@@ -1021,3 +1021,38 @@ button:active {
 .medaillon-klein.actief { filter: drop-shadow(0 0 6px #f3d37a); background: url(../beelden/hud/medaillon.webp) center / contain no-repeat; }
 #knop-oog { margin-left: auto; order: 2; }
 #knop-instellingen { margin-left: 2px; }
+
+/* Proloog: de taak van nu, rechtsboven onder de voorraad, en de scène aan het eind. */
+#taak {
+  position: absolute;
+  top: calc(max(8px, env(safe-area-inset-top)) + 52px);
+  right: max(12px, env(safe-area-inset-right));
+  max-width: 250px;
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 1.3;
+  border-color: #f3d37a;
+  pointer-events: none;
+  z-index: 20;
+}
+#taak[hidden] { display: none; }
+#doel-taak { white-space: pre-line; }
+#scene {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(520px, 90vw);
+  height: max-content;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 43;
+  padding: 12px 16px;
+  background: #121522;
+  border-color: #8a9ac8;
+  pointer-events: auto;
+  line-height: 1.45;
+}
+#scene[hidden] { display: none; }
+#scene .kaartkop { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+#scene .portret { width: 64px; height: 64px; }
+#scene .knoppen { justify-content: flex-end; margin-top: 10px; }

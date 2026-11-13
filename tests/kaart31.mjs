@@ -41,7 +41,7 @@ check('kaart: elf punten', kaart.punten.length === 11);
 check('kaart: geen cijfers bij de punten', !kaart.teksten.some((t) => /^\d+$/.test(t)), kaart.teksten.join());
 check('kaart: elf portretten', kaart.images === 11);
 check('kaart: brug over de kloof', kaart.brug);
-check('kaart: weg van Elzendaal tot level 1 is goud', !!kaart.goud && Number(kaart.goud.split(' ')[0]) > 50, kaart.goud);
+check('kaart: nog niets gewonnen, dus nog geen gouden weg', !kaart.goud, kaart.goud);
 // Staan alle punten binnen het scherm, ook met de randen van een iPhone?
 const binnen = await p.$$eval('#kaart-doek .punt .rond', (c) => c.map((x) => { const r = x.getBoundingClientRect(); return [r.left, r.right, r.top, r.bottom]; }));
 check('kaart: alle punten ruim binnen beeld', binnen.every(([l, r, o, bo]) => l > 20 && r < 844 - 20 && o > 20 && bo < 390 - 30), JSON.stringify(binnen.map((x) => x.map(Math.round))));

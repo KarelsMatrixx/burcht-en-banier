@@ -118,7 +118,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const koningVan = (team) => (team === SPELER ? leger.lijst.find((e) => e.soldaat && soorten[e.soldaat.sleutel].koning && !e.dood) || null : roodKoning && !roodKoning.dood ? roodKoning : null);
   const bijThuis = (e, r) => Math.hypot(e.x - burchten[e.team].x, e.y - burchten[e.team].y) <= r;
   function maakRoodKoning(leven) {
-    if (!koningSleutel || roodKoning) return;
+    if (!koningSleutel || roodKoning || R.proloog) return;   // in de proloog is er nog geen rode heer
     for (const vak of rood.plekken) {
       if (!wegvinder.isVrij(vak % B, Math.floor(vak / B), VIJAND)) continue;
       roodKoning = maakVijand(koningSleutel, vak, leven);
@@ -388,6 +388,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // door = wie de klap uitdeelde (null: de wacht op de burcht).
   function raak(doel, hoeveel, door) {
     doel.leven -= hoeveel;
+    // In de proloog sneuvelt geen koning: het verhaal gaat door.
+    if (R.proloog && doel.leven < 1 && krijgVan(doel).def.koning) doel.leven = 1;
     const kd = krijgVan(doel);
     kd.rust = 0;
     if (doel.leven <= 0) {
@@ -407,7 +409,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function raakBouw(b, hoeveel) {
     if (b.burcht) {
       const doel = burchten[b.team];
-      doel.leven = Math.max(0, doel.leven - hoeveel);
+      // In de proloog valt de burcht van rood niet en de jouwe niet helemaal.
+      if (R.proloog && b.team !== SPELER) return;
+      doel.leven = Math.max(R.proloog ? 1 : 0, doel.leven - hoeveel);
       doel.rust = 0;
       if (b.team === SPELER && !burchtGemeld) {
         burchtGemeld = true;
@@ -1221,7 +1225,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Zet een groep vijanden bij de rode burcht neer. telAls: telt dit als een
   // aanval (golf + 1) of is het een uitval van de rode heer?
-  function stuurLeger(inhoud, telAls = true) {
+  // rond en straal: waar ze verschijnen (standaard bij de burcht van rood).
+  // binnen: niet dichter dan zoveel tegels bij rond (proloog: niet op de burcht zelf).
+  function stuurLeger(inhoud, telAls = true, { rond = kaart.start[VIJAND], straal = 8, binnen = 0 } = {}) {
     const bezet = new Set(vijanden.map(vakVan));
     let aantal = 0;
     for (const [sleutel, hoeveel] of Object.entries(inhoud)) {
@@ -1229,8 +1235,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       for (let i = 0; i < hoeveel && vijanden.length < MAX_VIJANDEN; i++) {
         let vak = -1;
         for (let poging = 0; poging < 6; poging++) {
-          vak = wegvinder.willekeurigVak(toeval, kaart.start[VIJAND], 8, VIJAND);
-          if (vak >= 0 && !bezet.has(vak)) break;
+          vak = wegvinder.willekeurigVak(toeval, rond, straal, VIJAND);
+          const ver = vak < 0 ? 0 : Math.max(Math.abs((vak % B) - rond.x), Math.abs(Math.floor(vak / B) - rond.y));
+          if (vak >= 0 && !bezet.has(vak) && ver >= binnen) break;
+          vak = -1;
         }
         if (vak < 0) continue;
         bezet.add(vak);
@@ -1298,11 +1306,13 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     burchtStap(rood, eigen);
     brandStap();
     ruimOp();
-    if (koningSleutel ? !koningVan(SPELER) : burcht.leven <= 0) {
+    if (R.proloog) {
+      // De proloog heeft geen winst of verlies: het verhaal beslist (js/proloog.js).
+    } else if (koningSleutel ? !koningVan(SPELER) : burcht.leven <= 0) {
       einde('verloren');
       return;
     }
-    if (!vrede && (koningSleutel ? !koningVan(VIJAND) : rood.leven <= 0)) {
+    if (!R.proloog && !vrede && (koningSleutel ? !koningVan(VIJAND) : rood.leven <= 0)) {
       // De rode heer is verslagen: zijn mannen geven het op.
       for (const e of vijanden) e.dood = true;
       ruimOp();
@@ -1510,8 +1520,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     // De koning van rood: met zijn bewaarde leven, of nieuw.
     if (koningSleutel) {
       const rk = s.koningRood;
-      if (rk !== 0) maakRoodKoning(Number.isFinite(rk) ? rk : undefined);
+      if (rk !== 0 && !R.proloog) maakRoodKoning(Number.isFinite(rk) ? rk : undefined);
     }
+    if (R.proloog) return;
     if (koningSleutel ? s.koningRood === 0 && !vrede : rood.leven <= 0 && !vrede) einde('gewonnen');
     else if (!koningSleutel && burcht.leven <= 0) einde('verloren');
   }

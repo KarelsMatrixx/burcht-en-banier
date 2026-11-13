@@ -149,13 +149,15 @@ export function maakWegvinder(kaart) {
     }
   }
 
+  let poortenOpen = false;   // proloog: de poort van de speler staat open voor rood
   function herberekenVoor(beeld) {
     kiesTeam(beeld);
     const team = beeld === BREEK ? 1 : beeld;
     for (let i = 0; i < N; i++) {
       const land = kaart.grond[i] !== GROND.WATER;
       // Een poort die je zelf hebt gebouwd is voor jouw team een doorgang.
-      const eigenPoort = kaart.object[i] === OBJECT.POORT && kaart.eigenaar[i] === team + 1;
+      // In de proloog gaat jouw poort van binnenuit open: dan is hij ook voor rood een doorgang.
+      const eigenPoort = kaart.object[i] === OBJECT.POORT && (kaart.eigenaar[i] === team + 1 || (poortenOpen && team === 1 && kaart.eigenaar[i] === 1));
       // Wat de speler heeft gebouwd, kan de vijand kapotmaken.
       const breekbaar = beeld === BREEK && kaart.eigenaar[i] === 1;
       vrij[i] = land && (kaart.object[i] === OBJECT.GEEN || eigenPoort || breekbaar) ? 1 : 0;
@@ -350,6 +352,8 @@ export function maakWegvinder(kaart) {
   herbereken();
   return {
     herbereken,
+    // Proloog: de poorten van de speler open voor rood. Daarna herbereken().
+    zetPoortenOpen: (aan) => { poortenOpen = !!aan; },
     zoekPad,
     willekeurigVak,
     isVrij: (x, y, team = 0) => x >= 0 && y >= 0 && x < B && y < H && vrijVan[team][y * B + x] === 1,

@@ -622,6 +622,14 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
       }
     }
 
+    // De nacht (proloog): een donkerblauwe waas over de wereld, 0 tot 1.
+    const nacht = staat.nacht ? staat.nacht() : 0;
+    if (nacht > 0) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = `rgba(10, 16, 46, ${0.5 * Math.min(1, nacht)})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     // Het kader waarmee je soldaten kiest, in schermmaat over alles heen.
     if (staat.kader) {
       const k = staat.kader;

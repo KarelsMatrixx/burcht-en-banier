@@ -20,6 +20,8 @@ import { maakOpslag } from './opslag.js';
 import { maakUi } from './ui.js';
 import { metLidwoord } from './taal.js';
 import { maakVerhaal } from './verhaal.js';
+import { maakProloog } from './proloog.js';
+import { SOORT } from './eenheden.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, ontgrendeld } from './modus.js';
 
 const GEEN_TITEL = 'burcht-banier.geenTitel';
@@ -71,6 +73,7 @@ async function start() {
   // De naam van een soldaat of gebouw, voor wat je in een level vrijspeelt.
   const naamVan = (sleutel) => (regels.soldaten[sleutel] || bouwwerken[sleutel] || {}).naam;
   // Het verhaal: berichten van de figuren op hun moment (stap 31).
+  let proloog = null;   // alleen in de proloog (js/proloog.js)
   const verhaal = maakVerhaal({ campagne: missies, missie, toon: (b) => ui.toonVerhaal(b) });
   const verhaalStand = () => ({ ...strijd.stand(), koning: strijd.koning(0), roodKoning: strijd.koning(1) });
 
@@ -84,6 +87,8 @@ async function start() {
   // Vrij spel of een missie: de regels van die modus over de gewone regels heen.
   pasProfielToe(regels, profielVan(missies, modus), missie && missie.rood);
   if (ontwerp && ontwerp.hoog) regels.strijd.roodMuurHoog = true;   // te hoog voor ladders
+  // De proloog: geen winst of verlies, geen rode heer in zijn burcht (js/proloog.js).
+  if (missie && missie.proloog) regels.strijd.proloog = true;
   const opslag = maakOpslag(kaart.zaad, opslagSleutel(modus));
 
   // Bewaren: na elke keer bouwen, slopen, hakken of afleveren.
@@ -172,7 +177,7 @@ async function start() {
   // (licht kort op), kader = het kader waarmee je soldaten kiest, effecten =
   // pijlen en gevallenen, balken = het leven van beschadigde bouwwerken.
   const staat = {
-    gekozen: null, schim: null, eenheden: eenheden.lijst, doel: null, kader: null,
+    gekozen: null, schim: null, eenheden: eenheden.lijst, doel: null, kader: null, nacht: () => (proloog ? proloog.nacht() : 0),
     effecten: strijd.effecten, balken: strijd.balken,
     ladders: () => strijd.ladders(),
   };
@@ -514,6 +519,7 @@ async function start() {
     ui.toonEinde({ open: false });
     ui.verbergVerhaal();
     verhaal.wis();
+    if (proloog) proloog.wis();
     // Wie op de plek van een teruggekomen boom stond, krijgt een nieuwe plek.
     eenheden.zetAantal(aantal(), false);
     opslag.wis();
@@ -691,7 +697,12 @@ async function start() {
     hoofdmenu: toonTitel,
   });
   // De rol rechtsonder: wat je in dit level moet doen.
-  ui.opDoel(() => missie ? {
+  ui.opDoel(() => proloog ? {
+    titel: missie.titel,
+    tekst: missie.intro,
+    taak: proloog.taken().map((t) => `${t.klaar ? '✓' : t.nu ? '▸' : '·'} ${t.taak}`).join('\n'),
+    portret: 'bartholt',
+  } : missie ? {
     titel: missie.titel,
     tegen: missie.heer ? `Against ${missie.heer}` : '',
     tekst: missie.intro,
@@ -709,7 +720,28 @@ async function start() {
   ui.opMenuKeuze(kiesModus);
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
-  ui.opMissieBegin(() => { ui.toonMissie({ open: false }); verhaal.start(); });
+  // De proloog: taken van Bartholt, de nacht en de scène.
+  proloog = missie && missie.proloog ? maakProloog({
+    soortKoning: SOORT.KONING, kaart, bouwer, leger, strijd, wegvinder, eenheden,
+    koningSoort: 'koning',
+    toonVerhaal: (b) => ui.toonVerhaal(b),
+    toonTaak: (t) => ui.toonTaak(t),
+    toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
+    kaartGewijzigd,
+    toonScene: (kaarten) => { titelOpen = true; stopBouw(); sluitKazerne(); leger.kiesGeen(); ui.verbergVerhaal(); ui.toonScene(kaarten, () => {
+      // Klaar: de proloog telt als gedaan, de stand gaat weg, door naar de levelkaart.
+      missieGewonnen(missie.id);
+      bewaren = false;
+      opslag.wis();
+      proloog.stop();
+      proloog.wis();
+      verhaal.wis();
+      titelOpen = true;
+      toonKaart();
+    }); },
+  }) : null;
+  const beginLevel = () => { verhaal.start(); if (proloog) proloog.start(); };
+  ui.opMissieBegin(() => { ui.toonMissie({ open: false }); beginLevel(); });
   if (missie && !bewaard && !strijd.uitslag()) {
     const verteller = missies.figuren[missie.verteller || 'bartholt'];
     ui.toonMissie({
@@ -721,10 +753,10 @@ async function start() {
       extra: [nieuwHier().trim(), kaart.naam ? `Map: ${kaart.naam}.` : ''].filter(Boolean),
     });
   } else {
-    verhaal.start();
+    beginLevel();
   }
   if (strijd.uitslag()) naEinde(strijd.uitslag());
-  else if (strijd.stand().golf === 0 && !strijd.stand().vrede) {
+  else if (strijd.stand().golf === 0 && !strijd.stand().vrede && !proloog) {
     const hh = strijd.stand().heer;
     ui.toonMelding(hh ? 'The enemy is gathering an army. Their workshops stand outside their wall: destroy them and they earn less. Build barracks and train soldiers.' : `The enemy attacks in ${tijd(strijd.stand().klok)}. Build barracks and train soldiers.`, { soort: 'uitleg', toon: true });
   }
@@ -967,6 +999,7 @@ async function start() {
       leger.stap();
       strijd.stap();
       verhaal.stap(dt, verhaalStand);
+      if (proloog) proloog.stap(dt);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),
     meld: {
@@ -1006,7 +1039,7 @@ async function start() {
   });
 
   // Handig bij het zoeken naar fouten.
-  window.spel = { rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui };
+  window.spel = { rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

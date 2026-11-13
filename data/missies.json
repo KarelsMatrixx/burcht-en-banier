@@ -137,6 +137,33 @@
    "strijd": {
     "golven": []
    }
+  },
+  "proloog": {
+   "naam": "Prologue",
+   "begin": {
+    "hout": 110,
+    "steen": 60,
+    "voedsel": 60,
+    "goud": 60,
+    "planken": 40
+   },
+   "heer": {
+    "begin": {
+     "hout": 5,
+     "steen": 5,
+     "goud": 10
+    },
+    "burchtGoud": 0.2,
+    "eersteAanval": 99999,
+    "tussen": 99999,
+    "doelBegin": 2,
+    "doelPerAanval": 1,
+    "doelMax": 6
+   },
+   "strijd": {
+    "roodBurchtLeven": 700,
+    "wachters": 2
+   }
   }
  },
  "vrij": [

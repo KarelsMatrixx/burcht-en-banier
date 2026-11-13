@@ -32,7 +32,7 @@ export async function laadMissies() {
   return m;
 }
 
-// Is dit level open? Level 1 altijd (de proloog is nog niet speelbaar),
+// Is dit level open? De proloog en level 1 altijd (wie de proloog overslaat, mag beginnen),
 // daarna als het vorige level gewonnen is.
 export const isOpen = (c, gewonnen) => c.id <= 1 || gewonnen.includes(c.id - 1);
 

@@ -35,7 +35,7 @@ const res = await p.evaluate(async () => {
   const maskers = [];
   for (const l of camp.levels) {
     const kg = l.rood && l.rood.koning;
-    if (!kg) continue;
+    if (!kg || l.proloog) continue;   // de proloog leent Reinout als gast
     const a = await laadAssets({ 'eenheid.koning_rood': kg.uiterlijk });
     const k = a.haal('eenheid.koning_rood');
     const alle = [...k.rechts, ...k.links, ...k.houdingen.sla.rechts, ...k.houdingen.sla.links];

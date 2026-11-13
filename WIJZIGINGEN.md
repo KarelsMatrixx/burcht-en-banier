@@ -250,3 +250,13 @@
 - Start over stond eerst verstopt in de prestatietest; nu in het menu.
 - De rol rechtsonder bracht je meteen naar de levelkaart. Nu toont hij het doel van dit level: titel, tegen wie, de intro en je opdracht. De levelkaart zit in het menu.
 - Tests: hud35 (48), menu19 (rol en Level map), test_stap17 (menu via het tandwiel).
+
+## 0.45.0 (stap 35 campagneplan): de proloog is speelbaar
+- Nieuw: js/proloog.js. Proloog "The Last Peaceful Day" (level 0) staat open op de levelkaart en in het menu.
+- Bartholt geeft acht taken, één tegelijk, met de taak rechtsboven in beeld en de hele lijst achter de rol: houthakkershut, steengroeve, boomgaard, woning, kazerne, twee soldaten opleiden, een soldaat sturen, muur met poort.
+- Heer Reinout staat als gast bij je burcht (alleen om te zien) en zegt iets tijdens het feest.
+- Als de lijst af is (of na elf minuten) wordt het avond: Bartholt waarschuwt voor een overmacht, Reinout is weg en het wordt donker. 's Nachts gaat je poort van binnenuit open (ook voor rood een doorgang) en verschijnen 14 plus twee per eigen soldaat vijanden rond je burcht, elke 50 seconden zes erbij.
+- Je koning sneuvelt niet en je burcht valt niet; de burcht van rood is onkwetsbaar en heeft geen koning. Er is geen winst of verlies.
+- Na vier minuten nacht, of als je burcht onder 40% komt, volgt een scène in vijf kaarten (Wessel weggedragen, de brief "Come and get him", de Rouwbanier van Ottger). Daarna de levelkaart; de proloog telt als gedaan.
+- Eigen profiel "proloog" in data/missies.json met meer beginvoorraad. strijd.js: R.proloog; stuurLeger kan rond een andere plek verschijnen; wegvinden.js: zetPoortenOpen. tekenaar.js: nacht.
+- Tests: tests/proloog35.mjs (30). campagne30 en test_stap17 kennen nu de open proloog.

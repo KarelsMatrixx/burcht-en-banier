@@ -9,7 +9,8 @@
   "figuren: wie er praat in de briefing en de verhaalbalk (naam en portret). verteller: wie de briefing vertelt (standaard bartholt).",
   "berichten: wat figuren zeggen tijdens het level. bij = tijd (seconden), aanval (nummer), burcht, koning, roodBurcht, roodKoning (onder dit percentage leven). wie = een figuur of heer. portret mag een andere uitdrukking kiezen. Hooguit 40 woorden. berichtenAltijd geldt in elk level.",
   "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. muur = leven van zijn muren, torens en poorten in procenten (kastelenontwerp: 100% in level 1 tot 240% in level 10). koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team. koning.schiet = { bereik, schade, slagTijd }: de koning schiet pijlen (Mechteld).",
-  "kasteel (stap 33): het ontwerp van het kasteel van rood, uit data/kastelen.json."
+  "kasteel (stap 33): het ontwerp van het kasteel van rood, uit data/kastelen.json.",
+  "proloog: true maakt van een level de proloog (js/proloog.js): taken van Bartholt, Reinout als gast, nacht, overmacht, scène, geen winst of verlies. De rode heer heeft dan geen koning in zijn burcht; koning.uiterlijk is het uiterlijk van de gast (Reinout)."
  ],
  "figuren": {
   "karel": {
@@ -69,20 +70,36 @@
    "titel": "Prologue: The Last Peaceful Day",
    "heer": null,
    "portret": "wessel",
-   "profiel": "rustig",
+   "profiel": "proloog",
    "kaart": "standaard",
    "punt": {
     "x": 6.5,
     "y": 71.4
    },
-   "speelbaar": false,
-   "intro": "Wessel turns nine. Bartholt teaches you to build and to train soldiers. That night the gate opens from the inside.",
+   "speelbaar": true,
+   "intro": "Wessel turns nine today, and all of Aldervale is at the feast. Bartholt will show you how to build and how to train soldiers. Lord Reinout of Witherheath is your guest.",
    "uit": "",
    "wessel": "",
    "beloning": [
     "ram",
     "ladder"
-   ]
+   ],
+   "proloog": true,
+   "verteller": "bartholt",
+   "rood": {
+    "eersteAanval": 99999,
+    "koning": {
+     "leven": 80,
+     "uiterlijk": {
+      "figuur": "reinout",
+      "tabbaard": "#8a6a44",
+      "wapen": "#d6c48a",
+      "wapenSoort": "speer",
+      "haar": "#6b4a2b",
+      "baard": "geen"
+     }
+    }
+   }
   },
   {
    "id": 1,

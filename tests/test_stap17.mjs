@@ -14,14 +14,14 @@ await p.goto(url + '/?x=' + Date.now()); await laad();
 await p.evaluate(() => localStorage.clear()); await p.reload(); await laad();
 // 1. standaard: vrij normaal, bestaande bewaarsleutel
 let i = await p.evaluate(() => ({ v: window.spel.CONFIG.versie, m: window.spel.modus, eerste: window.spel.regels.heer.eersteAanval, hout: window.spel.regels.grondstoffen.hout.begin }));
-check('versie', i.v === '0.44.0', i.v);
+check('versie', i.v === '0.45.0', i.v);
 check('standaard vrij normaal', i.m.soort === 'vrij' && i.m.profiel === 'normaal', JSON.stringify(i.m));
 check('normaal: ongewijzigde regels', i.eerste === 200 && i.hout === 60, JSON.stringify(i));
 await p.evaluate(() => window.spel.bouwer && 0);
 // 2. menu
 await p.click('#knop-instellingen'); await p.click('#knop-levels'); await p.click('#kaart-terug'); await p.click('#titel-vrij');
 const menu = await p.evaluate(() => ({ open: !document.getElementById('menu').hidden, knoppen: [...document.querySelectorAll('#menu-lijst button')].map((k) => [k.dataset.sleutel, k.disabled]) }));
-check('menu opent met 4 vrij en 3 missies', menu.open && menu.knoppen.length === 7, JSON.stringify(menu));
+check('menu opent met 4 vrij, proloog en 3 missies', menu.open && menu.knoppen.length === 8, JSON.stringify(menu));
 check('missie 2 en 3 dicht, missie 1 open', menu.knoppen.find((k) => k[0] === 'missie:1')[1] === false && menu.knoppen.find((k) => k[0] === 'missie:2')[1] === true && menu.knoppen.find((k) => k[0] === 'missie:3')[1] === true);
 await p.screenshot({ path: '/home/claude/stap17-menu.png' });
 // 3. kies missie 1 via menu

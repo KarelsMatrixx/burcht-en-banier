@@ -434,11 +434,11 @@ export function maakUi() {
       for (const [k, y] of [[-10, -34], [lengte + 4, -34], [-10, 25], [lengte + 4, 25]]) brug.appendChild(maak('rect', { x: k, y: y - 5, width: 12, height: 19, rx: 3, class: 'brug-paal' }));
       svg.appendChild(brug);
 
-      // De weg kleurt goud tot het laatst gewonnen level.
+      // De weg kleurt goud tot het laatst gewonnen level (ook als je de proloog oversloeg).
       const route = kaartdata.route.map(([x, y]) => `${(x * B).toFixed(1)} ${(y * H).toFixed(1)}`).join(' L ');
       let tot = 0;
       for (let i = 0; i + 1 < levels.length; i++) {
-        if (levels[i].staat === 'gewonnen' || (i === 0 && levels[0].staat === 'later')) tot = kaartdata.pos[String(levels[i + 1].id)] ?? tot;
+        if (levels[i].staat === 'gewonnen' || (i === 0 && levels[1].staat === 'gewonnen')) tot = kaartdata.pos[String(levels[i + 1].id)] ?? tot;
         else break;
       }
       if (tot > 0) {
@@ -536,6 +536,30 @@ export function maakUi() {
         klapInstellingen(false);
         klapDoel(true);
       });
+    },
+    // Proloog: de taak van nu (leeg = weg).
+    toonTaak(tekst) {
+      el('taak').textContent = tekst || '';
+      el('taak').hidden = !tekst;
+    },
+    // Proloog: een scène van een paar kaarten [{ naam, portret, tekst }].
+    // Tik Next voor de volgende; na de laatste roept hij klaar() aan.
+    toonScene(kaarten, klaar) {
+      let i = 0;
+      const toon = () => {
+        const k = kaarten[i];
+        el('scene-wie').textContent = k.naam || '';
+        el('scene-tekst').textContent = k.tekst || '';
+        zetPortret('scene-portret', k.portret ? { naam: k.naam, portret: k.portret } : null);
+        el('scene-verder').textContent = i === kaarten.length - 1 ? 'To the map' : 'Next';
+      };
+      el('scene-verder').onclick = () => {
+        if (i < kaarten.length - 1) { i++; toon(); return; }
+        el('scene').hidden = true;
+        klaar();
+      };
+      toon();
+      el('scene').hidden = false;
     },
     // De knoppen achter het tandwiel. Na een keuze gaat het menu dicht.
     opMenuActies({ opslaan, levels, hoofdmenu }) {
