@@ -4,7 +4,7 @@ const srv = spawn('python3', ['-m', 'http.server', '8164'], { cwd: '/home/claude
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 } })).newPage();
-await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); } catch (e) {} });
+await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); } catch (e) {} });
 await p.goto('http://localhost:8164/?x=1'); await p.waitForFunction(() => window.spel && window.spel.strijd);
 for (const leger of [{ ridder: 3 }, { ridder: 2, boogschutter: 1 }, { ridder: 3, boogschutter: 1 }, { ridder: 4, boogschutter: 2 }]) {
   await p.evaluate(() => localStorage.clear()); await p.reload(); await p.waitForFunction(() => window.spel && window.spel.strijd);

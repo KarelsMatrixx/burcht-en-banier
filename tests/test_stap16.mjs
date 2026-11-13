@@ -2,7 +2,7 @@ import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/i
 const url = process.argv[2];
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await b.newPage({ viewport: { width: 844, height: 390 } });
-await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); } catch (e) {} });
+await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); } catch (e) {} });
 const fouten = [];
 p.on('pageerror', (e) => fouten.push(String(e)));
 p.on('console', (m) => { if (m.type() === 'error') fouten.push(m.text()); });

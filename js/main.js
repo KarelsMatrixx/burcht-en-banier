@@ -51,7 +51,7 @@ async function start() {
   // De rode koning is in de campagne de heer zelf: zijn kleding en wapen.
   const heerKoning = missie && missie.rood && missie.rood.koning;
   const assets = await laadAssets(heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {}, roodKasteel);
-  assets.meldingen.forEach((tekst) => ui.toonMelding(tekst));
+  assets.meldingen.forEach((tekst) => ui.toonMelding(tekst, { soort: 'uitleg' }));
   // In de campagne heb je alleen wat het verhaal al heeft vrijgegeven.
   const mag = ontgrendeld(missies.campagne, missie ? missie.id : null);
   const kaarten = await laadKaarten();
@@ -94,7 +94,7 @@ async function start() {
     const stand = { bouwwerken: bouwer.eigenBouwwerken(), ...economie.bewaarStand(), leger: leger.bewaarStand(), strijd: strijd.bewaarStand() };
     if (opslag.bewaar(stand) || bewaarFoutGemeld) return;
     bewaarFoutGemeld = true;
-    ui.toonMelding('Saving does not work here. Your progress is lost when you close the game.');
+    ui.toonMelding('Saving does not work here. Your progress is lost when you close the game.', { soort: 'uitleg', toon: true });
   };
 
   // De kaart is veranderd zonder dat er gebouwd is (er is een boom om).
@@ -111,7 +111,8 @@ async function start() {
     opKaart: kaartGewijzigd,
     opVoorraad: () => naVoorraad(),
     opVerandering: bewaar,
-    opMelding: (tekst) => ui.toonMelding(tekst),
+    // Economie: stil in het logboek, behalve als het echt dringend is.
+    opMelding: (tekst) => ui.toonMelding(tekst, { soort: 'economie', toon: /food has run out|unhappy/.test(tekst) }),
   });
   let naBouw = () => {};       // wordt hieronder ingevuld, als het gevecht er is
   const bouwer = maakBouwer({
@@ -131,7 +132,8 @@ async function start() {
     regels, kaart, wegvinder, eenheden, leger, bouwer, bouwwerken,
     opVerandering: bewaar,
     opStand: () => naStrijd(),
-    opMelding: (tekst) => ui.toonMelding(tekst),
+    // Van de vijand of over je eigen leger, te zien aan de zin.
+    opMelding: (tekst) => ui.toonMelding(tekst, { soort: /^(Red |Attack|Your keep|The enemy)/.test(tekst) ? 'vijand' : 'leger' }),
     opVerwoest: (werk, van) => naVerwoest(werk, van),
     opKaart: (vakken) => kaartGewijzigd(vakken),
     opEinde: (wat) => naEinde(wat),
@@ -140,7 +142,7 @@ async function start() {
   const rood = maakRood({
     regels, kaart, bouwwerken, leger, strijd, eenheden,
     perSeconde: CONFIG.spel.stappenPerSeconde,
-    opMelding: (tekst) => ui.toonMelding(tekst),
+    opMelding: (tekst) => ui.toonMelding(tekst, { soort: 'vijand' }),
     opVerandering: bewaar,
   });
   if (rood) strijd.koppelHeer(rood);
@@ -156,7 +158,7 @@ async function start() {
     const bomenWeg = economie.zetStand(bewaard);
     if (bomenWeg.size) kaartGewijzigd(bomenWeg);
     const teruggezet = bouwer.zetTerug(bewaard.bouwwerken);
-    if (teruggezet) ui.toonMelding(`Your castle is back: ${teruggezet} ${teruggezet === 1 ? 'building' : 'buildings'}.`);
+    if (teruggezet) ui.toonMelding(`Your castle is back: ${teruggezet} ${teruggezet === 1 ? 'building' : 'buildings'}.`, { soort: 'uitleg' });
     leger.zetStand(bewaard.leger);
     strijd.zetStand(bewaard.strijd);
   } else {
@@ -516,8 +518,8 @@ async function start() {
     eenheden.zetAantal(aantal(), false);
     opslag.wis();
     bewaren = true;
-    if (weg || bomenTerug.size) ui.toonMelding(`Restarted: ${weg} ${weg === 1 ? 'building' : 'buildings'} torn down, the forest is back.`);
-    else ui.toonMelding(gevochten ? 'Restarted: the first attack is still to come.' : 'Nothing had changed yet.');
+    if (weg || bomenTerug.size) ui.toonMelding(`Restarted: ${weg} ${weg === 1 ? 'building' : 'buildings'} torn down, the forest is back.`, { soort: 'uitleg', toon: true });
+    else ui.toonMelding(gevochten ? 'Restarted: the first attack is still to come.' : 'Nothing had changed yet.', { soort: 'uitleg', toon: true });
   };
   ui.opOpnieuw(opnieuw);
 
@@ -570,12 +572,12 @@ async function start() {
       // Jouw soldaten hebben iets van rood vernield.
       if (performance.now() - laatstVernieldRood < 6000) return;
       laatstVernieldRood = performance.now();
-      ui.toonMelding(`Your soldiers destroyed a red ${werk.naam.toLowerCase()}.`);
+      ui.toonMelding(`Your soldiers destroyed a red ${werk.naam.toLowerCase()}.`, { soort: 'leger' });
       return;
     }
     if (performance.now() - laatstVernield < 6000) return;
     laatstVernield = performance.now();
-    ui.toonMelding(`The enemy destroyed your ${werk.naam.toLowerCase()}.`);
+    ui.toonMelding(`The enemy destroyed your ${werk.naam.toLowerCase()}.`, { soort: 'vijand' });
   };
 
   // Gewonnen of verloren: het spel staat stil tot je kiest.
@@ -617,7 +619,7 @@ async function start() {
   ui.opVerder(() => {
     strijd.gaVerder();
     ui.toonEinde({ open: false });
-    ui.toonMelding('You play on. No more attacks will come.');
+    ui.toonMelding('You play on. No more attacks will come.', { soort: 'uitleg', toon: true });
   });
   ui.opEindeOpnieuw(opnieuw);
 
@@ -643,7 +645,7 @@ async function start() {
     const [soort, waarde] = sleutel.split(':');
     const nieuw = soort === 'missie' ? { soort: 'campagne', missie: Number(waarde) } : { soort: 'vrij', profiel: waarde };
     if (!zetModus(nieuw)) {
-      ui.toonMelding('Choosing does not work here: the browser storage is blocked.');
+      ui.toonMelding('Choosing does not work here: the browser storage is blocked.', { soort: 'uitleg', toon: true });
       return;
     }
     bewaar();   // wat je nu hebt blijft bewaard bij deze modus
@@ -696,7 +698,7 @@ async function start() {
   if (strijd.uitslag()) naEinde(strijd.uitslag());
   else if (strijd.stand().golf === 0 && !strijd.stand().vrede) {
     const hh = strijd.stand().heer;
-    ui.toonMelding(hh ? 'The enemy is gathering an army. Their workshops stand outside their wall: destroy them and they earn less. Build barracks and train soldiers.' : `The enemy attacks in ${tijd(strijd.stand().klok)}. Build barracks and train soldiers.`);
+    ui.toonMelding(hh ? 'The enemy is gathering an army. Their workshops stand outside their wall: destroy them and they earn less. Build barracks and train soldiers.' : `The enemy attacks in ${tijd(strijd.stand().klok)}. Build barracks and train soldiers.`, { soort: 'uitleg', toon: true });
   }
 
   const naarStart = () => {
@@ -779,7 +781,7 @@ async function start() {
           const klimVak = strijd.isRodeMuur(vanRood.vak) ? vanRood.vak : strijd.dichtsteRodeMuur(vanRood.vak, 3);
           if (klimVak >= 0 && strijd.klimBevel(klimmers, klimVak)) {
             staat.doel = { x: klimVak % kaart.breedte, y: Math.floor(klimVak / kaart.breedte), duur: 900, tot: performance.now() + 900 };
-            ui.toonMelding('Your assassin climbs the red wall.');
+            ui.toonMelding('Your assassin climbs the red wall.', { soort: 'leger' });
             if (klimmers.length === groep.length) return;
           }
         }
@@ -789,19 +791,19 @@ async function start() {
         const muurVak = !draagt ? -1 : strijd.isRodeMuurZonderLadder(vanRood.vak) ? vanRood.vak : strijd.dichtsteRodeMuur(vanRood.vak, 3);
         if (draagt && muurVak >= 0) {
           if (strijd.muurTeHoog() && !groep.some((e) => isDrager(e) && leger.soorten[e.soldaat.sleutel].vast)) {
-            ui.toonMelding('These walls are too high for ladders. Bring a siege tower.');
+            ui.toonMelding('These walls are too high for ladders. Bring a siege tower.', { soort: 'leger' });
             return;
           }
           if (strijd.zetLadderBevel(groep.filter(isDrager), muurVak)) {
             staat.doel = { x: muurVak % kaart.breedte, y: Math.floor(muurVak / kaart.breedte), duur: 900, tot: performance.now() + 900 };
-            ui.toonMelding(groep.some((e) => leger.soorten[e.soldaat.sleutel].vast) ? 'The siege tower rolls to the red wall. Then your soldiers climb over it.' : 'Your ladder bearer sets a ladder against the red wall.');
+            ui.toonMelding(groep.some((e) => leger.soorten[e.soldaat.sleutel].vast) ? 'The siege tower rolls to the red wall. Then your soldiers climb over it.' : 'Your ladder bearer sets a ladder against the red wall.', { soort: 'leger' });
           } else {
-            ui.toonMelding('Your ladder bearer cannot reach that wall.');
+            ui.toonMelding('Your ladder bearer cannot reach that wall.', { soort: 'leger' });
           }
           return;
         }
         if (draagt && !groep.some((e) => !isDrager(e))) {
-          ui.toonMelding(strijd.isVanRood(vanRood.vak) && !strijd.isRodeMuurZonderLadder(vanRood.vak) ? 'Tap a plain piece of wall without a ladder: the tower or ladder fits there.' : 'There is already a ladder there.');
+          ui.toonMelding(strijd.isVanRood(vanRood.vak) && !strijd.isRodeMuurZonderLadder(vanRood.vak) ? 'Tap a plain piece of wall without a ladder: the tower or ladder fits there.' : 'There is already a ladder there.', { soort: 'leger' });
           return;
         }
         if (leger.heeftTrap(vanRood.x, vanRood.y) && groep.some((e) => !isRam(e) && !isDrager(e))) {
@@ -821,7 +823,7 @@ async function start() {
         if (strijd.valBouwAan(leger.gekozen(), vanRood.vak)) {
           staat.doel = { x: vanRood.x, y: vanRood.y, duur: 900, tot: performance.now() + 900, aanval: true };
         } else {
-          ui.toonMelding('Your soldiers cannot reach that. Break through the red gate or wall first.');
+          ui.toonMelding('Your soldiers cannot reach that. Break through the red gate or wall first.', { soort: 'leger' });
         }
         return;
       }
@@ -837,9 +839,9 @@ async function start() {
         if (leger.stuur(muur.x, muur.y, true)) {
           staat.doel = { x: muur.x, y: muur.y, duur: 900, tot: performance.now() + 900, hoogte: hoogteOp(muur.y * kaart.breedte + muur.x) };
         } else if (!leger.heeftTrap(muur.x, muur.y)) {
-          ui.toonMelding('Your soldiers cannot get onto this wall. Attach a tower, watchtower or gate to it.');
+          ui.toonMelding('Your soldiers cannot get onto this wall. Attach a tower, watchtower or gate to it.', { soort: 'leger' });
         } else {
-          ui.toonMelding('Your soldiers cannot get there.');
+          ui.toonMelding('Your soldiers cannot get there.', { soort: 'leger' });
         }
         return;
       }
@@ -847,7 +849,7 @@ async function start() {
       if (leger.aantalGekozen()) {
         if (!binnenKaart(kaart, x, y)) return;
         if (leger.stuur(x, y)) staat.doel = { x, y, duur: 900, tot: performance.now() + 900 };
-        else ui.toonMelding('Your soldiers cannot get there.');
+        else ui.toonMelding('Your soldiers cannot get there.', { soort: 'leger' });
         return;
       }
       if (binnenKaart(kaart, x, y)) {
@@ -968,7 +970,7 @@ async function start() {
   });
 
   // Handig bij het zoeken naar fouten.
-  window.spel = { rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd };
+  window.spel = { rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

@@ -4,7 +4,7 @@ const srv = spawn('python3', ['-m', 'http.server', '8125'], { cwd: '/home/claude
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true })).newPage();
-await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); } catch (e) {} });
+await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); } catch (e) {} });
 const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
 let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
 await p.goto('http://localhost:8125/?x=' + Date.now()); await p.waitForFunction(() => window.spel && window.spel.strijd);
@@ -42,7 +42,7 @@ check('ridder komt op de muur', opMuur);
 await p.evaluate(() => { const s = window.spel; s.leger.kies(s.leger.soldaten().filter((e) => e.soldaat.sleutel === 'ridder')); });
 sp = await naarTegel(47, 10); await p.touchscreen.tap(sp.x, sp.y);
 await p.waitForTimeout(100);
-console.log('melding', await p.evaluate(() => document.getElementById('meldingen').textContent.slice(-120)));
+console.log('melding', await p.evaluate(() => window.spel.ui.logboek().map((r) => r.tekst).join(' | ').slice(-120)));
 for (let i = 0; i < 30 && !bin; i++) { await p.waitForTimeout(1000); const st = await p.evaluate(() => window.spel.leger.soldaten().filter((e) => e.soldaat.sleutel === 'ridder').map((e) => ({ x: +e.x.toFixed(1), y: +e.y.toFixed(1), m: !!e.opMuur }))); bin = st.some((r) => r.x > 45.2 && !r.m); if (i % 6 === 0) console.log('na', i, JSON.stringify(st)); }
 check('ridder komt binnen het kasteel', bin);
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);

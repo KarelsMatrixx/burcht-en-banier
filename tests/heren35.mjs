@@ -94,7 +94,7 @@ for (const id of speelbaar) {
     localStorage.clear();
     localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [1, 2, 3, 4, 5, 6, 7, 8, 9] }));
     localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: m }));
-    sessionStorage.setItem('burcht-banier.geenTitel', '1');
+    sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw');
   }, id);
   await p.reload(); await wacht(); await p.waitForTimeout(800);
   const r = await p.evaluate(() => { const s = window.spel; const k = s.strijd.koning(1); return { k: !!k, leven: k && k.leven }; });

@@ -208,3 +208,12 @@
 - Tests: tests/kaartvorm34.mjs (15 controles plus beelden). kasteel33 test nu elk kasteel op alle negen kaarten (110 controles); in de doorbraaktest van level 3 zijn de soldaten nu echt onkwetsbaar (het gaat om de route). kaarten24 en verhaal31 op de nieuwe kaarten.
 ## 0.38.1: machines en koning (uit de sprites-chat)
 - Ram, katapult, belegeringstoren (veel hoger) en de koning in de nieuwe stijl, bovenop 0.37.0 (main bevatte de heren, soldaten en werkers al).
+
+## 0.39.0 (stap 35): adviseur, logboek en nieuwe bediening
+- Plaatjes van Karel (Gemini): medaillon, hamer, zwaard, buidel, perkamentrol, tandwiel, sloophouweel, rand van de adviseur, teller-zegel, logboekrol, lint en vijf zegels. Magenta weggeknipt en verkleind naar beelden/hud/*.webp (samen ongeveer 120 KB).
+- Linksboven de adviseur: portret van Bartholt in een gouden rand, met een rood zegel dat telt hoeveel nieuwe berichten er zijn. Tik erop voor het logboek: een perkamentrol met alle berichten (nieuwste boven), een zegel per soort en een speeltijd. Tik op een zegel om te filteren.
+- Vijf soorten berichten: vijand (rood), economie (goud), leger (blauw), verhaal (paars), uitleg (groen). Alles gaat in het logboek. In beeld komt alleen wat ertoe doet: vijand, leger en verhaal altijd, economie alleen als het dringend is (voedsel op, volk ontevreden), uitleg alleen als het een antwoord op je actie is. Hooguit twee tegelijk, als rood lint met het zegel ernaast.
+- Als een figuur uit het verhaal praat, staat zijn portret even in de adviseur.
+- Rechtsonder vier medaillons in een boog: hamer (bouwbalk), zwaard (legerknoppen), buidel (je volk en belasting), rol (menu met de levelkaart). Hooguit één paneel open; het spel onthoudt welk voor deze sessie. Kies je soldaten op de kaart, dan gaat het zwaard vanzelf open.
+- Rechtsboven het tandwiel: titel, versie, Test en To start. De oude knoppen Menu, Test en To start bovenin zijn weg.
+- Tests: tests/hud35.mjs (27 controles). Andere tests openen de bouwbalk via de sessie en lezen berichten uit het logboek; selectie tikt eerst het zwaard aan.

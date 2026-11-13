@@ -4,7 +4,7 @@ const srv = spawn('python3', ['-m', 'http.server', '8155'], { cwd: '/home/claude
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, deviceScaleFactor: 2 })).newPage();
-await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); } catch (e) {} });
+await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); } catch (e) {} });
 const fouten = []; p.on('pageerror', (e) => fouten.push(String(e))); p.on('console', (m) => { if (m.type() === 'error') fouten.push(m.text()); });
 let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
 const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd);
@@ -38,7 +38,7 @@ await p.waitForTimeout(6000);
 const kp = await p.evaluate(() => { const a = window.spel.strijd.koning(0); return [a.x, a.y]; });
 check('koning loopt waar je tikt', Math.hypot(kp[0] - doel[0] - 0.5, kp[1] - doel[1] - 0.5) < 1.6, JSON.stringify([kp, doel]));
 // burcht kapot: geen verlies, koning zwakker
-const r2 = await p.evaluate(() => { const s = window.spel; s.strijd.zetBurcht(0); s.strijd.stap(); return { u: s.strijd.uitslag(), m: document.getElementById('meldingen').textContent.slice(-150) }; });
+const r2 = await p.evaluate(() => { const s = window.spel; s.strijd.zetBurcht(0); s.strijd.stap(); return { u: s.strijd.uitslag(), m: window.spel.ui.logboek().map((r) => r.tekst).join(' | ').slice(-150) }; });
 check('burcht kapot is geen verlies', !r2.u, JSON.stringify(r2));
 check('melding koning zwakker', /weaker/.test(r2.m), r2.m);
 // rode koning blijft thuis: zet hem weg, hij loopt terug

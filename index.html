@@ -53,17 +53,43 @@
 
   <div id="hud">
     <div id="hud-boven">
-      <div class="plaat" id="titel">
-        <strong>Keep &amp; Banner</strong><br>
-        <small id="versie"></small>
-      </div>
+      <!-- De adviseur (stap 35): tik hem aan voor het logboek met alle berichten. -->
+      <button id="adviseur" type="button" aria-label="Messages">
+        <img id="adviseur-portret" src="beelden/portretten/bartholt.jpg" alt="">
+        <img id="adviseur-rand" src="beelden/hud/adviseur_rand.webp" alt="">
+        <span id="adviseur-teller" hidden></span>
+      </button>
       <div class="plaat" id="voorraad"><span id="voorraad-lijst"></span><span class="strijdvak" id="strijdinfo" hidden><i class="icoon icoon-aanval"></i><b id="strijd-kort"></b></span></div>
       <div class="plaat" id="tegelinfo" hidden></div>
+      <button id="knop-instellingen" class="ikoon-knop" type="button" aria-label="Settings"><img src="beelden/hud/tandwiel.webp" alt=""></button>
+    </div>
+    <!-- Instellingen: achter het tandwiel rechtsboven -->
+    <div class="plaat" id="instellingen" hidden>
+      <strong>Keep &amp; Banner</strong>
+      <small id="versie"></small>
       <div class="knoppen">
-        <button id="knop-menu" type="button">Menu</button>
         <button id="knop-test" type="button">Test</button>
         <button id="knop-start" type="button">To start</button>
       </div>
+    </div>
+    <!-- Het logboek: alle berichten op een perkamentrol, met een zegel per soort -->
+    <div id="logboek" hidden>
+      <div id="logboek-filters"></div>
+      <div id="logboek-lijst"></div>
+    </div>
+    <!-- Korte berichten in beeld, naast de adviseur -->
+    <div id="meldingen"></div>
+    <!-- Wat een figuur uit het verhaal zegt (stap 31), nu naast de adviseur. Tik om weg te halen. -->
+    <div id="verhaal" hidden>
+      <img id="verhaal-portret" class="portret" alt="" hidden>
+      <div><strong id="verhaal-wie"></strong><span id="verhaal-tekst"></span></div>
+    </div>
+    <!-- De bediening rechtsonder: hamer (bouwen), zwaard (leger), buidel (je volk), rol (menu) -->
+    <div id="bedien">
+      <button id="knop-menu" class="medaillon klein" type="button" aria-label="Menu"><img src="beelden/hud/rol.webp" alt=""></button>
+      <button id="knop-buidel" class="medaillon klein" type="button" aria-label="Your people"><img src="beelden/hud/buidel.webp" alt=""></button>
+      <button id="knop-zwaard" class="medaillon" type="button" aria-label="Army"><img src="beelden/hud/zwaard.webp" alt=""></button>
+      <button id="knop-hamer" class="medaillon" type="button" aria-label="Build"><img src="beelden/hud/hamer.webp" alt=""></button>
     </div>
     <!-- Het paneel over je volk: tik bovenin op je voorraad -->
     <div class="plaat" id="volkpaneel" hidden>
@@ -103,12 +129,6 @@
           <button id="knop-opnieuw" type="button">Start over</button>
         </div>
       </div>
-      <div id="meldingen"></div>
-      <!-- De verhaalbalk: wie er praat tijdens een level (stap 31). Tik om weg te halen. -->
-      <div id="verhaal" hidden>
-        <img id="verhaal-portret" class="portret" alt="" hidden>
-        <div><strong id="verhaal-wie"></strong><span id="verhaal-tekst"></span></div>
-      </div>
       <div class="plaat" id="tip" hidden>
         <span>Tip: in Safari tap Share and choose "Add to Home Screen". Then you play full screen and without internet.</span>
         <button id="tip-sluit" type="button">Close</button>
@@ -122,6 +142,7 @@
           <button id="knop-bevestig" type="button">Place</button>
           <button id="knop-klaar" type="button">Done</button>
         </div>
+        <div class="plaat" id="leger-leeg" hidden>No soldiers yet. Build barracks and train them.</div>
         <!-- Je soldaten kiezen op groep of soort -->
         <div class="knoppen" id="leger-groepen" hidden></div>
         <!-- Je soldaten kiezen: verschijnt zodra je er een hebt -->

@@ -4,7 +4,7 @@ const srv = spawn('python3', ['-m', 'http.server', '8162'], { cwd: '/home/claude
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 } })).newPage();
-await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); } catch (e) {} });
+await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); } catch (e) {} });
 const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
 await p.goto('http://localhost:8162/?x=1'); await p.waitForFunction(() => window.spel && window.spel.strijd);
 await p.evaluate(() => { localStorage.clear(); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'vrij', profiel: 'vrede' })); }); await p.reload(); await p.waitForFunction(() => window.spel && window.spel.strijd);

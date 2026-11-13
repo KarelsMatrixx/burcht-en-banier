@@ -20,7 +20,7 @@ const lees = async (modus) => {
     localStorage.clear();
     localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [1, 2, 3] }));
     localStorage.setItem('burcht-banier.modus', JSON.stringify(m));
-    sessionStorage.setItem('burcht-banier.geenTitel', '1');
+    sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw');
   }, modus);
   await p.reload(); await wacht(); await p.waitForTimeout(300);
   return p.evaluate(() => {

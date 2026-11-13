@@ -4,7 +4,7 @@ const srv = spawn('python3', ['-m', 'http.server', '8126'], { cwd: '/home/claude
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true })).newPage();
-await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); } catch (e) {} });
+await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); } catch (e) {} });
 const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
 let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
 const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd);
@@ -18,6 +18,7 @@ console.log(knoppen.join(' | '));
 check('groepknoppen zichtbaar', knoppen.length >= 6, knoppen.join('|'));
 await p.screenshot({ path: '/home/claude/stap18-selectie.png' });
 const tik = async (tekst) => { const k = (await p.$$('#leger-groepen button')); for (const x of k) if ((await x.textContent()).startsWith(tekst)) { await x.tap(); return; } throw new Error('knop ' + tekst); };
+await p.tap('#knop-zwaard'); await p.waitForTimeout(200);
 await tik('Melee'); check('dichtbij = ridders', (await gekozen()) === 'ridder,ridder', await gekozen());
 await tik('Ranged'); check('afstand = boogschutter', (await gekozen()) === 'boogschutter', await gekozen());
 await tik('Siege'); check('belegering = katapult+toren', (await gekozen()) === 'katapult,toren', await gekozen());

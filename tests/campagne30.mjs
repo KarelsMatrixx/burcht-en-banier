@@ -45,7 +45,7 @@ await p.touchscreen.tap(sp.x, sp.y); await p.waitForTimeout(300);
 const kn = await p.$$eval('#leger-opleiden button', (k) => k.map((x) => x.dataset.soldaat));
 check('kazerne level 1: ridder, boog, ram, ladder', kn.sort().join() === 'boogschutter,ladder,ram,ridder', kn.join());
 // level 2 na winst 1: kopermijn erbij (beloning Reinout), nog geen kruisboog
-const zet = async (klaar, missie) => { await p.evaluate(([k, m]) => { localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: k })); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: m })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); }, [klaar, missie]); await p.reload(); await wacht(); };
+const zet = async (klaar, missie) => { await p.evaluate(([k, m]) => { localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: k })); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: m })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); }, [klaar, missie]); await p.reload(); await wacht(); };
 const knoppen = () => p.$$eval('#bouw-knoppen button', (k) => k.map((x) => x.textContent));
 await zet([1], 2);
 const b2 = await knoppen();
@@ -66,12 +66,12 @@ check('level 3 soldaten', mod === 'kruisboog:true,bijlridder:false,katapult:true
 const mod4 = await p.evaluate(async () => { const m = await import('/js/modus.js'); const f = m.ontgrendeld(window.spel.missies.campagne, 4); return ['bijlridder', 'katapult', 'toren', 'magiertoren'].map((k) => k + ':' + f(k)).join(); });
 check('level 4 soldaten', mod4 === 'bijlridder:true,katapult:true,toren:true,magiertoren:false', mod4);
 // vrij spel: alles
-await p.evaluate(() => { localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'vrij', profiel: 'normaal' })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); });
+await p.evaluate(() => { localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'vrij', profiel: 'normaal' })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); });
 await p.reload(); await wacht();
 const bv = await p.$$eval('#bouw-knoppen button', (k) => k.map((x) => x.textContent));
 check('vrij spel: magiertoren en kopermijn', bv.some((t) => /Mage Tower/.test(t)) && bv.some((t) => /Copper Mine/.test(t)));
 // oude moduswaarde naar een niet-speelbaar level valt terug op vrij spel
-await p.evaluate(() => { localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 5 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); });
+await p.evaluate(() => { localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 5 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); });
 await p.reload(); await wacht();
 check('niet-speelbaar level valt terug', (await p.evaluate(() => window.spel.modus.soort)) === 'vrij');
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);

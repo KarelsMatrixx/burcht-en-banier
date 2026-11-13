@@ -74,7 +74,7 @@ for (const [lv, ontwerp] of [[1, 'dorre_heide'], [2, 'rotsvesting'], [3, 'dubbel
     localStorage.clear();
     localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [1, 2, 3] }));
     localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: lv }));
-    sessionStorage.setItem('burcht-banier.geenTitel', '1');
+    sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw');
   }, lv);
   await p.reload(); await wacht(); await p.waitForTimeout(400);
   const r = await p.evaluate(async () => {
@@ -99,7 +99,7 @@ await p.evaluate(() => {
   localStorage.clear();
   localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [1, 2] }));
   localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 3 }));
-  sessionStorage.setItem('burcht-banier.geenTitel', '1');
+  sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw');
 });
 await p.reload(); await wacht();
 const inval = await p.evaluate(() => {

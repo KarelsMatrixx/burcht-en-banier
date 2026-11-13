@@ -29,8 +29,9 @@ export function maakUi() {
   function volgendVerhaal() {
     clearTimeout(verhaalKlok);
     const b = verhaalRij.shift();
-    if (!b) { el('verhaal').hidden = true; return; }
+    if (!b) { el('verhaal').hidden = true; zetAdviseur(null); return; }
     zetPortret('verhaal-portret', b);
+    zetAdviseur(b.portret);
     el('verhaal-wie').textContent = b.naam;
     el('verhaal-tekst').textContent = b.tekst;
     el('verhaal').hidden = false;
@@ -45,6 +46,131 @@ export function maakUi() {
       .join(' · ');
   };
   werkStatusBij();
+
+  // --- De adviseur en het logboek (stap 35) -----------------------------------
+  // Elk bericht heeft een soort met een eigen zegel. Alles komt in het logboek;
+  // alleen wat dringend is of een antwoord op wat je net deed, komt ook even
+  // in beeld (als lint naast de adviseur).
+  const SOORTEN = {
+    vijand: { naam: 'Enemy', toon: true },
+    economie: { naam: 'Economy', toon: false },
+    leger: { naam: 'Army', toon: true },
+    verhaal: { naam: 'Story', toon: true },
+    uitleg: { naam: 'Help', toon: false },
+  };
+  const logboek = [];             // { tekst, soort, tijd, wie }
+  let ongelezen = 0;
+  const filter = new Set(Object.keys(SOORTEN));
+  const begin = Date.now();
+  let speeltijd = () => (Date.now() - begin) / 1000;
+  const klok = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const zegel = (soort) => {
+    const img = document.createElement('img');
+    img.src = `beelden/hud/zegel_${soort}.webp`;
+    img.alt = SOORTEN[soort] ? SOORTEN[soort].naam : '';
+    img.className = 'zegel';
+    return img;
+  };
+
+  // Het portret in de adviseur: de verteller, of wie er net praat.
+  function zetAdviseur(portret) {
+    el('adviseur-portret').src = `beelden/portretten/${portret || 'bartholt'}.jpg`;
+  }
+  function zetTeller() {
+    el('adviseur-teller').hidden = ongelezen === 0 || !el('logboek').hidden;
+    el('adviseur-teller').textContent = ongelezen > 9 ? '9+' : String(ongelezen);
+  }
+  function tekenLogboek() {
+    const lijst = el('logboek-lijst');
+    lijst.textContent = '';
+    const zichtbaar = logboek.filter((r) => filter.has(r.soort));
+    if (!zichtbaar.length) {
+      const leeg = document.createElement('div');
+      leeg.className = 'log-leeg';
+      leeg.textContent = 'No messages yet.';
+      lijst.appendChild(leeg);
+    }
+    for (const r of zichtbaar.slice().reverse()) {
+      const regel = document.createElement('div');
+      regel.className = `log-regel soort-${r.soort}`;
+      regel.appendChild(zegel(r.soort));
+      const tekst = document.createElement('span');
+      tekst.textContent = r.wie ? `${r.wie}: ${r.tekst}` : r.tekst;
+      regel.appendChild(tekst);
+      const tijd = document.createElement('small');
+      tijd.textContent = klok(r.tijd);
+      regel.appendChild(tijd);
+      lijst.appendChild(regel);
+    }
+  }
+  // De filters bovenaan het logboek: tik een zegel om die soort aan of uit te zetten.
+  for (const soort of Object.keys(SOORTEN)) {
+    const knop = document.createElement('button');
+    knop.type = 'button';
+    knop.className = 'log-filter actief';
+    knop.dataset.soort = soort;
+    knop.setAttribute('aria-label', SOORTEN[soort].naam);
+    knop.appendChild(zegel(soort));
+    knop.addEventListener('click', () => {
+      if (filter.has(soort) && filter.size === Object.keys(SOORTEN).length) {
+        filter.clear();
+        filter.add(soort);           // eerste tik: alleen deze soort
+      } else if (filter.has(soort)) filter.delete(soort);
+      else filter.add(soort);
+      if (!filter.size) for (const s of Object.keys(SOORTEN)) filter.add(s);
+      for (const k of el('logboek-filters').children) if (k.dataset.soort) k.classList.toggle('actief', filter.has(k.dataset.soort));
+      zetFilterTekst();
+      tekenLogboek();
+    });
+    el('logboek-filters').appendChild(knop);
+  }
+  const filterTekst = document.createElement('span');
+  filterTekst.className = 'log-filtertekst';
+  el('logboek-filters').appendChild(filterTekst);
+  function zetFilterTekst() {
+    const alle = filter.size === Object.keys(SOORTEN).length;
+    filterTekst.textContent = alle ? 'All messages' : [...filter].map((s) => SOORTEN[s].naam).join(', ');
+  }
+  zetFilterTekst();
+  const klapLogboek = (open) => {
+    el('logboek').hidden = !open;
+    el('adviseur').classList.toggle('open', open);
+    if (open) {
+      ongelezen = 0;
+      tekenLogboek();
+      el('meldingen').textContent = '';
+    }
+    zetTeller();
+  };
+  el('adviseur').addEventListener('click', () => klapLogboek(el('logboek').hidden));
+
+  // Instellingen achter het tandwiel.
+  el('knop-instellingen').addEventListener('click', () => {
+    el('instellingen').hidden = !el('instellingen').hidden;
+    el('knop-instellingen').classList.toggle('actief', !el('instellingen').hidden);
+  });
+
+  // --- De bediening rechtsonder ------------------------------------------------
+  // Hamer = bouwpaneel, zwaard = legerpaneel. Er staat er hooguit één open.
+  // Wat open stond, onthoudt het spel voor deze sessie.
+  let paneel = null;
+  try { paneel = sessionStorage.getItem('burcht-banier.paneel') || null; } catch (fout) { /* geen opslag */ }
+  let bouwtNu = false;
+  let legerStand = { zichtbaar: false };
+  function zetPaneel(nieuw) {
+    paneel = nieuw;
+    try { sessionStorage.setItem('burcht-banier.paneel', paneel || ''); } catch (fout) { /* geen opslag */ }
+    el('knop-hamer').classList.toggle('actief', paneel === 'bouw');
+    el('knop-zwaard').classList.toggle('actief', paneel === 'leger');
+    el('bouw-knoppen').hidden = !(paneel === 'bouw' || bouwtNu);
+    const leger = paneel === 'leger' && legerStand.zichtbaar;
+    el('leger-balk').hidden = !leger;
+    el('leger-groepen').hidden = !leger || el('leger-groepen').dataset.leeg === '1';
+    el('leger-leeg').hidden = !(paneel === 'leger' && !legerStand.zichtbaar);
+  }
+  zetPaneel(paneel);
+  el('knop-hamer').addEventListener('click', () => zetPaneel(paneel === 'bouw' ? null : 'bouw'));
+  el('knop-zwaard').addEventListener('click', () => zetPaneel(paneel === 'leger' ? null : 'leger'));
 
   // Tip om de app op het beginscherm te zetten. Alleen als je nog in
   // Safari zit en de tip niet eerder hebt gesloten.
@@ -80,12 +206,15 @@ export function maakUi() {
     el('volkpaneel').hidden = !open;
     el('voorraad').classList.toggle('open', open);
   };
-  el('voorraad').addEventListener('click', () => {
+  const tikVolk = () => {
     el('legerpaneel').hidden = true;
     el('handelpaneel').hidden = true;
     klapVolk(el('volkpaneel').hidden);
-  });
-  el('volk-sluit').addEventListener('click', () => klapVolk(false));
+    el('knop-buidel').classList.toggle('actief', !el('volkpaneel').hidden);
+  };
+  el('voorraad').addEventListener('click', tikVolk);
+  el('knop-buidel').addEventListener('click', tikVolk);
+  el('volk-sluit').addEventListener('click', () => { klapVolk(false); el('knop-buidel').classList.remove('actief'); });
 
   // De knop Test klapt het paneel van de prestatietest open en dicht.
   el('knop-test').addEventListener('click', () => {
@@ -106,15 +235,36 @@ export function maakUi() {
       el('tegelinfo').textContent = tekst;
       el('tegelinfo').hidden = !tekst;
     },
-    toonMelding(tekst) {
+    // Een bericht. soort = vijand, economie, leger, verhaal of uitleg.
+    // toon = true: ook even in beeld, ook als die soort normaal stil is;
+    // false: alleen in het logboek.
+    toonMelding(tekst, { soort = 'uitleg', toon, wie } = {}) {
+      if (!SOORTEN[soort]) soort = 'uitleg';
+      logboek.push({ tekst, soort, tijd: speeltijd(), wie: wie || '' });
+      if (logboek.length > 60) logboek.shift();
+      if (!el('logboek').hidden) tekenLogboek();
+      else {
+        ongelezen++;
+        zetTeller();
+      }
+      const inBeeld = toon === undefined ? SOORTEN[soort].toon : toon;
+      if (!inBeeld || !el('logboek').hidden) return;
       const regel = document.createElement('div');
-      regel.className = 'plaat melding';
-      regel.textContent = tekst;
+      regel.className = `melding soort-${soort}`;
+      regel.appendChild(zegel(soort));
+      const span = document.createElement('span');
+      span.textContent = tekst;
+      regel.appendChild(span);
+      regel.addEventListener('click', () => regel.remove());
       el('meldingen').appendChild(regel);
-      // Hooguit drie berichten tegelijk: anders zie je de kaart niet meer.
-      while (el('meldingen').children.length > 3) el('meldingen').firstChild.remove();
-      setTimeout(() => regel.remove(), 8000);
+      // Hooguit twee tegelijk in beeld: anders zie je de kaart niet meer.
+      while (el('meldingen').children.length > 2) el('meldingen').firstChild.remove();
+      const woorden = tekst.split(/\s+/).length;
+      setTimeout(() => regel.remove(), Math.max(3500, woorden * 330));
     },
+    // Het logboek, voor de tests: [{ tekst, soort }].
+    logboek: () => logboek.map(({ tekst, soort }) => ({ tekst, soort })),
+    zetSpeeltijd(functie) { speeltijd = functie; },
     opNaarStart(functie) {
       el('knop-start').addEventListener('click', functie);
     },
@@ -356,6 +506,9 @@ export function maakUi() {
     // Een bericht in de verhaalbalk: portret, naam en tekst. Komen er meer
     // tegelijk, dan wachten ze op hun beurt. Tik om het weg te halen.
     toonVerhaal({ naam, portret, tekst }) {
+      logboek.push({ tekst, soort: 'verhaal', tijd: speeltijd(), wie: naam });
+      if (!el('logboek').hidden) tekenLogboek();
+      else { ongelezen++; zetTeller(); }
       verhaalRij.push({ naam, portret, tekst });
       if (el('verhaal').hidden) volgendVerhaal();
     },
@@ -363,6 +516,7 @@ export function maakUi() {
       verhaalRij.length = 0;
       clearTimeout(verhaalKlok);
       el('verhaal').hidden = true;
+      zetAdviseur(null);
     },
     opMissieBegin(functie) {
       el('missie-begin').addEventListener('click', functie);
@@ -469,8 +623,10 @@ export function maakUi() {
     //   zichtbaar = de knoppen tonen, hint = de zin erboven,
     //   kader = de knop Kader staat aan, gekozen = er is iemand gekozen
     toonLeger({ zichtbaar, hint, kader, gekozen }) {
-      el('leger-balk').hidden = !zichtbaar;
-      if (!zichtbaar) el('leger-groepen').hidden = true;
+      // Kies je soldaten op de kaart, dan gaat het zwaard vanzelf open.
+      if (gekozen && !legerStand.gekozen && paneel !== 'bouw') paneel = 'leger';
+      legerStand = { zichtbaar, gekozen };
+      zetPaneel(paneel);
       el('legerhint').textContent = hint || '';
       el('legerhint').hidden = !hint;
       el('knop-kader').classList.toggle('actief', !!kader);
@@ -482,7 +638,8 @@ export function maakUi() {
       const teken = lijst.map((k) => `${k.sleutel}|${k.tekst}|${k.actief ? 1 : 0}`).join(';');
       if (doos.dataset.teken === teken) return;
       doos.dataset.teken = teken;
-      doos.hidden = lijst.length === 0;
+      doos.dataset.leeg = lijst.length === 0 ? '1' : '0';
+      doos.hidden = lijst.length === 0 || paneel !== 'leger' || !legerStand.zichtbaar;
       doos.textContent = '';
       for (const k of lijst) {
         const knop = document.createElement('button');
@@ -566,8 +723,16 @@ export function maakUi() {
         }
         knop.dataset.sleutel = sleutel;
         if (groep) knop.dataset.groep = groep;
+        if (sleutel === 'sloop') {
+          const img = document.createElement('img');
+          img.src = 'beelden/hud/slopen.webp';
+          img.alt = '';
+          img.className = 'knop-ikoon';
+          knop.prepend(img);
+        }
       }
       toonGroep(null);
+      zetPaneel(paneel);
     },
     // Laat zien waar je mee bezig bent: welke knop actief is, de uitleg
     // erboven, en of je kunt neerzetten.
@@ -581,6 +746,8 @@ export function maakUi() {
       el('bouwhint').textContent = hint || '';
       el('bouwhint').hidden = !hint;
       el('bouw-acties').hidden = !actief;
+      bouwtNu = !!actief;
+      zetPaneel(paneel);
       el('knop-bevestig').textContent = bevestigTekst || 'Place';
       el('knop-bevestig').disabled = !kanBevestigen;
       el('knop-bevestig').classList.toggle('gevaar', actief === 'sloop');
