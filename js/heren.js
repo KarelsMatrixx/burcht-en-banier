@@ -995,6 +995,99 @@ function valkenier(ctx, houding, beeld) {
   }
 }
 
+// ---------- De koning (jouw blauwe koning, en de rode in vrij spel): geen kroon, wel een
+// bontkraag, een gouden speld, bruin haar en baard, zwaard en schild in teamkleur.
+function koning(ctx, houding, beeld, def = {}) {
+  const K = def.kleur || '#2f5fc4';
+  const goud = def.wapen && def.wapen !== '#1d1d22' ? def.wapen : '#e3c04a';
+  const huid = '#e1c0a0';
+  const staal = '#c3c8d0', staalD = '#9aa0aa';
+  const haar = '#4a2f1c';
+  const vecht = houding !== 'lopen';
+  const wip = !vecht && beeld % 2 ? -0.7 : 0;
+  const pas = vecht ? 1.6 : [0, 1.6, 0, -1.6][beeld];
+  const wapper = vecht ? 0 : [0, 1.1, 0, -1.1][beeld];
+  const mx = 13;
+  const donker = tint(K, -0.3);
+  // lange mantel achter de schouders
+  vlak(ctx, [[mx - 5, 16.8 + wip], [mx + 5, 16.8 + wip], [mx + 5.4 - wapper, 31.4], [mx - 7.4 - wapper, 31.8]], donker);
+  vlak(ctx, [[mx + 1, 17 + wip], [mx + 5, 16.8 + wip], [mx + 5.4 - wapper, 31.4], [mx + 1.4 - wapper, 31.6]], 'rgba(255,255,255,0.10)');
+  lijn(ctx, mx - 7.4 - wapper, 31.6, mx + 5.4 - wapper, 31.2, goud, 0.8);
+  benen(ctx, mx, wip, pas, { top: 28, b: 3, sp: 2.2, been: ['#3a3a44', '#4a4a56'], laars: '#2a2220', laarsH: 5 });
+  // rok in teamkleur met gouden zoom en riem
+  vlak(ctx, [[mx - 4.8, 17 + wip], [mx + 4.8, 17 + wip], [mx + 5.2, 30 + wip], [mx - 5.2, 30 + wip]], K);
+  blok(ctx, mx - 5, 18 + wip, 2.6, 12, 'rgba(0,0,0,0.2)');
+  blok(ctx, mx + 3.4, 18 + wip, 1.8, 12, 'rgba(255,255,255,0.18)');
+  lijn(ctx, mx - 5.2, 29.7 + wip, mx + 5.2, 29.7 + wip, goud, 1.1);
+  lijn(ctx, mx - 4.8, 17.4 + wip, mx - 5.2, 30 + wip, goud, 0.7);
+  lijn(ctx, mx + 4.8, 17.4 + wip, mx + 5.2, 30 + wip, goud, 0.7);
+  blok(ctx, mx - 4.8, 24.2 + wip, 9.6, 1.3, '#3a2a1a');
+  blok(ctx, mx - 1, 24 + wip, 2, 1.7, goud);
+  // bontkraag met zwarte spikkels
+  ovaal(ctx, mx, 17.8 + wip, 5.6, 2.4, '#efece4');
+  for (const dx of [-3.6, -1.6, 0.6, 2.6, 4]) ovaal(ctx, mx + dx, 18.2 + wip, 0.5, 0.8, '#2a2a30');
+  ovaal(ctx, mx + 2.6, 17.2 + wip, 2.4, 0.8, 'rgba(255,255,255,0.5)');
+  ovaal(ctx, mx, 18.6 + wip, 1, 1, goud);
+  // schouders van staal
+  for (const sg of [-1, 1]) {
+    ovaal(ctx, mx + sg * 5.6, 19.2 + wip, 2.7, 2.3, sg < 0 ? staalD : staal);
+    ovaal(ctx, mx + sg * 5.6 + 0.6, 18.5 + wip, 1, 0.6, 'rgba(255,255,255,0.45)');
+  }
+  // rouwband om de linkerarm
+  if (def.rouwband) blok(ctx, mx - 7.9, 21.4 + wip, 2.8, 1.5, '#1d1d22');
+  // hoofd: bruin haar, baard
+  const hx = mx + 0.3, hy = 11 + wip;
+  lichtBlok(ctx, hx - 1.4, hy + 3.2, 2.8, 2.2, tint(huid, -0.1), 0.15);
+  vlak(ctx, [[hx - 3.8, hy + 0.6], [hx + 3.8, hy + 0.6], [hx + 3, hy + 5.4], [hx, hy + 7.4], [hx - 3, hy + 5.4]], haar);
+  gezicht(ctx, hx, hy, { huid, brauw: 'zwaar', mond: 'streng', brauwKleur: '#2a1a10' }, 3.5, 4);
+  vlak(ctx, [[hx - 2.6, hy + 2.4], [hx + 2.6, hy + 2.4], [hx + 1.8, hy + 5.4], [hx, hy + 6.6], [hx - 1.8, hy + 5.4]], haar);
+  lijn(ctx, hx - 1, hy + 3.1, hx + 1.2, hy + 3.1, '#7a3a30', 0.55);
+  ovaal(ctx, hx, hy - 2.6, 4.5, 3.2, haar);
+  vlak(ctx, [[hx - 4.4, hy - 1.6], [hx - 3.2, hy + 3.6], [hx - 2.6, hy - 0.6]], haar);
+  ovaal(ctx, hx + 1.8, hy - 4.4, 1.6, 0.8, 'rgba(255,255,255,0.18)');
+  // schild en zwaard
+  const schild = (sx, sy) => {
+    const P = [[sx - 3.8, sy - 6], [sx + 3.8, sy - 6], [sx + 3.8, sy + 3.2], [sx, sy + 6.8], [sx - 3.8, sy + 3.2]];
+    vlak(ctx, P, goud);
+    vlak(ctx, [[sx - 3.1, sy - 5.3], [sx + 3.1, sy - 5.3], [sx + 3.1, sy + 2.9], [sx, sy + 6], [sx - 3.1, sy + 2.9]], K);
+    vlak(ctx, [[sx - 3.1, sy - 5.3], [sx - 1.2, sy - 5.3], [sx - 1.2, sy + 4.6], [sx - 3.1, sy + 2.9]], 'rgba(0,0,0,0.2)');
+    lijn(ctx, sx, sy - 4.4, sx, sy + 4.4, goud, 1.2);
+    lijn(ctx, sx - 2.4, sy - 1, sx + 2.4, sy - 1, goud, 1.2);
+    ovaal(ctx, sx, sy - 1, 0.9, 0.9, '#efece4');
+  };
+  const zwaard = (x1, y1, x2, y2) => {
+    const hoek = Math.atan2(y2 - y1, x2 - x1);
+    const dx = Math.cos(hoek), dy = Math.sin(hoek), nx = -dy, ny = dx;
+    lijn(ctx, x1, y1, x2, y2, '#e6e9ee', 1.7);
+    lijn(ctx, x1, y1, x2, y2, 'rgba(255,255,255,0.7)', 0.5);
+    lijn(ctx, x1 - nx * 2.7, y1 - ny * 2.7, x1 + nx * 2.7, y1 + ny * 2.7, goud, 1.3);
+    lijn(ctx, x1, y1, x1 - dx * 3, y1 - dy * 3, '#5a3d22', 1.4);
+    ovaal(ctx, x1 - dx * 3.5, y1 - dy * 3.5, 0.9, 0.9, goud);
+  };
+  const arm = (ax, ay, bx, by) => lijn(ctx, ax, ay, bx, by, staal, 2.6);
+  if (houding === 'lopen') {
+    schild(mx - 6.8, 23.2 + wip);
+    hand(ctx, mx - 4.6, 24 + wip, staalD, 1.6);
+    zwaard(mx + 6, 22 + wip, mx + 9.6, 5 + wip);
+    arm(mx + 5.4, 19.6 + wip, mx + 6, 22 + wip);
+    hand(ctx, mx + 6, 22.4 + wip, staalD, 1.7);
+  } else if (houding === 'hoog') {
+    schild(mx - 5.6, 21.6);
+    hand(ctx, mx - 4, 22.4, staalD, 1.6);
+    zwaard(mx + 5, 15.4, mx + 7.4, -3);
+    arm(mx + 5.4, 19.6, mx + 5, 15.8);
+    hand(ctx, mx + 5, 15.6, staalD, 1.7);
+  } else {
+    schild(mx - 4.4, 22);
+    hand(ctx, mx - 3.2, 22.6, staalD, 1.6);
+    zwaard(mx + 5, 20, mx + 22.6, 25.6);
+    arm(mx + 5.4, 19.6, mx + 5.2, 20.4);
+    hand(ctx, mx + 5.4, 20.4, staalD, 1.7);
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 0.7;
+    ctx.beginPath(); ctx.arc(mx + 4, 17, 15, -1.2, 0.4); ctx.stroke();
+  }
+}
+
 export const HEREN = {
   reinout: { teken: reinout, brede: 11 },
   mechteld: { teken: mechteld, brede: 9.6 },
@@ -1006,13 +1099,14 @@ export const HEREN = {
   rutger: { teken: rutger, brede: 12 },
   valkenier: { teken: valkenier, brede: 10.2 },
   ottger: { teken: ottger, brede: 10.5 },
+  koning: { teken: koning, brede: 11 },
 };
 
 export const heeftFiguur = (sleutel) => !!sleutel && Object.prototype.hasOwnProperty.call(HEREN, sleutel);
 
 // Bouwt een plaatje: schaduw met ring, contour, figuur. Tekent in een ruimte van 26 bij 38
 // (voeten op y = 34, midden x = 13), vergroot naar 130% zoals de oude koning.
-export function maakHeer(sleutel, houding, beeld, spiegel = false) {
+export function maakHeer(sleutel, houding, beeld, spiegel = false, def = {}) {
   const heer = HEREN[sleutel];
   const w = Math.ceil(B * SCHERPTE);
   const h = Math.ceil(H * SCHERPTE);
@@ -1027,7 +1121,7 @@ export function maakHeer(sleutel, houding, beeld, spiegel = false) {
     return [c, ctx];
   };
   const [fig, fctx] = nieuw();
-  heer.teken(fctx, houding, beeld);
+  heer.teken(fctx, houding, beeld, def);
   const sil = document.createElement('canvas');
   sil.width = w; sil.height = h;
   const sctx = sil.getContext('2d');
@@ -1060,8 +1154,8 @@ export function maakHeer(sleutel, houding, beeld, spiegel = false) {
 export function tekenHeer(naam, def) {
   const sleutel = def.figuur;
   const set = (lijst) => ({
-    rechts: lijst.map(([hd, bd]) => maakHeer(sleutel, hd, bd, false).doek),
-    links: lijst.map(([hd, bd]) => maakHeer(sleutel, hd, bd, true).doek),
+    rechts: lijst.map(([hd, bd]) => maakHeer(sleutel, hd, bd, false, def).doek),
+    links: lijst.map(([hd, bd]) => maakHeer(sleutel, hd, bd, true, def).doek),
     b: B, h: H, ax: B / 2, ay: AY,
   });
   const beelden = set([['lopen', 0], ['lopen', 1], ['lopen', 2], ['lopen', 3]]);

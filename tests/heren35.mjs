@@ -82,8 +82,8 @@ for (const h of res.heren) {
   check(t + ': de loopbeelden verschillen', h.loop >= 3, h.loop);
 }
 check('silhouetten verschillen onderling minstens 15%', res.minVerschil >= 0.15, `${res.minVerschil} ${res.paar}`);
-check('blauwe koning ongewijzigd (oude tekening)', res.blauw.n === 4 && res.blauw.b === 34 && res.blauw.h === 48 && res.blauw.ay === 44 && res.blauw.sla === 2, JSON.stringify(res.blauw));
-check('vrij spel: rode koning blijft de oude tekening', res.vrijRood.b === 34 && res.vrijRood.n === 4, JSON.stringify(res.vrijRood));
+check('blauwe koning in de nieuwe stijl (stap 36): zelfde maat als de heren, 4 loop en 2 slag', res.blauw.n === 4 && res.blauw.b === 76 && res.blauw.h === 64 && res.blauw.ay === 56 && res.blauw.sla === 2, JSON.stringify(res.blauw));
+check('vrij spel: rode koning in dezelfde nieuwe stijl', res.vrijRood.b === 76 && res.vrijRood.n === 4, JSON.stringify(res.vrijRood));
 
 // Echte levels: laden zonder fouten, rode koning staat er
 const missies = await (await fetch(url + 'data/campagne.json')).json();

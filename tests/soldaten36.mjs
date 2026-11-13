@@ -20,7 +20,7 @@ await p.goto(`http://localhost:${poort}/`); await wacht();
 const res = await p.evaluate(async () => {
   const { laadAssets } = await import('/js/assets.js');
   const A = (await (await fetch('/data/assets.json')).json()).assets;
-  const nieuwe = ['ridder', 'bijlridder', 'boogschutter', 'kruisboogschutter', 'sluipmoordenaar', 'vlammenwever', 'ladderdrager', 'werker'];
+  const nieuwe = ['ram', 'katapult', 'belegeringstoren', 'koning', 'ridder', 'bijlridder', 'boogschutter', 'kruisboogschutter', 'sluipmoordenaar', 'vlammenwever', 'ladderdrager', 'werker'];
   const sleutels = Object.keys(A).filter((k) => k.startsWith('eenheid.') && nieuwe.includes(A[k].vorm));
   const a = await laadAssets({});
   const data = (c) => c.getContext('2d').getImageData(0, 0, c.width, c.height);
@@ -33,7 +33,7 @@ const res = await p.evaluate(async () => {
   for (const k of sleutels) {
     const s = a.haal(k), vorm = A[k].vorm, blauw = k.endsWith('_blauw');
     const hd = s.houdingen || {};
-    const verwacht = vorm === 'werker' ? { last: 4, hak: 4 } : (['boogschutter', 'kruisboogschutter', 'vlammenwever'].includes(vorm) ? { schiet: 2 } : { sla: 2 });
+    const verwacht = vorm === 'werker' ? { last: 4, hak: 4 } : (['boogschutter', 'kruisboogschutter', 'vlammenwever', 'katapult'].includes(vorm) ? { schiet: 2 } : { sla: 2 });
     const sets = [s, ...Object.values(hd)];
     const alle = sets.flatMap((t) => [...t.rechts, ...t.links]);
     uit.push({
@@ -58,13 +58,14 @@ for (const e of res) {
   check(`${e.k} niets afgesneden`, e.afgesneden === 0, e.afgesneden);
   check(`${e.k} teamkleur (${e.team})`, e.team >= MIN, e.team);
   check(`${e.k} spiegel`, e.spiegel < 0.02, e.spiegel);
-  check(`${e.k} loopt (frames verschillen)`, e.loop > 0.01, e.loop);
+  if (!['ram', 'katapult', 'belegeringstoren'].includes(e.vorm)) check(`${e.k} loopt (frames verschillen)`, e.loop > 0.01, e.loop);   // machines: alleen de wielen draaien
 }
 // silhouetten van de soorten (blauw) verschillen onderling
 const soorten = res.filter((e) => e.k.endsWith('_blauw'));
 let min = 1, paar = '';
 for (let i = 0; i < soorten.length; i++) for (let j = i + 1; j < soorten.length; j++) {
   if (soorten[i].vorm === 'werker' && soorten[j].vorm === 'werker') continue;
+  if (soorten[i].vorm === 'koning' || soorten[j].vorm === 'koning') continue;
   const x = soorten[i].m0, y = soorten[j].m0; let df = 0, som = 0;
   for (let n = 0; n < x.length; n++) { if (x[n] || y[n]) som++; if (x[n] !== y[n]) df++; }
   const d = df / Math.max(1, som); if (d < min) { min = d; paar = soorten[i].k + ' / ' + soorten[j].k; }
