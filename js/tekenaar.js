@@ -12,7 +12,8 @@
 // "Diepte" is x + y in rastermaat: hoe groter, hoe verder naar voren.
 
 import { CONFIG } from './config.js';
-import { GROND_ASSET, OBJECT_ASSET, OBJECT, aansluiting } from './kaart.js';
+import { GROND_ASSET, OBJECT_ASSET, OBJECT, GROND, aansluiting } from './kaart.js';
+import { maakLandschap } from './landschap.js';
 import { wereldNaarRaster, HALVE_BREEDTE, HALVE_HOOGTE, TEGEL_HOOGTE } from './iso.js';
 import { tekenLadderOp } from './kunst.js';
 
@@ -56,6 +57,9 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     [assets.haal('eenheid.vlam_blauw'), assets.haal('eenheid.vlam_rood')],
     [assets.haal('eenheid.koning_blauw'), assets.haal('eenheid.koning_rood')],
   ];
+  // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
+  // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
+  const landschap = maakLandschap(kaart);
   let pixelRatio = 1;
   let getekend = 0;
   let inPoort = 0;   // hoeveel eenheden er dit beeld in een poort zaten
@@ -133,11 +137,15 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
           const bx = x + buren[r][0];
           const by = y + buren[r][1];
           if (bx < 0 || by < 0 || bx >= kaart.breedte || by >= kaart.hoogte) continue;
-          const buur = grond[kaart.grond[by * kaart.breedte + bx]];
+          const buurGrond = kaart.grond[by * kaart.breedte + bx];
+          const buur = grond[buurGrond];
           if (buur.soort === eigen.soort || buur.rang <= eigen.rang) continue;
+          // Het landschap tekent de zachte randen zelf; alleen rond akkers blijven ze nodig.
+          if (buurGrond !== GROND.AKKER && kaart.grond[i] !== GROND.AKKER) continue;
           if (!randen) randen = [];
           randen.push(buur.randen[r][Math.floor(tegelToeval(x, y, 5 + r) * buur.randen[r].length)]);
         }
+        // Het landschap tekent de zachte randen zelf; alleen rond akkers blijven ze nodig.
         randBeelden[i] = randen;
 
         // Slagschaduw: de voet van het object, opgeschoven naar linksboven.
@@ -164,6 +172,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     sctx.fill(schaduwen);
   }
   kiesPlaatjes();
+  landschap.herbouw();
 
   // Werkgeheugen voor de zichtbare eenheden, steeds hergebruikt.
   const zichtbaar = new Uint16Array(MAX_EENHEDEN);     // nummers van zichtbare eenheden
@@ -264,15 +273,19 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
 
     // --- Ronde 1: grond -----------------------------------------------------
     getekend = 0;
+    landschap.teken(ctx, zichtLinks, zichtBoven, zichtRechts, grondOnder);
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
         const wx = (x - y) * HALVE_BREEDTE;   // bovenste punt van de ruit
         const wy = (x + y) * HALVE_HOOGTE;
         if (wx < zichtLinks || wx > zichtRechts || wy < zichtBoven || wy > grondOnder) continue;
         const i = y * kaart.breedte + x;
-        const g = grondBeeld[i];
-        ctx.drawImage(g.beeld, wx - g.ax, wy + TEGEL_HOOGTE - g.ay, g.b, g.h);
         const randen = randBeelden[i];
+        if (kaart.grond[i] !== GROND.AKKER && !randen) continue;
+        if (kaart.grond[i] === GROND.AKKER) {
+          const g = grondBeeld[i];
+          ctx.drawImage(g.beeld, wx - g.ax, wy + TEGEL_HOOGTE - g.ay, g.b, g.h);
+        }
         if (randen) {
           for (let k = 0; k < randen.length; k++) {
             const r = randen[k];
