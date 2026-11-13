@@ -559,6 +559,7 @@ export function maakUi() {
         klaar();
       };
       toon();
+      el('meldingen').textContent = '';   // de scène staat alleen in beeld
       el('scene').hidden = false;
     },
     // De knoppen achter het tandwiel. Na een keuze gaat het menu dicht.
