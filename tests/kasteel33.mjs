@@ -24,6 +24,7 @@ const uitslag = await p.evaluate(async () => {
   const kastelen = (await (await fetch('/data/kastelen.json')).json()).kastelen;
   const uit = [];
   for (const [kn, recept] of Object.entries(kaarten)) {
+    if (recept.zonderRood) continue;   // de proloog heeft geen kasteel van rood
     for (const [on, ontwerp] of Object.entries(kastelen)) {
       const k = maakKaart({ ...recept, kasteel: ontwerp });
       const B = k.breedte;

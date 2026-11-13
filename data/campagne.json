@@ -10,7 +10,8 @@
   "berichten: wat figuren zeggen tijdens het level. bij = tijd (seconden), aanval (nummer), burcht, koning, roodBurcht, roodKoning (onder dit percentage leven). wie = een figuur of heer. portret mag een andere uitdrukking kiezen. Hooguit 40 woorden. berichtenAltijd geldt in elk level.",
   "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. muur = leven van zijn muren, torens en poorten in procenten (kastelenontwerp: 100% in level 1 tot 240% in level 10). koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team. koning.schiet = { bereik, schade, slagTijd }: de koning schiet pijlen (Mechteld).",
   "kasteel (stap 33): het ontwerp van het kasteel van rood, uit data/kastelen.json.",
-  "proloog: true maakt van een level de proloog (js/proloog.js): taken van Bartholt, Reinout als gast, nacht, overmacht, scène, geen winst of verlies. De rode heer heeft dan geen koning in zijn burcht; koning.uiterlijk is het uiterlijk van de gast (Reinout)."
+  "proloog: true maakt van een level de proloog (js/proloog.js): taken van Bartholt, Reinout als gast, nacht, overmacht, scène, geen winst of verlies. De rode heer heeft dan geen koning in zijn burcht; koning.uiterlijk is het uiterlijk van de gast (Reinout).",
+  "doel (doeltype B, js/doel.js): een bouwwerk houden tot de tijd om is. soort hut = de hut van Gesina midden op de kaart. duur in seconden, leven van de hut, golven = { eerste, tussen (seconden), begin, erbij, max (mannen), leger = aandelen }. Valt de hut, dan verlies je. Zet rood.eersteAanval hoog: de golven komen van het doel, niet van de economie van rood."
  ],
  "figuren": {
   "karel": {
@@ -71,7 +72,7 @@
    "heer": null,
    "portret": "wessel",
    "profiel": "proloog",
-   "kaart": "standaard",
+   "kaart": "aldervale",
    "punt": {
     "x": 6.5,
     "y": 71.4
@@ -347,14 +348,14 @@
    "heer": "Huntmaster Folkert Brandt",
    "portret": "brandt",
    "profiel": "normaal",
-   "kaart": "ijzerbroek",
+   "kaart": "veen",
    "punt": {
     "x": 44.7,
     "y": 38.4
    },
-   "speelbaar": false,
-   "intro": "In the marsh stands Mother Gesina's hut. She needs eight minutes to call the Silent Folk. Hold the hut.",
-   "uit": "",
+   "speelbaar": true,
+   "intro": "In the middle of the fen stands the hut of Mother Gesina, who helped Wessel into the world. She needs eight minutes to call the Silent Folk. Huntmaster Brandt is hunting her. Hold the hut.",
+   "uit": "The Silent Folk rise out of the reeds and Brandt's hunters flee. Gesina takes your hand: \"Ottger is not angry, Karel. He is grieving, and grief with an army is more dangerous.\" From now on the Silent Folk stand with you.",
    "wessel": "The first letter: \"I am not afraid. Everything here is very big.\"",
    "beloning": [
     "sluipmoordenaar",
@@ -386,9 +387,42 @@
       "haar": "#3a2e24",
       "baard": "#4a3a2c"
      }
+    },
+    "eersteAanval": 99999
+   },
+   "kasteel": "jachtkamp",
+   "verteller": "gesina",
+   "doel": {
+    "soort": "hut",
+    "duur": 480,
+    "leven": 900,
+    "golven": {
+     "eerste": 40,
+     "tussen": 55,
+     "begin": 4,
+     "erbij": 1,
+     "max": 10,
+     "leger": {
+      "sluipmoordenaar": 2,
+      "boogschutter": 2,
+      "ridder": 1
+     }
     }
    },
-   "kasteel": "jachtkamp"
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 150,
+     "wie": "heer",
+     "tekst": "A king in my fen? Go home, Karel of Aldervale. The duke wants the old woman, not you."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 3,
+     "wie": "bartholt",
+     "tekst": "Their assassins hide in the reeds, Sire. You only see them when they strike. Keep soldiers right next to the hut."
+    }
+   ]
   },
   {
    "id": 5,

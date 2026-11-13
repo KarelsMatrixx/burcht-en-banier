@@ -5,109 +5,472 @@
   "water: hoe nat (0.2 weinig, 0.4 veel meren). zand: de zandrand rond het water. bos: hoe lager, hoe meer bos (0.55 veel, 0.68 weinig).",
   "start: waar jouw burcht staat, als deel van de breedte en hoogte. Rood staat altijd gespiegeld door het midden.",
   "vindplaatsen: steen (STEEN), kopererts (IJZER) en bos (BOOM) bij jou, met dx en dy vanaf je burcht; rood krijgt ze gespiegeld. midden: hetzelfde, vanaf het midden van de kaart.",
-  "vorm: de vorm van het land (stap 34): pas, kloof, rotsrug, moeras of polder; zie js/kaart.js stap 1b. Rotsen zijn steen: onbegaanbaar, en een steengroeve kan ertegen.", "De generator zorgt altijd dat er een weg over land is van jouw poort naar die van rood: zo nodig maakt hij een doorwaadbare plek en kapt hij een pad."
+  "vorm: de vorm van het land (stap 34): pas, kloof, rotsrug, moeras of polder; zie js/kaart.js stap 1b. Rotsen zijn steen: onbegaanbaar, en een steengroeve kan ertegen.",
+  "De generator zorgt altijd dat er een weg over land is van jouw poort naar die van rood: zo nodig maakt hij een doorwaadbare plek en kapt hij een pad.",
+  "zonderRood, eigenMuur, feest (proloog): geen kasteel van rood; jouw ringmuur met poort staat er al; extra huisjes, gehuchten, feesttenten en vlaggen (FEEST in js/kaart.js)."
  ],
  "kaarten": {
   "standaard": {
    "naam": "The Midlands",
-   "breedte": 64, "hoogte": 64, "zaad": 20261110,
-   "water": 0.3, "zand": 0.36, "bos": 0.62, "start": [0.22, 0.78],
-   "vindplaatsen": [
-    { "soort": "STEEN", "dx": -9, "dy": -10, "straal": 2.6 },
-    { "soort": "IJZER", "dx": 4, "dy": 10, "straal": 2.2 },
-    { "soort": "BOOM", "dx": -10, "dy": 3, "straal": 3.5 }
+   "breedte": 64,
+   "hoogte": 64,
+   "zaad": 20261110,
+   "water": 0.3,
+   "zand": 0.36,
+   "bos": 0.62,
+   "start": [
+    0.22,
+    0.78
    ],
-   "midden": [{ "soort": "IJZER", "dx": -4, "dy": 3, "straal": 2.4 }]
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -9,
+     "dy": -10,
+     "straal": 2.6
+    },
+    {
+     "soort": "IJZER",
+     "dx": 4,
+     "dy": 10,
+     "straal": 2.2
+    },
+    {
+     "soort": "BOOM",
+     "dx": -10,
+     "dy": 3,
+     "straal": 3.5
+    }
+   ],
+   "midden": [
+    {
+     "soort": "IJZER",
+     "dx": -4,
+     "dy": 3,
+     "straal": 2.4
+    }
+   ]
   },
   "dal": {
    "naam": "The Green Vale",
-   "breedte": 56, "hoogte": 56, "zaad": 1101,
-   "water": 0.2, "zand": 0.25, "bos": 0.56, "start": [0.22, 0.78],
-   "vindplaatsen": [
-    { "soort": "STEEN", "dx": -8, "dy": -8, "straal": 3 },
-    { "soort": "IJZER", "dx": 5, "dy": 9, "straal": 2.4 },
-    { "soort": "BOOM", "dx": -9, "dy": 4, "straal": 3.5 }
+   "breedte": 56,
+   "hoogte": 56,
+   "zaad": 1101,
+   "water": 0.2,
+   "zand": 0.25,
+   "bos": 0.56,
+   "start": [
+    0.22,
+    0.78
    ],
-   "midden": [{ "soort": "STEEN", "dx": 0, "dy": 0, "straal": 2 }]
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -8,
+     "dy": -8,
+     "straal": 3
+    },
+    {
+     "soort": "IJZER",
+     "dx": 5,
+     "dy": 9,
+     "straal": 2.4
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3.5
+    }
+   ],
+   "midden": [
+    {
+     "soort": "STEEN",
+     "dx": 0,
+     "dy": 0,
+     "straal": 2
+    }
+   ]
   },
   "meren": {
    "naam": "The Two Lakes",
-   "breedte": 64, "hoogte": 64, "zaad": 2202,
-   "water": 0.4, "zand": 0.45, "bos": 0.64, "start": [0.2, 0.8],
-   "vindplaatsen": [
-    { "soort": "STEEN", "dx": -9, "dy": -9, "straal": 2.4 },
-    { "soort": "IJZER", "dx": 6, "dy": 9, "straal": 2 },
-    { "soort": "BOOM", "dx": -9, "dy": 4, "straal": 3 }
+   "breedte": 64,
+   "hoogte": 64,
+   "zaad": 2202,
+   "water": 0.4,
+   "zand": 0.45,
+   "bos": 0.64,
+   "start": [
+    0.2,
+    0.8
    ],
-   "midden": [{ "soort": "IJZER", "dx": -3, "dy": 3, "straal": 2.6 }, { "soort": "STEEN", "dx": 4, "dy": -4, "straal": 2 }]
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -9,
+     "dy": -9,
+     "straal": 2.4
+    },
+    {
+     "soort": "IJZER",
+     "dx": 6,
+     "dy": 9,
+     "straal": 2
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3
+    }
+   ],
+   "midden": [
+    {
+     "soort": "IJZER",
+     "dx": -3,
+     "dy": 3,
+     "straal": 2.6
+    },
+    {
+     "soort": "STEEN",
+     "dx": 4,
+     "dy": -4,
+     "straal": 2
+    }
+   ]
   },
   "grensland": {
    "naam": "The Borderland",
-   "breedte": 72, "hoogte": 72, "zaad": 3303,
-   "water": 0.28, "zand": 0.34, "bos": 0.6, "start": [0.18, 0.82],
-   "vindplaatsen": [
-    { "soort": "STEEN", "dx": -11, "dy": -11, "straal": 2.4 },
-    { "soort": "BOOM", "dx": -10, "dy": 3, "straal": 3 }
+   "breedte": 72,
+   "hoogte": 72,
+   "zaad": 3303,
+   "water": 0.28,
+   "zand": 0.34,
+   "bos": 0.6,
+   "start": [
+    0.18,
+    0.82
    ],
-   "midden": [{ "soort": "IJZER", "dx": -5, "dy": 4, "straal": 2.6 }, { "soort": "IJZER", "dx": 5, "dy": -4, "straal": 1.8 }]
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -11,
+     "dy": -11,
+     "straal": 2.4
+    },
+    {
+     "soort": "BOOM",
+     "dx": -10,
+     "dy": 3,
+     "straal": 3
+    }
+   ],
+   "midden": [
+    {
+     "soort": "IJZER",
+     "dx": -5,
+     "dy": 4,
+     "straal": 2.6
+    },
+    {
+     "soort": "IJZER",
+     "dx": 5,
+     "dy": -4,
+     "straal": 1.8
+    }
+   ]
   },
   "zevenwind": {
    "naam": "The Sevenwinds Pass",
-   "breedte": 64, "hoogte": 64, "zaad": 4404,
-   "water": 0.12, "zand": 0.2, "bos": 0.62, "start": [0.2, 0.8],
-   "vorm": { "soort": "pas", "breed": 0.2, "smal": 0.07, "lang": 0.08 },
-   "vindplaatsen": [
-    { "soort": "STEEN", "dx": -9, "dy": -9, "straal": 2.4 },
-    { "soort": "IJZER", "dx": 6, "dy": 9, "straal": 2 },
-    { "soort": "BOOM", "dx": -9, "dy": 4, "straal": 3.2 }
+   "breedte": 64,
+   "hoogte": 64,
+   "zaad": 4404,
+   "water": 0.12,
+   "zand": 0.2,
+   "bos": 0.62,
+   "start": [
+    0.2,
+    0.8
    ],
-   "midden": [{ "soort": "BOOM", "dx": 0, "dy": 0, "straal": 2 }]
+   "vorm": {
+    "soort": "pas",
+    "breed": 0.2,
+    "smal": 0.07,
+    "lang": 0.08
+   },
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -9,
+     "dy": -9,
+     "straal": 2.4
+    },
+    {
+     "soort": "IJZER",
+     "dx": 6,
+     "dy": 9,
+     "straal": 2
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3.2
+    }
+   ],
+   "midden": [
+    {
+     "soort": "BOOM",
+     "dx": 0,
+     "dy": 0,
+     "straal": 2
+    }
+   ]
   },
   "ijzerbroek": {
    "naam": "The Ironmarsh",
-   "breedte": 68, "hoogte": 68, "zaad": 5505,
-   "water": 0.1, "zand": 0.3, "bos": 0.6, "start": [0.19, 0.81],
-   "vorm": { "soort": "moeras", "nat": 0.42 },
-   "vindplaatsen": [
-    { "soort": "STEEN", "dx": -10, "dy": -9, "straal": 2.4 },
-    { "soort": "IJZER", "dx": 6, "dy": 9, "straal": 2.2 },
-    { "soort": "BOOM", "dx": -9, "dy": 4, "straal": 3.2 }
+   "breedte": 68,
+   "hoogte": 68,
+   "zaad": 5505,
+   "water": 0.1,
+   "zand": 0.3,
+   "bos": 0.6,
+   "start": [
+    0.19,
+    0.81
    ],
-   "midden": [{ "soort": "IJZER", "dx": -4, "dy": 4, "straal": 2.6 }, { "soort": "IJZER", "dx": 4, "dy": -4, "straal": 2.2 }]
+   "vorm": {
+    "soort": "moeras",
+    "nat": 0.42
+   },
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -10,
+     "dy": -9,
+     "straal": 2.4
+    },
+    {
+     "soort": "IJZER",
+     "dx": 6,
+     "dy": 9,
+     "straal": 2.2
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3.2
+    }
+   ],
+   "midden": [
+    {
+     "soort": "IJZER",
+     "dx": -4,
+     "dy": 4,
+     "straal": 2.6
+    },
+    {
+     "soort": "IJZER",
+     "dx": 4,
+     "dy": -4,
+     "straal": 2.2
+    }
+   ]
   },
   "reuzenrug": {
    "naam": "The Giant's Spine",
-   "breedte": 64, "hoogte": 64, "zaad": 6606,
-   "water": 0.15, "zand": 0.22, "bos": 0.64, "start": [0.2, 0.8],
-   "vorm": { "soort": "rotsrug", "dik": 0.04, "gaten": [-0.14, 0.14], "gat": 0.035 },
+   "breedte": 64,
+   "hoogte": 64,
+   "zaad": 6606,
+   "water": 0.15,
+   "zand": 0.22,
+   "bos": 0.64,
+   "start": [
+    0.2,
+    0.8
+   ],
+   "vorm": {
+    "soort": "rotsrug",
+    "dik": 0.04,
+    "gaten": [
+     -0.14,
+     0.14
+    ],
+    "gat": 0.035
+   },
    "vindplaatsen": [
-    { "soort": "STEEN", "dx": -9, "dy": -9, "straal": 2.4 },
-    { "soort": "IJZER", "dx": 6, "dy": 9, "straal": 2 },
-    { "soort": "BOOM", "dx": -9, "dy": 4, "straal": 3.2 }
+    {
+     "soort": "STEEN",
+     "dx": -9,
+     "dy": -9,
+     "straal": 2.4
+    },
+    {
+     "soort": "IJZER",
+     "dx": 6,
+     "dy": 9,
+     "straal": 2
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3.2
+    }
    ],
    "midden": []
   },
   "grauwvoort": {
    "naam": "The Greyford Gorge",
-   "breedte": 64, "hoogte": 64, "zaad": 7707,
-   "water": 0.1, "zand": 0.2, "bos": 0.64, "start": [0.2, 0.8],
-   "vorm": { "soort": "kloof", "breed": 0.2, "smal": 0.05, "lang": 0.24 },
+   "breedte": 64,
+   "hoogte": 64,
+   "zaad": 7707,
+   "water": 0.1,
+   "zand": 0.2,
+   "bos": 0.64,
+   "start": [
+    0.2,
+    0.8
+   ],
+   "vorm": {
+    "soort": "kloof",
+    "breed": 0.2,
+    "smal": 0.05,
+    "lang": 0.24
+   },
    "vindplaatsen": [
-    { "soort": "STEEN", "dx": -9, "dy": -9, "straal": 2.4 },
-    { "soort": "IJZER", "dx": 6, "dy": 9, "straal": 2 },
-    { "soort": "BOOM", "dx": -9, "dy": 4, "straal": 3.2 }
+    {
+     "soort": "STEEN",
+     "dx": -9,
+     "dy": -9,
+     "straal": 2.4
+    },
+    {
+     "soort": "IJZER",
+     "dx": 6,
+     "dy": 9,
+     "straal": 2
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3.2
+    }
    ],
    "midden": []
   },
   "witte_dijk": {
    "naam": "The White Dike",
-   "breedte": 64, "hoogte": 64, "zaad": 8808,
-   "water": 0.1, "zand": 0.3, "bos": 0.66, "start": [0.2, 0.8],
-   "vorm": { "soort": "polder", "zee": 0.22 },
+   "breedte": 64,
+   "hoogte": 64,
+   "zaad": 8808,
+   "water": 0.1,
+   "zand": 0.3,
+   "bos": 0.66,
+   "start": [
+    0.2,
+    0.8
+   ],
+   "vorm": {
+    "soort": "polder",
+    "zee": 0.22
+   },
    "vindplaatsen": [
-    { "soort": "STEEN", "dx": -9, "dy": -9, "straal": 2.4 },
-    { "soort": "IJZER", "dx": 6, "dy": 9, "straal": 2 },
-    { "soort": "BOOM", "dx": -9, "dy": 4, "straal": 3.2 }
+    {
+     "soort": "STEEN",
+     "dx": -9,
+     "dy": -9,
+     "straal": 2.4
+    },
+    {
+     "soort": "IJZER",
+     "dx": 6,
+     "dy": 9,
+     "straal": 2
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3.2
+    }
+   ],
+   "midden": []
+  },
+  "veen": {
+   "naam": "The Fen",
+   "breedte": 68,
+   "hoogte": 68,
+   "zaad": 4417,
+   "water": 0.1,
+   "zand": 0.3,
+   "bos": 0.58,
+   "start": [
+    0.19,
+    0.81
+   ],
+   "vorm": {
+    "soort": "moeras",
+    "nat": 0.5
+   },
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -10,
+     "dy": -9,
+     "straal": 2.4
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3.2
+    },
+    {
+     "soort": "IJZER",
+     "dx": 7,
+     "dy": 8,
+     "straal": 2
+    }
+   ],
+   "midden": []
+  },
+  "aldervale": {
+   "naam": "Aldervale",
+   "breedte": 84,
+   "hoogte": 84,
+   "zaad": 909,
+   "water": 0.18,
+   "zand": 0.32,
+   "bos": 0.6,
+   "start": [
+    0.3,
+    0.62
+   ],
+   "zonderRood": true,
+   "eigenMuur": true,
+   "feest": true,
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -11,
+     "dy": -10,
+     "straal": 2.6
+    },
+    {
+     "soort": "BOOM",
+     "dx": -13,
+     "dy": 5,
+     "straal": 3.5
+    },
+    {
+     "soort": "IJZER",
+     "dx": 5,
+     "dy": 14,
+     "straal": 2
+    }
    ],
    "midden": []
   }

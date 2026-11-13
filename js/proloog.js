@@ -15,17 +15,20 @@ const SLEUTEL = 'burcht-banier.proloog';
 
 // De taken. telt: hoeveel van dit bouwwerk er bij moeten komen.
 const TAKEN = [
-  { taak: "Build a Woodcutter's Hut", bouw: { houthakker: 1 }, tekst: "Happy birthday to Wessel, Sire! While the cooks work, let us put the land to work. Tap the hammer and build a woodcutter's hut near the forest." },
-  { taak: 'Build a Quarry', bouw: { steengroeve: 1 }, tekst: 'Good. Wood we have, now stone. Build a quarry close to the rocks.' },
-  { taak: 'Build an Orchard', bouw: { boomgaard: 1 }, tekst: 'A feast needs food, and so does an army. Build an orchard.' },
+  { taak: "Build a Woodcutter's Hut", bouw: { houthakker: 1 }, tekst: "Happy birthday to Wessel, Sire! The whole of Aldervale is here. While the cooks work, let us put the land to work. Tap the hammer, then Work, and build a woodcutter's hut near the forest." },
+  { taak: 'Build a Quarry', bouw: { steengroeve: 1 }, tekst: 'Good. Wood we have, now stone. Build a quarry close to the grey rocks.' },
+  { taak: 'Build an Orchard', bouw: { boomgaard: 1 }, tekst: 'A feast needs food, and so does an army. Build an orchard on open grass.' },
   { taak: 'Build a House', bouw: { woning: 1 }, tekst: 'More hands, more work. Build a house: new villagers will come to live in it.' },
   { taak: 'Build Barracks', bouw: { kazerne: 1 }, tekst: 'A king needs soldiers, even on a feast day. Build barracks.' },
   { taak: 'Train two soldiers', soldaten: 2, tekst: 'Tap your barracks and train two soldiers. Knights hold the line, archers shoot from behind it.' },
-  { taak: 'Send a soldier somewhere', sturen: true, tekst: 'Tap a soldier to choose him, then tap the ground where he must go. The sword below shows all your soldiers.' },
-  { taak: 'Build a wall and a gate', bouw: { muur: 4, poort: 1 }, tekst: "Sire, Ottger's messengers at the border fort are restless. Put a wall with a gate around your keep. Better safe on a feast day." },
+  { taak: 'Send a soldier somewhere', sturen: true, tekst: 'Now give an order. Tap a soldier to choose him, then tap the ground where he must go.' },
+  { taak: 'Put a soldier on the wall', opMuur: true, tekst: "Last lesson, Sire. Ottger's messengers at the border are restless. Choose a soldier and tap your castle wall: he climbs up and keeps watch." },
 ];
 
-const ELF_MINUTEN = 11 * 60;   // daarna wordt het hoe dan ook avond
+const LOF = ['Well done, Sire.', 'Good work.', 'Splendid. The people see their king at work.', 'That will do nicely.', 'Very good.'];
+const ELF_MINUTEN = 15 * 60;   // daarna wordt het hoe dan ook avond
+const EERSTE = 6;              // seconden rondkijken voor de eerste taak
+const TUSSEN = 9;              // seconden rust tussen twee taken
 const AVOND = 20;              // seconden schemering voor de nacht
 const NACHT_DUUR = 240;        // vier minuten nacht, dan de scène
 const VERSTERKING = 50;        // elke zoveel seconden komen er meer
@@ -37,7 +40,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
   let kijk = 0;
 
   function nieuw() {
-    return { fase: 'bouw', taak: 0, tijd: 0, fasetijd: 0, basis: null, golven: 0, gemeld: {} };
+    return { fase: 'bouw', taak: 0, tijd: 0, fasetijd: 0, basis: null, golven: 0, gemeld: {}, klaar: false, gestuurd: false };
   }
   function lees() {
     try { return JSON.parse(localStorage.getItem(SLEUTEL) || 'null'); } catch (e) { return null; }
@@ -46,6 +49,14 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
     try { localStorage.setItem(SLEUTEL, JSON.stringify(s)); } catch (e) { /* niet erg */ }
   }
 
+  // Een bevel van de speler: hij stuurt soldaten ergens heen (niet de kazerne
+  // die nieuwe soldaten naar buiten stuurt).
+  const stuurWas = leger.stuur;
+  leger.stuur = (...a) => {
+    const gelukt = stuurWas(...a);
+    if (gelukt && s.fase === 'bouw' && s.basis && TAKEN[s.taak].sturen) s.gestuurd = true;
+    return gelukt;
+  };
   const bartholt = (tekst) => toonVerhaal({ naam: 'Bartholt', portret: 'bartholt', tekst });
   const tel = () => {
     const lijst = bouwer.eigenBouwwerken();
@@ -59,7 +70,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
   function zetReinout(aan) {
     if (aan && !reinout) {
       const st = kaart.start[0];
-      for (const [dx, dy] of [[3, -1], [-1, 3], [3, 1], [1, 3], [4, 0], [0, 4]]) {
+      for (const [dx, dy] of [[2, 2], [3, 1], [1, 3], [-2, 2], [2, -2], [3, 2]]) {
         const x = st.x + dx;
         const y = st.y + dy;
         if (!wegvinder.isVrij(x, y, 0)) continue;
@@ -76,6 +87,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
 
   function begin(taak) {
     s.taak = taak;
+    s.klaar = false;
+    s.gestuurd = false;
     s.basis = tel();
     s.basisSoldaten = soldaten().length;
     bartholt(TAKEN[taak].tekst);
@@ -90,7 +103,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
       return Object.entries(t.bouw).every(([k, nodig]) => (n[k] || 0) - ((s.basis || {})[k] || 0) >= nodig);
     }
     if (t.soldaten) return soldaten().length >= t.soldaten;
-    if (t.sturen) return soldaten().some((e) => e.soldaat.doel >= 0);
+    if (t.sturen) return s.gestuurd;
+    if (t.opMuur) return soldaten().some((e) => e.opMuur);
     return true;
   }
 
@@ -141,8 +155,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
       loopt = true;
       if (s.fase === 'bouw') {
         zetReinout(true);
-        if (!s.basis) begin(s.taak);
-        else toonTaak(`Task ${s.taak + 1} of ${TAKEN.length}: ${TAKEN[s.taak].taak}`);
+        if (s.basis && !s.klaar) toonTaak(`Task ${s.taak + 1} of ${TAKEN.length}: ${TAKEN[s.taak].taak}`);
       } else if (s.fase === 'avond') toonTaak('Evening: the feast is over');
       else if (s.fase === 'nacht') {
         toonTaak('Night: hold the keep');
@@ -158,11 +171,23 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
       if (kijk < 0.5) return;
       kijk = 0;
       if (s.fase === 'bouw') {
+        // Eerst even rondkijken, dan de eerste taak.
+        if (!s.basis) {
+          if (s.fasetijd >= EERSTE) begin(s.taak);
+          return;
+        }
         if (s.taak === 2 && s.fasetijd > 25 && !s.gemeld.reinout) {
           s.gemeld.reinout = true;
           toonVerhaal({ naam: 'Lord Reinout of Witherheath', portret: 'reinout', tekst: 'A fine feast, King Karel. Your boy has grown. Nine already... time runs fast in Aldervale.' });
         }
-        if (taakKlaar()) {
+        if (!s.klaar && taakKlaar()) {
+          // Klaar: even een compliment en rust, dan pas de volgende taak.
+          s.klaar = true;
+          s.fasetijd = 0;
+          toonTaak(`Done: ${TAKEN[s.taak].taak}`);
+          bartholt(LOF[s.taak % LOF.length]);
+          bewaar();
+        } else if (s.klaar && s.fasetijd >= TUSSEN) {
           if (s.taak + 1 < TAKEN.length) {
             s.fasetijd = 0;
             begin(s.taak + 1);
@@ -189,7 +214,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
     },
     // Voor de rol rechtsonder: de lijst taken.
     taken() {
-      return TAKEN.map((t, i) => ({ taak: t.taak, klaar: s.fase !== 'bouw' || i < s.taak, nu: s.fase === 'bouw' && i === s.taak }));
+      return TAKEN.map((t, i) => ({ taak: t.taak, klaar: s.fase !== 'bouw' || i < s.taak || (i === s.taak && s.klaar), nu: s.fase === 'bouw' && i === s.taak }));
     },
     fase: () => s.fase,
     // Na de scène: niets meer doen.
@@ -200,10 +225,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
       zetReinout(false);
       wegvinder.zetPoortenOpen(false);
       try { localStorage.removeItem(SLEUTEL); } catch (e) { /* niet erg */ }
-      if (loopt) {
-        zetReinout(true);
-        begin(0);
-      }
+      if (loopt) zetReinout(true);
     },
     // Voor de tests.
     stand: () => ({ ...s, reinout: !!reinout }),

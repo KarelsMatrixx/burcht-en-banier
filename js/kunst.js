@@ -2279,3 +2279,46 @@ export function tekenVaten(naam, def) {
   lijn(ctx, cx + 9, voet + 6.2, cx + 9, voet - 0.8, 'rgba(0,0,0,0.3)', 0.7);
   return { beeld: doek, b, h, ax: cx, ay: h };
 }
+
+// Feestvlaggen (proloog): twee palen met een slinger van gekleurde vlaggetjes
+// ertussen, en een wimpel op de hoogste paal.
+export function tekenVlaggen(naam, def) {
+  const b = TB;
+  const h = 64;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - HH;
+  const kleuren = def.kleuren || ['#2f5fa8', '#e2b53c', '#c23a2e', '#f1ead8', '#3f7a3a'];
+  const links = [cx - 16, voet + 2];
+  const rechts = [cx + 16, voet - 2];
+  ovaal(ctx, links[0] + 1, links[1] + 1.5, 4, 1.8, 'rgba(0,0,0,0.25)');
+  ovaal(ctx, rechts[0] + 1, rechts[1] + 1.5, 4, 1.8, 'rgba(0,0,0,0.25)');
+  // De palen
+  blok(ctx, links[0] - 1, links[1] - 34, 2, 34, '#6b4a2b');
+  blok(ctx, rechts[0] - 1, rechts[1] - 44, 2, 44, '#6b4a2b');
+  blok(ctx, links[0] - 1, links[1] - 34, 1, 34, '#8a6440');
+  // De slinger: een doorhangend touw van paal tot paal
+  const a = [links[0], links[1] - 31];
+  const z = [rechts[0], rechts[1] - 38];
+  const zak = 9;
+  const op = (t) => [a[0] + (z[0] - a[0]) * t, a[1] + (z[1] - a[1]) * t + Math.sin(Math.PI * t) * zak];
+  ctx.strokeStyle = '#3a2a1c';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  for (let i = 0; i <= 20; i++) { const p = op(i / 20); if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }
+  ctx.stroke();
+  const n = 7;
+  for (let i = 0; i < n; i++) {
+    const p1 = op((i + 0.15) / n);
+    const p2 = op((i + 0.85) / n);
+    const m = op((i + 0.5) / n);
+    vlak(ctx, [p1, p2, [m[0], m[1] + 6.5]], kleuren[i % kleuren.length]);
+    vlak(ctx, [p1, [m[0], m[1] + 0.5], [m[0], m[1] + 6.5]], 'rgba(0,0,0,0.12)');
+  }
+  // Wimpel bovenop de hoge paal: blauw met een gouden rand (Aldervale)
+  const t = [rechts[0] + 1, rechts[1] - 44];
+  vlak(ctx, [t, [t[0] + 12, t[1] + 2.5], [t[0], t[1] + 6]], '#2f5fa8');
+  lijn(ctx, t[0], t[1] + 6, t[0] + 12, t[1] + 2.5, '#e2b53c', 0.8);
+  ovaal(ctx, rechts[0], rechts[1] - 45, 1.6, 1.6, '#e2b53c');
+  return { beeld: doek, b, h, ax: cx, ay: h };
+}

@@ -21,6 +21,7 @@ import { maakUi } from './ui.js';
 import { metLidwoord } from './taal.js';
 import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
+import { maakDoel } from './doel.js';
 import { SOORT } from './eenheden.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, ontgrendeld } from './modus.js';
 
@@ -74,6 +75,7 @@ async function start() {
   const naamVan = (sleutel) => (regels.soldaten[sleutel] || bouwwerken[sleutel] || {}).naam;
   // Het verhaal: berichten van de figuren op hun moment (stap 31).
   let proloog = null;   // alleen in de proloog (js/proloog.js)
+  let doel = null;      // een level met een eigen doel, zoals de hut in level 4 (js/doel.js)
   const verhaal = maakVerhaal({ campagne: missies, missie, toon: (b) => ui.toonVerhaal(b) });
   const verhaalStand = () => ({ ...strijd.stand(), koning: strijd.koning(0), roodKoning: strijd.koning(1) });
 
@@ -144,7 +146,8 @@ async function start() {
     opEinde: (wat) => naEinde(wat),
   });
   // De rode heer: eigen voorraad, eigen werken, beslist zelf wanneer hij aanvalt.
-  const rood = maakRood({
+  // In de proloog is er nog geen rode heer met een eigen economie.
+  const rood = missie && missie.proloog ? null : maakRood({
     regels, kaart, bouwwerken, leger, strijd, eenheden,
     perSeconde: CONFIG.spel.stappenPerSeconde,
     opMelding: (tekst) => ui.toonMelding(tekst, { soort: 'vijand' }),
@@ -507,6 +510,16 @@ async function start() {
   // beginvoorraad terug, en de bewaarde stand wissen.
   const opnieuw = () => {
     if (meting.isBezig()) return;
+    // De proloog begint helemaal opnieuw: met een schone kaart (je kasteel staat er weer).
+    if (proloog) {
+      bewaren = false;
+      opslag.wis();
+      proloog.stop();
+      proloog.wis();
+      verhaal.wis();
+      window.location.reload();
+      return;
+    }
     stopBouw();
     bewaren = false;
     const gevochten = strijd.stand().golf > 0 || !!strijd.uitslag();
@@ -520,6 +533,7 @@ async function start() {
     ui.verbergVerhaal();
     verhaal.wis();
     if (proloog) proloog.wis();
+    if (doel) doel.wis();
     // Wie op de plek van een teruggekomen boom stond, krijgt een nieuwe plek.
     eenheden.zetAantal(aantal(), false);
     opslag.wis();
@@ -554,12 +568,12 @@ async function start() {
     } else if (s.vijanden) {
       kort = 'Attack!';
       lang = `Attack ${s.golf}: ${s.vijanden} ${s.vijanden === 1 ? 'enemy' : 'enemies'} left. The next one comes in ${tijd(s.klok)}.`;
-    } else if (s.golven) {
+    } else if (s.golven && !regels.strijd.proloog) {
       kort = tijd(s.klok);
       lang = `Attack ${s.golf + 1} comes in ${tijd(s.klok)}.`;
     }
     lang += ` Keep: ${s.burcht} of ${s.burchtMax}.`;
-    if (!s.vrede) lang += ` Red keep: ${s.rood} of ${s.roodMax}. Break it and the red king grows weaker.`;
+    if (!s.vrede && !regels.strijd.proloog) lang += ` Red keep: ${s.rood} of ${s.roodMax}. Break it and the red king grows weaker.`;
     ui.toonStrijd({ kort, lang: lang.trim(), slecht: s.vijanden > 0 });
     // De uitleg bij je soldaten verandert als er vijanden zijn.
     if (vijandInBeeld !== s.vijanden > 0) {
@@ -619,7 +633,9 @@ async function start() {
       }
     } else {
       ui.verbergVerhaal();
-      ui.toonEinde({ open: true, titel: 'Defeat', tekst: `Your king fell during attack ${s.golf}. Start again and try once more.`, verloren: true, portret: { naam: 'King Karel', portret: 'karel_rouw' } });
+      const hut = strijd.hut();
+      if (hut && hut.gevallen) ui.toonEinde({ open: true, titel: 'Defeat', tekst: "Brandt's hunters broke into Gesina's hut. The Silent Folk will not come now. Start again and try once more.", verloren: true, portret: { naam: 'Mother Gesina', portret: 'gesina' } });
+      else ui.toonEinde({ open: true, titel: 'Defeat', tekst: `Your king fell during attack ${s.golf}. Start again and try once more.`, verloren: true, portret: { naam: 'King Karel', portret: 'karel_rouw' } });
     }
   };
   ui.opVerder(() => {
@@ -702,6 +718,12 @@ async function start() {
     tekst: missie.intro,
     taak: proloog.taken().map((t) => `${t.klaar ? '✓' : t.nu ? '▸' : '·'} ${t.taak}`).join('\n'),
     portret: 'bartholt',
+  } : missie && missie.doel ? {
+    titel: missie.titel,
+    tegen: missie.heer ? `Against ${missie.heer}` : '',
+    tekst: missie.intro,
+    taak: `Your goal: hold Mother Gesina's hut until her ritual is done (${Math.ceil(doel.over() / 60)} min left). If the hut falls, or your king, you lose.`,
+    portret: 'gesina',
   } : missie ? {
     titel: missie.titel,
     tegen: missie.heer ? `Against ${missie.heer}` : '',
@@ -740,7 +762,15 @@ async function start() {
       toonKaart();
     }); },
   }) : null;
-  const beginLevel = () => { verhaal.start(); if (proloog) proloog.start(); };
+  // Een level met een eigen doel (level 4: de hut van Gesina houden).
+  doel = missie && missie.doel ? maakDoel({
+    missie, kaart, bouwer, strijd, wegvinder,
+    toonVerhaal: (b) => ui.toonVerhaal(b),
+    toonTaak: (t) => ui.toonTaak(t),
+    toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
+    kaartGewijzigd,
+  }) : null;
+  const beginLevel = () => { verhaal.start(); if (proloog) proloog.start(); if (doel) doel.start(); };
   ui.opMissieBegin(() => { ui.toonMissie({ open: false }); beginLevel(); });
   if (missie && !bewaard && !strijd.uitslag()) {
     const verteller = missies.figuren[missie.verteller || 'bartholt'];
@@ -756,7 +786,7 @@ async function start() {
     beginLevel();
   }
   if (strijd.uitslag()) naEinde(strijd.uitslag());
-  else if (strijd.stand().golf === 0 && !strijd.stand().vrede && !proloog) {
+  else if (strijd.stand().golf === 0 && !strijd.stand().vrede && !proloog && !doel) {
     const hh = strijd.stand().heer;
     ui.toonMelding(hh ? 'The enemy is gathering an army. Their workshops stand outside their wall: destroy them and they earn less. Build barracks and train soldiers.' : `The enemy attacks in ${tijd(strijd.stand().klok)}. Build barracks and train soldiers.`, { soort: 'uitleg', toon: true });
   }
@@ -1000,6 +1030,7 @@ async function start() {
       strijd.stap();
       verhaal.stap(dt, verhaalStand);
       if (proloog) proloog.stap(dt);
+      if (doel) doel.stap(dt);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),
     meld: {
@@ -1039,7 +1070,7 @@ async function start() {
   });
 
   // Handig bij het zoeken naar fouten.
-  window.spel = { rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog };
+  window.spel = { rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

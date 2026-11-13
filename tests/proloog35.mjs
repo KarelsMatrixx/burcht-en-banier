@@ -19,9 +19,18 @@ await p.reload(); await wacht(); await p.waitForTimeout(300);
 check('proloog gekozen', (await p.evaluate(() => window.spel.modus.missie)) === 0);
 check('briefing open', await p.isVisible('#missie'));
 await p.tap('#missie-begin');
-await p.waitForTimeout(800);
 const st = () => p.evaluate(() => window.spel.proloog.stand());
+await p.waitForTimeout(1500);
 let s = await st();
+check('eerst rondkijken: nog geen taak', !s.basis, JSON.stringify(s));
+check('geen kasteel van rood', (await p.evaluate(() => { const k = window.spel.kaart; let n = 0; for (let i = 0; i < k.eigenaar.length; i++) if (k.eigenaar[i] === 2) n++; return n; })) === 0);
+check('jouw ringmuur staat er al', (await p.evaluate(() => { const k = window.spel.kaart; let n = 0; for (let i = 0; i < k.eigenaar.length; i++) if (k.eigenaar[i] === 1 && k.object[i] === 4) n++; return n; })) >= 20);
+check('feest: vlaggen en meer huisjes', (await p.evaluate(() => { const k = window.spel.kaart; let v = 0, h = 0; for (let i = 0; i < k.object.length; i++) { if (k.object[i] === 28) v++; if (k.object[i] === 11 || k.object[i] === 12) h++; } return v >= 10 && h >= 20; })));
+check('kaart groter', (await p.evaluate(() => window.spel.kaart.breedte)) === 84);
+check('geen rode heer', (await p.evaluate(() => window.spel.rood)) === null);
+await p.screenshot({ path: '/home/claude/proloog-feest.png' });
+await p.waitForFunction(() => !!window.spel.proloog.stand().basis, null, { timeout: 10000 }).catch(() => {});
+s = await st();
 check('taak 1', s.fase === 'bouw' && s.taak === 0, JSON.stringify(s));
 check('taak in beeld', /Task 1 of 8/.test(await p.textContent('#taak')));
 check('Bartholt praat', /woodcutter/.test(await p.evaluate(() => window.spel.ui.logboek().map((r) => r.tekst).join(' '))));
@@ -41,24 +50,32 @@ const vrij = await p.evaluate(() => {
 });
 check('genoeg plekken', vrij.length >= 6, vrij.length);
 const zet = (lijst) => p.evaluate((l) => window.spel.bouwer.zetTerug(l), lijst);
-const totTaak = (n) => p.waitForFunction((n) => { const s = window.spel.proloog.stand(); return s.fase !== 'bouw' || s.taak >= n; }, n, { timeout: 8000 }).catch(() => {});
+const totTaak = (n) => p.waitForFunction((n) => { const s = window.spel.proloog.stand(); return s.fase !== 'bouw' || (s.taak >= n && !s.klaar); }, n, { timeout: 16000 }).catch(() => {});
 let i = 0;
 for (const [sleutel, n] of [['houthakker', 1], ['steengroeve', 2], ['boomgaard', 3], ['woning', 4], ['kazerne', 5]]) {
-  await zet({ [sleutel]: vrij[i++] }); await totTaak(n);
+  await zet({ [sleutel]: vrij[i++] });
+  if (n === 1) {
+    await p.waitForFunction(() => window.spel.proloog.stand().klaar, null, { timeout: 4000 }).catch(() => {});
+    const k = await st();
+    check('na de taak eerst rust (nog taak 1, klaar)', k.taak === 0 && k.klaar, JSON.stringify(k));
+    check('compliment', /Well done/.test(await p.evaluate(() => window.spel.ui.logboek().map((r) => r.tekst).join(' '))));
+  }
+  await totTaak(n);
   check(`${sleutel} gebouwd: taak ${n + 1}`, (await st()).taak === n, JSON.stringify(await st()));
 }
-// Twee soldaten
+// Twee soldaten; ze lopen niet vanzelf weg (een bevel telt pas als de speler het geeft)
 await p.evaluate(([x, y]) => window.spel.leger.zetStand([['ridder', x, y, 50, 0], ['boogschutter', x + 1, y, 40, 0]]), vrij[i]);
 await totTaak(6);
 check('twee soldaten: taak 7', (await st()).taak === 6);
+await p.waitForTimeout(2000);
+check('sturen nog niet klaar zonder bevel', !(await st()).klaar);
 // Sturen
 await p.evaluate(([x, y]) => { const s = window.spel; const e = s.leger.soldaten().find((e) => e.soldaat.sleutel === 'ridder'); s.leger.kies([e]); s.leger.stuur(x, y); }, vrij[i + 1]);
 await totTaak(7);
 check('gestuurd: taak 8', (await st()).taak === 7, JSON.stringify(await st()));
-// Muur en poort
-const [mx, my] = vrij[i + 2];
-await zet({ muur: [mx, my, mx + 1, my, mx + 2, my, mx + 3, my], poort: [mx + 4, my] });
-await p.waitForFunction(() => window.spel.proloog.stand().fase === 'avond', null, { timeout: 8000 }).catch(() => {});
+// Een soldaat op de muur
+await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; const e = s.leger.soldaten().find((e) => e.soldaat.sleutel === 'boogschutter'); s.leger.kies([e]); s.leger.stuur(st.x - 5, st.y - 2, true); });
+await p.waitForFunction(() => window.spel.proloog.stand().fase === 'avond', null, { timeout: 40000 }).catch(() => {});
 s = await st();
 check('lijst af: avond', s.fase === 'avond', JSON.stringify(s));
 check('Reinout is weg', !s.reinout && !(await p.evaluate(() => window.spel.eenheden.lijst.some((e) => e.gast))));

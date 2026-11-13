@@ -12,7 +12,7 @@
 import {
   tekenGrond, tekenBoom, tekenRots, tekenRidder, tekenBoogschutter, tekenRam, tekenLadderdrager, tekenKatapult, tekenBelegeringstoren,
   tekenMuur, tekenToren, tekenWachttoren, tekenPoort, tekenBurcht,
-  tekenHuis, tekenTent, tekenHooiberg, tekenPut, tekenVaten,
+  tekenHuis, tekenTent, tekenVlaggen, tekenHooiberg, tekenPut, tekenVaten,
   tekenWerker, tekenHouthakker, tekenSteengroeve, tekenBoomgaard, tekenTarweveld, tekenBakkerij, tekenKopermijn, tekenBijlridder, tekenKruisboogschutter, tekenSluipmoordenaar, tekenVlammenwever, tekenMagiertoren, tekenKoning, tekenKazerne,
 } from './kunst.js';
 import { SOLDATEN, teken as tekenNieuw } from './soldaten.js';
@@ -41,6 +41,7 @@ const VORMEN = {
   burcht: tekenBurcht,
   huis: tekenHuis,
   tent: tekenTent,
+  vlaggen: tekenVlaggen,
   hooiberg: tekenHooiberg,
   put: tekenPut,
   vaten: tekenVaten,

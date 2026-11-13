@@ -110,6 +110,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const thuis = kaart.start[SPELER];
   const thuisVak = burcht.vak;
   const burchtDoel = burcht.doel;
+  // --- Doeltype B (level 4): een bouwwerk van jou dat je moet houden ------------------
+  // De vijand gaat er eerst op af; valt het, dan heb je verloren.
+  let hutVak = -1;
+  let hutGevallen = false;
+  const hutStaat = () => hutVak >= 0 && kaart.eigenaar[hutVak] === 1 && kaart.object[hutVak] !== OBJECT.GEEN;
   // --- De koningen ------------------------------------------------------------------
   // Eén voor jou (in je leger) en één voor rood. Valt jouw koning, dan heb je
   // verloren; valt die van rood, dan heb je gewonnen.
@@ -302,7 +307,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function balkenBij() {
     balken.length = 0;
     for (const [vak, s] of schade) {
-      balken.push({ x: vak % B, y: Math.floor(vak / B), deel: klem(s.leven / maxLeven(s.soort, s.van), 0, 1) });
+      balken.push({ x: vak % B, y: Math.floor(vak / B), deel: klem(s.leven / (s.max || maxLeven(s.soort, s.van)), 0, 1) });
     }
     for (const b of burchten) {
       if (b.leven < b.max) balken.push({ x: b.vx, y: b.vy, deel: klem(b.leven / b.max, 0, 1), groot: true });
@@ -922,6 +927,22 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.doelVak = -1;
     k.schuif = false;
     const hier = vakVan(e);
+    // Level 4: zolang de hut van Gesina staat, gaan ze daarop af.
+    if (hutStaat()) {
+      const doel = bouwDoel(hutVak);
+      const rond = [1, -1, B, -B].map((d) => hutVak + d).filter((v) => v >= 0 && v < B * H).sort((p, q) => verVan(e, p) - verVan(e, q));
+      for (const vak of rond) {
+        if (!wegvinder.verbonden(hier, vak, VIJAND) || bezetDoorVriend(vak, e)) continue;
+        const pad = zoekPad(e, vak);
+        if (!pad) continue;
+        k.bouw = doel;
+        zetPad(e, pad);
+        return;
+      }
+      if (rond.some((v) => vakVan(e) === v)) { k.bouw = doel; return; }
+      breekDoor(e, k, hier, rond, doel, hutVak);
+      return;
+    }
     const plekken = plekkenBij(e);
     if (!e.opMuur) {
       for (const vak of plekken) {
@@ -952,7 +973,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Er is geen vrije weg naar de burcht. Zoek de route alsof de bouwwerken
   // van de speler er niet stonden: het eerste dat in de weg staat gaat eraan.
-  function breekDoor(e, k, hier, plekken) {
+  function breekDoor(e, k, hier, plekken, doelB = burchtDoel, wachtBij = thuisVak) {
     let pad = null;
     for (const vak of plekken) {
       if (!wegvinder.verbonden(hier, vak, BREEK)) continue;
@@ -964,8 +985,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     while (j < pad.length && vrijVoor(pad[j], VIJAND)) j++;
     if (j >= pad.length) {
       // De weg is vrij, maar naast de burcht is geen plek meer: wacht vlakbij.
-      k.bouw = burchtDoel;
-      const wacht = plekRond(e, thuisVak, 3);
+      k.bouw = doelB;
+      const wacht = plekRond(e, wachtBij, 3);
       if (wacht >= 0 && wacht !== hier) zetPad(e, zoekPad(e, wacht));
       return;
     }
@@ -1249,7 +1270,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (telAls) {
       golf++;
       burchtGemeld = false;
-      if (!heer) opMelding(`Attack ${golf}! ${aantal} ${aantal === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`);
+      if (!heer && !R.proloog) opMelding(`Attack ${golf}! ${aantal} ${aantal === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`);
     }
     opVerandering();
     opStand();
@@ -1292,7 +1313,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function stap() {
     if (uitslag) return;
     stapNr++;
-    if (!stil && !vrede && golven.length) {
+    if (!stil && !vrede && golven.length && !R.proloog) {
       if (heer) {
         if (rood.leven > 0) heer.stap();
       } else if (--klok <= 0) {
@@ -1303,11 +1324,15 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     for (let i = 0; i < vijanden.length; i++) krijgerStap(vijanden[i], eigen);
     for (let i = 0; i < eigen.length; i++) krijgerStap(eigen[i], vijanden);
     burchtStap(burcht, vijanden);
-    burchtStap(rood, eigen);
+    if (!R.proloog) burchtStap(rood, eigen);   // in de proloog staat er geen kasteel van rood
     brandStap();
     ruimOp();
     if (R.proloog) {
       // De proloog heeft geen winst of verlies: het verhaal beslist (js/proloog.js).
+    } else if (hutVak >= 0 && !hutStaat()) {
+      hutGevallen = true;
+      einde('verloren');
+      return;
     } else if (koningSleutel ? !koningVan(SPELER) : burcht.leven <= 0) {
       einde('verloren');
       return;
@@ -1660,6 +1685,24 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       const e = maakVijand(sleutel, y * B + x, leven);
       opStand();
       return e;
+    },
+    // Level 4: dit vak is de hut die je moet houden, met zoveel leven.
+    // Stond er al schade (bewaarde stand), dan blijft die.
+    zetHut(vak, max) {
+      hutVak = vak;
+      hutGevallen = false;
+      const s = schade.get(vak);
+      if (s && s.soort === kaart.object[vak]) s.max = max;
+      else schade.set(vak, { leven: max, max, soort: kaart.object[vak], van: kaart.eigenaar[vak] });
+      balkenBij();
+    },
+    hut: () => (hutVak < 0 ? null : { vak: hutVak, staat: hutStaat(), gevallen: hutGevallen, leven: hutStaat() ? Math.max(0, Math.round((schade.get(hutVak) || {}).leven || 0)) : 0, max: (schade.get(hutVak) || {}).max || 0 }),
+    // Het doel van het level is gehaald (de hut gehouden): gewonnen.
+    beslis(wat) {
+      if (uitslag) return;
+      if (wat === 'gewonnen') for (const e of vijanden) e.dood = true;
+      ruimOp();
+      einde(wat);
     },
     zetBurcht(leven) {
       burcht.leven = klem(leven, 0, burcht.max);

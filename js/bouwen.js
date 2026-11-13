@@ -143,8 +143,10 @@ export function maakBouwer({ kaart, wegvinder, tekenaar, eenheden, economie, bou
 
   // Breekt af wat de speler zelf heeft gebouwd. Je krijgt een deel van
   // de kosten terug.
+  // Wat de speler niet mag slopen (de hut van Gesina in level 4).
+  const beschermd = new Set();
   function sloop(x, y) {
-    if (!isVanSpeler(x, y)) return false;
+    if (!isVanSpeler(x, y) || beschermd.has(y * B + x)) return false;
     const i = y * B + x;
     const werk = werkVan.get(kaart.object[i]);
     kaart.object[i] = OBJECT.GEEN;
@@ -232,5 +234,13 @@ export function maakBouwer({ kaart, wegvinder, tekenaar, eenheden, economie, bou
   // Het bouwwerk van de speler op deze tegel, of null.
   const werkOp = (x, y) => (isVanSpeler(x, y) ? werkVan.get(kaart.object[y * B + x]) || null : null);
 
-  return { waaromNiet, lijn, plaats, sloop, verwoest, isVanSpeler, werkOp, eigenBouwwerken, zetTerug, sloopAlles };
+  // Een vast bouwwerk van de speler dat niet in het bouwmenu zit (de hut van
+  // Gesina): neerzetten zonder te betalen, en niet te slopen.
+  function zetVast(vak, object) {
+    kaart.object[vak] = object;
+    kaart.eigenaar[vak] = SPELER;
+    beschermd.add(vak);
+    naVerandering(new Set([vak]));
+  }
+  return { waaromNiet, lijn, plaats, sloop, verwoest, isVanSpeler, werkOp, eigenBouwwerken, zetTerug, sloopAlles, zetVast };
 }

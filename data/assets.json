@@ -36,6 +36,7 @@
     "dorp.hooiberg": { "vorm": "hooiberg", "kleur": "#c9a94e", "sprite": "" },
     "dorp.put":      { "vorm": "put", "kleur": "#a8a194", "dak": "#7a5a3a", "sprite": "" },
     "dorp.vaten":    { "vorm": "vaten", "kleur": "#8a5f38", "sprite": "" },
+    "dorp.vlaggen":  { "vorm": "vlaggen", "sprite": "" },
 
     "werk.houthakker": { "vorm": "houthakker", "wand": "#8f6f48", "daken": ["#667045"], "hoogte": 22, "sprite": "" },
     "werk.steengroeve": { "vorm": "steengroeve", "kleur": "#a8a59c", "hoogte": 26, "sprite": "" },

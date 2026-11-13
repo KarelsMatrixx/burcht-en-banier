@@ -13,6 +13,7 @@ export const OBJECT = {
   MUUR: 4, TOREN: 5, POORT: 6, BURCHT: 7, BANIER_BLAUW: 8, BANIER_ROOD: 9, WACHTTOREN: 10,
   HUIS: 11, HUT: 12, TENT: 13, HOOIBERG: 14, PUT: 15, VATEN: 16,
   HOUTHAKKER: 17, STEENGROEVE: 18, BOOMGAARD: 19, WONING: 20, KAZERNE: 21, VOORRAADKAMER: 22, ZAGERIJ: 23, TARWEVELD: 24, BAKKERIJ: 25, KOPERMIJN: 26, MAGIERTOREN: 27,
+  VLAGGEN: 28,   // feestvlaggen (proloog), decor
 };
 
 // Namen waarmee de tekenlaag het juiste plaatje opzoekt in data/assets.json.
@@ -24,13 +25,13 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
 const OBJECT_TEKST = [
   '', 'forest', 'rock', 'copper ore', 'wall', 'tower', 'gate', 'keep', 'keep', 'keep', 'watchtower',
-  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'quarry', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mage tower',
+  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'quarry', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mage tower', 'festive flags',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.
@@ -95,6 +96,31 @@ const INRICHTING = [
   // Legerkamp achter het kasteel
   [-2, -8, OBJECT.TENT], [0, -9, OBJECT.TENT], [2, -8, OBJECT.TENT], [1, -7, OBJECT.VATEN], [-1, -10, OBJECT.TENT],
 ];
+
+// Het feest in de proloog: extra decor rond jouw kasteel ([dx, dy, soort]).
+// Wat op water of op iets anders dan bos valt, wordt overgeslagen.
+const O = OBJECT;
+const FEEST = [
+  // Vlaggen op de binnenplaats en bij de poort
+  [-3, -3, O.VLAGGEN], [3, 3, O.VLAGGEN], [-3, 0, O.VLAGGEN], [6, -1, O.VLAGGEN], [6, 1, O.VLAGGEN],
+  // Langs de weg naar het dorp
+  [9, -1, O.VLAGGEN], [12, -1, O.VLAGGEN], [11, 3, O.VLAGGEN],
+  // Het feestplein in het dorp: tenten en vlaggen
+  [14, -3, O.TENT], [16, -3, O.TENT], [15, 3, O.TENT], [17, 1, O.VLAGGEN], [14, 2, O.VLAGGEN], [16, -1, O.PUT],
+  // Meer huisjes in het dorp
+  [13, -5, O.HUIS], [15, -6, O.HUIS], [17, -5, O.HUT], [18, -2, O.HUIS], [18, 3, O.HUIS], [13, 5, O.HUIS], [16, 6, O.HUT], [14, 8, O.HUIS],
+  [9, -5, O.HUT], [11, -6, O.HUIS], [19, 0, O.HOOIBERG], [12, 9, O.HOOIBERG], [17, 8, O.VATEN],
+  // Een tweede gehucht ten zuiden van het kasteel
+  [-4, 8, O.HUIS], [-2, 9, O.HUIS], [0, 8, O.HUT], [-5, 10, O.HUT], [-1, 11, O.HUIS], [1, 10, O.HOOIBERG], [-3, 11, O.PUT], [2, 8, O.VLAGGEN],
+  // Een gehucht ten westen
+  [-9, -2, O.HUIS], [-10, 0, O.HUT], [-9, 2, O.HUIS], [-11, -1, O.HOOIBERG], [-8, 0, O.VLAGGEN], [-11, 2, O.VATEN],
+  // Bij het legerkamp
+  [3, -9, O.VLAGGEN], [-3, -9, O.TENT],
+];
+const FEEST_GROND = [];
+for (let dy = -2; dy <= 2; dy++) for (let dx = 13; dx <= 17; dx++) FEEST_GROND.push([dx, dy]);
+for (let dy = 8; dy <= 11; dy++) for (let dx = -5; dx <= 2; dx++) if ((dx + dy) % 3 === 0) FEEST_GROND.push([dx, dy]);
+for (let dx = 6; dx <= 13; dx++) FEEST_GROND.push([dx, 0]);
 
 // Maakt een kaart voor vrij spel: twee startplekken, water, bos, steen
 // en ijzer. De kaart is gespiegeld door het midden, zodat beide spelers
@@ -500,6 +526,53 @@ export function maakKaart(recept) {
     padGemaakt = !verbonden() ? 'geen' : 'ja';
   }
 
+  // 5d. De proloog (data/kaarten.json):
+  //     zonderRood  geen kasteel, werken of dorp van rood: zijn plek blijft leeg land
+  //     eigenMuur   jouw ringmuur met poort staat er al (en is van jou)
+  //     feest       meer huisjes, een tweede gehucht, feesttenten en vlaggen
+  if (r.zonderRood) {
+    for (let i = 0; i < aantal; i++) {
+      const x = i % breedte;
+      const y = (i - x) / breedte;
+      const dichtbij = Math.max(Math.abs(x - start[1].x), Math.abs(y - start[1].y)) <= omvang + 9;
+      if (eigenaar[i] === 2 || (dichtbij && object[i] !== OBJECT.BOOM && object[i] !== OBJECT.STEEN && object[i] !== OBJECT.IJZER)) {
+        object[i] = OBJECT.GEEN;
+        eigenaar[i] = 0;
+      }
+      if (dichtbij && (grond[i] === GROND.AARDE || grond[i] === GROND.AKKER || grond[i] === GROND.GRAS_DONKER)) grond[i] = GROND.GRAS;
+    }
+  }
+  if (r.eigenMuur) {
+    for (let dy = -RING; dy <= RING; dy++) {
+      for (let dx = -RING; dx <= RING; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== RING) continue;
+        const hoek = Math.abs(dx) === RING && Math.abs(dy) === RING;
+        let soort = OBJECT.MUUR;
+        if (hoek) soort = OBJECT.TOREN;
+        else if (dx === RING && dy === 0) soort = OBJECT.POORT;
+        else if (dx === 0 || dy === 0) soort = OBJECT.WACHTTOREN;
+        const i = (eigen.y + dy) * breedte + eigen.x + dx;
+        object[i] = soort;
+        eigenaar[i] = 1;
+      }
+    }
+  }
+  if (r.feest) {
+    for (const [dx, dy, soort] of FEEST) {
+      const x = eigen.x + dx;
+      const y = eigen.y + dy;
+      if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1) continue;
+      const i = y * breedte + x;
+      if (grond[i] === GROND.WATER || (object[i] !== OBJECT.GEEN && object[i] !== OBJECT.BOOM)) continue;
+      object[i] = soort;
+    }
+    // Platgetreden grond rond het feestplein en het tweede gehucht
+    for (const [dx, dy] of FEEST_GROND) {
+      const i = (eigen.y + dy) * breedte + eigen.x + dx;
+      if (i >= 0 && i < aantal && grond[i] !== GROND.WATER) grond[i] = GROND.AARDE;
+    }
+  }
+
   // 6. Looproutes voor de wachters op de muur, per kasteel. Elke muur is
   //    in tweeën gedeeld door een wachttoren of de poort.
   //    Bij meer ringen eerst de buitenste: daar staan de wachters het liefst.
@@ -520,7 +593,7 @@ export function maakKaart(recept) {
   };
   const kastelen = [
     { team: 0, midden: start[0], routes: [] },   // nog geen muren, dus geen wachters
-    { team: 1, midden: start[1], routes: ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat)) },
+    { team: 1, midden: start[1], routes: r.zonderRood ? [] : ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat)) },
   ];
 
   return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, verbonden: padGemaakt === 'ja' };

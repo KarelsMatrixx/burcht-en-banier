@@ -260,3 +260,10 @@
 - Na vier minuten nacht, of als je burcht onder 40% komt, volgt een scène in vijf kaarten (Wessel weggedragen, de brief "Come and get him", de Rouwbanier van Ottger). Daarna de levelkaart; de proloog telt als gedaan.
 - Eigen profiel "proloog" in data/missies.json met meer beginvoorraad. strijd.js: R.proloog; stuurLeger kan rond een andere plek verschijnen; wegvinden.js: zetPoortenOpen. tekenaar.js: nacht.
 - Tests: tests/proloog35.mjs (30). campagne30 en test_stap17 kennen nu de open proloog.
+
+## 0.46.0 (stap 36): level 4 The Fen, en de proloog naar Karels feedback
+- Proloog, rustiger: eerst zes seconden rondkijken; na elke taak een compliment van Bartholt en negen seconden rust voor de volgende. "Een soldaat sturen" telt alleen een bevel van de speler (soldaten die uit de kazerne lopen tellen niet meer; daardoor sprong de lijst eerst te snel door). De muurtaak is nu "zet een soldaat op de muur": de ringmuur staat er al.
+- Proloog, nieuwe kaart Aldervale (84 bij 84): geen kasteel van rood, jouw kasteel met ringmuur en poort staat er al, veel meer huisjes, twee gehuchten, feesttenten en feestvlaggen (nieuw decor dorp.vlaggen, kunst.js tekenVlaggen). Geen rode heer en geen klok bovenin. Start over in de proloog laadt de proloog opnieuw.
+- Level 4 The Fen is speelbaar (doeltype B, js/doel.js): de hut van Moeder Gesina staat midden in het moeras en is van jou (niet te slopen). Houd hem 8 minuten. Jagers van Brandt komen in golven (eerst na 40 s, dan elke 55 s, 4 tot 10 man: sluipmoordenaars, boogschutters, ridders) en gaan eerst op de hut af. Valt de hut, dan verlies je. De klok staat rechtsboven. Nieuwe kaart The Fen (moeras). De hut komt nooit op een pad te staan dat de enige doorgang is.
+- strijd.js: zetHut, hut, beslis; vijanden gaan eerst op de hut af. bouwen.js: zetVast (beschermd bouwwerk).
+- Tests: proloog35 (39), hut36 (21).
