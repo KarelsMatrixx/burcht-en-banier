@@ -1,7 +1,7 @@
 {
-  "name": "Keep & Banner",
-  "short_name": "Keep",
-  "description": "Medieval castle RTS (in development)",
+  "name": "Aldervale",
+  "short_name": "Aldervale",
+  "description": "Aldervale: Banners of the Vale, a medieval castle RTS (in development)",
   "lang": "en",
   "start_url": "./",
   "scope": "./",

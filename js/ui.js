@@ -1,11 +1,13 @@
 // UI: de tekst en knoppen bovenop het spel (gewone HTML, geen canvas).
 
 import { CONFIG } from './config.js';
+import { maakVlaggen } from './vlaggen.js';
 
 const komma = (getal) => getal.toFixed(1).replace('.', ',');
 
 export function maakUi() {
   const el = (id) => document.getElementById(id);
+  const vlaggen = maakVlaggen(el('titelscherm'), el('titel-beeld'));
   let beelden = '';
   let offline = false;
 
@@ -418,12 +420,13 @@ export function maakUi() {
     // Het beginscherm. weergave = 'voorpagina' of 'kaart'.
     toonTitel({ open, weergave = 'voorpagina', kanVerder = false }) {
       el('titelscherm').hidden = !open;
-      if (!open) return;
+      if (!open) { vlaggen.zet(false); return; }
       el('titelscherm').classList.toggle('op-kaart', weergave === 'kaart');
       el('titel-beeld').hidden = weergave !== 'voorpagina';
       el('titel-voorpagina').hidden = weergave !== 'voorpagina';
       el('titel-kaart').hidden = weergave !== 'kaart';
-      el('titel-verder').hidden = !kanVerder;
+      el('titel-verder').disabled = !kanVerder;   // altijd zichtbaar; zonder bewaard spel vaag en niet in te drukken
+      vlaggen.zet(weergave === 'voorpagina');
     },
     // De levelkaart: het schilderij met de weg, de brug en de punten erbovenop.
     // levels = [{ id, naam, portret, x, y (procenten van het beeld), staat: 'open'|'gewonnen'|'dicht'|'nu'|'later' }].

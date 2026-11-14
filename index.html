@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>Keep &amp; Banner</title>
+  <title>Aldervale</title>
 
   <!-- Zorgt dat het spel als app op het beginscherm kan staan. -->
   <link rel="manifest" href="manifest.webmanifest">
@@ -11,7 +11,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Keep">
+  <meta name="apple-mobile-web-app-title" content="Aldervale">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
 
@@ -69,7 +69,7 @@
     </div>
     <!-- Instellingen: achter het tandwiel rechtsboven -->
     <div class="plaat" id="instellingen" hidden>
-      <strong>Keep &amp; Banner</strong>
+      <strong>Aldervale</strong>
       <small id="versie"></small>
       <div class="menu-knoppen">
         <button id="knop-verder" type="button">Resume</button>
@@ -213,13 +213,13 @@
   <!-- Het beginscherm en de levelkaart (stap 19) -->
   <div id="titelscherm" hidden>
     <img id="titel-beeld" src="beelden/startscherm.webp" alt="" decoding="async">
+    <canvas id="titel-vlaggen" aria-hidden="true" hidden></canvas>
     <div id="titel-voorpagina">
-      <h1>Keep &amp; Banner</h1>
-      <p>Build your keep, lead your people and break the walls of the red lord.</p>
+      <h1 id="titel-logo"><img src="beelden/titel/logo.webp" alt="Aldervale" decoding="async"><span id="titel-ondertitel">Banners of the Vale</span></h1>
       <div id="titel-knoppen">
-        <button id="titel-campagne" type="button">Campaign</button>
-        <button id="titel-vrij" type="button">Free play</button>
-        <button id="titel-verder" type="button" hidden>Continue</button>
+        <button id="titel-campagne" class="titel-knop" type="button">Campaign</button>
+        <button id="titel-vrij" class="titel-knop" type="button">Free play</button>
+        <button id="titel-verder" class="titel-knop" type="button" disabled>Continue</button>
       </div>
     </div>
     <div id="titel-kaart" hidden>
@@ -249,7 +249,7 @@
     <div class="knoppen"><button id="missie-begin" type="button">Begin</button></div>
   </div>
 
-  <div id="draai">Turn your phone sideways.<br>Keep &amp; Banner is played in landscape.</div>
+  <div id="draai">Turn your phone sideways.<br>Aldervale is played in landscape.</div>
   <pre id="fout" hidden></pre>
 
   <script type="module" src="js/main.js"></script>

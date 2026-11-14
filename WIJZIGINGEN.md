@@ -338,7 +338,7 @@
 - Gedrag (strijd.js, `lijfwachtDenk`): ze staan bij de start naast de heer, lopen mee als hij over zijn binnenplein loopt (meestal binnen 3 tegels), en vallen aan wie binnen 7 tegels van de heer komt. Valt de heer, dan verdedigen ze de burcht. Ze doen niet mee aan aanvallen en tellen niet als aanvallers. Ze worden bij opnieuw beginnen of laden vers aangemaakt (hun leven wordt niet bewaard). API: `strijd.lijfwachten()` en `strijd.roodKoning()`.
 - Test: tests/lijfwacht39.mjs (9 punten). Niet op de iPhone gezien: of twee zwaardvechters naast de heer er goed uitzien en de tegels van het binnenplein niet te vol worden.
 
-## 0.49.4: vrijere rode koning, torens van twee, hoofdkasteel van vijf, rustiger Stillwater, meer soldaten per level
+## 0.50.6 (eerder 0.49.4 genoemd): vrijere rode koning, torens van twee, hoofdkasteel van vijf, rustiger Stillwater, meer soldaten per level
 - Rode koning (strijd.js, `koningDenk`): zwerft veel verder (zwerfStraal 22 tegels, in economie.json bij de koning), loopt om zijn kasteel heen en af en toe over eigen muren, torens en het dak van zijn kasteel. Is er onraad (soldaten van jou binnen alarmAfstand 9 van zijn burcht of van hem, een beschadigde burcht, of hij zelf gewond), dan loopt hij meteen terug naar zijn hoofdkasteel. Op een muur die onraad merkt, gaat hij eerst naar beneden.
 - Torens (leger.js): in een toren (ook wachttoren) passen altijd twee soldaten; ze staan dan naast elkaar.
 - Hoofdkasteel (wegvinden.js, leger.js): het hoofdkasteel van jou en van rood is te beklimmen; er passen samen 5 soldaten op het dak (een per tegel van de ring). Rood zet er zelf nog niemand neer.
@@ -347,3 +347,32 @@
 - Tests: koning40, torens40, stillwater40 nieuw; koning, lijfwacht39 (alle binnen 14 tegels, 70% binnen 8) en level5_39 aangepast.
 - Aannames (Claude): wachttoren ook twee; alle zwerfgetallen en percentages muur zijn schattingen; level 8 valt onder 80 (Karel noemde 8 twee keer); de rode koning stapt zelf nog niet op het dak van zijn hoofdkasteel als hij daar plek heeft; niet op de iPhone gespeeld.
 - Level 1 (Witherheath) is pas open na het winnen van de proloog (`isOpen` in modus.js); eerder mocht je de proloog overslaan. Tests campagne30 en menu19 aangepast.
+## 0.50.0: nieuwe titel Aldervale, logo, knoppen en app icoon
+- De game heet nu Aldervale, met de ondertitel Banners of the Vale (besluit van Karel, 14 november). Aangepast in index.html (titel, apple-mobile-web-app-title, instellingen, draai-melding) en manifest.webmanifest (name, short_name, description).
+- Nieuw logo linksboven op het beginscherm (`beelden/titel/logo.webp`, door Karel gemaakt met Gemini). De ondertitel staat als echte tekst op het lint (`#titel-ondertitel`), zodat de letters niet fout kunnen gaan.
+- Nieuwe knoppen Campaign, Free play en Continue: lege houten platen (`beelden/titel/knop_*.webp`) met de tekst door de code erop. Campaign is blauw met goud, Continue hout met goud, Free play hout met ijzer.
+- Nieuw app icoon (banier met elzenblad op donkerblauw) in icons/icon-180, -192 en -512. Het maskable icoon gebruikt hetzelfde plaatje.
+- sw.js: vier nieuwe bestanden in KERN, versie opgehoogd.
+- Bekend: een geïnstalleerde app op het beginscherm toont het oude icoon en de oude naam tot je hem verwijdert en opnieuw toevoegt. Het blad op de banier lijkt meer op een berken of esdoornblad dan op een els. De schaduw rond de letters heeft een zwakke rode rand door de magenta achtergrond.
+
+## 0.50.1: vlaggen wapperen, ondertitel past, knoppen gelijk, tagline weg
+- Op het beginscherm wapperen de vlaggen van het schilderij rustig in de wind (nieuw: js/vlaggen.js, canvas `#titel-vlaggen`). De achtergrond `beelden/startscherm.webp` is nu zonder vlaggen; acht vlaggen staan als losse plaatjes in `beelden/titel/vlaggen/`. Wimpels golven op en neer, de grote banier waait van de paal weg. Duur van een golf 5 tot 7 seconden. Bij "minder beweging" (iOS-instelling) staan ze stil. De animatie stopt als het beginscherm dicht is of de levelkaart open staat.
+- De ondertitel Banners of the Vale schaalt nu mee met het logo en blijft binnen het lint.
+- Campaign, Continue en Free play zijn even groot.
+- De zin "Build your keep, lead your people and break the walls of the red lord." is weg.
+- Bekend: de vlaggen zijn met een script uit het origineel geknipt (staartjes en randen kunnen op sommige schermen een fractie afwijken). De grote banier laat onderaan, waar hij over de heuvel hangt, een vage vlek in de achtergrond zien als hij wegwaait. Op een echte iPhone nog niet bekeken; de kosten voor de batterij zijn niet gemeten.
+
+## 0.50.2: Continue bovenaan
+- Op het beginscherm staat Continue boven Campaign en Free play zodra er een bewaard spel is (wens van Karel, 15 november). Zonder bewaard spel is de volgorde Campaign, Free play.
+
+## 0.50.3: lint onder de titel even breed als ALDERVALE
+- Naar Karels wens (15 november) is het lint met Banners of the Vale nu even breed als het woord ALDERVALE. In logo.webp is het lint opnieuw opgebouwd: de uiteinden met staart en krul zijn ongewijzigd, het midden is uitgerekt. De ondertitel is groter en staat gecentreerd op het lint.
+
+## 0.50.4: ondertitel iets lager op het lint
+- De tekst Banners of the Vale stond te hoog en raakte de gouden rand boven het lint (melding van Karel, 15 november). Nu staat hij in het midden van het blauwe vlak.
+
+## 0.50.5: grotere knoppen, Continue altijd zichtbaar
+- Campaign, Free play en Continue zijn groter (zo breed als de titel en het lint, 281 bij 63 px op 844 breed) en staan 16 px lager onder het logo (wens van Karel, 15 november).
+- Continue staat altijd bovenaan. Zonder bewaard spel is hij vaag (38% dekking) en niet in te drukken (`disabled`); met bewaard spel normaal. tests/menu19.mjs controleert dat nu zo.
+- Logo: bijna doorzichtige ruis (alfa onder 24) uit logo.webp gehaald; op Karels iPhone was een vage rechthoek rond het logo zichtbaar.
+- Bekend: of de vage rechthoek hiermee weg is, is op de iPhone nog niet gezien.

@@ -11,7 +11,7 @@ const zicht = (id) => p.evaluate((id) => !document.getElementById(id).hidden, id
 await p.goto('http://localhost:8127/?x=' + Date.now()); await wacht();
 await p.evaluate(() => { localStorage.clear(); sessionStorage.clear(); }); await p.reload(); await wacht();
 check('beginscherm bij openen', await zicht('titelscherm') && await zicht('titel-voorpagina'));
-check('verder verborgen bij eerste keer', !(await zicht('titel-verder')));
+check('verder zichtbaar maar uit bij eerste keer', (await zicht('titel-verder')) && await p.evaluate(() => document.getElementById('titel-verder').disabled));
 const t0 = await p.evaluate(() => JSON.stringify(window.spel.strijd.stand().heer.voorraad));
 await p.waitForTimeout(2500);
 const t1 = await p.evaluate(() => JSON.stringify(window.spel.strijd.stand().heer.voorraad));
@@ -57,7 +57,7 @@ await p.waitForTimeout(1500);
 check('spel loopt weer', (await p.evaluate(() => JSON.stringify(window.spel.strijd.stand().heer.voorraad))) > k0);
 // vrij spel via voorpagina na verversen
 await p.reload(); await wacht();
-check('na verversen weer beginscherm met verder', await zicht('titelscherm') && await zicht('titel-verder'));
+check('na verversen weer beginscherm met verder aan', await zicht('titelscherm') && await zicht('titel-verder') && await p.evaluate(() => !document.getElementById('titel-verder').disabled));
 await p.tap('#titel-vrij');
 check('vrij spel opent menu', await zicht('menu') && !(await zicht('titelscherm')));
 // gewonnen level 1 -> level 2 open en getoond als gewonnen

@@ -591,6 +591,9 @@ button:active {
   object-position: 85% 50%;
 }
 #titel-beeld[hidden] { display: none; }
+/* De wapperende vlaggen liggen precies over het schilderij (js/vlaggen.js). */
+#titel-vlaggen { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#titel-vlaggen[hidden] { display: none; }
 /* Een donkere schaduw links, zodat titel en knoppen goed leesbaar blijven. */
 #titelscherm:not(.op-kaart)::before {
   content: "";
@@ -612,11 +615,42 @@ button:active {
   text-align: left;
 }
 #titel-voorpagina[hidden] { display: none; }
-#titel-voorpagina h1 { font-size: clamp(28px, 9.5vh, 50px); line-height: 1.05; margin: 0 0 6px; color: #f3d37a; letter-spacing: 1px; text-shadow: 0 3px 0 #0009, 0 0 14px #0008; }
-#titel-voorpagina p { margin: 0 0 14px; opacity: 0.9; font-size: 0.95em; text-shadow: 0 1px 4px #000a; }
-#titel-knoppen { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+/* Het logo (stap 40): plaat met titel en banier; de ondertitel zet de code op het lint. */
+#titel-voorpagina h1 { position: relative; container-type: inline-size; width: min(340px, 41vw); margin: 0 0 6px; line-height: 0; filter: drop-shadow(0 4px 8px #000a); }
+#titel-logo img { display: block; width: 100%; height: auto; }
+#titel-ondertitel {
+  position: absolute;
+  left: 17.5%; width: 49%; top: 81.5%; height: 14%;
+  display: flex; align-items: center; justify-content: center;
+  font: 700 clamp(7px, 1.45vw, 12px)/1 Georgia, 'Times New Roman', serif;
+  letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+  color: #f7ecd0; text-shadow: 0 1px 0 #0b1a3a, 0 0 4px #0b1a3a;
+}
+@supports (font-size: 1cqw) { #titel-ondertitel { font-size: 3.5cqw; } }
+#titel-voorpagina p { margin: 0 0 10px; opacity: 0.9; font-size: 0.85em; max-width: 260px; text-shadow: 0 1px 4px #000a; }
+#titel-voorpagina { justify-content: flex-start; padding-top: max(10px, env(safe-area-inset-top)); width: min(420px, 50vw); }
+#titel-knoppen { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; margin-top: 16px; margin-left: calc(min(340px, 41vw) * 0.007); }
 #titel-knoppen button, #kaart-terug { min-height: 48px; min-width: 120px; font-size: 16px; }
 #titel-knoppen button[hidden] { display: none; }
+/* De knoppen (stap 40): lege houten platen; het woord zet de code erop. */
+#titel-knoppen .titel-knop {
+  min-width: 0; min-height: 44px; padding: 0 22%;
+  width: calc(min(340px, 41vw) * 0.826); aspect-ratio: 700 / 158;   /* alle drie even groot, zo breed als titel en lint */
+  display: flex; align-items: center; justify-content: center;
+  background: transparent center / 100% 100% no-repeat;
+  border: 0; border-radius: 0; box-shadow: none;
+  font: 700 clamp(12px, 2.1vw, 18px)/1 Georgia, 'Times New Roman', serif;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: #f7ecd0; text-shadow: 0 2px 0 #000a, 0 0 6px #000a;
+  filter: drop-shadow(0 3px 4px #0009);
+}
+#titel-knoppen .titel-knop:active { background-color: transparent; filter: brightness(0.8) drop-shadow(0 1px 2px #0009); transform: translateY(1px); }
+#titel-verder { order: -1; }   /* Continue staat altijd bovenaan */
+#titel-knoppen #titel-verder:disabled { opacity: 0.38; filter: grayscale(0.4) drop-shadow(0 3px 4px #0009); pointer-events: none; cursor: default; transform: none; }
+#titel-knoppen .titel-knop:focus-visible { outline: 2px solid #f3d37a; outline-offset: 3px; }
+#titel-knoppen #titel-campagne { background-image: url('../beelden/titel/knop_campagne.webp'); }
+#titel-knoppen #titel-verder { background-image: url('../beelden/titel/knop_verder.webp'); }
+#titel-knoppen #titel-vrij { background-image: url('../beelden/titel/knop_vrij.webp'); }
 
 /* De levelkaart: het schilderij over het hele scherm, met de knoppen erbovenop. */
 #titel-kaart { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
