@@ -358,3 +358,6 @@
 
 ## 0.50.3: lint onder de titel even breed als ALDERVALE
 - Naar Karels wens (15 november) is het lint met Banners of the Vale nu even breed als het woord ALDERVALE. In logo.webp is het lint opnieuw opgebouwd: de uiteinden met staart en krul zijn ongewijzigd, het midden is uitgerekt. De ondertitel is groter en staat gecentreerd op het lint.
+
+## 0.50.4: ondertitel iets lager op het lint
+- De tekst Banners of the Vale stond te hoog en raakte de gouden rand boven het lint (melding van Karel, 15 november). Nu staat hij in het midden van het blauwe vlak.

@@ -620,7 +620,7 @@ button:active {
 #titel-logo img { display: block; width: 100%; height: auto; }
 #titel-ondertitel {
   position: absolute;
-  left: 17.5%; width: 49%; top: 80%; height: 14%;
+  left: 17.5%; width: 49%; top: 81.5%; height: 14%;
   display: flex; align-items: center; justify-content: center;
   font: 700 clamp(7px, 1.45vw, 12px)/1 Georgia, 'Times New Roman', serif;
   letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
