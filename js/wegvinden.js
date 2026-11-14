@@ -160,7 +160,7 @@ export function maakWegvinder(kaart) {
       const eigenPoort = kaart.object[i] === OBJECT.POORT && (kaart.eigenaar[i] === team + 1 || (poortenOpen && team === 1 && kaart.eigenaar[i] === 1));
       // Wat de speler heeft gebouwd, kan de vijand kapotmaken.
       const breekbaar = beeld === BREEK && kaart.eigenaar[i] === 1;
-      vrij[i] = land && (kaart.object[i] === OBJECT.GEEN || eigenPoort || breekbaar) ? 1 : 0;
+      vrij[i] = land && (kaart.object[i] === OBJECT.GEEN || kaart.object[i] === OBJECT.BOOM || eigenPoort || breekbaar) ? 1 : 0;
     }
     gebied.fill(0);
     const stapel = new Int32Array(N);

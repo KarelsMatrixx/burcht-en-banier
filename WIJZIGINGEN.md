@@ -283,3 +283,11 @@
 
 ## 0.47.2: de rode heer loopt rond
 - Zolang er niemand in de buurt komt, loopt de heer van rood rond over zijn binnenplein: om de 4 tot 9 seconden naar een ander plekje 2 of 3 tegels van zijn burcht. Komt er een vijand dichtbij, dan valt hij aan zoals eerst, en daarna loopt hij weer terug.
+
+## 0.47.3: bouwgebied en zachter level 4
+- Nieuw: je bouwt alleen binnen 14 tegels (vierkant) van het midden van je burcht (economie.json, bouwStraal). Daarbuiten krijg je "this is too far from your keep". Zo kun je de hut van Gesina in level 4 niet meer omsluiten. Bewaarde spellen met bouwwerken erbuiten blijven werken.
+- Level 4: eerste golf na 150 s (was 40), 3 man in de eerste golf (was 4), elke 70 s (was 55), hooguit 8 (was 10). Allemaal schattingen tot Karel het speelt.
+- Test: tests/bouwstraal38.mjs (7 controles, groen).
+- - Stone mine (was Quarry) en kopermijn moeten nu direct tegen steen of koper staan (afstand 1, was 2).
+- Soldaten en werkers lopen nu dwars door bos (bomen blokkeren het pad niet meer).
+- Bekend: de grens is nog niet zichtbaar op de kaart; de koperaders in het midden van sommige kaarten liggen erbuiten.

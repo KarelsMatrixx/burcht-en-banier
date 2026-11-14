@@ -30,10 +30,10 @@ check('taak met klok', /Hold Gesina's hut: \d:\d\d left/.test(await p.textConten
 check('Gesina praat', /Silent Folk/.test(await p.evaluate(() => window.spel.ui.logboek().map((r) => r.tekst).join(' '))));
 check('geen gewone aanvallen van rood', (await p.evaluate(() => window.spel.regels.heer.eersteAanval)) >= 9999);
 // Eerste golf
-await p.evaluate(() => window.spel.doel.zetTijd(39));
+await p.evaluate(() => window.spel.doel.zetTijd(149));
 await p.waitForFunction(() => window.spel.doel.stand().golven >= 1, null, { timeout: 5000 }).catch(() => {});
 const n = await p.evaluate(() => window.spel.strijd.vijanden().length);
-check('eerste golf (4)', n >= 4, n);
+check('eerste golf (3)', n >= 3, n);
 check('melding golf', /hunters are coming/.test(await p.evaluate(() => window.spel.ui.logboek().map((r) => r.tekst).join(' '))));
 // Ze gaan op de hut af en slaan hem
 await p.waitForFunction(() => { const h = window.spel.strijd.hut(); return h && h.leven < h.max; }, null, { timeout: 90000 }).catch(() => {});

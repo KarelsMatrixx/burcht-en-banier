@@ -123,7 +123,7 @@ async function start() {
   });
   let naBouw = () => {};       // wordt hieronder ingevuld, als het gevecht er is
   const bouwer = maakBouwer({
-    kaart, wegvinder, tekenaar, eenheden, economie, bouwwerken,
+    kaart, wegvinder, tekenaar, eenheden, economie, bouwwerken, bouwStraal: regels.bouwStraal,
     opVerandering: () => {
       naBouw();
       bewaar();

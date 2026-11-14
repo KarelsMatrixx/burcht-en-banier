@@ -28,6 +28,7 @@
   "kazerne: klassiek of mystiek, bij welke kazerne je hem opleidt. boeren: zoveel boeren zonder werk kost hij (anders 1). eersteSlag: zijn eerste slag op een nieuw doelwit doet zoveel keer schade. klimMuur: hij klimt in zoveel seconden een gewone muur op zonder ladder. verborgen: vijanden zien hem pas binnen zoveel tegels, tot hij slaat. gebied: dit deel van zijn schade raakt ook wie naast het doelwit staat. brand: hout dat hij raakt brandt duur seconden en verliest perSeconde leven per seconde.",
   "koning: er is er één voor jou en één voor rood, niet op te leiden. Valt jouw koning, dan heb je verloren; valt de koning van rood, dan heb je gewonnen. zwaaiAantal: zoveel vijanden naast het doelwit raakt zijn slag. vaandel: eigen soldaten binnen bereik doen extra meer schade. zwak: zijn schade als zijn burcht kapot is. thuisBereik: de koning van rood verdedigt alleen binnen zoveel tegels van zijn burcht. Een koning geneest alleen bij zijn eigen burcht.",
   "legerMax: zoveel soldaten kun je hoogstens hebben.",
+  "bouwStraal: je mag alleen bouwen binnen zoveel tegels (vierkant) van het midden van je burcht.",
   "strijd: de aanvallen van de rode heer. eersteGolf is na hoeveel seconden de eerste aanval komt, tussenGolven de tijd tussen twee aanvallen.",
   "golven: wie er per aanval komt. Na de laatste regel blijft die laatste aanval terugkomen, tot de burcht van rood valt.",
   "burchtLeven is hoeveel je burcht kan hebben. Valt hij, dan wordt je koning zwakker. Met burchtSchiet true schiet de wacht op de burcht zelf: burchtSchade per schot, om de burchtSlagTijd seconden, tot burchtBereik tegels ver.",
@@ -162,7 +163,7 @@
    "plek": "the rocks",
    "bezig": "is cutting stone from the rock",
    "mist": "finds no rock nearby",
-   "raad": "Build the quarry closer to the rocks."
+   "raad": "Build the stone mine closer to the rocks."
   },
   "fruitteler": {
    "naam": "fruit picker",
@@ -556,6 +557,7 @@
   }
  },
  "legerMax": 40,
+ "bouwStraal": 14,
  "strijd": {
   "eersteGolf": 240,
   "tussenGolven": 150,

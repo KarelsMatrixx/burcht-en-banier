@@ -33,7 +33,7 @@ export async function laadBouwwerken() {
 
 // opVerandering wordt aangeroepen na elke keer bouwen of slopen, zodat
 // het kasteel bewaard kan worden.
-export function maakBouwer({ kaart, wegvinder, tekenaar, eenheden, economie, bouwwerken, opVerandering }) {
+export function maakBouwer({ kaart, wegvinder, tekenaar, eenheden, economie, bouwwerken, opVerandering, bouwStraal = 0 }) {
   const B = kaart.breedte;
 
   // Bij elke soort op de kaart het bouwwerk uit bouwwerken.json.
@@ -45,6 +45,9 @@ export function maakBouwer({ kaart, wegvinder, tekenaar, eenheden, economie, bou
   function waaromNiet(x, y, werk) {
     if (!binnenKaart(kaart, x, y)) return 'this is off the map';
     const i = y * B + x;
+    // Je bouwt alleen in de buurt van je eigen burcht (bouwStraal in economie.json).
+    const thuis = kaart.start[0];
+    if (bouwStraal > 0 && Math.max(Math.abs(x - thuis.x), Math.abs(y - thuis.y)) > bouwStraal) return 'this is too far from your keep';
     if (kaart.grond[i] === GROND.WATER) return 'this is water';
     const staat = kaart.object[i];
 
