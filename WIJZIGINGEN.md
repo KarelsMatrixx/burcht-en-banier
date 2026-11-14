@@ -345,3 +345,10 @@
 - Nieuw app icoon (banier met elzenblad op donkerblauw) in icons/icon-180, -192 en -512. Het maskable icoon gebruikt hetzelfde plaatje.
 - sw.js: vier nieuwe bestanden in KERN, versie opgehoogd.
 - Bekend: een geïnstalleerde app op het beginscherm toont het oude icoon en de oude naam tot je hem verwijdert en opnieuw toevoegt. Het blad op de banier lijkt meer op een berken of esdoornblad dan op een els. De schaduw rond de letters heeft een zwakke rode rand door de magenta achtergrond.
+
+## 0.50.1: vlaggen wapperen, ondertitel past, knoppen gelijk, tagline weg
+- Op het beginscherm wapperen de vlaggen van het schilderij rustig in de wind (nieuw: js/vlaggen.js, canvas `#titel-vlaggen`). De achtergrond `beelden/startscherm.webp` is nu zonder vlaggen; acht vlaggen staan als losse plaatjes in `beelden/titel/vlaggen/`. Wimpels golven op en neer, de grote banier waait van de paal weg. Duur van een golf 5 tot 7 seconden. Bij "minder beweging" (iOS-instelling) staan ze stil. De animatie stopt als het beginscherm dicht is of de levelkaart open staat.
+- De ondertitel Banners of the Vale schaalt nu mee met het logo en blijft binnen het lint.
+- Campaign, Continue en Free play zijn even groot.
+- De zin "Build your keep, lead your people and break the walls of the red lord." is weg.
+- Bekend: de vlaggen zijn met een script uit het origineel geknipt (staartjes en randen kunnen op sommige schermen een fractie afwijken). De grote banier laat onderaan, waar hij over de heuvel hangt, een vage vlek in de achtergrond zien als hij wegwaait. Op een echte iPhone nog niet bekeken; de kosten voor de batterij zijn niet gemeten.
