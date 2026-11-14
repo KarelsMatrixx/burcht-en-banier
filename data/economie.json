@@ -285,6 +285,7 @@
    "snelheid": 1.9,
    "leven": 80,
    "schade": 17,
+   "bonusTegen": { "steenwachter": 1.5 },
    "schadeBouw": 5,
    "slagTijd": 1.5,
    "bereik": 1.5,
@@ -531,6 +532,29 @@
    },
    "tip": "Does not fight. Heals the most wounded soldier within 3 tiles, but not himself."
   },
+  "steenwachter": {
+   "naam": "Stone Warden",
+   "meervoud": "Stone Wardens",
+   "soort": "STEEN",
+   "kazerne": "mystiek",
+   "boeren": 2,
+   "legerPlekken": 2,
+   "nietKlimmen": true,
+   "kosten": {
+    "goud": 40,
+    "steen": 30,
+    "koper": 6
+   },
+   "snelheid": 1.1,
+   "leven": 300,
+   "schade": 13,
+   "schadeBouw": 8,
+   "slagTijd": 2.0,
+   "bereik": 1.5,
+   "zicht": 5,
+   "pijlDekking": 0.25,
+   "tip": "A mystic giant of living stone. Slow and very tough, arrows barely scratch him. Takes two army places and cannot climb ladders. Axe knights hurt him most."
+  },
   "koning": {
    "naam": "King",
    "meervoud": "Kings",
@@ -650,7 +674,8 @@
    "vlammenwever": 2,
    "zwaardvechter": 1.2,
    "banierdrager": 1,
-   "heler": 1
+   "heler": 1,
+   "steenwachter": 0
   },
   "ridderPerSchutter": 2,
   "rammenVanaf": 3,

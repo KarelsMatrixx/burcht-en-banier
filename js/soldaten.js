@@ -737,10 +737,60 @@ function heler(def) {
   return pakket(teken, { sla: [['lopen', 0], ['lopen', 2]] });
 }
 
+// ------------------------------------------------------------------ steenwachter
+// Een reus van levende steen: grove grijze blokken, mos op de schouders,
+// blauw gloeiende ogen en runen op de borst. Teamkleur in doek en riem.
+function steenwachter(def) {
+  const K = def.kleur;
+  const SK = '#8d9096', SL = '#a9acb2', SD = '#5f6268';
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const slag = houding === 'slag' ? 1 : 0;
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 1.6 : LOOP[beeld] * 0.8;
+    const mx = 12.5 + slag;
+    // zware benen
+    blok(ctx, mx - 5.2 - pas * 0.4, 25 + wip, 4.6, 9, SD);
+    blok(ctx, mx + 0.6 + pas * 0.4, 25 + wip, 4.6, 9, SK);
+    blok(ctx, mx - 5.6 - pas * 0.4, 32.2, 5.4, 2, '#4a4c52');
+    blok(ctx, mx + 0.4 + pas * 0.4, 32.2, 5.4, 2, '#4a4c52');
+    // romp van blokken
+    lichtBlok(ctx, mx - 6.6, 11 + wip, 13.2, 15, SK, 0.25);
+    blok(ctx, mx - 6.6, 17 + wip, 13.2, 0.8, SD);
+    blok(ctx, mx - 0.4, 11 + wip, 0.8, 6, SD);
+    // doek en riem in teamkleur
+    blok(ctx, mx - 6.6, 23.4 + wip, 13.2, 2.2, K);
+    blok(ctx, mx - 1, 23.4 + wip, 2, 4.6, K);
+    // runen op de borst
+    lijn(ctx, mx - 2.6, 13.4 + wip, mx - 2.6, 16 + wip, '#7fc4ff', 0.6);
+    lijn(ctx, mx - 3.6, 14.2 + wip, mx - 1.6, 14.2 + wip, '#7fc4ff', 0.6);
+    lijn(ctx, mx + 2, 13.2 + wip, mx + 3.2, 16 + wip, '#7fc4ff', 0.6);
+    // armen
+    const arm = vecht ? (slag ? 4 : -1) : pas * 0.5;
+    lichtBlok(ctx, mx - 10.4, 11.6 + wip, 4, 11, SD, 0.2);
+    lichtBlok(ctx, mx + 6.4 + slag * 2, 11.6 + wip + arm, 4.4, 12, SL, 0.2);
+    blok(ctx, mx - 10.8, 21.6 + wip, 4.8, 3.4, SK);
+    blok(ctx, mx + 6.2 + slag * 2, 22.6 + wip + arm, 5, 3.6, SL);
+    // schouders met mos
+    ovaal(ctx, mx - 7, 11.4 + wip, 3.6, 2.6, SL);
+    ovaal(ctx, mx + 7, 11.4 + wip, 3.6, 2.6, SL);
+    ovaal(ctx, mx - 7.4, 10.2 + wip, 2.6, 1.2, '#5f8a3a');
+    ovaal(ctx, mx + 6.6, 10.2 + wip, 2.8, 1.3, '#6f9a45');
+    // hoofd
+    lichtBlok(ctx, mx - 3.4, 4.6 + wip, 6.8, 6.4, SL, 0.25);
+    blok(ctx, mx - 3.4, 4.6 + wip, 6.8, 1, SD);
+    ovaal(ctx, mx - 1.3, 8 + wip, 0.9, 0.7, '#8fd6ff');
+    ovaal(ctx, mx + 1.6, 8 + wip, 0.9, 0.7, '#8fd6ff');
+    ovaal(ctx, mx - 1.3, 8 + wip, 1.8, 1.4, 'rgba(120,200,255,0.25)');
+    ovaal(ctx, mx + 1.6, 8 + wip, 1.8, 1.4, 'rgba(120,200,255,0.25)');
+  };
+  return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
+}
+
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
-  zwaardvechter, banierdrager, heler,
+  zwaardvechter, banierdrager, heler, steenwachter,
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

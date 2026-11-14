@@ -24,7 +24,7 @@ await p.waitForTimeout(400);
 sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); return s.camera.wereldNaarScherm(w.x, w.y + 4); }, plek);
 await p.touchscreen.tap(sp.x, sp.y); await p.waitForTimeout(300);
 const kn = await p.$$eval('#leger-opleiden button', (k) => k.map((x) => x.dataset.soldaat));
-check('paneel: sluip, vlam en heler', kn.join() === 'sluipmoordenaar,vlammenwever,heler', kn.join());
+check('paneel: sluip, vlam, heler en steenwachter', kn.join() === 'sluipmoordenaar,vlammenwever,heler,steenwachter', kn.join());
 const boer0 = await p.evaluate(() => window.spel.economie.bevolking().vrij);
 await p.tap('#leger-opleiden button[data-soldaat="sluipmoordenaar"]');
 const boer1 = await p.evaluate(() => window.spel.economie.bevolking().vrij);
