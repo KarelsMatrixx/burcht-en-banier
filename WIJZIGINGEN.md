@@ -352,3 +352,6 @@
 - Campaign, Continue en Free play zijn even groot.
 - De zin "Build your keep, lead your people and break the walls of the red lord." is weg.
 - Bekend: de vlaggen zijn met een script uit het origineel geknipt (staartjes en randen kunnen op sommige schermen een fractie afwijken). De grote banier laat onderaan, waar hij over de heuvel hangt, een vage vlek in de achtergrond zien als hij wegwaait. Op een echte iPhone nog niet bekeken; de kosten voor de batterij zijn niet gemeten.
+
+## 0.50.2: Continue bovenaan
+- Op het beginscherm staat Continue boven Campaign en Free play zodra er een bewaard spel is (wens van Karel, 15 november). Zonder bewaard spel is de volgorde Campaign, Free play.
