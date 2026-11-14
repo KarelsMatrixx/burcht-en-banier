@@ -376,3 +376,10 @@
 - Continue staat altijd bovenaan. Zonder bewaard spel is hij vaag (38% dekking) en niet in te drukken (`disabled`); met bewaard spel normaal. tests/menu19.mjs controleert dat nu zo.
 - Logo: bijna doorzichtige ruis (alfa onder 24) uit logo.webp gehaald; op Karels iPhone was een vage rechthoek rond het logo zichtbaar.
 - Bekend: of de vage rechthoek hiermee weg is, is op de iPhone nog niet gezien.
+
+## 0.51.0: verhaalbeeld voor elk level
+- Nieuw: bij het starten van level 1 tot en met 10 (niet de proloog, niet bij doorgaan met een bewaard spel) komt eerst een schilderij in beeld, altijd 12 seconden, met onderin maximaal vier zinnen verhaal en een dunne voortgangsbalk. Daarna volgt de gewone briefing.
+- Geen overslaan. Het spel staat stil zolang het beeld er is.
+- data/campagne.json: per level de velden "beeld" (beelden/verhaal/levelNN.webp) en "verhaal" (tekst). Ontbreekt het bestand, dan staat de tekst op een donkere achtergrond.
+- Beelden nog niet geleverd: toevoegen aan KERN in sw.js zodra ze in beelden/verhaal/ staan (anders mislukt de installatie van de offline cache bij een ontbrekend bestand).
+- ui.js: toonVerhaalbeeld(). main.js: vlag beeldOpen. index.html en css/stijl.css: #verhaalbeeld.

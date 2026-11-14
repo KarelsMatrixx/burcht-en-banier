@@ -794,11 +794,12 @@ async function start() {
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
     kaartGewijzigd,
   }) : null;
+  let beeldOpen = false;   // het verhaalbeeld staat in beeld: het spel wacht
   const beginLevel = () => { verhaal.start(); if (proloog) proloog.start(); if (doel) doel.start(); };
   ui.opMissieBegin(() => { ui.toonMissie({ open: false }); beginLevel(); });
   if (missie && !bewaard && !strijd.uitslag()) {
     const verteller = missies.figuren[missie.verteller || 'bartholt'];
-    ui.toonMissie({
+    const toonBriefing = () => ui.toonMissie({
       open: true,
       titel: missie.titel,
       tekst: missie.intro,
@@ -806,6 +807,13 @@ async function start() {
       tegen: missie.heer ? { naam: missie.heer, portret: missie.portret } : null,
       extra: [nieuwHier().trim(), kaart.naam ? `Map: ${kaart.naam}.` : ''].filter(Boolean),
     });
+    // Eerst het verhaalbeeld, altijd 12 seconden, dan de briefing.
+    if (missie.beeld && missie.verhaal) {
+      beeldOpen = true;
+      ui.toonVerhaalbeeld({ beeld: missie.beeld, tekst: missie.verhaal, seconden: 12 }).then(() => { beeldOpen = false; toonBriefing(); });
+    } else {
+      toonBriefing();
+    }
   } else {
     beginLevel();
   }
@@ -1047,7 +1055,7 @@ async function start() {
   maakSpellus({
     stappenPerSeconde: CONFIG.spel.stappenPerSeconde,
     stap: (dt) => {
-      if (strijd.uitslag() || titelOpen || !menuPaneel.hidden) return;   // gewonnen of verloren, beginscherm of menu open: alles staat stil
+      if (strijd.uitslag() || titelOpen || beeldOpen || !menuPaneel.hidden) return;   // gewonnen of verloren, beginscherm of menu open: alles staat stil
       eenheden.stap(dt);
       economie.stap();
       leger.stap();

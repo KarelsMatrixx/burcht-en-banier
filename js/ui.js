@@ -620,6 +620,28 @@ export function maakUi() {
         if (knop && !knop.disabled) functie(knop.dataset.sleutel);
       });
     },
+    // Het verhaalbeeld voor een level: een schilderij met onderin de tekst.
+    // Het blijft altijd zoveel seconden staan (geen overslaan) en geeft dan
+    // een belofte terug. Ontbreekt het beeld, dan blijft de tekst op donker.
+    toonVerhaalbeeld({ beeld = '', tekst = '', seconden = 12 }) {
+      return new Promise((klaar) => {
+        const plaat = el('verhaalbeeld-plaat');
+        // Eerst los laden: een ontbrekend bestand mag de foutmelding niet oproepen.
+        plaat.hidden = true;
+        if (beeld) {
+          const proef = new Image();
+          proef.onload = () => { plaat.src = beeld; plaat.hidden = false; };
+          proef.src = beeld;
+        }
+        el('verhaalbeeld-tekst').textContent = tekst;
+        const balk = el('verhaalbeeld-balk').firstElementChild;
+        balk.style.animation = 'none';
+        void balk.offsetWidth;
+        balk.style.animation = `verhaalbalk ${seconden}s linear forwards`;
+        el('verhaalbeeld').hidden = false;
+        setTimeout(() => { el('verhaalbeeld').hidden = true; klaar(); }, seconden * 1000);
+      });
+    },
     // De intro van een missie.
     // De briefing voor een level. spreker = { naam, portret } van wie vertelt,
     // tegen = { naam, portret } van de heer, extra = regels onder de tekst.
