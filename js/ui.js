@@ -254,6 +254,8 @@ export function maakUi() {
   }
 
   // Tik je bovenin op je voorraad, dan klapt het paneel over je volk open.
+  const voorraadVorige = new Map();   // vorige getallen, voor de flits in de balk
+  const voorraadFlits = new Map();
   let kiesBelasting = () => {};
   let leidOp = () => {};
   let verkoopActie = () => {};
@@ -330,9 +332,18 @@ export function maakUi() {
     //   sleutel kiest het plaatje (icoon-hout), naam is de Engelse naam.
     toonVoorraad(lijst) {
       el('voorraad-lijst').textContent = '';
+      const nu = performance.now();
       for (const { sleutel, naam, aantal, slecht } of lijst) {
         const vak = document.createElement('span');
-        vak.className = 'grondstof' + (slecht ? ' slecht' : '');
+        // Een getal dat net veranderde kleurt een seconde groen (erbij) of rood (eraf).
+        const sl = sleutel || naam.toLowerCase();
+        const voor = voorraadVorige.get(sl);
+        if (typeof aantal === 'number' && typeof voor === 'number' && aantal !== voor) voorraadFlits.set(sl, { omhoog: aantal > voor, tot: nu + 1000 });
+        if (typeof aantal === 'number') voorraadVorige.set(sl, aantal);
+        const flits = voorraadFlits.get(sl);
+        const flitst = flits && flits.tot > nu;
+        vak.className = 'grondstof' + (slecht ? ' slecht' : '') + (flitst ? (flits.omhoog ? ' omhoog' : ' omlaag') : '');
+        if (flitst) setTimeout(() => vak.classList.remove('omhoog', 'omlaag'), flits.tot - nu);
         vak.dataset.naam = naam;
         vak.dataset.sleutel = sleutel || naam.toLowerCase();
         vak.title = naam;
@@ -347,7 +358,28 @@ export function maakUi() {
     },
     // Het paneel over je volk. regels = de zinnen, tarieven = de standen
     // van de belasting [{ naam, uitleg }], gekozen = welke stand aanstaat.
-    toonVolk({ regels, tarieven, gekozen }) {
+    toonVolk({ regels, tarieven, gekozen, voorraad = [] }) {
+      // Alle grondstoffen met plaatje, naam, aantal en de verandering van de laatste minuut.
+      const rooster = el('volk-grondstoffen');
+      rooster.textContent = '';
+      for (const g of voorraad) {
+        const vak = document.createElement('div');
+        vak.className = 'volk-grond' + (g.slecht ? ' slecht' : '');
+        const icoon = document.createElement('i');
+        icoon.className = `icoon icoon-${g.sleutel}`;
+        const naam = document.createElement('span');
+        naam.textContent = g.naam;
+        const getal = document.createElement('b');
+        getal.textContent = g.max ? `${g.aantal}/${g.max}` : g.aantal;
+        vak.append(icoon, naam, getal);
+        if (Number.isFinite(g.verschil)) {
+          const v = document.createElement('small');
+          v.textContent = g.verschil > 0 ? `+${g.verschil}` : g.verschil < 0 ? `−${-g.verschil}` : '0';
+          v.className = g.verschil > 0 ? 'omhoog' : g.verschil < 0 ? 'omlaag' : '';
+          vak.append(v);
+        }
+        rooster.appendChild(vak);
+      }
       el('volk-tekst').textContent = '';
       for (const regel of regels) {
         const p = document.createElement('div');

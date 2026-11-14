@@ -31,7 +31,7 @@ let koper = 0; const st = new Set();
 for (let t = 0; t < 90 && koper === 0; t++) { await p.waitForTimeout(1000); const r = await p.evaluate(([x, y]) => ({ k: window.spel.economie.voorraad.koper, b: window.spel.economie.beschrijf(y * 64 + x) }), [vak.x, vak.y]); koper = r.k; st.add(r.b); }
 console.log([...st].join(' / '));
 check('koper binnen', koper === 4, koper);
-check('koper in balk', /Copper/.test(await p.evaluate(() => [...document.querySelectorAll('#voorraad-lijst .grondstof')].map((g) => g.dataset.naam).join())));
+check('koper in het paneel, niet in de balk', /Copper/.test(await p.evaluate(() => [...document.querySelectorAll('#volk-grondstoffen .volk-grond span')].map((g) => g.textContent).join())) && !/Copper/.test(await p.evaluate(() => [...document.querySelectorAll('#voorraad-lijst .grondstof')].map((g) => g.dataset.naam).join())));
 await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.zetZoom(3); }, [vak.x, vak.y]);
 await p.waitForTimeout(800);
 await p.screenshot({ path: '/home/claude/stap23.png' });

@@ -1080,3 +1080,19 @@ button:active {
 }
 #hamer-label[hidden] { display: none; }
 #knop-hamer.sloop #hamer-label { border-color: #e2604e; }
+
+/* Balk bovenin (A en B): alleen de kern, een pijltje als teken dat je kunt aantikken,
+   en een korte kleur als een getal verandert. */
+#voorraad::after { content: '\25BE'; margin-left: 10px; opacity: 0.7; font-size: 14px; vertical-align: middle; }
+.grondstof b { transition: color 0.4s; }
+.grondstof.omhoog b { color: #9be37a; }
+.grondstof.omlaag b { color: #ff9a7a; }
+/* Het paneel met alle grondstoffen. */
+#volk-grondstoffen { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 12px; margin-bottom: 6px; }
+.volk-grond { display: flex; align-items: center; gap: 6px; }
+.volk-grond .icoon { width: 20px; height: 20px; }
+.volk-grond b { margin-left: auto; }
+.volk-grond small { min-width: 32px; text-align: right; opacity: 0.9; }
+.volk-grond small.omhoog { color: #9be37a; }
+.volk-grond small.omlaag { color: #ff9a7a; }
+.volk-grond.slecht b { color: #ff8d7a; }

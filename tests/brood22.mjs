@@ -25,7 +25,7 @@ await knop('Work'); check('knop Bakkerij', await knop('Bakery'));
 sp = await naar(...vrijeTegels[1]); await p.touchscreen.tap(sp.x, sp.y); await p.tap('#knop-hamer'); await knop('Done');
 check('bakkerij staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], vrijeTegels[1])) === 25);
 await p.waitForTimeout(500);
-check('tarwe en brood in balk zodra je ze maakt', /Wheat/.test(await p.evaluate(() => [...document.querySelectorAll('#voorraad-lijst .grondstof')].map((g) => g.dataset.naam).join())));
+check('tarwe en brood in het paneel zodra je ze maakt', /Wheat/.test(await p.evaluate(() => [...document.querySelectorAll('#volk-grondstoffen .volk-grond span')].map((g) => g.textContent).join())));
 let v = {}; let staten = new Set();
 for (let t = 0; t < 90 && !(v.brood > 0); t++) {
   await p.waitForTimeout(1000);
