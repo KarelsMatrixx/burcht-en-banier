@@ -607,18 +607,79 @@
     "afstand": 11,
     "druk": {
      "eerste": 150,
-     "tussen": 100,
-     "begin": 3,
-     "erbij": 1,
-     "max": 9,
-     "leger": {
-      "ridder": 2,
-      "boogschutter": 1
-     },
-     "ramVanaf": 3,
-     "katapultVanaf": 5,
+     "waarschuwing": 20,
      "laag": 0.6,
-     "rustig": 1.6
+     "rustig": 1.6,
+     "golven": [
+      {
+       "naam": "scouts",
+       "wacht": 100,
+       "leger": {
+        "ridder": 3,
+        "boogschutter": 3
+       }
+      },
+      {
+       "naam": "vanguard",
+       "wacht": 100,
+       "leger": {
+        "ridder": 4,
+        "boogschutter": 3,
+        "zwaardvechter": 1
+       }
+      },
+      {
+       "naam": "ram column",
+       "wacht": 110,
+       "leger": {
+        "ridder": 4,
+        "boogschutter": 3,
+        "zwaardvechter": 2,
+        "ram": 1,
+        "ladder": 1
+       }
+      },
+      {
+       "naam": "axe knights",
+       "wacht": 120,
+       "leger": {
+        "ridder": 5,
+        "boogschutter": 4,
+        "bijlridder": 2,
+        "zwaardvechter": 2,
+        "ram": 1,
+        "ladder": 1
+       }
+      },
+      {
+       "naam": "siege train",
+       "wacht": 130,
+       "leger": {
+        "ridder": 6,
+        "boogschutter": 4,
+        "kruisboog": 2,
+        "bijlridder": 3,
+        "ram": 2,
+        "ladder": 2,
+        "katapult": 1
+       }
+      },
+      {
+       "naam": "whole host",
+       "wacht": 150,
+       "leger": {
+        "ridder": 7,
+        "boogschutter": 5,
+        "kruisboog": 2,
+        "bijlridder": 3,
+        "zwaardvechter": 2,
+        "ram": 2,
+        "ladder": 2,
+        "katapult": 1,
+        "toren": 1
+       }
+      }
+     ]
     }
    },
    "berichten": [

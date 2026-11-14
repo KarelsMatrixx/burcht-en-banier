@@ -326,7 +326,13 @@
 - Level 5 (campagne.json, rood): eerste aanval na 150 s (was 200), tempo 130 (was 100), 10 wachters op de muren (was 4), eerste aanval 9 man in plaats van 5 (doelBegin 9, doelPerAanval 2,5, doelMax 30, begin met 140 goud), thuiswacht 20%. Nieuw in modus.js: rood kan begin, doelBegin, doelPerAanval en doelMax per level zetten.
 - Bekend: alle waarden zijn schattingen; niet op de iPhone gespeeld. De tweede aanval en later zijn niet gemeten met een spelende speler.
 
-## 0.49.2: lijfwachten van de rode heer (level 5)
+## 0.49.2: level 6 met veel meer troepen, in vaste golven
+- De druk in level 6 is nu een vast draaiboek (`druk.golven` in campagne.json, uitgelezen door js/loodsen.js) in plaats van een formule. Zes golven, oplopend tot 25 man: scouts (6, na 150 s), vanguard (8), ram column (11), axe knights (15), siege train (20, met katapult en kruisbogen), whole host (25, met toren). Wachttijden 100, 100, 110, 120, 130 en 150 s; de laatste golf blijft terugkomen.
+- Twintig seconden voor elke golf komt een waarschuwing van de verkenners.
+- Valt er een loods, dan zijn de golven 40% kleiner en komen ze 1,6 keer zo laat.
+- Alle getallen zijn schattingen en door Claude gekozen; nog niet op de iPhone gespeeld.
+
+## 0.49.3: lijfwachten van de rode heer (level 5)
 - Wens van Karel (14 november): in Stillwater lopen twee zwaardvechters achter de rode heer aan als lijfwacht.
 - Nieuw in campagne.json bij `rood`: `lijfwacht: { soort, aantal }` (hooguit 6), verwerkt in modus.js. Level 5 heeft twee zwaardvechters.
 - Gedrag (strijd.js, `lijfwachtDenk`): ze staan bij de start naast de heer, lopen mee als hij over zijn binnenplein loopt (meestal binnen 3 tegels), en vallen aan wie binnen 7 tegels van de heer komt. Valt de heer, dan verdedigen ze de burcht. Ze doen niet mee aan aanvallen en tellen niet als aanvallers. Ze worden bij opnieuw beginnen of laden vers aangemaakt (hun leven wordt niet bewaard). API: `strijd.lijfwachten()` en `strijd.roodKoning()`.
