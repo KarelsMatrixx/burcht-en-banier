@@ -19,6 +19,7 @@ check('standaard vrij normaal', i.m.soort === 'vrij' && i.m.profiel === 'normaal
 check('normaal: ongewijzigde regels', i.eerste === 200 && i.hout === 60, JSON.stringify(i));
 await p.evaluate(() => window.spel.bouwer && 0);
 // 2. menu
+await p.evaluate(() => localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [0] }))); await p.reload(); await laad();   // level 1 is pas open na de proloog
 await p.click('#knop-instellingen'); await p.click('#knop-levels'); await p.click('#kaart-terug'); await p.click('#titel-vrij');
 const menu = await p.evaluate(() => ({ open: !document.getElementById('menu').hidden, knoppen: [...document.querySelectorAll('#menu-lijst button')].map((k) => [k.dataset.sleutel, k.disabled]) }));
 check('menu opent met 4 vrij, proloog en 6 missies', menu.open && menu.knoppen.length === 11, JSON.stringify(menu));
@@ -41,7 +42,7 @@ const e1 = await p.evaluate(() => ({ titel: document.getElementById('einde-titel
 console.log('einde:', JSON.stringify(e1));
 check('missie 1 gewonnen scherm', /Victory at Witherheath/.test(e1.titel) && /Reinout/.test(e1.tekst), JSON.stringify(e1));
 check('volgende-knop zichtbaar', e1.volgende);
-check('voortgang bewaard', /\[1\]/.test(e1.klaar || ''), e1.klaar);
+check('voortgang bewaard', /\[0,1\]/.test(e1.klaar || ''), e1.klaar);
 await Promise.all([p.waitForNavigation(), p.click('#einde-volgende')]); await laad();
 i = await p.evaluate(() => ({ m: window.spel.modus, eerste: window.spel.regels.heer.eersteAanval, titel: document.getElementById('missie-titel').textContent, ridders: window.spel.regels.heer.ridderPerSchutter }));
 check('missie 2 gestart (normaal)', i.m.missie === 2 && i.eerste === 300 && /Sevenwinds/.test(i.titel), JSON.stringify(i));
