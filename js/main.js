@@ -16,6 +16,7 @@ import { laadBouwwerken, maakBouwer } from './bouwen.js';
 import { maakLeger } from './leger.js';
 import { maakStrijd } from './strijd.js';
 import { maakRood } from './rood.js';
+import { maakVeldheer } from './veldheer.js';
 import { maakOpslag } from './opslag.js';
 import { maakUi } from './ui.js';
 import { metLidwoord } from './taal.js';
@@ -145,10 +146,17 @@ async function start() {
     opKaart: (vakken) => kaartGewijzigd(vakken),
     opEinde: (wat) => naEinde(wat),
   });
+  // De veldheer: hoe rood zijn aanvallen aanpakt (timing, doelkeuze, tegenzetten, terugtrekken).
+  const veld = missie && missie.proloog ? null : maakVeldheer({
+    regels, kaart, leger, strijd,
+    perSeconde: CONFIG.spel.stappenPerSeconde,
+    opMelding: (tekst) => ui.toonMelding(tekst, { soort: 'vijand' }),
+  });
+  if (veld) strijd.koppelVeld(veld);
   // De rode heer: eigen voorraad, eigen werken, beslist zelf wanneer hij aanvalt.
   // In de proloog is er nog geen rode heer met een eigen economie.
   const rood = missie && missie.proloog ? null : maakRood({
-    regels, kaart, bouwwerken, leger, strijd, eenheden,
+    regels, kaart, bouwwerken, leger, strijd, eenheden, veld,
     perSeconde: CONFIG.spel.stappenPerSeconde,
     opMelding: (tekst) => ui.toonMelding(tekst, { soort: 'vijand' }),
     opVerandering: bewaar,
@@ -1085,7 +1093,7 @@ async function start() {
   });
 
   // Handig bij het zoeken naar fouten.
-  window.spel = { rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel };
+  window.spel = { veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

@@ -105,6 +105,7 @@ export function profielVan(missies, modus) {
 //   eersteAanval  seconden tot zijn eerste aanval
 //   tempo         procent: 150 = anderhalf keer zo vaak aanvallen
 //   leger, extra_soorten, rammenVanaf, wachters: zoals in een profiel
+//   aanval        veldheer: niveau (1 tot 5), max, stijgElke, flank en meer, zie js/veldheer.js
 //   koning.leven  procent van het leven van de rode koning
 export function pasProfielToe(regels, profiel, rood = null) {
   regels.heer = { ...regels.heer, ...(profiel.heer || {}) };
@@ -138,6 +139,8 @@ function pasRoodToe(regels, rood) {
   if (rood.leger) h.leger = { ...rood.leger };
   if (rood.extra_soorten) h.extra_soorten = { ...rood.extra_soorten };
   if (Number.isFinite(rood.rammenVanaf)) h.rammenVanaf = rood.rammenVanaf;
+  // aanval (veldheer, stap 38): niveau 1 tot 5 en wat het level zelf vastlegt, zie js/veldheer.js.
+  if (rood.aanval && typeof rood.aanval === 'object') h.aanval = { ...(h.aanval || {}), ...rood.aanval };
   if (Number.isFinite(rood.wachters)) regels.strijd.wachters = rood.wachters;
   if (rood.koning && Number.isFinite(rood.koning.leven)) regels.strijd.roodKoningLeven = rood.koning.leven / 100;
   // schiet: { bereik, schade, slagTijd } maakt van de rode koning een schutter.

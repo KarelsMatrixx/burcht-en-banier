@@ -611,7 +611,8 @@
    "kooptElke en herbouwElke: om de zoveel seconden koopt hij iets of herstelt hij een stuk.",
    "herbouwVrij: hij herstelt niets als een soldaat van jou binnen zoveel tegels staat. uitvalAfstand en uitvalPauze: zie rood.js.",
    "extra: hij koopt niet door als zijn reserve al zoveel boven het doel zit.",
-   "leger: zijn gewone mannen. aandeel: hoeveel van elke soort (verhouding), vanaf: vanaf welke aanval hij die soort kent (0 = meteen). koperPrijs: hij heeft geen koper en betaalt elk koper met zoveel goud; planken betaalt hij met 2 hout."
+   "aanval (stap 38, js/veldheer.js): hoe rood een aanval aanpakt. niveau = begin (1 tot 5), stijgElke = na hoeveel aanvallen het niveau met een stijgt, max = hoogste niveau. niveaus: per niveau wat erbij komt (synchroon, scouts, tweede, thuis, doelkeuze, flank, piekElke, tegenzet, terugtrek).",
+  "leger: zijn gewone mannen. aandeel: hoeveel van elke soort (verhouding), vanaf: vanaf welke aanval hij die soort kent (0 = meteen). koperPrijs: hij heeft geen koper en betaalt elk koper met zoveel goud; planken betaalt hij met 2 hout."
   ],
   "begin": {
    "hout": 10,
@@ -671,6 +672,18 @@
    }
   },
   "koperPrijs": 2,
+  "aanval": {
+   "niveau": 2,
+   "stijgElke": 4,
+   "max": 5,
+   "niveaus": {
+    "1": { "synchroon": true },
+    "2": { "scouts": 0.15, "scoutsVroeger": 14, "tweede": 0.25, "tweedeNa": 22, "thuis": 0.1 },
+    "3": { "doelkeuze": "zwakste", "flank": 0.35, "piekElke": 3, "piekFactor": 1.35, "piekRust": 1.3 },
+    "4": { "tegenzet": 0.7 },
+    "5": { "terugtrek": 0.5, "thuis": 0.15, "tweedeNa": 16, "tegenzet": 1 }
+   }
+  },
   "leger": {
    "ridder": {
     "aandeel": 3

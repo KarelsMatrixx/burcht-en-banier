@@ -20,7 +20,7 @@ import { OBJECT } from './kaart.js';
 
 const GRONDSTOFFEN = ['hout', 'steen', 'goud'];
 
-export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, perSeconde, opMelding, opVerandering }) {
+export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, perSeconde, opMelding, opVerandering, veld = null }) {
   const H = regels.heer;
   if (!H) return null;
   const dt = 1 / perSeconde;
@@ -67,10 +67,13 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
   begin();
 
   const staand = () => werken.filter((w) => kaart.eigenaar[w.vak] === 2 && kaart.object[w.vak] === w.soort);
-  const doel = () => Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen);
+  // Elke derde aanval is een piek (veldheer, niveau 3): dan is zijn doel hoger, en daarna rust hij langer.
+  const piek = () => (veld ? veld.piek(aanvallen + 1) : 1);
+  const doel = () => Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen) * piek();
+  const wachtTijd = () => (aanvallen === 0 ? H.eersteAanval : H.tussen * (veld ? veld.rust(aanvallen) : 1));
   const sterkte = () => sterkteVan(reserve);
   const aantal = () => Object.values(reserve).reduce((a, b) => a + b, 0);
-  const opdracht = () => Math.max(aanvallen === 0 ? H.eersteAanval : H.tussen, 0) - sinds;
+  const opdracht = () => Math.max(wachtTijd(), 0) - sinds;
 
   // Inkomen per seconde, als geheel.
   function inkomen() {
@@ -108,7 +111,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
       if (Object.entries(omzet(kosten)).every(([k, n]) => k === 'goud' || (voorraad[k] || 0) >= n)) return null;   // sparen
     }
     if (aanvallen >= H.rammenVanaf) {
-      const max = Math.min(H.rammenMax, aanvallen - H.rammenVanaf + 1);
+      const max = Math.min(H.rammenMax + (veld ? veld.extraRam(aanvallen + 1) : 0), aanvallen - H.rammenVanaf + 1);
       for (const soort of ['ram', 'ladder']) {
         if (tel(soort) >= max) continue;
         const kosten = soorten[soort].kosten;
@@ -121,7 +124,10 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
     // en vanaf welke aanval hij die soort kent). Hij koopt de soort die het
     // verst achterloopt op zijn aandeel.
     const leger = H.leger || { ridder: { aandeel: H.ridderPerSchutter || 2 }, boogschutter: { aandeel: 1 } };
-    const kandidaten = Object.entries(leger).filter(([soort, w]) => soorten[soort] && aanvallen >= (w.vanaf || 0) && w.aandeel > 0);
+    // Veldheer, niveau 4: hij kijkt naar jouw leger en past zijn mengsel daarop aan.
+    const kandidaten = Object.entries(leger)
+      .filter(([soort, w]) => soorten[soort] && aanvallen >= (w.vanaf || 0) && w.aandeel > 0)
+      .map(([soort, w]) => [soort, { ...w, aandeel: w.aandeel * (veld ? veld.tegenFactor(soort, aanvallen + 1) : 1) }]);
     if (!kandidaten.length) return null;
     const totaal = kandidaten.reduce((som, [, w]) => som + w.aandeel, 0);
     const aantal = kandidaten.reduce((som, [soort]) => som + tel(soort), 0) + 1;
@@ -146,8 +152,10 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
   // Zijn mannen vertrekken. Geeft het aantal dat echt op de kaart kwam.
   function stuur(melding, telAls) {
     const inhoud = { ...reserve };
+    // Een deel van de mannen blijft thuis (veldheer, niveau 2): voor een uitval en de volgende aanval.
+    const thuis = telAls && veld ? veld.behoud(inhoud, aanvallen + 1) : {};
     const n = strijd.stuurLeger(inhoud, telAls);
-    reserve = {};
+    reserve = thuis;
     if (telAls) {
       aanvallen++;
       sinds = 0;
@@ -211,7 +219,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
       stuur((n) => `The red lord makes a sally with ${n} ${n === 1 ? 'man' : 'men'}!`, false);
       return;
     }
-    if (sinds >= (aanvallen === 0 ? H.eersteAanval : H.tussen) && sterkte() >= doel()) {
+    if (sinds >= wachtTijd() && sterkte() >= doel()) {
       stuur((n) => `Attack ${aanvallen + 1}! ${n} ${n === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`, true);
       opVerandering();
     }
@@ -219,7 +227,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
 
   // Voor de cijfers in beeld.
   function stand() {
-    const rest = Math.max(0, Math.ceil((aanvallen === 0 ? H.eersteAanval : H.tussen) - sinds));
+    const rest = Math.max(0, Math.ceil(wachtTijd() - sinds));
     return {
       voorraad: { hout: Math.floor(voorraad.hout), steen: Math.floor(voorraad.steen), goud: Math.floor(voorraad.goud) },
       reserve: { ...reserve },
