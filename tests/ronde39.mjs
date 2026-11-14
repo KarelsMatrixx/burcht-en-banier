@@ -61,8 +61,12 @@ check('loodsen staan buiten de muren', afstand.every((a) => a >= 8), afstand.joi
 check('loodsen staan niet dicht bij elkaar', Math.abs(L.v[0] - L.v[1]) > 3);
 check('loodsen bereikbaar voor jou', await p.evaluate(() => { const s = window.spel; const B = s.kaart.breedte; const st = s.kaart.start[0]; let j = -1; for (let r = 2; r < 9 && j < 0; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (j < 0 && s.wegvinder.isVrij(st.x + dx, st.y + dy, 0)) j = (st.y + dy) * B + st.x + dx; return s.doel.loodsen().every((v) => [1, -1, B, -B].some((o) => s.wegvinder.verbonden(j, v + o, 0))); }));
 await p.tap('#missie-begin'); await p.waitForTimeout(800);
-// Druk: eerste golf na 150 seconden, daarna rammen vanaf golf 3
+const gl = await p.evaluate(() => [].concat(window.spel.missies.campagne.levels || window.spel.missies.campagne).find((l) => l.id === 6).doel.druk.golven.map((g) => Object.values(g.leger).reduce((a, b) => a + b, 0)));
+check('zes golven oplopend tot 25', gl.length === 6 && gl[5] === 25 && gl.every((n, i) => i === 0 || n > gl[i - 1]), gl.join());
+// Druk: eerste golf na 150 seconden
 const g0 = await p.evaluate(() => window.spel.strijd.vijanden().length);
+await p.evaluate(() => window.spel.doel.zetTijd(135)); await p.waitForTimeout(1200);
+check('waarschuwing voor de eerste golf', (await p.evaluate(() => window.spel.doel.stand().gewaarschuwd)) === true);
 await p.evaluate(() => window.spel.doel.zetTijd(151)); await p.waitForTimeout(1500);
 const g1 = await p.evaluate(() => ({ n: window.spel.strijd.vijanden().length, golven: window.spel.doel.stand().golven }));
 check('na 150 seconden komt er een golf', g1.golven === 1 && g1.n > g0, JSON.stringify([g0, g1]));

@@ -7,9 +7,10 @@
 //
 // In data/campagne.json bij het level:
 //   doel: { soort: 'loodsen', aantal: 2, leven: leven per loods,
-//           druk: { eerste, tussen, begin, erbij, max, leger: { soort: aandeel },
-//                   ramVanaf, katapultVanaf, laag: 0.6 (aandeel als er een valt),
-//                   rustig: 1.6 (tijd tussen golven wordt zoveel langer) } }
+//           druk: { eerste: seconden tot de eerste golf, waarschuwing: seconden vooraf,
+//                   laag: aandeel als er een loods viel, rustig: wachttijd keer zoveel,
+//                   golven: [ { naam, wacht: seconden tot de volgende, leger: { soort: aantal } } ] } }
+// De laatste golf blijft terugkomen.
 //
 // De loodsen staan op vaste plekken die uit de kaart volgen (twee flanken van
 // het kasteel van rood), zodat herladen dezelfde plekken geeft. Wat gevallen is
@@ -29,7 +30,7 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
   let loopt = false;
   let kijk = 0;
 
-  function nieuw() { return { tijd: 0, golven: 0, loodsen: [], gevallen: [], leven: {}, gemeld: {} }; }
+  function nieuw() { return { tijd: 0, golven: 0, volgende: 0, gewaarschuwd: false, loodsen: [], gevallen: [], leven: {}, gemeld: {} }; }
   function lees() {
     try { return JSON.parse(localStorage.getItem(geheugen) || 'null'); } catch (e) { return null; }
   }
@@ -125,27 +126,37 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
 
   const staand = () => s.loodsen.filter((v) => !s.gevallen.includes(v)).length;
 
-  // Een golf op de loodsen af: groter naarmate het langer duurt, kleiner als er een viel.
+  // De golven staan vast in data (druk.golven), elk met een naam, een samenstelling
+  // en de wachttijd tot de volgende. Eerst verkenners, dan de hoofdmacht, dan
+  // machines en tot slot het hele leger. Daarna blijft de laatste golf terugkomen.
+  // Is er een loods gevallen, dan zijn de golven kleiner en komen ze later.
+  const lijst = () => druk.golven || [];
+  const laagNu = () => staand() < aantal;
+  function wachtNa(i) {
+    const g = lijst()[Math.min(i, lijst().length - 1)];
+    return ((g && g.wacht) || druk.tussen || 100) * (laagNu() ? (druk.rustig || 1.6) : 1);
+  }
   function stuurGolf() {
-    const laag = staand() < aantal;
-    const basis = (druk.begin || 3) + (druk.erbij || 1) * s.golven;
-    const n = Math.max(1, Math.round(Math.min(druk.max || 9, basis) * (laag ? (druk.laag || 0.6) : 1)));
-    const leger = druk.leger || { ridder: 2, boogschutter: 1 };
-    const som = Object.values(leger).reduce((a, b) => a + b, 0) || 1;
+    const g = lijst()[Math.min(s.golven, lijst().length - 1)];
+    const laag = laagNu();
     const inhoud = {};
-    let over = n;
-    const soorten = Object.entries(leger);
-    soorten.forEach(([k, a], i) => {
-      const hier = i === soorten.length - 1 ? over : Math.round((n * a) / som);
-      inhoud[k] = Math.max(0, Math.min(over, hier));
-      over -= inhoud[k];
-    });
-    if (druk.ramVanaf && s.golven + 1 >= druk.ramVanaf) inhoud.ram = 1;
-    if (druk.katapultVanaf && s.golven + 1 >= druk.katapultVanaf && !laag) inhoud.katapult = 1;
+    let n = 0;
+    for (const [k, c] of Object.entries(g.leger)) {
+      const hier = laag ? Math.round(c * (druk.laag || 0.6)) : c;
+      if (hier > 0) { inhoud[k] = hier; n += hier; }
+    }
     s.golven++;
+    s.volgende = s.tijd + wachtNa(s.golven - 1);
+    s.gewaarschuwd = false;
     strijd.stuurLeger(inhoud, true);
-    toonMelding(`Lambrecht sends his men! Wave ${s.golven}: ${n} soldiers.`);
+    toonMelding(`Lambrecht's ${g.naam} attacks! Wave ${s.golven}: ${n} soldiers.`);
     bewaar();
+  }
+  // Een korte waarschuwing voor een golf, zodat je kunt bijsturen.
+  function waarschuw() {
+    const g = lijst()[Math.min(s.golven, lijst().length - 1)];
+    s.gewaarschuwd = true;
+    toonMelding(`Scouts report: Lambrecht's ${g.naam} is gathering. It marches in ${druk.waarschuwing || 20} seconds.`);
   }
 
   zetLoodsen();
@@ -185,8 +196,11 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
         s.gemeld.eerste = true;
         lambrecht('My shed! Hold the line, men, the other one must not fall!');
       }
-      const tussen = (druk.tussen || 100) * (over < aantal ? (druk.rustig || 1.6) : 1);
-      if (s.tijd >= (druk.eerste || 150) + s.golven * tussen) stuurGolf();
+      if (!s.volgende) s.volgende = druk.eerste || 150;
+      if (lijst().length) {
+        if (s.tijd >= s.volgende) stuurGolf();
+        else if (!s.gewaarschuwd && s.tijd >= s.volgende - (druk.waarschuwing || 20)) waarschuw();
+      }
       if (Math.round(s.tijd) % 5 === 0) bewaar();
     },
     // Opnieuw beginnen: klok terug, loodsen terug (op dezelfde plek).

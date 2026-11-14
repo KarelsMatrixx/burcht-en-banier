@@ -318,3 +318,9 @@
 - Druk: vanaf 150 s een golf, daarna elke 100 s, steeds groter (3 + 1 per golf, hooguit 9), rammen vanaf golf 3 en een katapult vanaf golf 5. Valt er een loods, dan komen de golven 1,6 keer zo traag en 40 procent kleiner. Beide weg is winst, een gevallen koning verlies.
 - Beloning van level 6: steenwachter (beschikbaar vanaf level 7 en in vrij spel). Teksten van Lambrecht en de uitleg zijn door Claude geschreven.
 - Test: tests/ronde39.mjs. Aangepast: test_stap17 (11 menuknoppen), versietests.
+
+## 0.49.1: level 6 met veel meer troepen, in vaste golven
+- De druk in level 6 is nu een vast draaiboek (`druk.golven` in campagne.json, uitgelezen door js/loodsen.js) in plaats van een formule. Zes golven, oplopend tot 25 man: scouts (6, na 150 s), vanguard (8), ram column (11), axe knights (15), siege train (20, met katapult en kruisbogen), whole host (25, met toren). Wachttijden 100, 100, 110, 120, 130 en 150 s; de laatste golf blijft terugkomen.
+- Twintig seconden voor elke golf komt een waarschuwing van de verkenners.
+- Valt er een loods, dan zijn de golven 40% kleiner en komen ze 1,6 keer zo laat.
+- Alle getallen zijn schattingen en door Claude gekozen; nog niet op de iPhone gespeeld.
