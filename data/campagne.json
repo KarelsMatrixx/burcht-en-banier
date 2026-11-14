@@ -493,6 +493,10 @@
      }
     },
     "muur": 145,
+    "lijfwacht": {
+     "soort": "zwaardvechter",
+     "aantal": 2
+    },
     "eersteAanval": 150,
     "begin": {
      "goud": 140,

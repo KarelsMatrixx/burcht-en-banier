@@ -141,7 +141,28 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         roodKoning.levenMax = Math.max(1, Math.round(soorten[koningSleutel].leven * f));
         roodKoning.leven = Number.isFinite(leven) ? klem(Math.round(leven), 1, roodKoning.levenMax) : roodKoning.levenMax;
       }
+      maakLijfwachten(vak);
       return;
+    }
+  }
+  // Lijfwachten (level 5): soldaten die vlak bij de rode heer blijven en hem verdedigen.
+  function maakLijfwachten(koningVak) {
+    const lw = R.lijfwacht;
+    if (!lw || !soorten[lw.soort]) return;
+    const x0 = koningVak % B;
+    const y0 = Math.floor(koningVak / B);
+    let gemaakt = 0;
+    for (let r = 1; r <= 4 && gemaakt < lw.aantal; r++) {
+      for (let dy = -r; dy <= r && gemaakt < lw.aantal; dy++) {
+        for (let dx = -r; dx <= r && gemaakt < lw.aantal; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const vak = (y0 + dy) * B + x0 + dx;
+          if (!wegvinder.isVrij(x0 + dx, y0 + dy, VIJAND) || vijanden.some((a) => !a.dood && vakVan(a) === vak)) continue;
+          const g = maakVijand(lw.soort, vak);
+          g.lijfwacht = true;
+          gemaakt++;
+        }
+      }
     }
   }
   const inBurcht = (vak, b) => Math.abs((vak % B) - b.vx) <= 1 && Math.abs(Math.floor(vak / B) - b.vy) <= 1 && isBurcht(kaart.object[vak]);
@@ -1237,8 +1258,46 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
   }
 
+  // Een lijfwacht blijft vlak bij de heer en slaat toe wie dichtbij komt; is de heer gevallen,
+  // dan verdedigt hij de burcht zoals de heer dat deed.
+  function lijfwachtDenk(e, k, anderen) {
+    const heer = roodKoning && !roodKoning.dood ? roodKoning : null;
+    const thuis = burchten[e.team];
+    const midden = heer || thuis;
+    const r = 7;
+    const dichtbij = anderen.filter((a) => Math.hypot(a.x - midden.x, a.y - midden.y) <= r);
+    k.doelwit = dichtbij.length ? kiesDoelwit(e, k, dichtbij) : null;
+    if (k.doelwit) {
+      if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) jaag(e, k);
+      return;
+    }
+    if (!heer || e.pad || Math.hypot(heer.x - e.x, heer.y - e.y) <= 2.2) return;
+    const hx = Math.floor(heer.x);
+    const hy = Math.floor(heer.y);
+    let best = -1;
+    let bestD = Infinity;
+    for (let dy = -2; dy <= 2; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < 1) continue;
+        const vak = (hy + dy) * B + hx + dx;
+        if (!wegvinder.isVrij(hx + dx, hy + dy, e.team) || bezetDoorVriend(vak, e) || vak === vakVan(roodKoning)) continue;
+        if (!wegvinder.verbonden(vakVan(e), vak, e.team)) continue;
+        const d = Math.hypot(hx + dx + 0.5 - e.x, hy + dy + 0.5 - e.y);
+        if (d < bestD) { bestD = d; best = vak; }
+      }
+    }
+    if (best < 0) return;
+    const pad = zoekPad(e, best);
+    if (pad) zetPad(e, pad);
+  }
+
   // --- Eén krijger, één rekenstap -----------------------------------------------------------
   function denk(e, k, anderen) {
+    if (e.lijfwacht && e.team === VIJAND) {
+      lijfwachtDenk(e, k, anderen);
+      schuifOp(e, k);
+      return;
+    }
     if (e.koning && e.team === VIJAND) {
       koningDenk(e, k, anderen);
       schuifOp(e, k);
@@ -1416,10 +1475,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // Wie er op je af komt: alle vijanden behalve de wachters op de muur van rood.
-  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning);
+  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning && !e.lijfwacht);
   function aantalAanvallers() {
     let n = 0;
-    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning) n++;
+    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning && !vijanden[i].lijfwacht) n++;
     return n;
   }
 
@@ -1840,6 +1899,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     aantalVijanden: aantalAanvallers,
     vijanden: aanvallers,
     wachters: () => vijanden.filter((e) => e.wachter !== undefined),
+    lijfwachten: () => vijanden.filter((e) => e.lijfwacht && !e.dood),
+    roodKoning: () => roodKoning,
     rood: () => ({ leven: rood.leven, max: rood.max, x: rood.vx, y: rood.vy, plekken: rood.plekken.slice(), weg: [...roodWeg] }),
     koning: (team = SPELER) => koningVan(team),
     maakRoodKoning,

@@ -325,3 +325,9 @@
 - Oorzaak 2, timing: de veldheer mat de route één keer voor het eerste mannetje en paste die verhouding op iedereen toe. Bij een gracht en ringmuren loopt wie binnen de muren begint een heel andere weg. Nu wordt de route van elk mannetje zelf gemeten (veldheer.js, één zoektocht per beginvak en bestemming). Meting in level 5 met een ringmuur: ram, ladders en ridders binnen ongeveer 5 s van elkaar (eerder 30 s); schutters ongeveer 5 s later en de tweede lijn bewust 22 s later.
 - Level 5 (campagne.json, rood): eerste aanval na 150 s (was 200), tempo 130 (was 100), 10 wachters op de muren (was 4), eerste aanval 9 man in plaats van 5 (doelBegin 9, doelPerAanval 2,5, doelMax 30, begin met 140 goud), thuiswacht 20%. Nieuw in modus.js: rood kan begin, doelBegin, doelPerAanval en doelMax per level zetten.
 - Bekend: alle waarden zijn schattingen; niet op de iPhone gespeeld. De tweede aanval en later zijn niet gemeten met een spelende speler.
+
+## 0.49.2: lijfwachten van de rode heer (level 5)
+- Wens van Karel (14 november): in Stillwater lopen twee zwaardvechters achter de rode heer aan als lijfwacht.
+- Nieuw in campagne.json bij `rood`: `lijfwacht: { soort, aantal }` (hooguit 6), verwerkt in modus.js. Level 5 heeft twee zwaardvechters.
+- Gedrag (strijd.js, `lijfwachtDenk`): ze staan bij de start naast de heer, lopen mee als hij over zijn binnenplein loopt (meestal binnen 3 tegels), en vallen aan wie binnen 7 tegels van de heer komt. Valt de heer, dan verdedigen ze de burcht. Ze doen niet mee aan aanvallen en tellen niet als aanvallers. Ze worden bij opnieuw beginnen of laden vers aangemaakt (hun leven wordt niet bewaard). API: `strijd.lijfwachten()` en `strijd.roodKoning()`.
+- Test: tests/lijfwacht39.mjs (9 punten). Niet op de iPhone gezien: of twee zwaardvechters naast de heer er goed uitzien en de tegels van het binnenplein niet te vol worden.

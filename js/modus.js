@@ -148,6 +148,8 @@ function pasRoodToe(regels, rood) {
   // aanval (veldheer, stap 38): niveau 1 tot 5 en wat het level zelf vastlegt, zie js/veldheer.js.
   if (rood.aanval && typeof rood.aanval === 'object') h.aanval = { ...(h.aanval || {}), ...rood.aanval };
   if (Number.isFinite(rood.wachters)) regels.strijd.wachters = rood.wachters;
+  // lijfwacht: { soort, aantal }: soldaten die achter de rode heer aan lopen en hem verdedigen.
+  if (rood.lijfwacht && rood.lijfwacht.soort) regels.strijd.lijfwacht = { soort: rood.lijfwacht.soort, aantal: Math.max(0, Math.min(6, rood.lijfwacht.aantal | 0)) };
   if (rood.koning && Number.isFinite(rood.koning.leven)) regels.strijd.roodKoningLeven = rood.koning.leven / 100;
   // schiet: { bereik, schade, slagTijd } maakt van de rode koning een schutter.
   if (rood.koning && rood.koning.schiet) regels.strijd.roodKoningSchiet = { ...rood.koning.schiet };
