@@ -30,7 +30,7 @@ check('voorraadkamer staat (object 22)', o === 22, o);
 await p.waitForTimeout(1500);
 i = await e();
 check('grens 300 met kamer', i.max === 300 && i.k === 1, JSON.stringify(i));
-check('paneel toont van 300', /of 300/.test(await p.textContent('#volk-tekst')), await p.textContent('#volk-tekst'));
+check('paneel toont van 300', /\/300/.test(await p.textContent('#volk-grondstoffen')), await p.textContent('#volk-tekst'));
 // werker met vol magazijn
 const hk = await p.evaluate(() => {
   const s = window.spel; const k = s.kaart; const w = s.bouwwerken.voorraadkamer ? (s.bouwer.werken ? null : null) : null;

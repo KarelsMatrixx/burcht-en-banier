@@ -291,3 +291,10 @@
 - - Stone mine (was Quarry) en kopermijn moeten nu direct tegen steen of koper staan (afstand 1, was 2).
 - Soldaten en werkers lopen nu dwars door bos (bomen blokkeren het pad niet meer).
 - Bekend: de grens is nog niet zichtbaar op de kaart; de koperaders in het midden van sommige kaarten liggen erbuiten.
+
+## 0.47.4: nieuwe grondstoffenbalk
+- De balk bovenin toont alleen de kern: hout, steen, voedsel, goud en boeren, met een pijltje dat zegt dat je kunt tikken. Een getal kleurt een seconde groen (erbij) of rood (eraf). Iets anders (planken, stemming, een volle opslag) komt er alleen bij zodra het in het rood staat. Voedsel staat in het rood als er minder is dan voor één maaltijdronde.
+- Tik je op de balk, dan opent het paneel met alle grondstoffen met plaatje, naam, aantal en de verandering van de laatste minuut (elke 5 s gemeten; uitgeven telt mee, dus een gebouw neerzetten geeft een min). Koper staat pas in beeld als de kopermijn is ontgrendeld.
+- De klok van rood is weg in levels waar rood niet vanzelf aanvalt (level 4 toonde 1661:59).
+- Niet gedaan: de klok verhuist niet naar de taakbalk, hij blijft in de balk als rood wel aanvalt.
+- Test: tests/balk38.mjs; koper23 aangepast (koper staat in het paneel, niet in de balk).

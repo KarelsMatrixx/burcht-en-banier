@@ -14,7 +14,7 @@ await p.evaluate(async () => { window.__iso = await import('/js/iso.js'); });
 const v = () => p.evaluate(() => ({ ...window.spel.economie.voorraad }));
 let s0 = await v();
 check('planken in voorraad (20)', s0.planken === 20, JSON.stringify(s0));
-check('hud toont planken', /20/.test(await p.textContent('#voorraad-lijst')));
+check('hud toont planken', /20/.test(await p.textContent('#volk-grondstoffen')));
 const knop = async (t) => { for (const x of await p.$$('#bouwbalk button')) { if ((await x.textContent()).startsWith(t) && await x.isVisible()) { await x.tap(); return true; } } return false; };
 const naar = (x, y) => p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.begrens && s.camera.begrens(); return s.camera.wereldNaarScherm(w.x, w.y); }, [x, y]);
 const vrij = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; for (let r = 3; r < 9; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = st.x + dx, y = st.y + dy; if (s.wegvinder.isVrij(x, y, 0) && k.object[y * 64 + x] === 0 && Math.max(Math.abs(dx), Math.abs(dy)) === r && dx > 0) return [x, y]; } return null; });

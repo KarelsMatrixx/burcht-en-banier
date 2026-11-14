@@ -303,41 +303,55 @@ async function start() {
     kiesBouw,
     stopBouw
   );
+  setInterval(() => {
+    metingen.push({ t: Date.now(), v: { ...economie.voorraad } });
+    while (metingen.length > 13) metingen.shift();
+    naVoorraad();
+  }, 5000);
   ui.opBevestig(bevestigBouw);
   ui.opKlaar(stopBouw);
   toonBouw();
 
   // De voorraad in beeld. Verandert die terwijl je bouwt, dan kan iets
   // wat net te duur was nu wel, of andersom.
+  // De verandering van de laatste minuut per grondstof: elke 5 seconden een meting.
+  // Wat je uitgeeft telt mee, dus een gebouw neerzetten geeft een min.
+  const metingen = [];
+  const KERN = ['hout', 'steen', 'voedsel', 'goud', 'boeren'];   // altijd in de balk
   naVoorraad = () => {
     const volk = economie.bevolking();
     const stem = economie.stemming();
-    // Een grondstof die je (nog) niet hebt en niet maakt, laat de balk weg:
-    // anders past hij niet op een telefoon. Is hij vol, dan staat hij in het rood.
+    // Een grondstof die je (nog) niet hebt en niet maakt, laat de lijst weg. Koper
+    // pas als je de kopermijn hebt ontgrendeld. Is hij vol, dan staat hij in het rood.
+    const eten = (economie.voorraad.voedsel || 0) + (economie.voorraad.brood || 0);
+    const oudste = metingen.length ? metingen[0] : null;
     const grondstoffen = Object.entries(regels.grondstoffen)
-      .filter(([naam, def]) => def.begin > 0 || economie.voorraad[naam] > 0 || economie.maakt(naam))
+      .filter(([naam, def]) => def.begin > 0 || economie.voorraad[naam] > 0 || (economie.maakt(naam) && (naam !== 'koper' || mag('kopermijn'))))
       .map(([naam, def]) => {
         const max = economie.opslagMax(naam);
-        return { sleutel: naam, naam: def.naam, aantal: economie.voorraad[naam], slecht: Number.isFinite(max) && economie.voorraad[naam] >= max };
+        const vol = Number.isFinite(max) && economie.voorraad[naam] >= max;
+        // Voedsel in het rood als er minder is dan voor één maaltijdronde.
+        const op = naam === 'voedsel' && volk.volk > 0 && eten < volk.volk;
+        const verschil = oudste && oudste.t < Date.now() - 20000 ? Math.round(((economie.voorraad[naam] - oudste.v[naam]) * 60000) / (Date.now() - oudste.t)) : null;
+        return { sleutel: naam, naam: def.naam, aantal: economie.voorraad[naam], slecht: vol || op, max: Number.isFinite(max) ? max : null, verschil };
       });
-    ui.toonVoorraad([
-      ...grondstoffen,
-      // Je boeren en voor hoeveel er plek is, en hoe populair je bent.
-      { sleutel: 'boeren', naam: 'Peasants', aantal: `${volk.volk}/${volk.ruimte}` },
-      { sleutel: 'populariteit', naam: 'Popularity', aantal: stem.populariteit, slecht: stem.populariteit < stem.grens },
-    ]);
+    const boeren = { sleutel: 'boeren', naam: 'Peasants', aantal: `${volk.volk}/${volk.ruimte}` };
+    const pop = { sleutel: 'populariteit', naam: 'Popularity', aantal: stem.populariteit, slecht: stem.populariteit < stem.grens };
+    // In de balk staat de kern. Iets anders komt erbij zodra het in het rood staat.
+    const balk = [...grondstoffen, boeren, pop].filter((g) => KERN.includes(g.sleutel) || g.slecht);
+    ui.toonVoorraad(balk);
     // Het paneel achter de voorraad: alles met naam erbij, en de belasting.
     const plus = (getal) => (getal > 0 ? `+${getal}` : getal < 0 ? `−${-getal}` : '0');
     const wacht = volk.wachtend ? ` ${volk.wachtend} ${volk.wachtend === 1 ? 'building is' : 'buildings are'} waiting for a peasant.` : '';
     ui.toonVolk({
       regels: [
-        grondstoffen.map((g) => { const sl = Object.keys(regels.grondstoffen).find((k) => regels.grondstoffen[k].naam === g.naam); const m = economie.opslagMax(sl); return `${g.naam} ${g.aantal}${Number.isFinite(m) ? ' of ' + m : ''}`; }).join(' · '),
         `Peasants: ${volk.volk}, room for ${volk.ruimte}. ${stem.lopers} without work.${wacht}`,
         `Popularity ${stem.populariteit}. Every half minute ${plus(stem.totaal)}: ` + stem.factoren.filter((f) => f.waarde || f.naam !== 'variety').map((f) => `${f.naam} ${plus(f.waarde)}`).join(', ') + '.',
         `From ${stem.grens} upwards new peasants arrive; below that they leave.`,
       ],
       tarieven: stem.tarieven.map((t) => ({ naam: t.naam, uitleg: `${volk.volk * t.goud} gold, ${plus(t.effect)}` })),
       gekozen: stem.belasting,
+      voorraad: [...grondstoffen, { sleutel: 'populariteit', naam: 'Popularity', aantal: stem.populariteit, slecht: pop.slecht }],
     });
     // Het paneel van de kazerne rekent met goud en boeren: dat gaat mee.
     naLeger();
@@ -561,6 +575,7 @@ async function start() {
       // Rood verzamelt zelf: je ziet hoe sterk zijn reserve is en wat hij nog verdient.
       const klaar = h.sterkte >= h.doel && h.wacht > 0;
       if (s.vijanden) kort = 'Attack!';
+      else if (h.wacht > 3600) kort = '';   // rood valt in dit level niet vanzelf aan: de klok zegt niets
       else kort = klaar ? tijd(h.wacht) : `Red ${Math.floor(h.sterkte)}/${Math.ceil(h.doel)}`;
       lang = (s.vijanden ? `Attack ${s.golf}: ${s.vijanden} ${s.vijanden === 1 ? 'enemy' : 'enemies'} left. ` : `Attack ${s.golf + 1}: `) +
         `${heerNaam} has ${rij || 'no one yet'} in reserve (strength ${h.sterkte} of ${h.doel}). ` +
