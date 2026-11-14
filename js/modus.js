@@ -104,6 +104,8 @@ export function profielVan(missies, modus) {
 //   sterkte       procent: doel van zijn reserve, leven van zijn burcht, goud uit zijn burcht
 //   eersteAanval  seconden tot zijn eerste aanval
 //   tempo         procent: 150 = anderhalf keer zo vaak aanvallen
+//   begin         grondstoffen van rood bij de start, bijvoorbeeld { goud: 150 }
+//   doelBegin, doelPerAanval, doelMax: hoe groot zijn aanvallen zijn (gewichten, ridder = 1); komt na sterkte
 //   leger, extra_soorten, rammenVanaf, wachters: zoals in een profiel
 //   aanval        veldheer: niveau (1 tot 5), max, stijgElke, flank en meer, zie js/veldheer.js
 //   koning.leven  procent van het leven van de rode koning
@@ -135,6 +137,10 @@ function pasRoodToe(regels, rood) {
   // hoog: ladders passen niet, alleen een belegeringstoren.
   if (rood.hoog) regels.strijd.roodMuurHoog = true;
   if (Number.isFinite(rood.eersteAanval)) h.eersteAanval = rood.eersteAanval;
+  // begin: extra grondstoffen voor rood bij de start (bijvoorbeeld goud: een groter eerste leger).
+  if (rood.begin) h.begin = { ...h.begin, ...rood.begin };
+  // Hoe groot zijn aanvallen zijn, in gewichten van economie.json (een ridder telt 1): absolute waarden.
+  for (const veld of ['doelBegin', 'doelPerAanval', 'doelMax']) if (Number.isFinite(rood[veld])) h[veld] = rood[veld];
   if (Number.isFinite(rood.tempo) && rood.tempo > 0) h.tussen = Math.round((h.tussen * 100) / rood.tempo);
   if (rood.leger) h.leger = { ...rood.leger };
   if (rood.extra_soorten) h.extra_soorten = { ...rood.extra_soorten };

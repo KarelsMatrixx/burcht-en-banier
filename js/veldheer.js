@@ -233,16 +233,20 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     zet(hoofd, 'hoofd', doelA, eindA, 0, -1);
     zet(tweede, 'tweede', doelA, eindA, I.tweedeNa || 22, -1);
     zet(flank, 'flank', doelF || doelA, doelF ? eindF : eindA, 4, omweg);
-    // De echte route is langer dan de rechte lijn. Meet die één keer per bestemming
-    // (voor het eerste mannetje) en gebruik de verhouding voor de hele groep.
-    const factoren = new Map();
-    const factorNaar = (vak, e) => {
-      if (!factoren.has(vak)) {
-        const lang = strijd.routeLengte(vakVan(e), vak);
-        const recht = Math.hypot((vak % B) + 0.5 - e.x, Math.floor(vak / B) + 0.5 - e.y);
-        factoren.set(vak, lang && recht > 1 ? klem(lang / recht, 1, 3) : WEGFACTOR);
-      }
-      return factoren.get(vak);
+    // De echte route is langer dan de rechte lijn, en vaak veel langer: bij een gracht of
+    // ringmuren lopen mannen die binnen de muren beginnen een heel andere weg dan mannen
+    // erbuiten. Daarom meten we de route van elk mannetje zelf (één zoektocht per
+    // beginvak en bestemming, en alleen voor het eerste stuk bij een omweg).
+    const gemeten = new Map();
+    const route = (van, naar) => {
+      const sleutel = van * 100003 + naar;
+      if (!gemeten.has(sleutel)) gemeten.set(sleutel, strijd.routeLengte(van, naar));
+      return gemeten.get(sleutel);
+    };
+    const lengte = (e, naar, eind) => {
+      const echt = route(vakVan(e), naar);
+      if (echt) return echt;
+      return Math.hypot(eind.x - e.x, eind.y - e.y) * WEGFACTOR;
     };
     // Bij de burcht zelf telt de route naar een vrij vak ernaast (de burcht staat niet vrij).
     const plekNaast = () => {
@@ -255,10 +259,12 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     for (const r of rijen) {
       const d = def(r.e);
       const eindVak = r.soort === 'flank' ? eindVakF : eindVakA;
-      let afstand = Math.hypot(r.eind.x - r.e.x, r.eind.y - r.e.y) * factorNaar(eindVak, mannen[0]);
+      let afstand;
       if (r.omwegVak >= 0) {
         const o = midden(r.omwegVak);
-        afstand = (Math.hypot(o.x - r.e.x, o.y - r.e.y) + Math.hypot(r.eind.x - o.x, r.eind.y - o.y)) * factorNaar(eindVak, mannen[0]);
+        afstand = lengte(r.e, r.omwegVak, o) + (route(r.omwegVak, eindVak) || Math.hypot(r.eind.x - o.x, r.eind.y - o.y) * WEGFACTOR);
+      } else {
+        afstand = lengte(r.e, eindVak, r.eind);
       }
       r.reis = afstand / (r.e.snelheid || d.snelheid || 2);
       r.voor = AANKOMST[rolVan(d)];

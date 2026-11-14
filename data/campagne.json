@@ -493,8 +493,20 @@
      }
     },
     "muur": 145,
+    "eersteAanval": 150,
+    "begin": {
+     "goud": 140,
+     "hout": 20,
+     "steen": 20
+    },
+    "tempo": 130,
+    "wachters": 10,
+    "doelBegin": 9,
+    "doelPerAanval": 2.5,
+    "doelMax": 30,
     "aanval": {
      "niveau": 4,
+     "thuis": 0.2,
      "max": 5
     }
    },
