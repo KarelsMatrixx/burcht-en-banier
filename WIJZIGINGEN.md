@@ -319,7 +319,14 @@
 - Beloning van level 6: steenwachter (beschikbaar vanaf level 7 en in vrij spel). Teksten van Lambrecht en de uitleg zijn door Claude geschreven.
 - Test: tests/ronde39.mjs. Aangepast: test_stap17 (11 menuknoppen), versietests.
 
-## 0.49.1: level 6 met veel meer troepen, in vaste golven
+## 0.49.1: level 5 moeilijker en de veldheer repareert zich in grote levels
+- Aanleiding (Karel, 14 november, level Stillwater): de troepen kwamen niet goed samen aan, het level was te makkelijk, rood mocht vanaf het begin meer troepen sturen en er moesten veel meer soldaten in het kasteel zijn.
+- Oorzaak 1, ladders te laat: de ladderdrager zoekt een vrij vakje naast de muur. Rammen en ridders die al onderweg waren hadden die vakjes als bestemming gereserveerd, dus de drager vond niets, gaf drie keer op en bleef staan tot de ram de bres had geslagen (in de test 25 seconden te laat). Nu telt voor de ladder alleen wie er echt staat (strijd.js, plekRond met fysiek = true).
+- Oorzaak 2, timing: de veldheer mat de route één keer voor het eerste mannetje en paste die verhouding op iedereen toe. Bij een gracht en ringmuren loopt wie binnen de muren begint een heel andere weg. Nu wordt de route van elk mannetje zelf gemeten (veldheer.js, één zoektocht per beginvak en bestemming). Meting in level 5 met een ringmuur: ram, ladders en ridders binnen ongeveer 5 s van elkaar (eerder 30 s); schutters ongeveer 5 s later en de tweede lijn bewust 22 s later.
+- Level 5 (campagne.json, rood): eerste aanval na 150 s (was 200), tempo 130 (was 100), 10 wachters op de muren (was 4), eerste aanval 9 man in plaats van 5 (doelBegin 9, doelPerAanval 2,5, doelMax 30, begin met 140 goud), thuiswacht 20%. Nieuw in modus.js: rood kan begin, doelBegin, doelPerAanval en doelMax per level zetten.
+- Bekend: alle waarden zijn schattingen; niet op de iPhone gespeeld. De tweede aanval en later zijn niet gemeten met een spelende speler.
+
+## 0.49.2: level 6 met veel meer troepen, in vaste golven
 - De druk in level 6 is nu een vast draaiboek (`druk.golven` in campagne.json, uitgelezen door js/loodsen.js) in plaats van een formule. Zes golven, oplopend tot 25 man: scouts (6, na 150 s), vanguard (8), ram column (11), axe knights (15), siege train (20, met katapult en kruisbogen), whole host (25, met toren). Wachttijden 100, 100, 110, 120, 130 en 150 s; de laatste golf blijft terugkomen.
 - Twintig seconden voor elke golf komt een waarschuwing van de verkenners.
 - Valt er een loods, dan zijn de golven 40% kleiner en komen ze 1,6 keer zo laat.

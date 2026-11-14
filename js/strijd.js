@@ -229,11 +229,13 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     return e.krijg;
   }
 
-  function bezetDoorVriend(vak, e) {
+  // fysiek = alleen wie er nu echt staat telt, niet wie er nog naartoe loopt.
+  function bezetDoorVriend(vak, e, fysiek = false) {
     const lijst = lijstVan(e.team);
     for (let i = 0; i < lijst.length; i++) {
       const a = lijst[i];
-      if (a !== e && !a.dood && staVak(a) === vak) return true;
+      if (a === e || a.dood) continue;
+      if (fysiek ? vakVan(a) === vak : staVak(a) === vak) return true;
     }
     return false;
   }
@@ -262,7 +264,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Het vrije vak op r tegels rond een vak dat het dichtst bij deze krijger
   // ligt en waar hij kan komen, of -1.
-  function plekRond(e, vak, r) {
+  function plekRond(e, vak, r, fysiek = false) {
     const x = vak % B;
     const y = Math.floor(vak / B);
     const hier = vakVan(e);
@@ -275,7 +277,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         const ny = y + dy;
         if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
         const kandidaat = ny * B + nx;
-        if (!wegvinder.verbonden(hier, kandidaat, e.team) || bezetDoorVriend(kandidaat, e)) continue;
+        if (!wegvinder.verbonden(hier, kandidaat, e.team) || bezetDoorVriend(kandidaat, e, fysiek)) continue;
         const d = verVan(e, kandidaat);
         if (d < min) {
           min = d;
@@ -807,7 +809,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       zetHouding(e, null);
       k.ladderKlok = stappen(k.def.slagTijd);
       if (e.pad) return;
-      const sta = plekRond(e, vak, 1);
+      const sta = plekRond(e, vak, 1, true);
       const pad = sta < 0 ? null : zoekPad(e, sta);
       if (!pad) {
         k.ladder = -1;
