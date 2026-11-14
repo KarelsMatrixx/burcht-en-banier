@@ -62,8 +62,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     // Een banierdrager en een heler (steun) vechten ook niet.
     if (!def.alleenBouw && !def.ladder && !def.steun) nodig.push('schade');
     if (!def.ladder && !def.steun) nodig.push('schadeBouw');
-    for (const veld of nodig) {
-      if (!(def[veld] > 0)) throw new Error(`economie.json: soldaat ${sleutel} mist een goed getal bij ${veld}`);
+    for (const kolom of nodig) {
+      if (!(def[kolom] > 0)) throw new Error(`economie.json: soldaat ${sleutel} mist een goed getal bij ${kolom}`);
     }
   }
 
@@ -80,6 +80,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   let stil = false;             // de test kan de klok van de golven stilzetten
   let burchtGemeld = false;
   let heer = null;              // de rode heer met eigen economie (js/rood.js); die bepaalt dan wanneer er wordt aangevallen
+  let veld = null;              // de veldheer van rood (js/veldheer.js): timing, doelkeuze, terugtrekken
   let teller = 0;
 
   // Elke heer heeft een burcht: drie bij drie tegels rond zijn beginpunt.
@@ -222,6 +223,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         klim: -1,                        // het stuk muur waar een sluipmoordenaar op klimt
         ladderKlok: 0,
         duw: 0,                          // hoe lang hij al aan een ladder van rood duwt
+        tak: null,                       // het plan van de veldheer van rood (js/veldheer.js)
       };
     }
     return e.krijg;
@@ -951,6 +953,123 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     return lijst;
   }
 
+  // --- De tactiek van rood (js/veldheer.js) ----------------------------------------------
+  // Elke vijand kan een plan hebben (k.tak): wachten tot een tijdstip, eerst langs
+  // een omweg (via), een bouwwerk van jou aanvallen (doel) of terug naar huis.
+  function tak(e) {
+    const k = krijgVan(e);
+    if (!k.tak) k.tak = { houdTot: 0, doel: null, via: -1, terug: false, groep: 0, ladderPoging: 0 };
+    return k.tak;
+  }
+
+  // Alle vrije vakken die vanaf deze zaden te voet bereikbaar zijn voor rood.
+  function bereikbaar(zaden) {
+    const gezien = new Set();
+    const rij = [];
+    for (const z of zaden) if (z >= 0 && !gezien.has(z)) { gezien.add(z); rij.push(z); }
+    for (let i = 0; i < rij.length; i++) {
+      const v = rij[i];
+      const x = v % B;
+      const y = Math.floor(v / B);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
+        const w = ny * B + nx;
+        if (gezien.has(w) || !wegvinder.isVrij(nx, ny, VIJAND)) continue;
+        gezien.add(w);
+        rij.push(w);
+      }
+    }
+    return gezien;
+  }
+
+  // Hoe lang de route van het ene vak naar het andere is voor rood, alsof jouw
+  // bouwwerken er niet stonden (zoals bij het doorbreken). null als er geen route is.
+  function routeLengte(van, naar) {
+    const pad = wegvinder.zoekPad(van % B, Math.floor(van / B), naar % B, Math.floor(naar / B), BREEK);
+    if (!pad) return null;
+    let som = 0;
+    let vx = van % B;
+    let vy = Math.floor(van / B);
+    for (const v of pad) {
+      const w = v % N;
+      const x = w % B;
+      const y = Math.floor(w / B);
+      som += Math.hypot(x - vx, y - vy);   // schuin lopen is langer dan recht
+      vx = x;
+      vy = y;
+    }
+    return som;
+  }
+
+  // Naar huis: een vrij vak vlak bij de burcht van rood, en daar uitrusten.
+  function terugStap(e, k, t) {
+    k.doelwit = null;
+    k.bouw = null;
+    k.ladder = -1;
+    if (bijThuis(e, 5)) {
+      if (e.pad) e.pad = null;
+      zetHouding(e, null);
+      return;
+    }
+    if (e.pad) return;
+    for (const r of [3, 4, 2, 5]) {
+      const sta = plekRond(e, rood.vak, r);
+      if (sta < 0) continue;
+      const pad = zoekPad(e, sta);
+      if (pad) { zetPad(e, pad); return; }
+    }
+    t.terug = false;   // er is geen weg naar huis: hij vecht verder
+  }
+
+  // Het plan van de veldheer uitvoeren. Geeft terug of de krijger daarmee bezig is
+  // (anders gaat hij op de gewone manier naar jouw burcht).
+  function tactiek(e, k) {
+    const t = k.tak;
+    if (!t) return false;
+    if (t.houdTot > stapNr) return true;   // wacht op de rest van zijn groep
+    if (t.via >= 0) {
+      if (verVan(e, t.via) <= 1.6) t.via = -1;
+      else {
+        if (!e.pad) {
+          const pad = zoekPad(e, t.via);
+          if (pad) zetPad(e, pad);
+          else t.via = -1;
+        }
+        return true;
+      }
+    }
+    if (!t.doel) return false;
+    if (!staatNog(t.doel)) {   // de bres is geslagen: nu naar de burcht
+      t.doel = null;
+      k.bouw = null;
+      return false;
+    }
+    // Staat er al een ladder van rood, dan klimmen de gewone soldaten daarlangs.
+    if (!vreedzaam(k) && e.lagen && wegvinder.ladders(VIJAND).length) return false;
+    if (k.def.ladder) {
+      // Een ladderdrager of toren zet zijn ladder tegen een gewoon stuk muur bij de bres.
+      if (k.ladder >= 0 || t.ladderPoging >= 3) return true;
+      let vak = isMuurVan(t.doel.vak, SPELER) ? t.doel.vak : -1;
+      for (let r = 1; r <= 4 && vak < 0; r++) {
+        for (const c of ringVakken(t.doel.vak, r)) if (isMuurVan(c, SPELER) && !wegvinder.isLadder(c, VIJAND)) { vak = c; break; }
+      }
+      if (vak < 0 || wegvinder.isLadder(vak, VIJAND)) return false;
+      t.ladderPoging++;
+      k.ladder = vak;
+      k.ladderKlok = stappen(k.def.slagTijd);
+      return true;
+    }
+    if (k.bouw !== t.doel || (!e.pad && !bijBouw(e, k))) {
+      if (!gaNaarBouw(e, k, t.doel)) {
+        t.doel = null;
+        return false;
+      }
+    }
+    return true;
+  }
+
   function naarBurcht(e, k) {
     if (k.bouw && staatNog(k.bouw) && (e.pad || bijBouw(e, k))) return;   // onderweg of bezig
     k.bouw = null;
@@ -1118,6 +1237,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       schuifOp(e, k);
       return;
     }
+    if (e.team === VIJAND && k.tak && k.tak.terug) {
+      terugStap(e, k, k.tak);
+      schuifOp(e, k);
+      return;
+    }
     k.doelwit = kiesDoelwit(e, k, anderen);
     if (k.doelwit) {
       k.bouw = null;
@@ -1126,7 +1250,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         else jaag(e, k);
       }
     } else if (e.team === VIJAND) {
-      if (!e.opMuur || e.wachter === undefined) naarBurcht(e, k);
+      if (!e.opMuur || e.wachter === undefined) {
+        if (!tactiek(e, k)) naarBurcht(e, k);
+      }
     } else if (k.bouwBevel) {
       // Terug naar het bouwwerk van rood dat de speler heeft aangewezen.
       if (!staatNog(k.bouwBevel)) {
@@ -1152,6 +1278,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       // Een koning geneest alleen bij zijn eigen burcht, en alleen als die nog staat.
       if (e.leven < e.levenMax && burchten[e.team].leven > 0 && bijThuis(e, 4) && k.rust > herstelNa && stapNr % Math.max(1, Math.floor(herstelElke / 3)) === 0) e.leven++;
     } else if (e.team === SPELER && e.leven < e.levenMax && k.rust > herstelNa && stapNr % herstelElke === 0) e.leven++;
+    // Wie zich heeft teruggetrokken, rust bij zijn burcht uit (sneller dan jouw soldaten).
+    else if (e.team === VIJAND && k.tak && k.tak.terug && e.leven < e.levenMax && bijThuis(e, 6) && stapNr % Math.max(1, Math.floor(herstelElke / 2)) === 0) e.leven++;
     // Een soldaat die op jouw bevel ergens heen loopt, vecht onderweg niet.
     if (e.soldaat && e.soldaat.doel >= 0) {
       k.ladder = -1;
@@ -1303,7 +1431,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // binnen: niet dichter dan zoveel tegels bij rond (proloog: niet op de burcht zelf).
   function stuurLeger(inhoud, telAls = true, { rond = kaart.start[VIJAND], straal = 8, binnen = 0 } = {}) {
     const bezet = new Set(vijanden.map(vakVan));
+    const nieuw = [];
     let aantal = 0;
+    const eigenStart = rond !== kaart.start[VIJAND];
     for (const [sleutel, hoeveel] of Object.entries(inhoud)) {
       if (!soorten[sleutel]) continue;
       for (let i = 0; i < hoeveel && vijanden.length < MAX_VIJANDEN; i++) {
@@ -1316,7 +1446,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         }
         if (vak < 0) continue;
         bezet.add(vak);
-        maakVijand(sleutel, vak);
+        nieuw.push(maakVijand(sleutel, vak));
         aantal++;
       }
     }
@@ -1325,6 +1455,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       burchtGemeld = false;
       if (!heer && !R.proloog) opMelding(`Attack ${golf}! ${aantal} ${aantal === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`);
     }
+    // De veldheer maakt er een aanval van: groepen, timing, doelkeuze (alleen bij een echte aanval).
+    if (veld && telAls && nieuw.length && !eigenStart && !R.proloog && (heer || hutVak >= 0)) veld.plan(nieuw, { golf, hut: hutVak });
     opVerandering();
     opStand();
     return aantal;
@@ -1373,6 +1505,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         stuurGolf();
       }
     }
+    if (veld && !R.proloog) veld.stap();
     const eigen = leger.lijst;
     for (let i = 0; i < vijanden.length; i++) krijgerStap(vijanden[i], eigen);
     for (let i = 0; i < eigen.length; i++) krijgerStap(eigen[i], vijanden);
@@ -1632,6 +1765,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     golf = 0;
     klok = stappen(R.eersteGolf);
     if (heer) heer.herstel();
+    if (veld) veld.herstel();
     maakRoodKoning();
     for (const b of burchten) {
       b.leven = b.max;
@@ -1713,6 +1847,14 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       opStand();
     },
     stuurLeger,
+    // De veldheer van rood (js/veldheer.js) en wat hij nodig heeft.
+    koppelVeld(v) { veld = v; },
+    tak, bereikbaar, routeLengte,
+    thuisPlekken: () => burcht.plekken.slice(),
+    bouwDoelOp: bouwDoel,
+    golfNr: () => golf,
+    hutVakNr: () => hutVak,
+    stappenVan: stappen,
     roodWeg: () => [...roodWeg].filter((vak) => !inBurcht(vak, rood)),
     origineelVan: (vak) => roodOrigineel.get(vak),
     // Rood zet een stuk van zijn kasteel terug. Lukt niet als er iets staat.
@@ -1767,6 +1909,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     },
     burcht: () => ({ leven: burcht.leven, max: burcht.max, x: thuis.x, y: thuis.y }),
     stappen: () => stapNr,
+    stapNr: () => stapNr,
     schadeOp: (vak) => (schade.has(vak) ? schade.get(vak).leven : null),
   };
 }

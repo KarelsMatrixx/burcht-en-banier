@@ -11,7 +11,8 @@
   "rood (stap 32): hoe de heer van dit level speelt, bovenop het profiel. sterkte en tempo in procenten (100 = zoals het profiel), eersteAanval in seconden, leger = zijn legermengsel (aandeel en vanaf welke aanval), wachters = mannen die thuisblijven. muur = leven van zijn muren, torens en poorten in procenten (kastelenontwerp: 100% in level 1 tot 240% in level 10). koning.leven in procenten van de gewone koning; koning.uiterlijk = tabbaard (kleur kleding), wapen (kleur embleem), wapenSoort (zwaard, speer, hellebaard, haak, hamer, moker, boog, scepter), schild, haar, baard (geen = zonder), vlecht. De mantel blijft rood: dat is het team. koning.schiet = { bereik, schade, slagTijd }: de koning schiet pijlen (Mechteld).",
   "kasteel (stap 33): het ontwerp van het kasteel van rood, uit data/kastelen.json.",
   "proloog: true maakt van een level de proloog (js/proloog.js): taken van Bartholt, Reinout als gast, nacht, overmacht, scène, geen winst of verlies. De rode heer heeft dan geen koning in zijn burcht; koning.uiterlijk is het uiterlijk van de gast (Reinout).",
-  "doel (doeltype B, js/doel.js): een bouwwerk houden tot de tijd om is. soort hut = de hut van Gesina midden op de kaart. duur in seconden, leven van de hut, golven = { eerste, tussen (seconden), begin, erbij, max (mannen), leger = aandelen }. Valt de hut, dan verlies je. Zet rood.eersteAanval hoog: de golven komen van het doel, niet van de economie van rood."
+  "doel (doeltype B, js/doel.js): een bouwwerk houden tot de tijd om is. soort hut = de hut van Gesina midden op de kaart. duur in seconden, leven van de hut, golven = { eerste, tussen (seconden), begin, erbij, max (mannen), leger = aandelen }. Valt de hut, dan verlies je. Zet rood.eersteAanval hoog: de golven komen van het doel, niet van de economie van rood.",
+  "rood.aanval (stap 38, js/veldheer.js): hoe slim rood zijn aanvallen aanpakt. niveau 1 tot 5: 1 samen aankomen, 2 golven met rol (verkenners, tweede lijn, thuiswacht), 3 doelkeuze op jouw zwakste muur en flank, 4 tegenzetten tegen jouw leger, 5 terugtrekken. max = hoogste niveau in dit level (het niveau stijgt elke stijgElke aanvallen met een). flank = aandeel van de hoofdmacht dat een andere weg neemt. De standaardwaarden staan in economie.json onder heer.aanval."
  ],
  "figuren": {
   "karel": {
@@ -174,7 +175,11 @@
     },
     "extra_soorten": {},
     "muur": 100,
-    "wachters": 4
+    "wachters": 4,
+    "aanval": {
+     "niveau": 1,
+     "max": 2
+    }
    },
    "kasteel": "dorre_heide"
   },
@@ -260,7 +265,11 @@
      }
     },
     "extra_soorten": {},
-    "muur": 115
+    "muur": 115,
+    "aanval": {
+     "niveau": 2,
+     "max": 3
+    }
    },
    "kasteel": "rotsvesting"
   },
@@ -337,7 +346,11 @@
       "baard": "#8a8a8a"
      }
     },
-    "muur": 130
+    "muur": 130,
+    "aanval": {
+     "niveau": 3,
+     "max": 4
+    }
    },
    "kasteel": "dubbel"
   },
@@ -388,7 +401,12 @@
       "baard": "#4a3a2c"
      }
     },
-    "eersteAanval": 99999
+    "eersteAanval": 99999,
+    "aanval": {
+     "niveau": 3,
+     "max": 3,
+     "flank": 0.5
+    }
    },
    "kasteel": "jachtkamp",
    "verteller": "gesina",
@@ -474,7 +492,11 @@
       "baard": "geen"
      }
     },
-    "muur": 145
+    "muur": 145,
+    "aanval": {
+     "niveau": 4,
+     "max": 5
+    }
    },
    "kasteel": "abdij",
    "berichten": [
@@ -554,7 +576,11 @@
       "baard": "#6b553a"
      }
     },
-    "muur": 150
+    "muur": 150,
+    "aanval": {
+     "niveau": 4,
+     "max": 5
+    }
    },
    "kasteel": "werkplaats"
   },
@@ -600,7 +626,11 @@
       "baard": "geen"
      }
     },
-    "muur": 165
+    "muur": 165,
+    "aanval": {
+     "niveau": 4,
+     "max": 5
+    }
    },
    "kasteel": "drie_poorten"
   },
@@ -648,7 +678,10 @@
       "baard": "#9a9a9a"
      }
     },
-    "muur": 180
+    "muur": 180,
+    "aanval": {
+     "niveau": 5
+    }
    },
    "kasteel": "gracht"
   },
@@ -697,7 +730,10 @@
       "baard": "geen"
      }
     },
-    "muur": 210
+    "muur": 210,
+    "aanval": {
+     "niveau": 5
+    }
    },
    "kasteel": "bergfort"
   },
@@ -752,7 +788,10 @@
       "baard": "#f0f0f0"
      }
     },
-    "muur": 240
+    "muur": 240,
+    "aanval": {
+     "niveau": 5
+    }
    },
    "kasteel": "drie_ringen"
   }
