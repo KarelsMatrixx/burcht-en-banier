@@ -72,7 +72,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const e = eenheden.maakWerker(vak, TEAM, SOORT[def.soort], def.snelheid);
     e.soldaat = { sleutel, doel: -1, wacht: 0, pogingen: 0 };
     e.gekozen = false;
-    e.lagen = true;
+    e.lagen = !def.nietKlimmen;
     e.opMuur = opMuur;
     if (opMuur) e.hoogte = eenheden.hoogteOp(vak);
     e.levenMax = def.leven;
@@ -95,12 +95,19 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   }
 
   // --- Opleiden ---------------------------------------------------------------------
+  // Een steenwachter neemt twee plekken in het leger in, de rest een.
+  function plekken() {
+    let n = 0;
+    for (const e of soldaten) n += (soorten[e.soldaat.sleutel].legerPlekken || 1);
+    return n;
+  }
+
   // Lege tekst als je deze soldaat kunt opleiden, anders de reden.
   function waaromNiet(sleutel) {
     const def = soorten[sleutel];
     if (!def) return 'that soldier does not exist';
     if (def.koning) return 'there is only one king';
-    if (soldaten.length >= max) return `your army is full (${max} soldiers)`;
+    if (plekken() + (def.legerPlekken || 1) > max) return `your army is full (${max} places)`;
     const tekort = economie.tekort(def.kosten);
     if (tekort) return tekort;
     const boeren = def.boeren || 1;
@@ -290,10 +297,10 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     if (!Array.isArray(lijst)) return 0;
     let aantal = 0;
     for (const regel of lijst) {
-      if (soldaten.length >= max) break;
       if (!Array.isArray(regel)) continue;
       const [sleutel, x, y, leven, boven] = regel;
       if (!Object.prototype.hasOwnProperty.call(soorten, sleutel)) continue;
+      if (plekken() + (soorten[sleutel].legerPlekken || 1) > max) break;
       if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= B || y >= H) continue;
       // Stond hij op de muur en staat die er nog, dan staat hij er weer op.
       if (boven === 1 && isMuur(y * B + x) && !bezet(N + y * B + x)) {
@@ -358,6 +365,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     lijst: soldaten,           // de lijst zelf (niet aanpassen): strijd.js kijkt hier elke stap in
     gekozen,
     aantal: () => soldaten.length,
+    plekken,
     aantalGekozen: () => gekozen().length,
     soldaten: () => soldaten.slice(),
   };

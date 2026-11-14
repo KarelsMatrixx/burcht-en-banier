@@ -14,6 +14,7 @@ export const OBJECT = {
   HUIS: 11, HUT: 12, TENT: 13, HOOIBERG: 14, PUT: 15, VATEN: 16,
   HOUTHAKKER: 17, STEENGROEVE: 18, BOOMGAARD: 19, WONING: 20, KAZERNE: 21, VOORRAADKAMER: 22, ZAGERIJ: 23, TARWEVELD: 24, BAKKERIJ: 25, KOPERMIJN: 26, MAGIERTOREN: 27,
   VLAGGEN: 28,   // feestvlaggen (proloog), decor
+  LOODS: 29,     // bouwloods van rood (level 6): een doel dat je moet slopen
 };
 
 // Namen waarmee de tekenlaag het juiste plaatje opzoekt in data/assets.json.
@@ -25,13 +26,13 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
 const OBJECT_TEKST = [
   '', 'forest', 'rock', 'copper ore', 'wall', 'tower', 'gate', 'keep', 'keep', 'keep', 'watchtower',
-  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mage tower', 'festive flags',
+  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mage tower', 'festive flags', 'siege shed',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.

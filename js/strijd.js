@@ -442,7 +442,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     s.leven -= hoeveel;
     if (s.leven <= 0) {
       schade.delete(b.vak);
-      if (b.van === ROOD) roodWeg.add(b.vak);
+      if (b.van === ROOD && roodOrigineel.has(b.vak)) roodWeg.add(b.vak);   // een bouwloods komt niet terug
       const werk = bouwer.verwoest(b.vak % B, Math.floor(b.vak / B));
       if (werk) opVerwoest(werk, b.van);
     }
@@ -548,6 +548,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (k.def.eersteSlag && k.laatsteDoel !== doel) schade *= k.def.eersteSlag;
     k.laatsteDoel = doel;
     schade = Math.max(1, Math.round(schade * sterkteVan(e, k)));
+    // Sommige wapens doen extra schade tegen een bepaalde soort (bijl tegen steen).
+    if (k.def.bonusTegen) {
+      const sl = doel.soldaat ? doel.soldaat.sleutel : doel.vijand;
+      if (sl && k.def.bonusTegen[sl]) schade = Math.max(1, Math.round(schade * k.def.bonusTegen[sl]));
+    }
     if (k.def.gebied !== undefined) {
       vuurbal(e, doel.x, doel.y, 16 + (doel.hoogte || 0));
       if (doel.opMuur) schade = Math.max(1, Math.round(schade * R.muurDekking));
@@ -1365,7 +1370,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const def = soorten[sleutel];
     const e = eenheden.maakWerker(vak, VIJAND, SOORT[def.soort], def.snelheid);
     e.vijand = sleutel;
-    e.lagen = true;   // via een ladder kan hij jouw muur op
+    e.lagen = !def.nietKlimmen;   // via een ladder kan hij jouw muur op (een reus niet)
     e.levenMax = def.leven;
     e.leven = Number.isFinite(leven) ? klem(Math.round(leven), 1, def.leven) : def.leven;
     krijgVan(e, def);
@@ -1894,6 +1899,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       const s = schade.get(vak);
       if (s && s.soort === kaart.object[vak]) s.max = max;
       else schade.set(vak, { leven: max, max, soort: kaart.object[vak], van: kaart.eigenaar[vak] });
+      balkenBij();
+    },
+    // Een doelgebouw (bouwloods) krijgt zijn eigen leven; stond er al schade, dan blijft die.
+    zetLeven(vak, max, leven = max) {
+      schade.set(vak, { leven: klem(Math.round(leven), 1, max), max, soort: kaart.object[vak], van: kaart.eigenaar[vak] });
       balkenBij();
     },
     hut: () => (hutVak < 0 ? null : { vak: hutVak, staat: hutStaat(), gevallen: hutGevallen, leven: hutStaat() ? Math.max(0, Math.round((schade.get(hutVak) || {}).leven || 0)) : 0, max: (schade.get(hutVak) || {}).max || 0 }),

@@ -23,6 +23,7 @@ import { metLidwoord } from './taal.js';
 import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
 import { maakDoel } from './doel.js';
+import { maakLoodsen } from './loodsen.js';
 import { SOORT } from './eenheden.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, ontgrendeld } from './modus.js';
 
@@ -385,7 +386,7 @@ async function start() {
     ui.toonKazerne({
       open: true,
       regels: [
-        `${gebouw.naam}. Soldiers: ${leger.aantal()} of ${leger.max}. Gold: ${economie.voorraad.goud}. Idle peasants: ${Math.max(0, volk.vrij)}.`,
+        `${gebouw.naam}. Army places: ${leger.plekken()} of ${leger.max}. Gold: ${economie.voorraad.goud}. Idle peasants: ${Math.max(0, volk.vrij)}.`,
         kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : 'A soldier costs gold and one idle peasant.'),
       ],
       knoppen: Object.values(leger.soorten).filter((def) => mag(def.sleutel) && (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
@@ -745,8 +746,8 @@ async function start() {
     titel: missie.titel,
     tegen: missie.heer ? `Against ${missie.heer}` : '',
     tekst: missie.intro,
-    taak: `Your goal: hold Mother Gesina's hut until her ritual is done (${Math.ceil(doel.over() / 60)} min left). If the hut falls, or your king, you lose.`,
-    portret: 'gesina',
+    taak: doel.omschrijving ? doel.omschrijving() : `Your goal: hold Mother Gesina's hut until her ritual is done (${Math.ceil(doel.over() / 60)} min left). If the hut falls, or your king, you lose.`,
+    portret: doel.omschrijving ? 'lambrecht' : 'gesina',
   } : missie ? {
     titel: missie.titel,
     tegen: missie.heer ? `Against ${missie.heer}` : '',
@@ -786,7 +787,7 @@ async function start() {
     }); },
   }) : null;
   // Een level met een eigen doel (level 4: de hut van Gesina houden).
-  doel = missie && missie.doel ? maakDoel({
+  doel = missie && missie.doel ? (missie.doel.soort === 'loodsen' ? maakLoodsen : maakDoel)({
     missie, kaart, bouwer, strijd, wegvinder,
     toonVerhaal: (b) => ui.toonVerhaal(b),
     toonTaak: (t) => ui.toonTaak(t),

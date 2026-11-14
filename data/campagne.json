@@ -550,12 +550,13 @@
     "x": 61.1,
     "y": 32.3
    },
-   "speelbaar": false,
-   "intro": "On the bare ridge Lambrecht builds Ottger's machines. Destroy his two workshops.",
-   "uit": "",
+   "speelbaar": true,
+   "intro": "On the bare ridge Lambrecht Kuyper builds Ottger's machines in two siege sheds outside his walls. Burn both, but the longer they stand, the more men he sends.",
+   "uit": "The second shed collapses in a cloud of dust. Lambrecht drops his mallet. \"Without my sheds the duke has no machines. Take this: the stone giants of the ridge listen to a king who builds, not only one who breaks.\"",
    "wessel": "A wooden battering ram the size of two hands.",
-   "beloning": [],
-   "beloningLater": "steenwachter (idee)",
+   "beloning": [
+    "steenwachter"
+   ],
    "rood": {
     "sterkte": 100,
     "leger": {
@@ -594,7 +595,42 @@
      "max": 5
     }
    },
-   "kasteel": "werkplaats"
+   "kasteel": "werkplaats",
+   "doel": {
+    "soort": "loodsen",
+    "aantal": 2,
+    "leven": 360,
+    "afstand": 11,
+    "druk": {
+     "eerste": 150,
+     "tussen": 100,
+     "begin": 3,
+     "erbij": 1,
+     "max": 9,
+     "leger": {
+      "ridder": 2,
+      "boogschutter": 1
+     },
+     "ramVanaf": 3,
+     "katapultVanaf": 5,
+     "laag": 0.6,
+     "rustig": 1.6
+    }
+   },
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 20,
+     "wie": "bartholt",
+     "tekst": "Two sheds outside his walls, Sire. Take the rams and the axe knights: wood burns slowly but it breaks."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 2,
+     "wie": "heer",
+     "tekst": "Guard the sheds! Every beam there is another ram for the duke."
+    }
+   ]
   },
   {
    "id": 7,
