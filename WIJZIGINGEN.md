@@ -361,3 +361,9 @@
 
 ## 0.50.4: ondertitel iets lager op het lint
 - De tekst Banners of the Vale stond te hoog en raakte de gouden rand boven het lint (melding van Karel, 15 november). Nu staat hij in het midden van het blauwe vlak.
+
+## 0.50.5: grotere knoppen, Continue altijd zichtbaar
+- Campaign, Free play en Continue zijn groter (zo breed als de titel en het lint, 281 bij 63 px op 844 breed) en staan 16 px lager onder het logo (wens van Karel, 15 november).
+- Continue staat altijd bovenaan. Zonder bewaard spel is hij vaag (38% dekking) en niet in te drukken (`disabled`); met bewaard spel normaal. tests/menu19.mjs controleert dat nu zo.
+- Logo: bijna doorzichtige ruis (alfa onder 24) uit logo.webp gehaald; op Karels iPhone was een vage rechthoek rond het logo zichtbaar.
+- Bekend: of de vage rechthoek hiermee weg is, is op de iPhone nog niet gezien.

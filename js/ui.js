@@ -425,7 +425,7 @@ export function maakUi() {
       el('titel-beeld').hidden = weergave !== 'voorpagina';
       el('titel-voorpagina').hidden = weergave !== 'voorpagina';
       el('titel-kaart').hidden = weergave !== 'kaart';
-      el('titel-verder').hidden = !kanVerder;
+      el('titel-verder').disabled = !kanVerder;   // altijd zichtbaar; zonder bewaard spel vaag en niet in te drukken
       vlaggen.zet(weergave === 'voorpagina');
     },
     // De levelkaart: het schilderij met de weg, de brug en de punten erbovenop.
