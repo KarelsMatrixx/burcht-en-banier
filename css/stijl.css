@@ -620,13 +620,13 @@ button:active {
 #titel-logo img { display: block; width: 100%; height: auto; }
 #titel-ondertitel {
   position: absolute;
-  left: 30%; width: 42%; top: 80%; height: 14%;
+  left: 17.5%; width: 49%; top: 80%; height: 14%;
   display: flex; align-items: center; justify-content: center;
-  font: 700 clamp(6px, 1.05vw, 8.6px)/1 Georgia, 'Times New Roman', serif;
+  font: 700 clamp(7px, 1.45vw, 12px)/1 Georgia, 'Times New Roman', serif;
   letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
   color: #f7ecd0; text-shadow: 0 1px 0 #0b1a3a, 0 0 4px #0b1a3a;
 }
-@supports (font-size: 1cqw) { #titel-ondertitel { font-size: 2.55cqw; } }
+@supports (font-size: 1cqw) { #titel-ondertitel { font-size: 3.5cqw; } }
 #titel-voorpagina p { margin: 0 0 10px; opacity: 0.9; font-size: 0.85em; max-width: 260px; text-shadow: 0 1px 4px #000a; }
 #titel-voorpagina { justify-content: flex-start; padding-top: max(10px, env(safe-area-inset-top)); width: min(420px, 50vw); }
 #titel-knoppen { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
