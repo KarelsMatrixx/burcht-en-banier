@@ -337,3 +337,11 @@
 - Nieuw in campagne.json bij `rood`: `lijfwacht: { soort, aantal }` (hooguit 6), verwerkt in modus.js. Level 5 heeft twee zwaardvechters.
 - Gedrag (strijd.js, `lijfwachtDenk`): ze staan bij de start naast de heer, lopen mee als hij over zijn binnenplein loopt (meestal binnen 3 tegels), en vallen aan wie binnen 7 tegels van de heer komt. Valt de heer, dan verdedigen ze de burcht. Ze doen niet mee aan aanvallen en tellen niet als aanvallers. Ze worden bij opnieuw beginnen of laden vers aangemaakt (hun leven wordt niet bewaard). API: `strijd.lijfwachten()` en `strijd.roodKoning()`.
 - Test: tests/lijfwacht39.mjs (9 punten). Niet op de iPhone gezien: of twee zwaardvechters naast de heer er goed uitzien en de tegels van het binnenplein niet te vol worden.
+
+## 0.50.0: nieuwe titel Aldervale, logo, knoppen en app icoon
+- De game heet nu Aldervale, met de ondertitel Banners of the Vale (besluit van Karel, 14 november). Aangepast in index.html (titel, apple-mobile-web-app-title, instellingen, draai-melding) en manifest.webmanifest (name, short_name, description).
+- Nieuw logo linksboven op het beginscherm (`beelden/titel/logo.webp`, door Karel gemaakt met Gemini). De ondertitel staat als echte tekst op het lint (`#titel-ondertitel`), zodat de letters niet fout kunnen gaan.
+- Nieuwe knoppen Campaign, Free play en Continue: lege houten platen (`beelden/titel/knop_*.webp`) met de tekst door de code erop. Campaign is blauw met goud, Continue hout met goud, Free play hout met ijzer.
+- Nieuw app icoon (banier met elzenblad op donkerblauw) in icons/icon-180, -192 en -512. Het maskable icoon gebruikt hetzelfde plaatje.
+- sw.js: vier nieuwe bestanden in KERN, versie opgehoogd.
+- Bekend: een geïnstalleerde app op het beginscherm toont het oude icoon en de oude naam tot je hem verwijdert en opnieuw toevoegt. Het blad op de banier lijkt meer op een berken of esdoornblad dan op een els. De schaduw rond de letters heeft een zwakke rode rand door de magenta achtergrond.
