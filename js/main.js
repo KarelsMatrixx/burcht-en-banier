@@ -25,7 +25,7 @@ import { maakProloog } from './proloog.js';
 import { maakDoel } from './doel.js';
 import { maakLoodsen } from './loodsen.js';
 import { SOORT } from './eenheden.js';
-import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, ontgrendeld } from './modus.js';
+import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, eerstWinnen, ontgrendeld } from './modus.js';
 
 const GEEN_TITEL = 'burcht-banier.geenTitel';
 
@@ -678,7 +678,7 @@ async function start() {
   const menuItems = () => [
     ...missies.campagne.filter((c) => c.speelbaar).map((c) => ({
       groep: 'Campaign', sleutel: `missie:${c.id}`, naam: `${c.titel}${gewonnen.includes(c.id) ? ' (won)' : ''}`,
-      tekst: isOpen(c, gewonnen) ? c.intro.split('. ')[0] + '.' : `Win level ${c.id - 1} first.`,
+      tekst: isOpen(c, gewonnen) ? c.intro.split('. ')[0] + '.' : eerstWinnen(c.id),
       kan: isOpen(c, gewonnen),
       nu: modus.soort === 'campagne' && modus.missie === c.id,
     })),
@@ -711,7 +711,7 @@ async function start() {
       const c = missies.campagne.find((m) => m.id === id);
       const tekst = document.getElementById('kaart-tekst');
       if (!c.speelbaar) { tekst.textContent = `${c.titel}${c.heer ? ` (${c.heer})` : ''}: coming later.`; return; }
-      if (!open(c)) { tekst.textContent = `${c.titel}: win level ${id - 1} first.`; return; }
+      if (!open(c)) { tekst.textContent = `${c.titel}: ${eerstWinnen(id).toLowerCase()}`; return; }
       if (modus.soort === 'campagne' && modus.missie === id) { sluitTitel(); return; }
       kiesModus(`missie:${id}`);
     }, 'Tap a level to start it. You can replay a level you have won.', missies.levelkaart);

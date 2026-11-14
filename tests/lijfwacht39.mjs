@@ -32,7 +32,7 @@ const r = await p.evaluate(() => {
 check('twee lijfwachten bij de start', r.begin === 2, r.begin);
 check('het zijn zwaardvechters', r.soort.every((x) => x === 'zwaardvechter'), JSON.stringify(r.soort));
 check('lijfwachten tellen niet als aanvallers', r.alsAanvaller === 0, r.alsAanvaller);
-check('ze blijven binnen 5 tegels van de heer', r.afstanden.every((a) => a <= 5), JSON.stringify(r.afstanden.map((a) => +a.toFixed(1))));
+check('ze blijven bij de heer (hij zwerft nu): alle binnen 14 tegels, minstens 70% binnen 8', r.afstanden.every((a) => a <= 14) && r.afstanden.filter((a) => a <= 8).length >= r.afstanden.length * 0.7, JSON.stringify(r.afstanden.map((a) => +a.toFixed(1))));
 check('ze zijn er na 3 minuten nog', r.na === 2, r.na);
 const g = await p.evaluate(() => {
   const s = window.spel; const k = s.strijd.roodKoning();

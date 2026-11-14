@@ -116,9 +116,13 @@ export function maakWegvinder(kaart) {
       for (let i = 0; i < N; i++) {
         const soort = kaart.object[i];
         const eigen = kaart.eigenaar[i] === team + 1;
-        const trap = soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT;
-        muurVan[team][i] = eigen && (trap || soort === OBJECT.MUUR) ? 1 : 0;
-        opgangVan[team][i] = eigen && trap ? 1 : 0;
+        // Het hoofdkasteel kun je ook op: elke tegel van de burcht is een trap (maximaal 5 man, zie leger.js).
+        const ix = i % B;
+        const iy = (i - ix) / B;
+        const eigenKasteel = soort === OBJECT.BURCHT && Math.max(Math.abs(ix - kaart.start[team].x), Math.abs(iy - kaart.start[team].y)) <= 1;
+        const trap = soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT || eigenKasteel;
+        muurVan[team][i] = (eigen && (trap || soort === OBJECT.MUUR)) || eigenKasteel ? 1 : 0;
+        opgangVan[team][i] = (eigen && trap) || eigenKasteel ? 1 : 0;
         // Een ladder staat alleen zolang de muur van de ander er nog staat.
         if (ladderVan[team][i] && !(kaart.object[i] === OBJECT.MUUR && kaart.eigenaar[i] === ander)) ladderVan[team][i] = 0;
         if (ladderVan[team][i]) {

@@ -41,9 +41,9 @@ check('koning loopt waar je tikt', Math.hypot(kp[0] - doel[0] - 0.5, kp[1] - doe
 const r2 = await p.evaluate(() => { const s = window.spel; s.strijd.zetBurcht(0); s.strijd.stap(); return { u: s.strijd.uitslag(), m: window.spel.ui.logboek().map((r) => r.tekst).join(' | ').slice(-150) }; });
 check('burcht kapot is geen verlies', !r2.u, JSON.stringify(r2));
 check('melding koning zwakker', /weaker/.test(r2.m), r2.m);
-// rode koning blijft thuis: zet hem weg, hij loopt terug
+// rode koning zwerft, maar niet buiten zijn straal
 const r3 = await p.evaluate(async () => { const s = window.spel; const rk = s.strijd.koning(1); const st = s.kaart.start[1]; const t0 = Math.hypot(rk.x - st.x, rk.y - st.y); return t0; });
-check('rode koning thuis', r3 < 3.5, r3);
+check('rode koning blijft binnen zijn zwerfstraal', r3 < 20, r3);
 // opslaan en laden: koningen blijven
 await p.evaluate(() => { const s = window.spel; s.strijd.koning(1).leven = 100; });
 await p.waitForTimeout(400);

@@ -21,13 +21,14 @@ await p.tap('#titel-campagne');
 check('levelkaart open', await zicht('titel-kaart'));
 const pt = await p.$$eval('#kaart-doek .punt', (g) => g.map((x) => x.getAttribute('class')));
 console.log(pt.join(' | '));
-check('11 punten: 1 open, 2 en 3 dicht', pt.length === 11 && /open/.test(pt[1]) && /dicht/.test(pt[2]) && /dicht/.test(pt[3]), pt.join('|'));
+check('11 punten: proloog open, 1 tot 3 dicht (nieuw spel)', pt.length === 11 && /open/.test(pt[0]) && /dicht/.test(pt[1]) && /dicht/.test(pt[2]) && /dicht/.test(pt[3]), pt.join('|'));
 await p.screenshot({ path: '/home/claude/stap19-kaart.png' });
 // dicht level aantikken: melding, geen start
 const bx = async (i) => { const r = await (await p.$$('#kaart-doek .punt .tikvlak'))[i].boundingBox(); return [r.x + r.width / 2, r.y + r.height / 2]; };
 let [x, y] = await bx(2); await p.touchscreen.tap(x, y);
 check('dicht level geeft uitleg', /first/.test(await p.textContent('#kaart-tekst')), await p.textContent('#kaart-tekst'));
-// level 1 starten
+// level 1 starten (kan pas na de proloog)
+await p.evaluate(() => localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [0] }))); await p.reload(); await wacht(); await p.tap('#titel-campagne'); await p.waitForTimeout(500);
 [x, y] = await bx(1);
 await Promise.all([p.waitForNavigation(), p.touchscreen.tap(x, y)]); await wacht();
 check('na level kiezen geen beginscherm', !(await zicht('titelscherm')));

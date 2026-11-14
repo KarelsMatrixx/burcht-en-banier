@@ -337,3 +337,13 @@
 - Nieuw in campagne.json bij `rood`: `lijfwacht: { soort, aantal }` (hooguit 6), verwerkt in modus.js. Level 5 heeft twee zwaardvechters.
 - Gedrag (strijd.js, `lijfwachtDenk`): ze staan bij de start naast de heer, lopen mee als hij over zijn binnenplein loopt (meestal binnen 3 tegels), en vallen aan wie binnen 7 tegels van de heer komt. Valt de heer, dan verdedigen ze de burcht. Ze doen niet mee aan aanvallen en tellen niet als aanvallers. Ze worden bij opnieuw beginnen of laden vers aangemaakt (hun leven wordt niet bewaard). API: `strijd.lijfwachten()` en `strijd.roodKoning()`.
 - Test: tests/lijfwacht39.mjs (9 punten). Niet op de iPhone gezien: of twee zwaardvechters naast de heer er goed uitzien en de tegels van het binnenplein niet te vol worden.
+
+## 0.49.4: vrijere rode koning, torens van twee, hoofdkasteel van vijf, rustiger Stillwater, meer soldaten per level
+- Rode koning (strijd.js, `koningDenk`): zwerft veel verder (zwerfStraal 22 tegels, in economie.json bij de koning), loopt om zijn kasteel heen en af en toe over eigen muren, torens en het dak van zijn kasteel. Is er onraad (soldaten van jou binnen alarmAfstand 9 van zijn burcht of van hem, een beschadigde burcht, of hij zelf gewond), dan loopt hij meteen terug naar zijn hoofdkasteel. Op een muur die onraad merkt, gaat hij eerst naar beneden.
+- Torens (leger.js): in een toren (ook wachttoren) passen altijd twee soldaten; ze staan dan naast elkaar.
+- Hoofdkasteel (wegvinden.js, leger.js): het hoofdkasteel van jou en van rood is te beklimmen; er passen samen 5 soldaten op het dak (een per tegel van de ring). Rood zet er zelf nog niemand neer.
+- Stillwater (campagne.json level 5): tien aanvallen die oplopen van 4 naar 16 man (doelBegin 4, doelPerAanval 1,35, doelMax 16), geen piekaanvallen meer (`piekElke: 0`, nu per level in te stellen via veldheer.js), en tweemaal zoveel tijd tussen de aanvallen (tempo 130 naar 65, ongeveer 154 s). Na de tiende aanval blijft de aanval van 16 terugkomen.
+- Legermaximum per level (`rood.legerMax`, modus.js): level 0 tot 4 blijft 40; level 5 tot 7 wordt 60; level 8 tot 10 wordt 80.
+- Tests: koning40, torens40, stillwater40 nieuw; koning, lijfwacht39 (alle binnen 14 tegels, 70% binnen 8) en level5_39 aangepast.
+- Aannames (Claude): wachttoren ook twee; alle zwerfgetallen en percentages muur zijn schattingen; level 8 valt onder 80 (Karel noemde 8 twee keer); de rode koning stapt zelf nog niet op het dak van zijn hoofdkasteel als hij daar plek heeft; niet op de iPhone gespeeld.
+- Level 1 (Witherheath) is pas open na het winnen van de proloog (`isOpen` in modus.js); eerder mocht je de proloog overslaan. Tests campagne30 en menu19 aangepast.

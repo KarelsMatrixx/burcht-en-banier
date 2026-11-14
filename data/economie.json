@@ -26,7 +26,7 @@
   "handel: bij een voorraadkamer verkoop je per keer 'per' stuks van een grondstof voor 'prijs' goud.",
   "zwaai: deze soldaat raakt ook één vijand naast zijn doelwit, met dit deel van zijn schade (1 = volle schade). bouwBonus: keer zoveel schade aan de genoemde bouwwerken. doorboort: pijlDekking van het doelwit telt niet (de bolt gaat door een schild).",
   "kazerne: klassiek of mystiek, bij welke kazerne je hem opleidt. boeren: zoveel boeren zonder werk kost hij (anders 1). eersteSlag: zijn eerste slag op een nieuw doelwit doet zoveel keer schade. klimMuur: hij klimt in zoveel seconden een gewone muur op zonder ladder. verborgen: vijanden zien hem pas binnen zoveel tegels, tot hij slaat. gebied: dit deel van zijn schade raakt ook wie naast het doelwit staat. brand: hout dat hij raakt brandt duur seconden en verliest perSeconde leven per seconde.",
-  "koning: er is er één voor jou en één voor rood, niet op te leiden. Valt jouw koning, dan heb je verloren; valt de koning van rood, dan heb je gewonnen. zwaaiAantal: zoveel vijanden naast het doelwit raakt zijn slag. vaandel: eigen soldaten binnen bereik doen extra meer schade. zwak: zijn schade als zijn burcht kapot is. thuisBereik: de koning van rood verdedigt alleen binnen zoveel tegels van zijn burcht. Een koning geneest alleen bij zijn eigen burcht.",
+  "koning: er is er één voor jou en één voor rood, niet op te leiden. Valt jouw koning, dan heb je verloren; valt de koning van rood, dan heb je gewonnen. zwaaiAantal: zoveel vijanden naast het doelwit raakt zijn slag. vaandel: eigen soldaten binnen bereik doen extra meer schade. zwak: zijn schade als zijn burcht kapot is. thuisBereik: de koning van rood verdedigt alleen binnen zoveel tegels van zijn burcht. zwerfStraal: hij loopt tot zoveel tegels van zijn burcht rond. alarmAfstand: zijn je soldaten zoveel tegels bij zijn burcht of bij hem, dan gaat hij terug naar zijn hoofdkasteel. Een koning geneest alleen bij zijn eigen burcht.",
   "legerMax: zoveel soldaten kun je hoogstens hebben.",
   "bouwStraal: je mag alleen bouwen binnen zoveel tegels (vierkant) van het midden van je burcht.",
   "strijd: de aanvallen van de rode heer. eersteGolf is na hoeveel seconden de eerste aanval komt, tussenGolven de tijd tussen twee aanvallen.",
@@ -577,6 +577,8 @@
    },
    "zwak": 0.6,
    "thuisBereik": 4.5,
+   "zwerfStraal": 22,
+   "alarmAfstand": 9,
    "tip": "Your king. Much stronger than a knight; his swing hits the target and two enemies beside it. Soldiers within 4 tiles deal 10% more damage. If he falls, you lose. If your keep is destroyed, he grows weaker and no longer heals."
   }
  },

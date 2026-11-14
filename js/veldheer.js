@@ -60,7 +60,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const uit = { niveau: n };
     for (let i = 1; i <= n; i++) Object.assign(uit, (a.niveaus || {})[i] || {});
     // Wat het level zelf vastlegt (bijvoorbeeld flank in level 4) gaat voor.
-    for (const veld of ['doelkeuze', 'flank', 'scouts', 'tweede', 'thuis', 'tegenzet', 'terugtrek']) {
+    for (const veld of ['doelkeuze', 'flank', 'scouts', 'tweede', 'thuis', 'tegenzet', 'terugtrek', 'piekElke', 'piekFactor', 'piekRust']) {
       if (a[veld] !== undefined) uit[veld] = a[veld];
     }
     return uit;

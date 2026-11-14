@@ -32,9 +32,11 @@ export async function laadMissies() {
   return m;
 }
 
-// Is dit level open? De proloog en level 1 altijd (wie de proloog overslaat, mag beginnen),
-// daarna als het vorige level gewonnen is.
-export const isOpen = (c, gewonnen) => c.id <= 1 || gewonnen.includes(c.id - 1);
+// Is dit level open? De proloog altijd; elk volgend level pas als het vorige gewonnen is
+// (level 1 dus pas na de proloog).
+export const isOpen = (c, gewonnen) => c.id <= 0 || gewonnen.includes(c.id - 1);
+// Wat er staat als een level nog dicht is.
+export const eerstWinnen = (id) => (id <= 1 ? 'Finish the prologue first.' : `Win level ${id - 1} first.`);
 
 // Wat je in een level mag gebruiken. Elk level heeft een beloning: soldaten en
 // gebouwen die je krijgt als je het wint (vaak iets van de heer die je versloeg).
@@ -108,6 +110,7 @@ export function profielVan(missies, modus) {
 //   doelBegin, doelPerAanval, doelMax: hoe groot zijn aanvallen zijn (gewichten, ridder = 1); komt na sterkte
 //   leger, extra_soorten, rammenVanaf, wachters: zoals in een profiel
 //   aanval        veldheer: niveau (1 tot 5), max, stijgElke, flank en meer, zie js/veldheer.js
+//   legerMax      hoeveel soldaten jij in dit level hoogstens mag hebben
 //   koning.leven  procent van het leven van de rode koning
 export function pasProfielToe(regels, profiel, rood = null) {
   regels.heer = { ...regels.heer, ...(profiel.heer || {}) };
@@ -148,6 +151,8 @@ function pasRoodToe(regels, rood) {
   // aanval (veldheer, stap 38): niveau 1 tot 5 en wat het level zelf vastlegt, zie js/veldheer.js.
   if (rood.aanval && typeof rood.aanval === 'object') h.aanval = { ...(h.aanval || {}), ...rood.aanval };
   if (Number.isFinite(rood.wachters)) regels.strijd.wachters = rood.wachters;
+  // legerMax: zoveel soldaten kan de speler in dit level hoogstens hebben (standaard economie.json).
+  if (Number.isFinite(rood.legerMax) && rood.legerMax > 0) regels.legerMax = Math.round(rood.legerMax);
   // lijfwacht: { soort, aantal }: soldaten die achter de rode heer aan lopen en hem verdedigen.
   if (rood.lijfwacht && rood.lijfwacht.soort) regels.strijd.lijfwacht = { soort: rood.lijfwacht.soort, aantal: Math.max(0, Math.min(6, rood.lijfwacht.aantal | 0)) };
   if (rood.koning && Number.isFinite(rood.koning.leven)) regels.strijd.roodKoningLeven = rood.koning.leven / 100;

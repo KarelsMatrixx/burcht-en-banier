@@ -150,7 +150,7 @@ const l5 = await p.evaluate(() => {
 check('level 5 is niveau 4', l5.niveau === 4, l5.niveau);
 check('veel schutters bij jou: meer zwaardvechters, minder schutters, extra ram', l5.schutters.zwaard > 1.3 && l5.schutters.boog < 1 && l5.schutters.ram === 1, JSON.stringify(l5.schutters));
 check('veel ridders bij jou: meer schutters', l5.ridders.boog > 1.3 && l5.ridders.zwaard <= 1, JSON.stringify(l5.ridders));
-check('piek op elke derde aanval', l5.piek[0] === 1 && l5.piek[1] > 1, JSON.stringify(l5.piek));
+check('level 5 heeft geen piekaanvallen meer (rustige opbouw, 0.49.4)', l5.piek[0] === 1 && l5.piek[1] === 1, JSON.stringify(l5.piek));
 
 // ---- Laag 5: terugtrekken en terugkomen (niveau 5) -----------------------------------------------
 await start(5);

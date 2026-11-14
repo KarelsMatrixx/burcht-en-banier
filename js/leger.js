@@ -12,6 +12,7 @@
 
 import { CONFIG } from './config.js';
 import { SOORT } from './eenheden.js';
+import { OBJECT } from './kaart.js';
 
 const TEAM = 0;   // de speler
 
@@ -57,7 +58,31 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   }
 
   // Staat op deze knoop een soldaat, of is er een naar onderweg? (behalve wie in "zonder" zit)
-  const bezet = (knoop, zonder) => soldaten.some((e) => !(zonder && zonder.includes(e)) && (knoopVan(e) === knoop || e.soldaat.doel === knoop));
+  // Op de grond past er een per tegel. Boven op een toren of wachttoren passen er twee,
+  // en op het hoofdkasteel (de burcht) samen hooguit vijf, een per tegel.
+  const KASTEEL_PLEKKEN = 5;
+  const kapaciteit = (knoop) => {
+    if (knoop < N) return 1;
+    const o = kaart.object[knoop - N];
+    return o === OBJECT.TOREN || o === OBJECT.WACHTTOREN ? 2 : 1;
+  };
+  const isKasteelKnoop = (knoop) => knoop >= N && kaart.object[knoop - N] === OBJECT.BURCHT;
+  const telOp = (knoop, zonder, plan = []) => {
+    let n = 0;
+    for (const k of plan) if (k === knoop) n++;
+    for (const e of soldaten) if (!(zonder && zonder.includes(e)) && (knoopVan(e) === knoop || e.soldaat.doel === knoop)) n++;
+    return n;
+  };
+  // Is deze knoop vol? plan: knopen die al voor anderen zijn uitgekozen.
+  function bezet(knoop, zonder, plan = []) {
+    if (telOp(knoop, zonder, plan) >= kapaciteit(knoop)) return true;
+    if (isKasteelKnoop(knoop)) {
+      let n = plan.filter(isKasteelKnoop).length;
+      for (const e of soldaten) if (!(zonder && zonder.includes(e)) && (isKasteelKnoop(knoopVan(e)) || isKasteelKnoop(e.soldaat.doel))) n++;
+      if (n >= KASTEEL_PLEKKEN) return true;
+    }
+    return false;
+  }
 
   // Het dichtstbijzijnde vak waar een soldaat kan staan, of -1.
   function plekBij(vak, ver, zonder) {
@@ -240,7 +265,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
       const stuk = muurstuk(doel);
       if (!stuk.trap) return 0;   // zonder toren, wachttoren of poort kom je er niet op
       for (const vak of stuk.vakken) {
-        if (!bezet(N + vak, groep)) plekken.push(N + vak);
+        // Op een toren passen er twee: dan staat dezelfde knoop twee keer in de lijst.
+        while (plekken.length < groep.length && !bezet(N + vak, groep, plekken)) plekken.push(N + vak);
         if (plekken.length >= groep.length) break;
       }
     } else {
@@ -259,8 +285,36 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     return opWeg;
   }
 
+  // Staan er twee soldaten op een toren, dan staan ze naast elkaar in plaats van op
+  // dezelfde plek. Staat er nog maar een, dan staat hij weer in het midden.
+  function schikOpTorens() {
+    const perKnoop = new Map();
+    for (const e of soldaten) {
+      if (!e.opMuur || e.pad || e.klimt) continue;
+      const knoop = knoopVan(e);
+      if (kapaciteit(knoop) < 2) continue;
+      if (!perKnoop.has(knoop)) perKnoop.set(knoop, []);
+      perKnoop.get(knoop).push(e);
+    }
+    for (const lijst of perKnoop.values()) {
+      lijst.forEach((e, i) => {
+        const vak = vakVan(e);
+        const mx = (vak % B) + 0.5;
+        const my = Math.floor(vak / B) + 0.5;
+        const kant = lijst.length < 2 ? 0 : (i === 0 ? 1 : -1);
+        const tx = mx + kant * 0.22;
+        const ty = my - kant * 0.22;
+        if (Math.abs(e.x - tx) > 0.005 || Math.abs(e.y - ty) > 0.005) {
+          e.x += (tx - e.x) * 0.25;
+          e.y += (ty - e.y) * 0.25;
+        }
+      });
+    }
+  }
+
   // Eén rekenstap: wie zijn route kwijt is (er is gebouwd), zoekt een nieuwe.
   function stap() {
+    schikOpTorens();
     for (const e of soldaten) {
       const s = e.soldaat;
       if (e.pad || s.doel < 0) continue;

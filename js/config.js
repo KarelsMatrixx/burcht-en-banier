@@ -3,7 +3,7 @@
 // van de code hoeft te zijn.
 
 export const CONFIG = {
-  versie: '0.49.3',
+  versie: '0.49.4',
   stap: 39,
 
   // Het speelveld. Hetzelfde zaad geeft altijd dezelfde kaart.

@@ -34,7 +34,7 @@ const r = await p.evaluate(() => {
   return out;
 });
 check('eerste aanval na 150 s', r.heer.eerste === 150, JSON.stringify(r.heer));
-check('doelBegin 9', r.heer.begin === 9, JSON.stringify(r.heer));
+check('doelBegin 4, doelMax 16 (rustige opbouw, wijziging 0.49.4)', r.heer.begin === 4 && r.heer.max === 16, JSON.stringify(r.heer));
 check('minstens 10 wachters', r.wachters >= 10, r.wachters);
 check('twee ladders gearriveerd', r.ladder.length === 2, JSON.stringify(r.ladder));
 const hoofd = [...r.ladder, ...r.ridder, ...r.ram];
@@ -45,7 +45,7 @@ const sim = await p.evaluate(() => {
   const st = s.strijd.stand();
   return { golf: st.golf, aanvallers: s.strijd.vijanden().filter((e) => e.wachter === undefined && !e.koning).length };
 });
-check('eerste aanval van rood komt voor 160 s met minstens 8 man', sim.golf === 1 && sim.aanvallers >= 8, JSON.stringify(sim));
+check('eerste aanval van rood komt voor 160 s met met minstens 3 man (rustig begin)', sim.golf === 1 && sim.aanvallers >= 3, JSON.stringify(sim));
 check('geen paginafouten', fouten.length === 0, fouten.join('|'));
 console.log('level5_39:', ok, 'goed,', fout, 'fout');
 await b.close(); srv.kill();

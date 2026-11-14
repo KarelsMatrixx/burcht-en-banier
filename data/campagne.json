@@ -464,6 +464,7 @@
     "heler"
    ],
    "rood": {
+    "legerMax": 60,
     "sterkte": 110,
     "leger": {
      "zwaardvechter": {
@@ -503,15 +504,16 @@
      "hout": 20,
      "steen": 20
     },
-    "tempo": 130,
+    "tempo": 65,
     "wachters": 10,
-    "doelBegin": 9,
-    "doelPerAanval": 2.5,
-    "doelMax": 30,
+    "doelBegin": 4,
+    "doelPerAanval": 1.35,
+    "doelMax": 16,
     "aanval": {
      "niveau": 4,
      "thuis": 0.2,
-     "max": 5
+     "max": 5,
+     "piekElke": 0
     }
    },
    "kasteel": "abdij",
@@ -562,6 +564,7 @@
     "steenwachter"
    ],
    "rood": {
+    "legerMax": 60,
     "sterkte": 100,
     "leger": {
      "ridder": {
@@ -715,6 +718,7 @@
    "wessel": "A letter to his father: \"Grandpa is old. He cries when he thinks I am asleep.\"",
    "beloning": [],
    "rood": {
+    "legerMax": 60,
     "sterkte": 120,
     "tempo": 80,
     "leger": {
@@ -766,6 +770,7 @@
    "beloning": [],
    "beloningLater": "saboteur (idee)",
    "rood": {
+    "legerMax": 80,
     "sterkte": 110,
     "tempo": 70,
     "wachters": 6,
@@ -817,6 +822,7 @@
    "beloning": [],
    "beloningLater": "windzanger (idee)",
    "rood": {
+    "legerMax": 80,
     "sterkte": 130,
     "leger": {
      "ridder": {
@@ -868,6 +874,7 @@
    "wessel": "",
    "beloning": [],
    "rood": {
+    "legerMax": 80,
     "sterkte": 150,
     "tempo": 110,
     "leger": {

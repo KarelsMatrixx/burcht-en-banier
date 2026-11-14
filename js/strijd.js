@@ -1213,18 +1213,66 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.schuif = true;
   }
 
-  // De koning van rood verlaat zijn kasteel niet: hij valt alleen aan wie
-  // dicht bij zijn burcht komt, en loopt daarna terug.
+  // De koning van rood zwerft over de kaart (zwerfStraal). Hij valt aan wie dicht bij
+  // zijn burcht komt en gaat terug naar zijn hoofdkasteel zodra er onraad is.
   function koningDenk(e, k, anderen) {
     const thuis = burchten[e.team];
     const r = k.def.thuisBereik || 7;
     const dichtbij = anderen.filter((a) => Math.hypot(a.x - thuis.x, a.y - thuis.y) <= r);
     k.doelwit = dichtbij.length ? kiesDoelwit(e, k, dichtbij) : null;
+    // Is er onraad? Dan gaat hij terug naar zijn hoofdkasteel: jouw soldaten dichtbij
+    // zijn burcht of dichtbij hemzelf, een beschadigde burcht, of hijzelf gewond.
+    const zwerfStraal = k.def.zwerfStraal || 0;
+    const alarm = k.def.alarmAfstand || 9;
+    const bedreigd = thuis.leven < thuis.max || (e.leven < e.levenMax && !bijThuis(e, 4))
+      || anderen.some((a) => Math.hypot(a.x - thuis.x, a.y - thuis.y) <= alarm || Math.hypot(a.x - e.x, a.y - e.y) <= alarm);
+    // Een route voor de koning: over de grond, en waar nodig over de muur of het kasteel.
+    const knoopVan = () => vakVan(e) + (e.opMuur ? N : 0);
+    const padNaar = (knoop) => wegvinder.zoekPadLagen(knoopVan(), knoop, e.team);
+    const naarHuis = () => {
+      for (const vak of plekkenBij(e, thuis)) {
+        if (bezetDoorVriend(vak, e)) continue;
+        const pad = padNaar(vak);
+        if (pad && pad.length) { zetPad(e, pad); return; }
+      }
+    };
+    // Staat hij op een muur en moet hij vechten of terug, dan eerst naar beneden.
+    if (e.opMuur && (k.doelwit || bedreigd) && !e.klimt) {
+      k.zwerft = false;
+      if (!e.pad || k.doelwit) naarHuis();
+      return;
+    }
     if (k.doelwit) {
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) jaag(e, k);
       return;
     }
+    if (bedreigd && k.zwerft && !bijThuis(e, 4.5)) {
+      k.zwerft = false;
+      naarHuis();   // ook als hij al onderweg was: meteen terug
+      return;
+    }
     if (e.pad) return;
+    if (bijThuis(e, 4.5)) k.zwerft = false;
+    // Hij zwerft: om de paar seconden een nieuw doel op de kaart, ver van zijn kasteel,
+    // om zijn kasteel heen, op zijn eigen muren en soms even terug over zijn binnenplein.
+    if (zwerfStraal > 0 && !bedreigd) {
+      if (stapNr < (k.rondNa || 0)) return;
+      k.rondNa = stapNr + stappen(4 + toeval() * 7);
+      if (bijThuis(e, 4.5) || e.opMuur || toeval() < 0.85) {
+        const opMuur = toeval() < (e.opMuur ? 0.4 : 0.25);   // af en toe een stuk muur, toren of het dak van zijn kasteel
+        for (let poging = 0; poging < 20; poging++) {
+          const hoek = toeval() * Math.PI * 2;
+          const ver = (opMuur ? 3 : 5) + toeval() * (zwerfStraal - (opMuur ? 3 : 5));
+          const x = Math.round(thuis.vx + Math.cos(hoek) * ver);
+          const y = Math.round(thuis.vy + Math.sin(hoek) * ver);
+          if (x < 2 || y < 2 || x >= B - 2 || y >= H - 2) continue;
+          const vak = y * B + x;
+          if (opMuur ? !wegvinder.isMuur(x, y, e.team) : (!wegvinder.isVrij(x, y, e.team) || bezetDoorVriend(vak, e))) continue;
+          const pad = padNaar(opMuur ? N + vak : vak);
+          if (pad && pad.length) { k.zwerft = true; zetPad(e, pad); return; }
+        }
+      }
+    }
     // Thuis loopt hij rond over zijn binnenplein: om de paar seconden een
     // ander plekje vlak bij zijn burcht.
     if (bijThuis(e, 4.5)) {
@@ -1248,14 +1296,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (pad) zetPad(e, pad);
       return;
     }
-    for (const vak of plekkenBij(e, thuis)) {
-      if (bezetDoorVriend(vak, e)) continue;
-      const pad = zoekPad(e, vak);
-      if (pad) {
-        zetPad(e, pad);
-        return;
-      }
-    }
+    naarHuis();
   }
 
   // Een lijfwacht blijft vlak bij de heer en slaat toe wie dichtbij komt; is de heer gevallen,
