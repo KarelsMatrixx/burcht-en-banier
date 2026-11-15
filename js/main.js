@@ -100,7 +100,7 @@ async function start() {
   if (ontwerp && ontwerp.hoog) regels.strijd.roodMuurHoog = true;   // te hoog voor ladders
   // De proloog: geen winst of verlies, geen rode heer in zijn burcht (js/proloog.js).
   if (missie && missie.proloog) regels.strijd.proloog = true;
-  if (missie && missie.proloog) regels.legerMax = Math.max(regels.legerMax, 80);   // het garnizoen van Aldervale (ongeveer 40) plus wat je traint
+  if (missie && missie.proloog) regels.legerMax = Math.max(regels.legerMax, 120);   // het garnizoen van Aldervale (ongeveer 80) plus wat je traint
   const opslag = maakOpslag(kaart.zaad, opslagSleutel(modus));
 
   // Bewaren: na elke keer bouwen, slopen, hakken of afleveren.
@@ -499,6 +499,21 @@ async function start() {
   // hoog: wie de bovenkant aantikt, raakt op de grond een tegel erachter.
   // Daarom kijken we per hoogte welke tegel er dan onder het punt ligt.
   const muurHoogtes = [...new Set(hoogtes.filter((h) => h > 0))].sort((a, b) => b - a);
+  // De vakken van je eigen poort onder de tik (een poort kan meer vakken breed zijn)
+  const POORT = OBJECT_ASSET.indexOf('kasteel.poort');
+  const isEigenPoort = (x, y) => binnenKaart(kaart, x, y) && kaart.object[y * kaart.breedte + x] === POORT && kaart.eigenaar[y * kaart.breedte + x] === 1;
+  const poortOnder = (x, y, wereld) => {
+    let p = isEigenPoort(x, y) ? { x, y } : null;
+    if (!p) { const m = muurOnder(wereld.x, wereld.y); if (m && isEigenPoort(m.x, m.y)) p = m; }
+    if (!p) return null;
+    const B = kaart.breedte;
+    const vakken = [p.y * B + p.x];
+    for (let i = 0; i < vakken.length && vakken.length < 9; i++) {
+      const vx = vakken[i] % B, vy = Math.floor(vakken[i] / B);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (isEigenPoort(vx + dx, vy + dy) && !vakken.includes((vy + dy) * B + vx + dx)) vakken.push((vy + dy) * B + vx + dx);
+    }
+    return vakken;
+  };
   const muurOnder = (wx, wy) => {
     let beste = null;
     for (const h of [...muurHoogtes, 0]) {
@@ -801,6 +816,7 @@ async function start() {
     toonVerhaal: (b) => ui.toonVerhaal(b),
     toonTaak: (t) => ui.toonTaak(t),
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
+    logMelding: (t) => ui.toonMelding(t, { soort: 'economie', toon: false, wie: 'Bartholt' }),
     kaartGewijzigd,
     toonScene: (kaarten) => { titelOpen = true; stopBouw(); sluitKazerne(); leger.kiesGeen(); ui.verbergVerhaal(); ui.toonScene(kaarten, () => {
       // Klaar: de proloog telt als gedaan, de stand gaat weg, door naar de levelkaart.
@@ -1022,6 +1038,16 @@ async function start() {
         if (!binnenKaart(kaart, x, y)) return;
         if (leger.stuur(x, y)) staat.doel = { x, y, duur: 900, tot: performance.now() + 900 };
         else ui.toonMelding('Your soldiers cannot get there.', { soort: 'leger' });
+        return;
+      }
+      // Je eigen poort aantikken (geen soldaten gekozen): dicht of open
+      const poort = poortOnder(x, y, wereld);
+      if (poort) {
+        if (wegvinder.poortenOpen()) { ui.toonMelding('The gate is jammed open. It cannot be closed now.', { soort: 'leger' }); return; }
+        const nuDicht = !wegvinder.isPoortDicht(poort[0]);
+        wegvinder.zetPoortDicht(poort, nuDicht);
+        kaartGewijzigd(new Set(poort));
+        ui.toonMelding(nuDicht ? 'Gate closed. Nobody can pass, not even your own men.' : 'Gate open. Your men can pass, the enemy cannot.', { soort: 'leger' });
         return;
       }
       if (binnenKaart(kaart, x, y)) {

@@ -154,6 +154,7 @@ export function maakWegvinder(kaart) {
   }
 
   let poortenOpen = false;   // proloog: de poort van de speler staat open voor rood
+  const dicht = new Set();   // poorten die de speler heeft dichtgedaan: niemand kan erdoor, ook jouw soldaten niet
   function herberekenVoor(beeld) {
     kiesTeam(beeld);
     const team = beeld === BREEK ? 1 : beeld;
@@ -161,7 +162,7 @@ export function maakWegvinder(kaart) {
       const land = kaart.grond[i] !== GROND.WATER;
       // Een poort die je zelf hebt gebouwd is voor jouw team een doorgang.
       // In de proloog gaat jouw poort van binnenuit open: dan is hij ook voor rood een doorgang.
-      const eigenPoort = kaart.object[i] === OBJECT.POORT && (kaart.eigenaar[i] === team + 1 || (poortenOpen && team === 1 && kaart.eigenaar[i] === 1));
+      const eigenPoort = kaart.object[i] === OBJECT.POORT && !dicht.has(i) && (kaart.eigenaar[i] === team + 1 || (poortenOpen && team === 1 && kaart.eigenaar[i] === 1));
       // Wat de speler heeft gebouwd, kan de vijand kapotmaken.
       const breekbaar = beeld === BREEK && kaart.eigenaar[i] === 1;
       vrij[i] = land && (kaart.object[i] === OBJECT.GEEN || kaart.object[i] === OBJECT.BOOM || eigenPoort || breekbaar) ? 1 : 0;
@@ -357,7 +358,12 @@ export function maakWegvinder(kaart) {
   return {
     herbereken,
     // Proloog: de poorten van de speler open voor rood. Daarna herbereken().
-    zetPoortenOpen: (aan) => { poortenOpen = !!aan; },
+    zetPoortenOpen: (aan) => { poortenOpen = !!aan; if (aan) dicht.clear(); },
+    poortenOpen: () => poortenOpen,
+    // Een poort dicht of open (alle vakken van dezelfde poort). Daarna herbereken().
+    zetPoortDicht: (vakken, aan) => { for (const v of vakken) { if (aan) dicht.add(v); else dicht.delete(v); } },
+    isPoortDicht: (vak) => dicht.has(vak),
+    dichtePoorten: () => [...dicht],
     zoekPad,
     willekeurigVak,
     isVrij: (x, y, team = 0) => x >= 0 && y >= 0 && x < B && y < H && vrijVan[team][y * B + x] === 1,

@@ -29,7 +29,7 @@ const kijk = () => p.evaluate(() => { const s = window.spel; const k = s.kaart; 
   const klaar = s.strijd.opmarsStand();
   return { aantal: ver.length, soorten, minX, maxX, B: k.breedte, stx: st.x, binnen, klaar }; });
 const k0 = await kijk();
-check('leger van bijna 100', k0.aantal >= 95 && k0.aantal <= 105, JSON.stringify(k0));
+check('leger van ongeveer 150', k0.aantal >= 140 && k0.aantal <= 160, JSON.stringify(k0));
 check('minstens 12 soorten', Object.keys(k0.soorten).length >= 12, JSON.stringify(k0.soorten));
 check('machines erbij (ram, katapult, toren, ladder)', ['ram', 'katapult', 'toren', 'ladder'].every((x) => k0.soorten[x] > 0), JSON.stringify(k0.soorten));
 check('aan de oostrand van de kaart', k0.minX > k0.B - 24, JSON.stringify(k0));
@@ -75,11 +75,31 @@ check('les 4 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 check('na de laatste stuurles: niemand gekozen, geen hint', await p.evaluate(() => window.spel.leger.aantalGekozen() === 0 && document.getElementById('legerhint').hidden));
 const voor = await kijk();
 check('voor de poort: ze staan buiten (nog niemand binnen)', voor.binnen === 0 && voor.klaar.klaar > 30, JSON.stringify(voor));
+await kaartTik(); await kaartTik();   // Good, dan het kaartje van les 5
+// Les 5: de buitenste poorten dicht (geen soldaten gekozen, poort aantikken)
+const poortTik = async () => {
+  await p.waitForTimeout(400);
+  let r = await p.evaluate(() => { const g = document.getElementById('gids-plek'); const c = g.getBoundingClientRect(); return [c.left + c.width / 2, c.top + c.height / 2, g.hidden, g.classList.contains('buiten')]; });
+  if (r[3]) {
+    await p.evaluate(() => { const s = window.spel; const t = s.CONFIG.tegel; const pl = s.gids.doel().plek; s.camera.kijkNaar((pl.x - pl.y) * t.breedte / 2, (pl.x + pl.y + 1) * t.hoogte / 2); });
+    await p.waitForTimeout(500);
+    r = await p.evaluate(() => { const g = document.getElementById('gids-plek'); const c = g.getBoundingClientRect(); return [c.left + c.width / 2, c.top + c.height / 2, g.hidden, g.classList.contains('buiten')]; });
+  }
+  await p.touchscreen.tap(r[0], r[1]); await p.waitForTimeout(600);
+  return r;
+};
+check('les 5: de poortles', /gate/i.test(await p.textContent('#taak')), await p.textContent('#taak'));
+const g1 = await poortTik();
+check('eerste poort dicht', await p.evaluate(() => window.spel.wegvinder.dichtePoorten().length === 1), JSON.stringify(g1));
+check('les 5 nog niet klaar met één poort', !(await nS()).nKlaar);
+await poortTik();
+check('les 5 klaar: beide poorten dicht', (await nS()).nKlaar, JSON.stringify(await nS()));
+check('eigen soldaten kunnen niet meer naar buiten', await p.evaluate(() => { const s = window.spel, st = s.kaart.start[0], B = s.kaart.breedte; return !s.wegvinder.verbonden(st.y * B + st.x + 3, st.y * B + st.x + 30, 0); }));
 await kaartTik();   // Hold
 check('eerst het beleg: poort nog dicht', (await nS()).deel === 'beleg', JSON.stringify(await nS()));
 await p.waitForTimeout(5000);
 check('na 5 s: nog niemand binnen', (await kijk()).binnen === 0, JSON.stringify(await kijk()));
-await p.waitForFunction(() => window.spel.proloog.stand().deel === 'storm', null, { timeout: 12000 }).catch(() => {});
+await p.waitForFunction(() => window.spel.proloog.stand().deel === 'storm', null, { timeout: 25000 }).catch(() => {});
 check('Bartholt: verraad', await p.evaluate(() => /betrayed/.test(document.getElementById('verhaal').textContent + window.spel.ui.logboek().map((r) => r.tekst).join(' '))));
 check('storm begonnen na ongeveer 10 s', (await nS()).deel === 'storm', JSON.stringify(await nS()));
 check('poorten open', await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; return s.wegvinder.verbonden(st.y * s.kaart.breedte + st.x + 40, st.y * s.kaart.breedte + st.x + 3, 1); }));

@@ -28,7 +28,7 @@ const VIJAND = 1;
 const DENK = 5;             // om de zoveel rekenstappen kiest een krijger opnieuw wat hij doet
 const MAX_EFFECTEN = 260;    // pijlen en gevallenen die tegelijk in beeld kunnen zijn
 const MAX_VIJANDEN = 60;
-const MAX_VIJANDEN_PROLOOG = 130;   // de overmacht van de proloog: 80 ineens (naar Karel)
+const MAX_VIJANDEN_PROLOOG = 200;   // de overmacht van de proloog: 80 ineens (naar Karel)
 const WRAAK_VER = 12;       // zo ver loopt iemand achter een schutter aan die hem raakte
 
 const ROOD = 2;              // eigenaar van wat de rode heer heeft gebouwd

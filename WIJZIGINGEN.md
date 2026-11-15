@@ -521,3 +521,11 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 
 ## 0.61.1: Bartholt meldt het verraad
 - Als de poort van binnenuit opengaat zegt Bartholt: "Treason, Sire! We have been betrayed. Someone opened the gate from the inside!" (door Claude geschreven). Test proloog43 (28).
+
+## 0.62.0: poorten open en dicht, 150 tegen ongeveer 80, langer einde
+- Poorten: tik je eigen poort aan (zonder gekozen soldaten) om hem dicht of open te doen. Een dichte poort laat niemand door, ook je eigen soldaten niet (wegvinden.js `zetPoortDicht`, main.js `poortOnder`). Na het verraad in de proloog zitten de poorten vast open.
+- Nachtles 5 "Close the outer gates": beide buitenste poorten (oost en west) dicht. Proloog43 (33 punten) controleert ook dat je soldaten dan niet meer naar buiten kunnen.
+- Leger van Ottger 150 (MAX_VIJANDEN_PROLOOG 200); Aldervale begint met ongeveer 80 soldaten (legerMax 120). Beleg 20 s voor de poort opengaat, nacht 5 minuten.
+- Gedetailleerdere zwarte ruiter (tekenRuiter in tekenaar.js): paard met manen, oor, teugels, dekkleed met rode zoom, ruiter met harnas, helm, pluim, wapperende mantel, lans met zwarte banier en fakkel; Wessel met armen en benen.
+- Langere slotscène: 13 kaarten, Karel woedend, wil zijn zoon terughalen, vraagt naar Reinout (door Claude geschreven).
+- Logboekbericht van Bartholt bij het begin van de proloog: eerst houthakker, voorraadkamer, huis en boomgaard.

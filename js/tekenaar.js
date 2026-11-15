@@ -17,6 +17,107 @@ import { maakLandschap } from './landschap.js';
 import { wereldNaarRaster, HALVE_BREEDTE, HALVE_HOOGTE, TEGEL_HOOGTE } from './iso.js';
 import { tekenLadderOp } from './kunst.js';
 
+// De zwarte ruiter met Wessel (proloog). Getekend rond (0, 0) = de grond onder het paard, kijkend naar rechts.
+function tekenRuiter(ctx, galop, nu) {
+  const g2 = Math.sin(nu / 70 + 1.6);
+  const op = galop * 0.8;   // het lijf deint mee
+  // schaduw
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+  ctx.beginPath(); ctx.ellipse(1, 0.5, 15, 3.6, 0, 0, Math.PI * 2); ctx.fill();
+  // benen: twee delen met een knie, en hoeven
+  const been = (hx, hy, fase, voor) => {
+    const s1 = Math.sin(fase);
+    const kx = hx + s1 * 3.5 + (voor ? 1 : -1);
+    const ky = hy + 5.5;
+    const vx = kx + Math.sin(fase - (voor ? 0.9 : -0.9)) * 3.2;
+    const vy = Math.min(-0.5, ky + 5.5 - Math.max(0, Math.cos(fase)) * 2.2);
+    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(kx, ky); ctx.lineTo(vx, vy); ctx.stroke();
+    ctx.fillStyle = '#0b0908'; ctx.fillRect(vx - 1.3, vy - 0.4, 2.8, 1.6);
+  };
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#141010'; ctx.lineWidth = 2.4;
+  been(-8, -10 + op, nu / 70 + 3.1, false);   // achterbenen (verre kant eerst)
+  been(7, -10 + op, nu / 70 + 1.2, true);
+  ctx.strokeStyle = '#2a201b';
+  been(-6, -10 + op, nu / 70, false);
+  been(9, -10 + op, nu / 70 + 2.2, true);
+  // staart, wapperend
+  ctx.strokeStyle = '#0c0a09'; ctx.lineWidth = 2.6;
+  ctx.beginPath(); ctx.moveTo(-12, -15 + op); ctx.quadraticCurveTo(-18, -14 + g2 * 2, -20, -8 + g2 * 2.5); ctx.stroke();
+  ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(-12, -14 + op); ctx.quadraticCurveTo(-17, -11 + g2, -18, -5 + g2 * 2); ctx.stroke();
+  // lijf met glans
+  const lijf = ctx.createLinearGradient(0, -18 + op, 0, -5 + op);
+  lijf.addColorStop(0, '#4a3c34'); lijf.addColorStop(0.45, '#241c18'); lijf.addColorStop(1, '#100c0a');
+  ctx.fillStyle = lijf;
+  ctx.beginPath(); ctx.ellipse(0, -12 + op, 13, 5.8, 0, 0, Math.PI * 2); ctx.fill();
+  // hals en kop
+  ctx.beginPath();
+  ctx.moveTo(8, -16 + op); ctx.quadraticCurveTo(12, -25 + op, 16, -27 + op);
+  ctx.lineTo(21, -23 + op); ctx.lineTo(22.5, -20.5 + op); ctx.lineTo(19.5, -19.5 + op);
+  ctx.quadraticCurveTo(15, -18 + op, 12, -10 + op); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#3a2e28';
+  ctx.beginPath(); ctx.moveTo(15.5, -27.5 + op); ctx.lineTo(16.5, -30.5 + op); ctx.lineTo(17.8, -27 + op); ctx.closePath(); ctx.fill();   // oor
+  ctx.fillStyle = '#e8c070'; ctx.fillRect(18.2, -25 + op, 1.1, 1.1);   // oog in het fakkellicht
+  // manen
+  ctx.strokeStyle = '#080606'; ctx.lineWidth = 1.2;
+  for (let m = 0; m < 5; m++) {
+    const mx = 9 + m * 1.6, my = -18 - m * 1.9 + op;
+    ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx - 3 + g2, my + 2.5); ctx.stroke();
+  }
+  // teugels
+  ctx.strokeStyle = '#7a1a14'; ctx.lineWidth = 0.7;
+  ctx.beginPath(); ctx.moveTo(20.5, -21 + op); ctx.lineTo(7, -24 + op); ctx.stroke();
+  // dekkleed: zwart met een donkerrode zoom
+  ctx.fillStyle = '#121012';
+  ctx.beginPath(); ctx.moveTo(-9, -17 + op); ctx.lineTo(7, -17 + op); ctx.lineTo(9, -7 + op); ctx.lineTo(-11, -7 + op); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#6e1712'; ctx.fillRect(-11, -8 + op, 20, 1.3);
+  ctx.fillStyle = '#9a8a6a'; ctx.beginPath(); ctx.arc(-1, -12 + op, 1.6, 0, Math.PI * 2); ctx.fill();   // speld
+  // Wessel dwars over het paard, voor het zadel: armen en benen hangen omlaag
+  ctx.fillStyle = '#2f5fc4'; ctx.fillRect(2, -21.5 + op, 8, 4.2);
+  ctx.fillStyle = '#244a9a'; ctx.fillRect(2, -18.2 + op, 8, 1);
+  ctx.strokeStyle = '#2f5fc4'; ctx.lineWidth = 1.3;
+  ctx.beginPath(); ctx.moveTo(9.5, -18 + op); ctx.lineTo(10.5 + g2 * 0.6, -13 + op); ctx.stroke();   // arm
+  ctx.strokeStyle = '#4a3a2a';
+  ctx.beginPath(); ctx.moveTo(2.5, -18 + op); ctx.lineTo(1.5 - g2 * 0.6, -13.5 + op); ctx.moveTo(4, -18 + op); ctx.lineTo(3.5 - g2 * 0.5, -13 + op); ctx.stroke();   // benen
+  ctx.fillStyle = '#e0b890'; ctx.beginPath(); ctx.arc(11.4, -18.6 + op, 1.9, 0, Math.PI * 2); ctx.fill();   // hoofd
+  ctx.fillStyle = '#7a5530'; ctx.beginPath(); ctx.arc(11.6, -19.6 + op, 1.6, Math.PI, 0); ctx.fill();   // haar
+  // de ruiter: wapperende mantel, been in de stijgbeugel, harnas, helm met pluim
+  ctx.fillStyle = '#0a0809';
+  ctx.beginPath(); ctx.moveTo(-1, -33 + op); ctx.quadraticCurveTo(-10, -30 + g2 * 2, -16, -22 + g2 * 3); ctx.lineTo(-9, -19 + op); ctx.lineTo(-2, -21 + op); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#1c1a1c'; ctx.fillRect(-2.5, -21 + op, 3, 7);   // been
+  ctx.fillStyle = '#5a5a60'; ctx.fillRect(-3, -14.5 + op, 4, 1.2);   // stijgbeugel
+  const harnas = ctx.createLinearGradient(-4, -33, 3, -33);
+  harnas.addColorStop(0, '#2a2a30'); harnas.addColorStop(0.5, '#5a5c66'); harnas.addColorStop(1, '#1e1e24');
+  ctx.fillStyle = harnas;
+  ctx.beginPath(); ctx.moveTo(-4.5, -32 + op); ctx.lineTo(2.5, -32 + op); ctx.lineTo(1.5, -21 + op); ctx.lineTo(-4, -21 + op); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#121012'; ctx.fillRect(-4.2, -24 + op, 6, 1.4);   // riem
+  ctx.fillStyle = '#3c3e46';
+  ctx.beginPath(); ctx.arc(-1, -35.5 + op, 3.4, 0, Math.PI * 2); ctx.fill();   // helm
+  ctx.fillStyle = '#0a0a0a'; ctx.fillRect(-0.2, -36.3 + op, 3.4, 0.9);   // vizier
+  ctx.strokeStyle = '#0d0b0b'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(-1, -38.5 + op); ctx.quadraticCurveTo(-5, -42 + g2, -9, -40 + g2 * 1.5); ctx.stroke();   // pluim
+  // arm met de teugels
+  ctx.strokeStyle = '#2e2e34'; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(1, -30 + op); ctx.lineTo(6, -25 + op); ctx.stroke();
+  // lans met de zwarte banier (de Rouwbanier)
+  ctx.strokeStyle = '#4a3a2a'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(-5, -18 + op); ctx.lineTo(-5, -52 + op); ctx.stroke();
+  ctx.fillStyle = '#9aa0a8'; ctx.beginPath(); ctx.moveTo(-5.8, -52 + op); ctx.lineTo(-5, -55 + op); ctx.lineTo(-4.2, -52 + op); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#070707';
+  ctx.beginPath(); ctx.moveTo(-5, -51 + op);
+  ctx.quadraticCurveTo(-11, -52 + g2 * 2, -19, -50 + g2 * 2.5);
+  ctx.lineTo(-17, -46 + g2); ctx.lineTo(-19, -42 + g2 * 2.5);
+  ctx.quadraticCurveTo(-11, -44 + g2 * 2, -5, -43 + op); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#3a1210'; ctx.lineWidth = 0.6; ctx.stroke();
+  // fakkel in de andere hand
+  ctx.strokeStyle = '#6a4a2a'; ctx.lineWidth = 1.3;
+  ctx.beginPath(); ctx.moveTo(2, -27 + op); ctx.lineTo(5, -36 + op); ctx.stroke();
+  ctx.fillStyle = '#ff9a2e'; ctx.beginPath(); ctx.ellipse(5.4, -38.5 + op, 2.2, 3.4 + g2 * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffe9a0'; ctx.beginPath(); ctx.ellipse(5.4, -37.8 + op, 1, 1.7, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.lineCap = 'butt'; ctx.lineJoin = 'miter';
+}
+
 const MAX_EENHEDEN = 4096;
 const RUIMTE_ONDER = 190;   // hoge dingen net onder de rand steken nog in beeld
 
@@ -707,40 +808,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         ctx.fillStyle = gloed;
         ctx.beginPath(); ctx.arc(4, -26, 30, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = t > 0.92 ? (1 - t) / 0.08 : 1;
-        // schaduw
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.beginPath(); ctx.ellipse(0, 1, 13, 3.5, 0, 0, Math.PI * 2); ctx.fill();
-        // benen
-        ctx.strokeStyle = '#1b1512'; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(-7, -9); ctx.lineTo(-9 - galop * 3, 0);
-        ctx.moveTo(-4, -9); ctx.lineTo(-3 + galop * 3, 0);
-        ctx.moveTo(6, -9); ctx.lineTo(8 + galop * 3, 0);
-        ctx.moveTo(8, -9); ctx.lineTo(11 - galop * 3, 0);
-        ctx.stroke();
-        // lijf, hals en kop van het zwarte paard
-        ctx.fillStyle = '#231b17';
-        ctx.beginPath(); ctx.ellipse(0, -11 + galop * 0.6, 11, 5, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(8, -14); ctx.lineTo(13, -22); ctx.lineTo(17, -20); ctx.lineTo(12, -11); ctx.closePath(); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(16, -20, 4, 2.2, 0.5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#0d0b0a';
-        ctx.fillRect(-13, -14, 3, 9);   // staart
-        // Wessel dwars over het paard (blauw, voor de ruiter)
-        ctx.fillStyle = '#2f5fc4'; ctx.fillRect(1, -19, 8, 4);
-        ctx.fillStyle = '#e0b890'; ctx.fillRect(8.5, -19.5, 3, 3);
-        ctx.fillStyle = '#6a4a2a'; ctx.fillRect(-1, -18, 2.5, 2);
-        // de ruiter in het zwart, met de zwarte banier
-        ctx.fillStyle = '#121010'; ctx.fillRect(-5, -28, 7, 12);
-        ctx.fillStyle = '#2a2422'; ctx.beginPath(); ctx.arc(-1.5, -30, 3, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#5a4a3a'; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.moveTo(-6, -16); ctx.lineTo(-6, -42); ctx.stroke();
-        ctx.fillStyle = '#0a0a0a';
-        ctx.beginPath(); ctx.moveTo(-6, -42); ctx.lineTo(-18 - galop * 2, -40); ctx.lineTo(-17 + galop, -35); ctx.lineTo(-6, -35); ctx.closePath(); ctx.fill();
-        // de fakkel in zijn andere hand
-        ctx.strokeStyle = '#6a4a2a'; ctx.lineWidth = 1.4;
-        ctx.beginPath(); ctx.moveTo(2, -24); ctx.lineTo(5, -32); ctx.stroke();
-        ctx.fillStyle = '#ffb347'; ctx.beginPath(); ctx.ellipse(5.5, -34 + galop * 0.5, 2, 3, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff1b0'; ctx.fillRect(5, -34, 1.2, 1.6);
+        tekenRuiter(ctx, galop, nu);
         ctx.restore();
       }
       // Genezen: een gouden gloed die opstijgt bij wie de heler geneest

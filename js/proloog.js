@@ -41,14 +41,14 @@ const TAKEN = [
 const LOF = ['Well done, Sire.', 'Good work.', 'Splendid. The people see their king at work.', 'That will do nicely.', 'Very good.'];
 const VRIJ = 20;               // seconden vrij spelen bij daglicht na de laatste dagles
 const AVOND = 20;              // daarna seconden schemering voor de nacht
-const NACHT_DUUR = 240;        // vier minuten nacht, dan de scène
-const OVERMACHT = 100;         // zoveel vijanden komen er: je hebt geen kans (naar Karel)
+const NACHT_DUUR = 300;        // vijf minuten nacht, dan de ontvoering
+const OVERMACHT = 150;         // zoveel vijanden komen er: je hebt geen kans (naar Karel)
 const OPMARS_TEMPO = 0.55;     // zo langzaam lopen ze aan (deel van hun gewone snelheid)
-const GARNIZOEN = 40;          // zoveel soldaten heeft Aldervale bij het begin (wachters en wie rondloopt)
-const BELEG = 10;              // zo lang houdt de poort het tijdens de aanval, dan gaat hij van binnenuit open
+const GARNIZOEN = 80;          // zoveel soldaten heeft Aldervale bij het begin (wachters en wie rondloopt)
+const BELEG = 20;              // zo lang houdt de poort het tijdens de aanval, dan gaat hij van binnenuit open
 const WACHT_MAX = 150;         // zo lang wacht het leger buiten de poort, ook als de speler de les niet afmaakt (seconden)
 // Het leger van Ottger: veel soorten, ook belegeringsmachines
-const LEGER_OTTGER = { ridder: 27, boogschutter: 18, bijlridder: 10, kruisboog: 8, zwaardvechter: 8, banierdrager: 3, heler: 3, sluipmoordenaar: 3, vlammenwever: 3, steenwachter: 2, ladder: 6, ram: 4, katapult: 3, toren: 2 };
+const LEGER_OTTGER = { ridder: 40, boogschutter: 27, bijlridder: 16, kruisboog: 12, zwaardvechter: 12, banierdrager: 4, heler: 5, sluipmoordenaar: 5, vlammenwever: 4, steenwachter: 3, ladder: 9, ram: 6, katapult: 4, toren: 3 };   // 150
 
 // De les over je leger besturen, terwijl het leger van rood buiten de muur wacht.
 const NACHT_TAKEN = [
@@ -64,6 +64,8 @@ const NACHT_TAKEN = [
   { taak: 'Knights behind the gate', gids: { soort: 'stuur', plekTekst: 'Knights here' }, doelPlek: [14, 2],
     tekst: 'When the gate falls, knights must meet them in the passage. Tap the glowing spot just inside the gate.',
     stuurSoort: 'ridder' },
+  { taak: 'Close the outer gates', poort: [[17, 0], [-17, 0]], gids: { soort: 'poort', plekTekst: 'Close this gate' },
+    tekst: 'Last order, Sire. Our men must not run out to meet them in the open. Close the outer gates: with no soldiers chosen, tap a gate to shut it. A closed gate stops everyone, friend and foe. Tap it again to open it.' },
 ];
 
 // Gesprekken tussen de lessen door: kennismaken met Wessel en Reinout (Engels, door Claude geschreven, na te lezen).
@@ -91,7 +93,7 @@ const GESPREKKEN = {
   ],
 };
 
-export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, sluitPanelen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
+export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, sluitPanelen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids, logMelding }) {
   let s = lees() || nieuw();
   let loopt = false;
   let reinout = null;
@@ -175,8 +177,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     const soorten = ['ridder', 'boogschutter', 'ridder', 'zwaardvechter', 'boogschutter', 'bijlridder'];
     let n = 0;
     for (const r of [3, 6, 7, 10, 11, 14, 15]) {
-      for (let k = 0; k < 4 && lijst.length < GARNIZOEN; k++) {
-        const hoek = (k + r * 0.37) * Math.PI / 2;
+      for (let k = 0; k < 10 && lijst.length < GARNIZOEN; k++) {
+        const hoek = (k + r * 0.37) * Math.PI / 5;
         lijst.push([soorten[n++ % soorten.length], Math.round(st.x + Math.cos(hoek) * r), Math.round(st.y + Math.sin(hoek) * r), 100, 0]);
       }
     }
@@ -323,9 +325,19 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     bewaar();
   }
 
+  // De eerste poort uit de les die nog open is (null als ze allemaal dicht zijn)
+  function openPoortVan(t) {
+    const st = kaart.start[0];
+    for (const [dx, dy] of t.poort) {
+      const x = st.x + dx, y = st.y + dy;
+      if (!wegvinder.isPoortDicht(y * kaart.breedte + x)) return { x, y };
+    }
+    return null;
+  }
   // Soepel: heeft de speler dat soort niet (meer), dan telt elke soldaat van hem.
   const heeftSoort = (sleutel) => soldaten().some((e) => e.soldaat.sleutel === sleutel && !isWachterZonderBevel(e) && !e.wachter);
   const nachtKlaar = (t) => {
+    if (t.poort) return !openPoortVan(t);
     const sleutel = t.keuze || t.stuurSoort;
     // Kiezen: de groep telt ook de wachters mee (zo staat het in het paneel)
     if (t.keuze) return leger.gekozen().some((e) => e.soldaat.sleutel === sleutel || !soldaten().some((x) => x.soldaat.sleutel === sleutel));
@@ -375,10 +387,11 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     const randX = kaart.breedte - 3;
     let groep = 0;
     for (const [soort, aantal] of Object.entries(LEGER_OTTGER)) {
-      for (let i = 0; i < aantal; i += 6) {
-        const dy = ((groep * 7) % 37) - 18;   // verspreid langs de rand
+      let rest = aantal;
+      for (let poging = 0; rest > 0 && poging < 40; poging++) {
+        const dy = ((groep * 11) % 41) - 20;   // verspreid langs de rand
         groep++;
-        strijd.stuurLeger({ [soort]: Math.min(6, aantal - i) }, groep === 1, { rond: { x: randX, y: st.y + dy }, straal: 2, binnen: 0, houd: wacht, traag: OPMARS_TEMPO });
+        rest -= strijd.stuurLeger({ [soort]: Math.min(6, rest) }, groep === 1, { rond: { x: randX - (poging % 3), y: st.y + dy }, straal: 3, binnen: 0, houd: wacht, traag: OPMARS_TEMPO });
       }
     }
   }
@@ -390,6 +403,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     const t = NACHT_TAKEN[s.nTaak];
     let plek = null;
     if (t.doelPlek) plek = nachtPlek(t);
+    if (t.poort) { plek = openPoortVan(t); if (kiesGeen) kiesGeen(); }
     gids.richt(plek ? { ...t.gids, plek, heeftKeuze: () => leger.aantalGekozen() > 0 } : t.gids);
     if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
   }
@@ -475,10 +489,18 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     toonTaak('');
     toonScene([
       { naam: 'Bartholt', portret: 'bartholt', tekst: 'Sire! A rider, there, at the gate. He has the boy!' },
-      { naam: 'Wessel', portret: 'wessel_bang', tekst: 'Father!' },
+      { naam: 'Wessel', portret: 'wessel_bang', tekst: 'Father! Father, help me!' },
+      { naam: 'King Karel', portret: 'karel_boos', tekst: 'WESSEL! Open the gate! Bring me a horse, now!' },
+      { naam: 'Bartholt', portret: 'bartholt', tekst: 'Sire, no! There are a hundred of them on that road. You would be dead before the first bend, and then who would come for him?' },
       { naam: 'Bartholt', portret: 'bartholt', tekst: 'They are gone, all of them, as fast as they came. They left this, nailed to the door of the hall. Five words: "Come and get him."' },
+      { naam: 'King Karel', portret: 'karel_boos', tekst: 'Then I will. Every man who rode here tonight will answer for it.' },
       { naam: 'King Karel', portret: 'karel_rouw', tekst: 'Whose banner was that? Black, without a sign.' },
-      { naam: 'Bartholt', portret: 'bartholt', tekst: 'The Mourning Banner, Sire. Duke Ottger of Blackmark. The road north runs through three lords who serve him. Reinout of Witherheath is the first.' },
+      { naam: 'Bartholt', portret: 'bartholt', tekst: 'The Mourning Banner, Sire. Duke Ottger of Blackmark.' },
+      { naam: 'King Karel', portret: 'karel_boos', tekst: 'And the gate was opened from the inside. Where is Reinout?' },
+      { naam: 'Bartholt', portret: 'bartholt', tekst: 'Gone, Sire. His horse was saddled before the first torch was lit.' },
+      { naam: 'King Karel', portret: 'karel_boos', tekst: 'Reinout. He ate at my table. He gave my son a feather for luck, and then he sold him.' },
+      { naam: 'Bartholt', portret: 'bartholt', tekst: 'The road north runs through three lords who serve Ottger. Reinout of Witherheath is the first.' },
+      { naam: 'King Karel', portret: 'karel_boos', tekst: 'Then that is where we begin. Gather every man who can still hold a sword. We ride for Witherheath at first light. Hold on, Wessel. I am coming.' },
     ]);
   }
 
@@ -487,6 +509,12 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     start() {
       loopt = true;
       if (s.fase === 'bouw') {
+        // In het logboek: welke gebouwen het eerst moeten (naar Karel)
+        if (logMelding && !s.gemeld.advies) {
+          s.gemeld.advies = true;
+          logMelding('Build these first, Sire, as soon as you can. Woodcutter\'s Hut: wood for everything you build. Storehouse: without it your people have nowhere to keep wood, stone and food. House: room for more peasants. Orchard: apples to feed your people.');
+          bewaar();
+        }
         zetReinout(true);
         zetWachters();
         toonTaak(`Task ${s.taak + 1} of ${TAKEN.length}: ${TAKEN[s.taak].taak}`);
@@ -549,6 +577,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       } else if (s.fase === 'nacht' && s.deel === 'opmars') {
         // De les over je leger; de poort gaat ook open als de speler te lang wacht
         const t = NACHT_TAKEN[s.nTaak];
+        if (t.poort && s.nBegonnen && !s.nKlaar) { const op = openPoortVan(t); if (op) gids.zetPlek(op); }
         if (s.nBegonnen && !s.nKlaar && nachtKlaar(t)) {
           s.nKlaar = true;
           gids.stop();

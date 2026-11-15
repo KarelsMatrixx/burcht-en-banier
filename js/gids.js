@@ -100,6 +100,13 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       if (doel.heeftKeuze && !doel.heeftKeuze()) return { e: el('knop-zwaard'), tekst: 'Your soldiers are no longer chosen. Open the army and choose them again.' };
       return { e: null, tekst: 'Tap the golden spot on the map.' };
     }
+    if (doel.soort === 'poort') {
+      if (doel.heeftKeuze && doel.heeftKeuze()) {
+        const niets = el('knop-niets');
+        return { e: niets && zichtbaar(niets) ? niets : null, tekst: 'First tap None, so no soldiers are chosen. Then tap the gate.' };
+      }
+      return { e: null, tekst: 'Tap the golden gate to close it.' };
+    }
     if (doel.soort === 'logboek') {
       if (zichtbaar(el('logboek'))) logboekOpen = true;
       return { e: el('adviseur'), tekst: logboekOpen ? 'Tap the portrait again to close the messages.' : 'Tap Bartholt\'s portrait to read your messages.' };

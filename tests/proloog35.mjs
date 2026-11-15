@@ -208,8 +208,8 @@ await p.waitForFunction(() => !document.getElementById('scene').hidden, null, { 
 check('scène open', await p.isVisible('#scene'));
 await p.screenshot({ path: '/home/claude/proloog-scene.png' });
 let kaarten = 0;
-while (await p.isVisible('#scene') && kaarten < 10) { kaarten++; await p.tap('#scene-verder'); await p.waitForTimeout(150); }
-check('vijf kaarten', kaarten === 5, kaarten);
+while (await p.isVisible('#scene') && kaarten < 20) { kaarten++; await p.tap('#scene-verder'); await p.waitForTimeout(150); }
+check('dertien kaarten', kaarten === 13, kaarten);
 check('levelkaart open', await p.isVisible('#titel-kaart'));
 check('proloog gewonnen', (await p.evaluate(() => JSON.parse(localStorage.getItem('burcht-banier.campagne')).klaar)).includes(0));
 check('proloogstand gewist', (await p.evaluate(() => localStorage.getItem('burcht-banier.proloog'))) === null);
