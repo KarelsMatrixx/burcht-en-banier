@@ -338,7 +338,7 @@
 - Gedrag (strijd.js, `lijfwachtDenk`): ze staan bij de start naast de heer, lopen mee als hij over zijn binnenplein loopt (meestal binnen 3 tegels), en vallen aan wie binnen 7 tegels van de heer komt. Valt de heer, dan verdedigen ze de burcht. Ze doen niet mee aan aanvallen en tellen niet als aanvallers. Ze worden bij opnieuw beginnen of laden vers aangemaakt (hun leven wordt niet bewaard). API: `strijd.lijfwachten()` en `strijd.roodKoning()`.
 - Test: tests/lijfwacht39.mjs (9 punten). Niet op de iPhone gezien: of twee zwaardvechters naast de heer er goed uitzien en de tegels van het binnenplein niet te vol worden.
 
-## 0.50.6 (eerder 0.49.4 genoemd): vrijere rode koning, torens van twee, hoofdkasteel van vijf, rustiger Stillwater, meer soldaten per level
+## 0.51.1 (eerder 0.49.4 en 0.50.6 genoemd): vrijere rode koning, torens van twee, hoofdkasteel van vijf, rustiger Stillwater, meer soldaten per level
 - Rode koning (strijd.js, `koningDenk`): zwerft veel verder (zwerfStraal 22 tegels, in economie.json bij de koning), loopt om zijn kasteel heen en af en toe over eigen muren, torens en het dak van zijn kasteel. Is er onraad (soldaten van jou binnen alarmAfstand 9 van zijn burcht of van hem, een beschadigde burcht, of hij zelf gewond), dan loopt hij meteen terug naar zijn hoofdkasteel. Op een muur die onraad merkt, gaat hij eerst naar beneden.
 - Torens (leger.js): in een toren (ook wachttoren) passen altijd twee soldaten; ze staan dan naast elkaar.
 - Hoofdkasteel (wegvinden.js, leger.js): het hoofdkasteel van jou en van rood is te beklimmen; er passen samen 5 soldaten op het dak (een per tegel van de ring). Rood zet er zelf nog niemand neer.
@@ -378,3 +378,10 @@
 - Bekend: of de vage rechthoek hiermee weg is, is op de iPhone nog niet gezien.
 - Lijfwachten lopen ook onderweg een nieuwe route naar de heer als die meer dan 5 tegels weg is (strijd.js `lijfwachtDenk`).
 - Broeder Ludolf in level 5 (nieuw: js/gevangene.js, `gevangene` bij het level in campagne.json): een stenen cel op het binnenplein van rood (OBJECT.CEL = 30, decor, blokkeert de tegel) met een monnik in bruine pij achter ijzeren tralies, een deur met slot, stro, een emmer en een ketting. Valt de rode heer, dan staat de cel open (OBJECT.CEL_OPEN = 31: deur open, tralies weg, geen monnik). Bartholt wijst er na 6 seconden op. Plaatjes: `tekenCel` in kunst.js, `dorp.cel` en `dorp.cel_open` in assets.json. Test: tests/cel40.mjs (8 punten). Nog niet: Ludolf die zelf naar buiten loopt, en niet op de iPhone gezien (het plaatje is klein).
+
+## 0.51.0: verhaalbeeld voor elk level
+- Nieuw: bij het starten van level 1 tot en met 10 (niet de proloog, niet bij doorgaan met een bewaard spel) komt eerst een schilderij in beeld, altijd 12 seconden, met onderin maximaal vier zinnen verhaal en een dunne voortgangsbalk. Daarna volgt de gewone briefing.
+- Geen overslaan. Het spel staat stil zolang het beeld er is.
+- data/campagne.json: per level de velden "beeld" (beelden/verhaal/levelNN.webp) en "verhaal" (tekst). Ontbreekt het bestand, dan staat de tekst op een donkere achtergrond.
+- Beelden nog niet geleverd: toevoegen aan KERN in sw.js zodra ze in beelden/verhaal/ staan (anders mislukt de installatie van de offline cache bij een ontbrekend bestand).
+- ui.js: toonVerhaalbeeld(). main.js: vlag beeldOpen. index.html en css/stijl.css: #verhaalbeeld.

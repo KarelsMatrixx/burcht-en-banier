@@ -34,7 +34,10 @@ await Promise.all([p.waitForNavigation(), p.touchscreen.tap(x, y)]); await wacht
 check('na level kiezen geen beginscherm', !(await zicht('titelscherm')));
 const m = await p.evaluate(() => window.spel.modus);
 check('missie 1 actief', m.soort === 'campagne' && m.missie === 1, JSON.stringify(m));
-check('missie-intro zichtbaar', await zicht('missie'));
+check('eerst het verhaalbeeld', await zicht('verhaalbeeld') && !(await zicht('missie')));
+await p.waitForTimeout(1500); await p.screenshot({ path: '/home/claude/verhaalbeeld.png' });
+await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 15000 });
+check('daarna de missie-intro', await zicht('missie'));
 await p.tap('#missie-begin');
 // De rol toont het doel van dit level
 await p.tap('#knop-menu');

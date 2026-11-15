@@ -1130,3 +1130,77 @@ button:active {
 .volk-grond small.omhoog { color: #9be37a; }
 .volk-grond small.omlaag { color: #ff9a7a; }
 .volk-grond.slecht b { color: #ff8d7a; }
+
+/* Het verhaalbeeld voor een level: schilderij met de tekst onderin. */
+#verhaalbeeld {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: radial-gradient(ellipse at 50% 35%, #2c2a22, #0d0c09 75%);
+  color: #f7ecd0;
+  pointer-events: auto;
+}
+#verhaalbeeld[hidden] { display: none; }
+#verhaalbeeld-plaat {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+#verhaalbeeld-plaat[hidden] { display: none; }
+#verhaalbeeld::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 48%;
+  background: linear-gradient(to top, #0a0907f2 0%, #0a0907d0 45%, #0a090700 100%);
+  pointer-events: none;
+}
+/* De tekst staat in een blauw lint, zoals de ondertitel op het beginscherm. */
+#verhaalbeeld-lint {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(700px, 80vw);
+  padding: 10px 20px 11px;
+  background: linear-gradient(#3566bb, #2b559f);
+  border-top: 2px solid #d9a95f;
+  border-bottom: 2px solid #b8843f;
+  box-shadow: 0 4px 10px #0009;
+}
+#verhaalbeeld-lint::before, #verhaalbeeld-lint::after {
+  content: '';
+  position: absolute;
+  top: 9px;
+  bottom: -9px;
+  width: 50px;
+  z-index: -1;
+  background: linear-gradient(#d9a95f 0 2px, #223f7a 2px calc(100% - 2px), #b8843f calc(100% - 2px));
+}
+#verhaalbeeld-lint::before { left: -40px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 22% 50%); }
+#verhaalbeeld-lint::after { right: -40px; clip-path: polygon(0 0, 100% 0, 78% 50%, 100% 100%, 0 100%); }
+#verhaalbeeld-tekst {
+  margin: 0;
+  font: 400 clamp(12px, 2vw, 15px)/1.38 Georgia, serif;
+  text-align: center;
+  color: #f7ecd0;
+  text-shadow: 0 1px 2px #000a;
+}
+#verhaalbeeld-balk {
+  position: absolute;
+  z-index: 1;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: #ffffff22;
+}
+#verhaalbeeld-balk i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #e0b94a;
+}
+@keyframes verhaalbalk { from { width: 0; } to { width: 100%; } }
