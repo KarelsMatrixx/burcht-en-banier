@@ -479,3 +479,10 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Na les 4 (huis): Wessel en Karel over zijn negende verjaardag. Na les 8 (kazerne): Reinout vraagt Karel uit over de wacht bij de oostpoort. Na les 11: Wessel met de valkenveer van Reinout, Karel roept ze naar het feest. Daarna 20 s vrij, 20 s schemering, nacht.
 - Kaartje van de gids kan een portret tonen (`gids.kaart({ portret })`), `GESPREKKEN` en `toonGesprek` in proloog.js. Teksten door Claude geschreven, na te lezen.
 - Tests: proloog35 (67), proloog42 (25).
+
+## 0.59.1: bevel-lessen stap voor stap, leger aan de rand
+- Les "Send a soldier": eerst wijst de gouden plek je nieuwste soldaat aan ("Tap this soldier"), dan het oog, dan de plek. Muurles: eerst de soldaat, dan het stuk muur.
+- Muurles: elk bevel naar een stuk muur telt (ook een wachter verplaatsen).
+- Gidszin schuift boven de legerhint linksonder als die elkaar raken.
+- Het leger van Ottger begint helemaal aan de oostrand (groepjes langs de rand) en loopt aan op 55% snelheid; bij de storm weer gewone snelheid (`traag` in stuurLeger).
+- Tests: proloog35 (68), proloog43 (25).

@@ -100,21 +100,24 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       if (doel.heeftKeuze && !doel.heeftKeuze()) return { e: el('knop-zwaard'), tekst: 'Your soldiers are no longer chosen. Open the army and choose them again.' };
       return { e: null, tekst: 'Tap the golden spot on the map.' };
     }
-    if (doel.soort === 'sturen') {
-      // De eerste bevelen op de grond: de plek ligt achter een muur, dus eerst het oog (muren doorzichtig)
+    if (doel.soort === 'sturen' || doel.soort === 'muur') {
+      // 1. de soldaat die je net trainde aantikken, 2. (grond) het oog, 3. de gouden plek
       const oog = el('knop-oog');
       if (oog && oog.getAttribute('aria-pressed') === 'true') oogGezien = true;
-      if (!oogGezien && oog) return { e: oog, tekst: 'Walls can hide your soldiers. Tap the eye to see through them.' };
-      return { e: null, tekst: 'Tap a soldier, then tap the golden spot on the ground.' };
+      if (wijsSoldaat()) return { e: null, tekst: 'Tap your new soldier (the golden spot) to choose him.' };
+      if (doel.soort === 'sturen' && !oogGezien && oog) return { e: oog, tekst: 'Walls can hide your soldiers. Tap the eye to see through them.' };
+      return { e: null, tekst: doel.soort === 'muur' ? 'Now tap the golden piece of wall.' : 'Now tap the golden spot on the ground.' };
     }
-    if (doel.soort === 'muur') return { e: null, tekst: 'Tap a soldier, then tap a piece of your castle wall.' };
     return null;
   }
 
   // Zet de ruit op de plek van de les (alleen bij bouwlessen).
   let oogGezien = false;   // het oog is al een keer aangezet (de les over bevelen op de grond)
+  // Nog niemand gekozen in een les met een bevel: de gouden plek staat op een nieuwe soldaat
+  const wijsSoldaat = () => (doel && doel.soldaat && doel.heeftKeuze && !doel.heeftKeuze() ? doel.soldaat() : null);
   function zetPlek() {
-    const p = doel && doel.plek;
+    const sol = wijsSoldaat();
+    const p = sol ? { x: Math.floor(sol.x), y: Math.floor(sol.y) } : doel && doel.plek;
     if (!p || !plekNaarScherm) { plek.hidden = true; return; }
     if (doel.soort === 'opleiden' && zichtbaar(el('legerpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open
     const sc = plekNaarScherm(p.x, p.y);
@@ -131,7 +134,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       plek.style.left = `${sc.x - breed / 2}px`;
       plek.style.top = `${sc.y - hoog / 2}px`;
       plek.style.transform = '';
-      plekTekstEl.textContent = doel.plekTekst || 'Build here';
+      plekTekstEl.textContent = sol ? 'Tap this soldier' : doel.plekTekst || 'Build here';
       plekPijl.hidden = false;
     } else {
       // Een pijl aan de rand van het scherm, in de richting van de plek
@@ -184,6 +187,16 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       zin.style.top = '';
       zin.style.bottom = '90px';
       zin.style.left = `${Math.max(8, window.innerWidth / 2 - 130)}px`;
+    }
+    // Niet over de hint van het leger linksonder: dan erboven
+    const hint = el('legerhint');
+    if (hint && zichtbaar(hint)) {
+      const h = hint.getBoundingClientRect();
+      const z = zin.getBoundingClientRect();
+      if (z.left < h.right && z.right > h.left && z.top < h.bottom && z.bottom > h.top) {
+        zin.style.top = '';
+        zin.style.bottom = `${window.innerHeight - h.top + 8}px`;
+      }
     }
     // Niet over het taaklabel rechtsboven: valt de zin erover, dan schuift hij eronder
     const taak = el('taak');

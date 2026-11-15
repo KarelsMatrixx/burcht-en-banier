@@ -1575,7 +1575,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // rond en straal: waar ze verschijnen (standaard bij de burcht van rood).
   // binnen: niet dichter dan zoveel tegels bij rond (proloog: niet op de burcht zelf).
   const maxVijanden = () => (R.proloog ? MAX_VIJANDEN_PROLOOG : MAX_VIJANDEN);
-  function stuurLeger(inhoud, telAls = true, { rond = kaart.start[VIJAND], straal = 8, binnen = 0, houd = null } = {}) {
+  function stuurLeger(inhoud, telAls = true, { rond = kaart.start[VIJAND], straal = 8, binnen = 0, houd = null, traag = 1 } = {}) {
     const bezet = new Set(vijanden.map(vakVan));
     const nieuw = [];
     let aantal = 0;
@@ -1598,6 +1598,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
           const t = tak(man);
           t.houd = true;
           t.via = wegvinder.willekeurigVak(toeval, houd, houd.straal, VIJAND);
+          t.snelheid = man.snelheid;
+          man.snelheid *= traag;   // langzaam aanmarcheren
         }
         nieuw.push(man);
         aantal++;
@@ -1623,6 +1625,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (!k.tak || !k.tak.houd) continue;
       k.tak.houd = false;
       k.tak.via = -1;
+      if (k.tak.snelheid) e.snelheid = k.tak.snelheid;   // weer op gewone snelheid
       e.pad = null;
       n++;
     }

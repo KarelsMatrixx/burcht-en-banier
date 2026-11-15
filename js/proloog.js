@@ -33,7 +33,7 @@ const TAKEN = [
   { taak: 'Build Barracks', bouw: { kazerne: 1 }, gids: { soort: 'bouw', sleutel: 'kazerne', plekTekst: 'Barracks here' }, anker: [-19, 3],
     tekst: 'A king needs soldiers, even on a feast day. Barracks train soldiers from your peasants and your gold. Wood and stone were for this.' },
   { taak: 'Train two soldiers', soldaten: 2, gids: { soort: 'opleiden', plekTekst: 'Barracks' }, kazernePlek: true, tekst: 'Now train two soldiers. Each costs gold and one idle peasant. Knights hold the line, archers shoot from behind it.' },
-  { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen', plekTekst: 'Send him here' }, doelPlek: [4, 3], tekst: 'Now give an order on the ground. The spot lies behind a wall, so first tap the eye in the top right corner: walls and buildings turn see-through and you can see your men. Then choose a soldier and show him where to go.' },
+  { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen', plekTekst: 'Send him here' }, doelPlek: [4, 3], tekst: 'Now give an order on the ground. First tap your new soldier to choose him. The spot lies behind a wall, so then tap the eye in the top right corner: walls and buildings turn see-through. Then show him where to go.' },
   { taak: 'Put a soldier on the wall', opMuur: true, gids: { soort: 'muur', plekTekst: 'Wall here' }, doelPlek: [-5, -2], tekst: "Last lesson, Sire. Ottger's messengers at the border are restless. Put a soldier on the wall to keep watch." },
 ];
 
@@ -42,6 +42,7 @@ const VRIJ = 20;               // seconden vrij spelen bij daglicht na de laatst
 const AVOND = 20;              // daarna seconden schemering voor de nacht
 const NACHT_DUUR = 240;        // vier minuten nacht, dan de scène
 const OVERMACHT = 100;         // zoveel vijanden komen er: je hebt geen kans (naar Karel)
+const OPMARS_TEMPO = 0.55;     // zo langzaam lopen ze aan (deel van hun gewone snelheid)
 const WACHT_MAX = 150;         // zo lang wacht het leger buiten de poort, ook als de speler de les niet afmaakt (seconden)
 // Het leger van Ottger: veel soorten, ook belegeringsmachines
 const LEGER_OTTGER = { ridder: 27, boogschutter: 18, bijlridder: 10, kruisboog: 8, zwaardvechter: 8, banierdrager: 3, heler: 3, sluipmoordenaar: 3, vlammenwever: 3, steenwachter: 2, ladder: 6, ram: 4, katapult: 3, toren: 2 };
@@ -109,6 +110,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
   leger.stuur = (...a) => {
     const gelukt = stuurWas(...a);
     if (gelukt && s.fase === 'bouw' && s.basis && TAKEN[s.taak].sturen) s.gestuurd = true;
+    // Muurles: elk bevel naar een stuk muur telt
+    if (gelukt && s.fase === 'bouw' && s.basis && TAKEN[s.taak].opMuur && (a[2] || leger.isMuur(a[0], a[1]))) s.gestuurd = true;
     // Nachtles: een bevel telt alleen als het bij de gouden plek is (bij de muurles: op de muur)
     if (gelukt && s.fase === 'nacht' && s.deel === 'opmars' && s.nBegonnen && !s.nKlaar) {
       const t = NACHT_TAKEN[s.nTaak];
@@ -220,10 +223,17 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       const k = (bouwer.eigenBouwwerken().kazerne || []).slice(0, 2);
       plek = k.length === 2 ? { x: k[0], y: k[1] } : null;
     }
-    gids.richt(plek ? { ...t.gids, plek } : t.gids);
+    const bevel = t.sturen || t.opMuur;
+    gids.richt(plek ? { ...t.gids, plek, ...(bevel ? { heeftKeuze: () => leger.aantalGekozen() > 0, soldaat: nieuweSoldaat } : {}) } : t.gids);
     // Bartholt gaat mee naar de plek van de les (of staat bij de burcht als er geen plek is)
     if (kijk && figuranten) figuranten.leid(plek);
     if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
+  }
+
+  // De soldaat die de speler het laatst trainde (geen wachter, niet de koning), liefst niet op de muur
+  function nieuweSoldaat() {
+    const eigen = soldaten().filter((e) => !isWachter(e));
+    return eigen.filter((e) => !e.opMuur).pop() || eigen.pop() || null;
   }
 
   // Eerst een kaartje van Bartholt met een knop (geen klok), dan pas de gids.
@@ -272,7 +282,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     if (t.belasting) return gids.belastingGekozen() && gids.volkGesloten();
     if (t.soldaten) return soldaten().length - (s.basisSoldaten || 0) >= t.soldaten;
     if (t.sturen) return s.gestuurd;
-    if (t.opMuur) return naarDeMuur() > 0;
+    if (t.opMuur) return s.gestuurd || naarDeMuur() > 0;
     return true;
   }
 
@@ -337,12 +347,20 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     return plek;
   };
 
-  // De overmacht: een leger aan de oostrand van de kaart. Het marcheert naar een plek buiten de muren en wacht.
+  // De overmacht: een leger helemaal aan de oostrand van de kaart. Het marcheert langzaam naar een plek
+  // buiten de muren en wacht daar. In groepjes langs de rand, zodat ze echt aan de rand beginnen.
   function stuurOvermacht() {
     const st = kaart.start[0];
-    const rand = { x: kaart.breedte - 6, y: st.y };
     const wacht = { x: st.x + 31, y: st.y, straal: 6 };
-    strijd.stuurLeger({ ...LEGER_OTTGER }, true, { rond: rand, straal: 12, binnen: 0, houd: wacht });
+    const randX = kaart.breedte - 3;
+    let groep = 0;
+    for (const [soort, aantal] of Object.entries(LEGER_OTTGER)) {
+      for (let i = 0; i < aantal; i += 6) {
+        const dy = ((groep * 7) % 37) - 18;   // verspreid langs de rand
+        groep++;
+        strijd.stuurLeger({ [soort]: Math.min(6, aantal - i) }, groep === 1, { rond: { x: randX, y: st.y + dy }, straal: 2, binnen: 0, houd: wacht, traag: OPMARS_TEMPO });
+      }
+    }
   }
 
   function nachtToon() {

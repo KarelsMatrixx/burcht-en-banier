@@ -112,30 +112,32 @@ check('twee soldaten: taak 10', (await st()).taak === 9);
 await p.waitForTimeout(2000);
 check('sturen nog niet klaar zonder bevel', !(await st()).klaar);
 // Sturen
-check('sturen: gouden plek op de kaart', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && /Send him here/.test(e.textContent); }));
-await p.waitForTimeout(400);
-check('sturen: eerst het oog uitleggen', /eye/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+await p.evaluate(() => window.spel.leger.kiesGeen()); await p.waitForTimeout(500);
+check('sturen: eerst de nieuwe soldaat aanwijzen', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && (/Tap this soldier/.test(e.textContent) || e.classList.contains('buiten')) && /new soldier/i.test(document.getElementById('gids-zin').textContent); }), await p.textContent('#gids-zin'));
+await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().filter((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning').pop(); s.leger.kies([e]); });
+await p.waitForTimeout(500);
+check('gekozen: nu het oog', /eye/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 await p.tap('#knop-oog'); await p.waitForTimeout(400);
-check('oog aan: nu de soldaat en de plek', /golden spot/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+check('oog aan: nu de gouden plek', /golden spot/i.test(await p.textContent('#gids-zin')) && /Send him here/.test(await p.textContent('#gids-plek')), await p.textContent('#gids-zin'));
 await p.tap('#knop-oog'); await p.waitForTimeout(400);
 check('oog weer uit: gids vraagt er niet opnieuw om', !/eye/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+check('zin niet over de legerhint', await p.evaluate(() => { const h = document.getElementById('legerhint'); if (h.hidden) return true; const a = h.getBoundingClientRect(), z = document.getElementById('gids-zin').getBoundingClientRect(); return !(z.left < a.right && z.right > a.left && z.top < a.bottom && z.bottom > a.top); }));
 await p.evaluate(([x, y]) => { const s = window.spel; const e = s.leger.soldaten().find((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning'); s.leger.kies([e]); s.leger.stuur(x, y); }, vrij[i + 1]);
 await volgende();
 await totTaak(10);
 check('gestuurd: taak 11', (await st()).taak === 10, JSON.stringify(await st()));
 // Een soldaat op de muur
-check('muur: gouden plek op de kaart', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && /Wall here/.test(e.textContent); }));
+check('muur: gouden plek op de kaart', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && (/Wall here|Tap this soldier/.test(e.textContent) || e.classList.contains('buiten')); }));
 // Een beeldvullend scherm (titel) verbergt de gids helemaal
 await p.evaluate(() => { document.getElementById('titelscherm').hidden = false; }); await p.waitForTimeout(500);
 check('titelscherm: gids verborgen', await p.evaluate(() => ['gids-ring', 'gids-zin', 'gids-plek', 'gids-kaart'].every((id) => getComputedStyle(document.getElementById(id)).display === 'none')));
 await p.evaluate(() => { document.getElementById('titelscherm').hidden = true; }); await p.waitForTimeout(500);
 check('titelscherm weg: gids terug', await p.evaluate(() => getComputedStyle(document.getElementById('gids-plek')).display !== 'none'));
-// Alleen de wachters die al op de muur staan naar een andere plek sturen telt niet
+// Elk bevel naar de muur telt, ook als de speler een wachter verplaatst (zo speelde Karel het)
 await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; s.leger.kies(s.leger.soldaten().filter((e) => e.opMuur && e.wachter).slice(0, 3)); s.leger.stuur(st.x - 5, st.y - 2, true); });
-await p.waitForTimeout(6000);
-check('wachters op de muur verschuiven telt niet', !(await st()).klaar);
+await p.waitForTimeout(1500);
+check('bevel naar de muur telt', (await st()).klaar);
 // Alle soldaten gekozen (wachters en nieuwe), dan naar de muur: de nieuwe telt wel
-await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; const e = s.leger.soldaten().find((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning'); s.leger.kies([e, ...s.leger.soldaten().filter((x) => x.wachter).slice(0, 2)]); s.leger.stuur(st.x - 5, st.y - 2, true); });
 await p.waitForFunction(() => window.spel.proloog.stand().klaar, null, { timeout: 40000 }).catch(() => {});
 await kaartTik();   // Continue
 await p.waitForFunction(() => window.spel.proloog.stand().fase === 'avond', null, { timeout: 8000 }).catch(() => {});
