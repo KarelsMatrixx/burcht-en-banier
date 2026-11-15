@@ -17,10 +17,11 @@
 // Alle getallen staan in data/economie.json onder "heer".
 
 import { OBJECT } from './kaart.js';
+import { maakGroei } from './roodgroei.js';
 
 const GRONDSTOFFEN = ['hout', 'steen', 'goud'];
 
-export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, perSeconde, opMelding, opVerandering, veld = null }) {
+export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, wegvinder, niveau = 3, groeiConfig = null, perSeconde, opMelding, opVerandering, veld = null }) {
   const H = regels.heer;
   if (!H) return null;
   const dt = 1 / perSeconde;
@@ -46,6 +47,13 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
     if (geeft) werken.push({ vak: i, soort: kaart.object[i], geeft });
   }
 
+  const werkenBasis = werken.length;
+  // Groei: hoe langer je wacht, hoe meer gebouwen, burgers, wachters en hoe groter zijn aanvallen (js/roodgroei.js).
+  const groei = wegvinder ? maakGroei({
+    kaart, strijd, eenheden, wegvinder, niveau, config: groeiConfig, opMelding,
+    opWerk: (w) => werken.push(w),
+  }) : null;
+
   // --- De stand van de heer ---------------------------------------------------------------
   let voorraad;
   let reserve;
@@ -56,6 +64,8 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
   let uitvalKlok;
 
   function begin() {
+    if (groei) groei.wis();
+    werken.length = werkenBasis;
     voorraad = { hout: 0, steen: 0, goud: 0, ...H.begin };
     reserve = {};
     sinds = 0;
@@ -69,7 +79,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
   const staand = () => werken.filter((w) => kaart.eigenaar[w.vak] === 2 && kaart.object[w.vak] === w.soort);
   // Elke derde aanval is een piek (veldheer, niveau 3): dan is zijn doel hoger, en daarna rust hij langer.
   const piek = () => (veld ? veld.piek(aanvallen + 1) : 1);
-  const doel = () => Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen) * piek();
+  const doel = () => Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen) * piek() + (groei ? groei.doelBonus() : 0);
   const wachtTijd = () => (aanvallen === 0 ? H.eersteAanval : H.tussen * (veld ? veld.rust(aanvallen) : 1));
   const sterkte = () => sterkteVan(reserve);
   const aantal = () => Object.values(reserve).reduce((a, b) => a + b, 0);
@@ -202,6 +212,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
   // Eén rekenstap, vanuit strijd.stap().
   function stap() {
     sinds += dt;
+    if (groei) groei.stap(dt);
     const uit = inkomen();
     for (const k of GRONDSTOFFEN) voorraad[k] = Math.min(H.voorraadMax, voorraad[k] + uit[k] * dt);
 
@@ -247,6 +258,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
     r: { ...reserve },
     s: Math.round(sinds),
     a: aanvallen,
+    g: groei ? groei.stappen() : 0,
   });
 
   function zet(s) {
@@ -262,6 +274,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
     }
     if (Number.isInteger(s.a) && s.a >= 0 && s.a < 9999) aanvallen = s.a;
     if (Number.isFinite(s.s) && s.s >= 0) sinds = Math.min(s.s, 3600);
+    if (groei && Number.isInteger(s.g) && s.g > 0) groei.herstelNaar(s.g);
   }
 
   return {
@@ -271,5 +284,6 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, p
     zetReserve(r) { reserve = { ...r }; },
     zetSinds(s) { sinds = s; },
     werken: () => werken.map((w) => w.vak),
+    groei,
   };
 }

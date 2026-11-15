@@ -409,3 +409,13 @@
 - Proloog: tijdens de vlucht naar de burcht slaat de overmacht de dorpelingen dood (figuranten.js). In de test sneuvelden 35 van ongeveer 108 en 4 van de 4 boeren. Wessel en Bartholt ontkomen (het verhaal heeft ze nodig).
 - Aanname: kans 45 tot 50% per ronde bij 1,4 tot 1,5 tegel afstand; geschatte getallen, niet op de iPhone gezien.
 - Test: tests/gevecht40.mjs.
+
+## 0.55.0: rood groeit mee (gebouwen, burgers, wachters, sterkere aanvallen)
+- Nieuw: js/roodgroei.js. Hoe langer je wacht, hoe sterker de rode heer: elke 60 tot 87 seconden (per level) komt er een stap bij, tot een maximum. Elke stap: een nieuw gebouw van rood vlak bij zijn dorp (huis, hut, houthakkershut of boomgaard; nooit in de weg van zijn poorten; het herbouwt hij zelf als jij het sloopt), burgers die bij hun huis rondlopen, om de stap een extra wachter op zijn muur (vanaf de andere kant van dezelfde muur), en zijn aanvalsdoel stijgt (`doelBonus`). Houthakkershutten en boomgaarden geven hem ook meer inkomen.
+- Schaal per level (aanname van Claude, standaard, per level te overschrijven met `rood.groei` in campagne.json): elke = 90 min 3 per level seconden, max = 6 plus 2 per level stappen, doelPerStap = 0,2 plus 0,06 per level, extra wachters hooguit 1 plus een per twee levels, burgers hooguit 6 plus 2 per level. Vrij spel telt als level 3. Level 1: 8 stappen, hooguit +2,1 doel. Level 6: 18 stappen, hooguit +10 doel. Level 5 (Stillwater) blijft rustig: `groei: { doelPerStap: 0.15, max: 8 }` (+1,2 doel), zodat het bij maximaal 16 man blijft.
+- Een melding bij de eerste stap legt het uit: "Red is growing...". Tekst van Claude.
+- De groei wordt bewaard (rood.bewaar `g`) en bij opnieuw beginnen teruggezet (`rood.herstel`).
+- Jouw soldaten doden burgers van rood als ze erlangs komen (slachting.js): bloed en lijk; burgers rennen weg naar zijn burcht als je soldaten binnen 6 tegels komen.
+- Nieuwe API in strijd.js: `zetRoodBouw`, `haalRoodBouwWeg`, `aantalExtraWachters`, `voegExtraWachterToe`. Wachter-nummers vanaf het aantal routes zijn extra wachters (worden niet bewaard, de groei zet ze terug, een per 45 seconden).
+- Niet gedaan: rood bouwt geen kazernes of muren erbij; zijn nieuwe burgers werken niet echt (ze lopen alleen rond).
+- Test: tests/groei41.mjs (12 punten).

@@ -162,7 +162,9 @@ async function start() {
   // De rode heer: eigen voorraad, eigen werken, beslist zelf wanneer hij aanvalt.
   // In de proloog is er nog geen rode heer met een eigen economie.
   const rood = missie && missie.proloog ? null : maakRood({
-    regels, kaart, bouwwerken, leger, strijd, eenheden, veld,
+    regels, kaart, bouwwerken, leger, strijd, eenheden, veld, wegvinder,
+    niveau: missie ? missie.id : 3,
+    groeiConfig: missie && missie.rood && missie.rood.groei ? missie.rood.groei : null,
     perSeconde: CONFIG.spel.stappenPerSeconde,
     opMelding: (tekst) => ui.toonMelding(tekst, { soort: 'vijand' }),
     opVerandering: bewaar,
@@ -775,7 +777,7 @@ async function start() {
   // Een missie die nog niet is begonnen opent met zijn intro.
   // De proloog: taken van Bartholt, de nacht en de scène.
   const gids = missie && missie.proloog ? maakGids() : null;
-  const slachting = maakSlachting({ strijd, economie, wegvinder, kaart, eenheden });
+  const slachting = maakSlachting({ strijd, economie, wegvinder, kaart, eenheden, leger, rood });
   const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd }) : null;
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, leger, strijd, wegvinder, eenheden,

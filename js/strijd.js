@@ -18,7 +18,7 @@
 // data/bouwwerken.json (leven).
 
 import { CONFIG } from './config.js';
-import { OBJECT } from './kaart.js';
+import { OBJECT, GROND } from './kaart.js';
 import { SOORT } from './eenheden.js';
 import { BREEK } from './wegvinden.js';
 import { maakToeval } from './toeval.js';
@@ -1499,9 +1499,12 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Een wachter van rood: een schutter die op zijn muur heen en weer loopt.
   function maakWachter(nummer, leven) {
-    const route = routes[nummer];
+    // Nummers vanaf routes.length zijn extra wachters die rood in de loop van het level erbij krijgt
+    // (js/roodgroei.js): dezelfde muur, maar vanaf de andere kant.
+    const extra = nummer >= routes.length;
+    const route = routes.length ? routes[nummer % routes.length] : null;
     if (!wachterSoort || !route || !route.length) return null;
-    const ronde = nummer % 2 ? route.slice().reverse() : route.slice();
+    const ronde = (nummer % 2 === 1) !== extra ? route.slice().reverse() : route.slice();
     const begin = ronde.find(isRodeMuur);
     if (begin === undefined) return null;   // zijn muur is er niet meer
     const e = maakVijand(wachterSoort, begin, leven);
@@ -1987,6 +1990,38 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     roodWeg: () => [...roodWeg].filter((vak) => !inBurcht(vak, rood)),
     origineelVan: (vak) => roodOrigineel.get(vak),
     // Rood zet een stuk van zijn kasteel terug. Lukt niet als er iets staat.
+    // Rood bouwt erbij (groei): een nieuw gebouw van rood op een lege tegel, dat hij later ook herbouwt.
+    zetRoodBouw(vak, soort) {
+      if (!Number.isInteger(vak) || vak < 0 || vak >= B * H || kaart.object[vak] !== OBJECT.GEEN || kaart.grond[vak] === GROND.WATER) return false;
+      kaart.object[vak] = soort;
+      kaart.eigenaar[vak] = ROOD;
+      roodOrigineel.set(vak, soort);
+      opKaart(new Set([vak]));
+      leger.kaartVeranderd();
+      kaartVeranderd();
+      return true;
+    },
+    // En weg bij opnieuw beginnen.
+    haalRoodBouwWeg(vak) {
+      roodOrigineel.delete(vak);
+      roodWeg.delete(vak);
+      if (kaart.eigenaar[vak] === ROOD && kaart.object[vak] !== OBJECT.GEEN) {
+        kaart.object[vak] = OBJECT.GEEN;
+        kaart.eigenaar[vak] = 0;
+        opKaart(new Set([vak]));
+      }
+    },
+    // Extra wachters op de muur van rood (groei).
+    aantalExtraWachters: () => vijanden.filter((e) => e.wachter !== undefined && e.wachter >= routes.length).length,
+    maxExtraWachters: () => routes.length,
+    voegExtraWachterToe() {
+      if (!routes.length) return null;
+      const gebruikt = new Set(vijanden.filter((e) => e.wachter !== undefined).map((e) => e.wachter));
+      for (let n = routes.length; n < routes.length * 2; n++) {
+        if (!gebruikt.has(n)) return maakWachter(n);
+      }
+      return null;
+    },
     herbouwVak(vak) {
       if (!roodWeg.has(vak) || inBurcht(vak, rood) || kaart.object[vak] !== OBJECT.GEEN) return false;
       kaart.object[vak] = roodOrigineel.get(vak);

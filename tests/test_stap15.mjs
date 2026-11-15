@@ -18,7 +18,7 @@ const r = await p.evaluate(() => {
   const st = s.strijd.stand();
   return { v: s.CONFIG.versie, heer: !!st.heer, werken: st.heer && st.heer.werkenTotaal, golf: st.golf, w: s.rood.werken() };
 });
-check('versie', r.v === '0.54.0', r.v);
+check('versie', r.v === '0.55.0', r.v);
 check('heer aanwezig', r.heer);
 check('3 werken', r.werken === 3, r.werken);
 const spoel = (sec) => p.evaluate((sec) => { const s = window.spel; for (let i = 0; i < sec * 10; i++) s.strijd.stap(); return s.strijd.stand(); }, sec);
@@ -37,17 +37,18 @@ st = await spoel(20);
 check('geen tweede aanval binnen 100s', st.golf === 1, st.golf);
 // werken slopen -> inkomen daalt
 const inkomenVoor = (await p.evaluate(() => window.spel.strijd.stand().heer.inkomen));
+const werkenVoor = await p.evaluate(() => window.spel.strijd.stand().heer.werken);   // rood groeit nu mee (0.55.0): het aantal is niet vast
 const sl = await p.evaluate(() => {
   const s = window.spel; const k = s.kaart; const v = s.rood.werken()[0];
   s.strijd.zetVijand; k.object[v] = 0; k.eigenaar[v] = 0; s.strijd.kaartVeranderd();
   return s.strijd.stand().heer;
 });
-check('werk weg: werken 2', sl.werken === 2, JSON.stringify(sl));
+check('werk weg: een minder', sl.werken === werkenVoor - 1, JSON.stringify(sl));
 check('inkomen lager', sl.inkomen.hout + sl.inkomen.steen + sl.inkomen.goud < inkomenVoor.hout + inkomenVoor.steen + inkomenVoor.goud);
 // herbouw: geef steen/hout, spoel
 await p.evaluate(() => { const s = window.spel; s.rood.zetVoorraad('hout', 100); s.rood.zetVoorraad('steen', 100); });
 st = await spoel(10);
-check('rood herbouwt zijn werk', st.heer.werken === 3, JSON.stringify(st.heer));
+check('rood herbouwt zijn werk', st.heer.werken === werkenVoor, JSON.stringify(st.heer));
 // muurstuk vernielen en herbouwen
 const muur = await p.evaluate(() => {
   const s = window.spel; const k = s.kaart; const m = s.strijd.rood();
