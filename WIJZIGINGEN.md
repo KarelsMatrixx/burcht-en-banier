@@ -463,3 +463,6 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Eerste bevel op de grond (les "Send a soldier"): Bartholt legt eerst het oog uit (muren doorzichtig), de gids wijst het oog aan; daarna pas soldaat en gouden plek. Staat het oog al aan, dan wordt het niet opnieuw gevraagd.
 - Nachtles: bij het kiezen telt de groep ook de wachters mee (anders ging les 3 te snel door).
 - Tests: proloog35 (62), proloog43 (22, stabieler).
+
+## 0.58.3: gidszin niet over het taaklabel
+- Valt de zin van de gids over het taaklabel rechtsboven (zoals bij het oog op een iPhone met veilige randen), dan schuift hij eronder.

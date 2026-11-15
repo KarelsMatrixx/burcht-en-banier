@@ -185,6 +185,16 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       zin.style.bottom = '90px';
       zin.style.left = `${Math.max(8, window.innerWidth / 2 - 130)}px`;
     }
+    // Niet over het taaklabel rechtsboven: valt de zin erover, dan schuift hij eronder
+    const taak = el('taak');
+    if (taak && zichtbaar(taak) && taak.textContent.trim()) {
+      const t = taak.getBoundingClientRect();
+      const z = zin.getBoundingClientRect();
+      if (z.left < t.right && z.right > t.left && z.top < t.bottom && z.bottom > t.top) {
+        zin.style.bottom = '';
+        zin.style.top = `${t.bottom + 8}px`;
+      }
+    }
     if (tekst !== vorigeTekst) { vorigeTekst = tekst; laatsteTik = nu; }
   }
 
