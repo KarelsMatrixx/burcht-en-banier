@@ -33,7 +33,7 @@ const TAKEN = [
   { taak: 'Build Barracks', bouw: { kazerne: 1 }, gids: { soort: 'bouw', sleutel: 'kazerne', plekTekst: 'Barracks here' }, anker: [-19, 3],
     tekst: 'A king needs soldiers, even on a feast day. Barracks train soldiers from your peasants and your gold. Wood and stone were for this.' },
   { taak: 'Train two soldiers', soldaten: 2, gids: { soort: 'opleiden', plekTekst: 'Barracks' }, kazernePlek: true, tekst: 'Now train two soldiers. Each costs gold and one idle peasant. Knights hold the line, archers shoot from behind it.' },
-  { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen', plekTekst: 'Send him here' }, doelPlek: [4, 3], tekst: 'Now give an order. Choose a soldier, then show him where to go.' },
+  { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen', plekTekst: 'Send him here' }, doelPlek: [4, 3], tekst: 'Now give an order on the ground. The spot lies behind a wall, so first tap the eye in the top right corner: walls and buildings turn see-through and you can see your men. Then choose a soldier and show him where to go.' },
   { taak: 'Put a soldier on the wall', opMuur: true, gids: { soort: 'muur', plekTekst: 'Wall here' }, doelPlek: [-5, -2], tekst: "Last lesson, Sire. Ottger's messengers at the border are restless. Put a soldier on the wall to keep watch." },
 ];
 
@@ -110,7 +110,13 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     }
     return lijst;
   }
-  const isWachter = (e) => e.wachter || wachtPosten().some(([x, y]) => Math.hypot(e.x - x - 0.5, e.y - y - 0.5) < 1.3);
+  // Een wachter is een van de soldaten die bij het begin al op een post stonden. Een soldaat die de speler
+  // zelf traint of verplaatst telt niet als wachter, ook niet als hij op een post terechtkomt.
+  const isWachter = (e) => {
+    if (e.wachter) return true;
+    if (soldaten().some((x) => x.wachter)) return false;   // de wachters zijn gemerkt: dit is er geen
+    return wachtPosten().some(([x, y]) => Math.hypot(e.x - x - 0.5, e.y - y - 0.5) < 1.3);   // na herladen: de posten bepalen het
+  };
   // Een soldaat van de speler die op de muur staat of er al naartoe loopt (zijn doel ligt dan op de muurlaag)
   const naarDeMuur = () => soldaten().filter((e) => !isWachter(e) && (e.opMuur || (e.soldaat.doel >= kaart.breedte * kaart.hoogte && e.pad))).length;
   function zetWachters() {
@@ -242,8 +248,9 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
   const heeftSoort = (sleutel) => soldaten().some((e) => e.soldaat.sleutel === sleutel && !isWachterZonderBevel(e) && !e.wachter);
   const nachtKlaar = (t) => {
     const sleutel = t.keuze || t.stuurSoort;
+    // Kiezen: de groep telt ook de wachters mee (zo staat het in het paneel)
+    if (t.keuze) return leger.gekozen().some((e) => e.soldaat.sleutel === sleutel || !soldaten().some((x) => x.soldaat.sleutel === sleutel));
     const soortPast = (e) => e.soldaat.sleutel === sleutel || !heeftSoort(sleutel);
-    if (t.keuze) return leger.gekozen().some((e) => soortPast(e) && e.soldaat.sleutel !== 'koning');
     // De muur: elk stuk muur telt, een soldaat van de speler die erop staat of erheen loopt
     if (t.opMuur && bijPlek(t, soortPast)) return true;
     if (t.opMuur) return soldaten().some((e) => !isWachterZonderBevel(e) && !e.wachter && soortPast(e) && (e.opMuur || (e.soldaat.doel >= kaart.breedte * kaart.hoogte && e.pad)));
@@ -266,7 +273,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     });
   }
   // Een wachter die nog op zijn vaste post staat, telt niet als bevel van de speler
-  const isWachterZonderBevel = (e) => !(e.soldaat && e.soldaat.doel >= 0) && wachtPosten().some(([x, y]) => Math.hypot(e.x - x - 0.5, e.y - y - 0.5) < 1.3);
+  const isWachterZonderBevel = (e) => !(e.soldaat && e.soldaat.doel >= 0) && isWachter(e);
   const nachtPlekken = new Map();   // de gekozen plek per les (blijft gelijk)
   const nachtPlek = (t) => {
     if (nachtPlekken.has(t)) return nachtPlekken.get(t);

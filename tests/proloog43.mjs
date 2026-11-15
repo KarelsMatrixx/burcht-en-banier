@@ -16,7 +16,7 @@ await p.evaluate(() => { localStorage.clear(); sessionStorage.clear(); localStor
 await p.reload(); await wacht(); await p.waitForTimeout(300);
 await p.tap('#missie-begin'); await p.waitForTimeout(1200);
 const st = () => p.evaluate(() => window.spel.proloog.stand());
-const kaartTik = async () => { await p.waitForSelector('#gids-kaart:not([hidden]) button', { timeout: 8000 }); await p.tap('#gids-kaart button'); await p.waitForTimeout(250); };
+const kaartTik = async () => { await p.waitForSelector('#gids-kaart:not([hidden]) button', { timeout: 8000 }); const voor = await p.textContent('#gids-kaart'); await p.tap('#gids-kaart button'); await p.waitForFunction((v) => { const k = document.getElementById('gids-kaart'); return k.hidden || k.textContent !== v; }, voor, { timeout: 4000 }).catch(() => {}); await p.waitForTimeout(250); };
 await kaartTik();   // eerste kaartje van de dag
 await p.evaluate(() => window.spel.proloog.zetFase('nacht'));
 await p.waitForTimeout(1500);
@@ -59,7 +59,7 @@ check('les 2 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 await kaartTik(); await kaartTik();
 console.log('DBG', await p.evaluate(() => ({ g: !document.getElementById('leger-groepen').hidden, btn: [...document.querySelectorAll('#leger-groepen button')].map((b) => b.textContent + ':' + (b.offsetParent ? 'v' : 'h')), zin: document.getElementById('gids-zin').textContent, pan: !!document.querySelector('#legerpaneel:not([hidden])') })));
 if (!(await p.isVisible('#leger-groepen button'))) { await p.tap('#knop-zwaard'); await p.waitForTimeout(400); }
-await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap({ timeout: 5000 });
+await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap({ timeout: 5000 }).catch(async () => { console.log('RETRY', await p.evaluate(() => { const b = [...document.querySelectorAll('#leger-groepen button')].find((x) => /^Knight/.test(x.textContent)); const r = b && b.getBoundingClientRect(); const o = r && document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return JSON.stringify({ r: r && [r.left, r.top, r.width, r.height], over: o && (o.id || o.className || o.tagName), kaart: !document.getElementById('gids-kaart').hidden }); })); await p.tap('#knop-zwaard'); await p.waitForTimeout(500); await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap({ timeout: 5000 }); });
 await p.waitForTimeout(900);
 check('les 3 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 await kaartTik(); await kaartTik();

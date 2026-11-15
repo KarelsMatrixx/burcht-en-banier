@@ -100,12 +100,19 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       if (doel.heeftKeuze && !doel.heeftKeuze()) return { e: el('knop-zwaard'), tekst: 'Your soldiers are no longer chosen. Open the army and choose them again.' };
       return { e: null, tekst: 'Tap the golden spot on the map.' };
     }
-    if (doel.soort === 'sturen') return { e: null, tekst: 'Tap a soldier, then tap the ground where he must go.' };
+    if (doel.soort === 'sturen') {
+      // De eerste bevelen op de grond: de plek ligt achter een muur, dus eerst het oog (muren doorzichtig)
+      const oog = el('knop-oog');
+      if (oog && oog.getAttribute('aria-pressed') === 'true') oogGezien = true;
+      if (!oogGezien && oog) return { e: oog, tekst: 'Walls can hide your soldiers. Tap the eye to see through them.' };
+      return { e: null, tekst: 'Tap a soldier, then tap the golden spot on the ground.' };
+    }
     if (doel.soort === 'muur') return { e: null, tekst: 'Tap a soldier, then tap a piece of your castle wall.' };
     return null;
   }
 
   // Zet de ruit op de plek van de les (alleen bij bouwlessen).
+  let oogGezien = false;   // het oog is al een keer aangezet (de les over bevelen op de grond)
   function zetPlek() {
     const p = doel && doel.plek;
     if (!p || !plekNaarScherm) { plek.hidden = true; return; }

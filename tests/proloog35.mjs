@@ -110,6 +110,12 @@ await p.waitForTimeout(2000);
 check('sturen nog niet klaar zonder bevel', !(await st()).klaar);
 // Sturen
 check('sturen: gouden plek op de kaart', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && /Send him here/.test(e.textContent); }));
+await p.waitForTimeout(400);
+check('sturen: eerst het oog uitleggen', /eye/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+await p.tap('#knop-oog'); await p.waitForTimeout(400);
+check('oog aan: nu de soldaat en de plek', /golden spot/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+await p.tap('#knop-oog'); await p.waitForTimeout(400);
+check('oog weer uit: gids vraagt er niet opnieuw om', !/eye/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 await p.evaluate(([x, y]) => { const s = window.spel; const e = s.leger.soldaten().find((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning'); s.leger.kies([e]); s.leger.stuur(x, y); }, vrij[i + 1]);
 await volgende();
 await totTaak(10);
@@ -141,7 +147,10 @@ await p.waitForFunction(() => window.spel.proloog.stand().fase === 'nacht', null
 s = await st();
 check('nacht', s.fase === 'nacht' && (await p.evaluate(() => window.spel.proloog.nacht())) === 1, JSON.stringify(s));
 const vij = await p.evaluate(() => window.spel.strijd.vijanden().length);
-check('overmacht: bijna 80 vijanden (wachters zijn al aan het vechten)', vij >= 60, vij);
+check('overmacht: bijna 100 vijanden onderweg', vij >= 90, vij);
+// De opmars wacht op de poort: de storm begint pas na de les (hier direct via zetFase)
+await p.evaluate(() => window.spel.proloog.zetFase('storm'));
+await p.waitForTimeout(300);
 check('melding poort open', /gate is open/.test(await p.evaluate(() => window.spel.ui.logboek().map((r) => r.tekst).join(' '))));
 check('taak nacht', /Night/.test(await p.textContent('#taak')));
 await p.waitForTimeout(500);

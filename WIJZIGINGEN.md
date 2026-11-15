@@ -457,3 +457,9 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 
 ## 0.58.1: nachtles soepeler
 - De lessen over je leger tellen nu ruimer: elk stuk muur telt voor de boogschutters, de plek bij de poort mag 6 tegels ernaast liggen, en heeft de speler het gevraagde soort niet, dan telt elke soldaat van hem.
+
+## 0.58.2: wachtpost-fix en uitleg van het oog
+- Een soldaat die je zelf traint en op een muurpost zet, telde als wachter (hij stond bij een post) en dus niet voor de laatste dagles. Nu zijn alleen de soldaten die bij het begin al op de muur stonden wachters.
+- Eerste bevel op de grond (les "Send a soldier"): Bartholt legt eerst het oog uit (muren doorzichtig), de gids wijst het oog aan; daarna pas soldaat en gouden plek. Staat het oog al aan, dan wordt het niet opnieuw gevraagd.
+- Nachtles: bij het kiezen telt de groep ook de wachters mee (anders ging les 3 te snel door).
+- Tests: proloog35 (62), proloog43 (22, stabieler).
