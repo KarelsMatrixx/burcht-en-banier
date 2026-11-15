@@ -1,6 +1,6 @@
 # Overdracht Aldervale (versie 0.59.1, 15 november 2026)
 
-Lees dit eerst in een nieuwe chat. Repo: github.com/KarelsMatrixx/burcht-en-banier, branch main (laatste commit e83aa1a). Project "Stronghold".
+Plak in de nieuwe chat: "Lees claude/overdracht.md in het project Stronghold en ga verder." Lees dit eerst. Repo: github.com/KarelsMatrixx/burcht-en-banier, branch main (laatste commit e83aa1a). Project "Stronghold".
 
 ## Werkafspraken met Karel
 - Karel is geen programmeur; Claude is de ontwikkelaar en werkt zelfstandig, test, commit en pusht.
@@ -44,3 +44,13 @@ Bestanden: `js/proloog.js` (verloop), `js/gids.js` (aanwijzer: ring, zin, gouden
 1. Karels iPhone-feedback op de tutorial verwerken.
 2. Stap 39: Windzanger en level 7 Grauwvoort (drie poorten achter elkaar).
 3. Stap 40: Saboteur en level 8 Witte Dijk; 41 Ziener en level 9 Rouwpoort; 42 level 10 Rouwburcht; 43 balansronde.
+
+## Nog geldig uit de vorige overdracht (0.50.1)
+- Nieuwe chat: repo toevoegen (add_repo met push) en klonen naar `/home/claude/burcht-en-banier` met ruime timeout.
+- Visuele wijzigingen: screenshot laten zien; Karel reageert vaak midden in een beurt, verwerk dat meteen.
+- Netlify: niets plaatsen zonder overleg, nooit een nieuwe site aanmaken. Karels e-mailadres is privé.
+- Titel Aldervale, ondertitel Banners of the Vale. Logo, knoppen en wapperende vlaggen op het beginscherm sinds 0.50 (`js/vlaggen.js`).
+- Campagne: proloog en levels 1 tot 6 speelbaar (4 hut houden, 5 abdij met gracht, 6 bouwloodsen slopen); 7 tot 10 nog te bouwen.
+- Na nieuwe levels moeten campagne30 en test_stap17 mee. test_stap15 faalt soms op timing: opnieuw draaien.
+- Simulatie vooruit in tests: `s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap();` in een lus.
+- Andere projectdocs: `voortgang-0.53.md` (0.52 tot 0.56, nog niet bijgewerkt voor 0.56.1 en later; deze overdracht is actueler), `stappenplan-campagne.md`, `campagne-verhaal.md`, `aanvalsplan-veldheer.md`, `legerontwerp.md`, `kastelenontwerp.md`, `portretten.md`.
