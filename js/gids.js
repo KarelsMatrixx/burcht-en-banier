@@ -89,6 +89,17 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       const knop = el('volk-belasting').querySelector('button:not(.actief)');
       return { e: knop, tekst: 'Tap a tax level. Low is safe, High brings gold but angers your people.' };
     }
+    if (doel.soort === 'kies') {
+      const groepen = el('leger-groepen');
+      if (!zichtbaar(groepen)) return { e: el('knop-zwaard'), tekst: 'Tap the sword to open your army.' };
+      const knop = [...groepen.querySelectorAll('button')].find((b) => b.textContent.startsWith(doel.groep));
+      if (knop && zichtbaar(knop)) return { e: knop, tekst: `Tap ${doel.groep}.` };
+      return { e: el('knop-alle'), tekst: 'Tap All to choose your soldiers.' };
+    }
+    if (doel.soort === 'stuur') {
+      if (doel.heeftKeuze && !doel.heeftKeuze()) return { e: el('knop-zwaard'), tekst: 'Your soldiers are no longer chosen. Open the army and choose them again.' };
+      return { e: null, tekst: 'Tap the golden spot on the map.' };
+    }
     if (doel.soort === 'sturen') return { e: null, tekst: 'Tap a soldier, then tap the ground where he must go.' };
     if (doel.soort === 'muur') return { e: null, tekst: 'Tap a soldier, then tap a piece of your castle wall.' };
     return null;

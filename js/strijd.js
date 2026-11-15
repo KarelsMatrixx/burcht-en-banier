@@ -28,7 +28,7 @@ const VIJAND = 1;
 const DENK = 5;             // om de zoveel rekenstappen kiest een krijger opnieuw wat hij doet
 const MAX_EFFECTEN = 260;    // pijlen en gevallenen die tegelijk in beeld kunnen zijn
 const MAX_VIJANDEN = 60;
-const MAX_VIJANDEN_PROLOOG = 90;   // de overmacht van de proloog: 80 ineens (naar Karel)
+const MAX_VIJANDEN_PROLOOG = 130;   // de overmacht van de proloog: 80 ineens (naar Karel)
 const WRAAK_VER = 12;       // zo ver loopt iemand achter een schutter aan die hem raakte
 
 const ROOD = 2;              // eigenaar van wat de rode heer heeft gebouwd
@@ -1075,6 +1075,20 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function tactiek(e, k) {
     const t = k.tak;
     if (!t) return false;
+    // Opmars (proloog): eerst naar zijn plek buiten de muren, dan wachten tot de poort opengaat.
+    if (t.houd) {
+      if (t.via >= 0) {
+        if (verVan(e, t.via) <= 1.6) t.via = -1;
+        else {
+          if (!e.pad) {
+            const pad = zoekPad(e, t.via);
+            if (pad) zetPad(e, pad);
+            else t.via = -1;
+          }
+        }
+      }
+      return true;
+    }
     if (t.houdTot > stapNr) return true;   // wacht op de rest van zijn groep
     if (t.via >= 0) {
       if (verVan(e, t.via) <= 1.6) t.via = -1;
@@ -1561,7 +1575,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // rond en straal: waar ze verschijnen (standaard bij de burcht van rood).
   // binnen: niet dichter dan zoveel tegels bij rond (proloog: niet op de burcht zelf).
   const maxVijanden = () => (R.proloog ? MAX_VIJANDEN_PROLOOG : MAX_VIJANDEN);
-  function stuurLeger(inhoud, telAls = true, { rond = kaart.start[VIJAND], straal = 8, binnen = 0 } = {}) {
+  function stuurLeger(inhoud, telAls = true, { rond = kaart.start[VIJAND], straal = 8, binnen = 0, houd = null } = {}) {
     const bezet = new Set(vijanden.map(vakVan));
     const nieuw = [];
     let aantal = 0;
@@ -1578,7 +1592,14 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         }
         if (vak < 0) continue;
         bezet.add(vak);
-        nieuw.push(maakVijand(sleutel, vak));
+        const man = maakVijand(sleutel, vak);
+        // Opmars: marcheer naar een plek bij `houd` en wacht daar
+        if (houd) {
+          const t = tak(man);
+          t.houd = true;
+          t.via = wegvinder.willekeurigVak(toeval, houd, houd.straal, VIJAND);
+        }
+        nieuw.push(man);
         aantal++;
       }
     }
@@ -1592,6 +1613,33 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     opVerandering();
     opStand();
     return aantal;
+  }
+
+  // De opmars is klaar: iedereen die wachtte, gaat naar de burcht.
+  function laatOpmarsLos() {
+    let n = 0;
+    for (const e of vijanden) {
+      const k = krijgVan(e);
+      if (!k.tak || !k.tak.houd) continue;
+      k.tak.houd = false;
+      k.tak.via = -1;
+      e.pad = null;
+      n++;
+    }
+    return n;
+  }
+  // Hoeveel mannen staan er klaar (aangekomen) en hoeveel zijn er in totaal onderweg of klaar?
+  function opmarsStand() {
+    let totaal = 0;
+    let klaar = 0;
+    for (const e of vijanden) {
+      if (e.dood) continue;
+      const k = krijgVan(e);
+      if (!k.tak || !k.tak.houd) continue;
+      totaal++;
+      if (k.tak.via < 0) klaar++;
+    }
+    return { totaal, klaar };
   }
 
   // Wie gevallen is, verdwijnt van de kaart.
@@ -1931,7 +1979,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   zetWachters(null);   // rood begint met een wachter op elk stuk muur
 
   return {
-    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook,
+    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, laatOpmarsLos, opmarsStand,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),

@@ -40,7 +40,26 @@ const TAKEN = [
 const LOF = ['Well done, Sire.', 'Good work.', 'Splendid. The people see their king at work.', 'That will do nicely.', 'Very good.'];
 const AVOND = 20;              // seconden schemering voor de nacht
 const NACHT_DUUR = 240;        // vier minuten nacht, dan de scène
-const OVERMACHT = 80;          // zoveel vijanden komen er ineens: je hebt geen kans (naar Karel)
+const OVERMACHT = 100;         // zoveel vijanden komen er: je hebt geen kans (naar Karel)
+const WACHT_MAX = 150;         // zo lang wacht het leger buiten de poort, ook als de speler de les niet afmaakt (seconden)
+// Het leger van Ottger: veel soorten, ook belegeringsmachines
+const LEGER_OTTGER = { ridder: 27, boogschutter: 18, bijlridder: 10, kruisboog: 8, zwaardvechter: 8, banierdrager: 3, heler: 3, sluipmoordenaar: 3, vlammenwever: 3, steenwachter: 2, ladder: 6, ram: 4, katapult: 3, toren: 2 };
+
+// De les over je leger besturen, terwijl het leger van rood buiten de muur wacht.
+const NACHT_TAKEN = [
+  { taak: 'Select your archers', gids: { soort: 'kies', groep: 'Archer' },
+    tekst: 'Sire, look east! A whole army. We cannot stop them, but we can hold the walls. Take command: first choose your archers. Open the army with the sword, then pick the Archer group.',
+    keuze: 'boogschutter' },
+  { taak: 'Archers to the gate wall', gids: { soort: 'stuur', plekTekst: 'Archers here' }, doelPlek: [17, -1], opMuur: true,
+    tekst: 'Good. Archers shoot best from a wall. With your archers chosen, tap the glowing piece of wall beside the gate.',
+    stuurSoort: 'boogschutter' },
+  { taak: 'Select your knights', gids: { soort: 'kies', groep: 'Knight' },
+    tekst: 'Now the knights. They fight in the open. Pick the Knight group in the same panel.',
+    keuze: 'ridder' },
+  { taak: 'Knights behind the gate', gids: { soort: 'stuur', plekTekst: 'Knights here' }, doelPlek: [14, 2],
+    tekst: 'When the gate falls, knights must meet them in the passage. Tap the glowing spot just inside the gate.',
+    stuurSoort: 'ridder' },
+];
 
 export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
   let s = lees() || nieuw();
@@ -49,7 +68,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
   let kijk = 0;
 
   function nieuw() {
-    return { fase: 'bouw', taak: 0, tijd: 0, fasetijd: 0, basis: null, golven: 0, gemeld: {}, klaar: false, gestuurd: false };
+    return { fase: 'bouw', taak: 0, tijd: 0, fasetijd: 0, basis: null, golven: 0, gemeld: {}, klaar: false, gestuurd: false, deel: '', nTaak: 0, nKlaar: false, nBegonnen: false };
   }
   function lees() {
     try { return JSON.parse(localStorage.getItem(SLEUTEL) || 'null'); } catch (e) { return null; }
@@ -219,24 +238,105 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     bewaar();
   }
 
-  // De overmacht: veel meer dan jij hebt, binnen en rond je muren.
-  function stuurOvermacht(aantal) {
-    const ridders = Math.ceil(aantal * 0.7);
-    strijd.stuurLeger({ ridder: ridders, boogschutter: aantal - ridders }, true, { rond: kaart.start[0], straal: 9, binnen: 3 });
+  const nachtKlaar = (t) => (t.keuze ? leger.gekozen().some((e) => e.soldaat.sleutel === t.keuze) : bijPlek(t, (e) => e.soldaat.sleutel === t.stuurSoort));
+  // Staat of loopt er een soldaat van de speler naar deze plek? (muur: de bovenkant van het stuk muur)
+  function bijPlek(t, past) {
+    const B = kaart.breedte;
+    const N = B * kaart.hoogte;
+    const p = nachtPlek(t);
+    if (!p) return false;
+    return soldaten().some((e) => {
+      if (isWachterZonderBevel(e) || !past(e)) return false;
+      const doel = e.soldaat && e.soldaat.doel >= 0 ? e.soldaat.doel : -1;
+      if (doel >= 0) {
+        const vak = doel >= N ? doel - N : doel;
+        return Math.hypot((vak % B) - p.x, Math.floor(vak / B) - p.y) <= 3.5;
+      }
+      return Math.hypot(e.x - p.x - 0.5, e.y - p.y - 0.5) <= 3.5 && (!t.opMuur || e.opMuur);
+    });
+  }
+  // Een wachter die nog op zijn vaste post staat, telt niet als bevel van de speler
+  const isWachterZonderBevel = (e) => !(e.soldaat && e.soldaat.doel >= 0) && wachtPosten().some(([x, y]) => Math.hypot(e.x - x - 0.5, e.y - y - 0.5) < 1.3);
+  const nachtPlekken = new Map();   // de gekozen plek per les (blijft gelijk)
+  const nachtPlek = (t) => {
+    if (nachtPlekken.has(t)) return nachtPlekken.get(t);
+    const st = kaart.start[0];
+    const x = st.x + t.doelPlek[0];
+    const y = st.y + t.doelPlek[1];
+    let plek = { x, y };
+    if (!t.opMuur) {
+      plek = null;
+      for (let r = 0; r <= 4 && !plek; r++) for (let dy = -r; dy <= r && !plek; dy++) for (let dx = -r; dx <= r && !plek; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) === r && wegvinder.isVrij(x + dx, y + dy, 0)) plek = { x: x + dx, y: y + dy };
+      }
+    }
+    nachtPlekken.set(t, plek);
+    return plek;
+  };
+
+  // De overmacht: een leger aan de oostrand van de kaart. Het marcheert naar een plek buiten de muren en wacht.
+  function stuurOvermacht() {
+    const st = kaart.start[0];
+    const rand = { x: kaart.breedte - 6, y: st.y };
+    const wacht = { x: st.x + 31, y: st.y, straal: 6 };
+    strijd.stuurLeger({ ...LEGER_OTTGER }, true, { rond: rand, straal: 12, binnen: 0, houd: wacht });
+  }
+
+  function nachtToon() {
+    toonTaak(`Defend: lesson ${s.nTaak + 1} of ${NACHT_TAKEN.length}: ${NACHT_TAKEN[s.nTaak].taak}`);
+  }
+  function nachtRichtGids(kijk) {
+    const t = NACHT_TAKEN[s.nTaak];
+    let plek = null;
+    if (t.doelPlek) plek = nachtPlek(t);
+    gids.richt(plek ? { ...t.gids, plek, heeftKeuze: () => leger.aantalGekozen() > 0 } : t.gids);
+    if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
+  }
+  function nachtIntro() {
+    nachtToon();
+    gids.kaart({ naam: 'Bartholt', tekst: NACHT_TAKEN[s.nTaak].tekst, knop: 'Understood ›' }, () => { s.nBegonnen = true; s.nKlaar = false; nachtRichtGids(true); bewaar(); });
+  }
+  function nachtKlaarKaart() {
+    const laatste = s.nTaak + 1 >= NACHT_TAKEN.length;
+    gids.kaart({ naam: 'Bartholt', tekst: laatste ? 'Well done, Sire. They are at the gate now. Hold your positions!' : 'Good.', knop: laatste ? 'Hold ›' : 'Next ›' }, () => {
+      if (laatste) { openPoort(); return; }
+      s.nTaak++;
+      s.nKlaar = false;
+      s.nBegonnen = false;
+      nachtIntro();
+      bewaar();
+    });
+  }
+  // De poort gaat van binnenuit open en het leger stroomt naar binnen.
+  function openPoort() {
+    if (s.deel === 'storm') return;
+    s.deel = 'storm';
+    s.fasetijd = 0;
+    gids.stop();
+    gids.verbergKaart();
+    toonTaak('Night: hold the keep');
+    wegvinder.zetPoortenOpen(true);
+    kaartGewijzigd(new Set());
+    strijd.laatOpmarsLos();
+    toonMelding('The gate is open! Someone opened it from the inside. The Mourning Banner is pouring in!');
+    bewaar();
   }
 
   function naarNacht() {
     s.fase = 'nacht';
+    s.deel = 'opmars';
+    s.nTaak = 0;
+    s.nKlaar = false;
+    s.nBegonnen = false;
     s.fasetijd = 0;
     s.golven = 1;
     gids.stop();
     gids.verbergKaart();
-    toonTaak('Night: hold the keep');
-    // De poort gaat van binnenuit open.
-    wegvinder.zetPoortenOpen(true);
-    kaartGewijzigd(new Set());
-    stuurOvermacht(OVERMACHT);
-    toonMelding('The gate is open! Someone opened it from the inside. The Mourning Banner is in your courtyard!');
+    stuurOvermacht();
+    toonMelding('Torches on the eastern road! A great army is marching on Aldervale.');
+    // De camera kijkt naar de poort in het oosten, waar ze aankomen
+    if (kijkNaar) kijkNaar(kaart.start[0].x + 22, kaart.start[0].y);
+    nachtIntro();
     bewaar();
   }
 
@@ -266,9 +366,17 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         else richtGids(false);
       } else if (s.fase === 'avond') toonTaak('Evening: the feast is over');
       else if (s.fase === 'nacht') {
-        toonTaak('Night: hold the keep');
-        wegvinder.zetPoortenOpen(true);
-        kaartGewijzigd(new Set());
+        if (s.deel === 'opmars') {
+          // Na het herladen is het leger er niet meer: opnieuw laten marcheren, de les gaat verder
+          if (strijd.opmarsStand().totaal < 10) stuurOvermacht();
+          if (s.nBegonnen && !s.nKlaar) { nachtToon(); nachtRichtGids(false); }
+          else if (s.nKlaar) nachtKlaarKaart();
+          else nachtIntro();
+        } else {
+          toonTaak('Night: hold the keep');
+          wegvinder.zetPoortenOpen(true);
+          kaartGewijzigd(new Set());
+        }
       } else if (s.fase === 'scene') naarScene();
     },
     stap(dt) {
@@ -297,6 +405,17 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         } else if (Math.round(s.tijd) % 10 === 0) bewaar();
       } else if (s.fase === 'avond') {
         if (s.fasetijd >= AVOND) naarNacht();
+      } else if (s.fase === 'nacht' && s.deel === 'opmars') {
+        // De les over je leger; de poort gaat ook open als de speler te lang wacht
+        const t = NACHT_TAKEN[s.nTaak];
+        if (s.nBegonnen && !s.nKlaar && nachtKlaar(t)) {
+          s.nKlaar = true;
+          gids.stop();
+          toonTaak(`Done: ${t.taak}`);
+          bewaar();
+          nachtKlaarKaart();
+        }
+        if (s.fasetijd >= WACHT_MAX) openPoort();
       } else if (s.fase === 'nacht') {
         const st = strijd.stand();
         if (s.fasetijd >= NACHT_DUUR || (st.burchtMax > 0 && st.burcht / st.burchtMax < 0.4)) naarScene();

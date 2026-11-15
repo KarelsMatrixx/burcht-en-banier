@@ -448,3 +448,9 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Bij "Start lesson" verschijnt Bartholt (in een rookwolkje) naast de gouden bouwplek en blijft daar staan; de camera springt erheen. Bij lessen zonder plek (je volk, belasting) staat hij bij de burcht. Het label op de gouden plek heeft zijn portretje.
 - Nieuw effect `rook` (strijd.js, tekenaar.js); `figuranten.leid(plek)` en `laatLos()`.
 - Test: proloog42 (24 punten, Bartholt staat bij het bouwveld).
+
+## 0.58.0: het leger van Ottger marcheert aan
+- In de nacht verschijnt een leger van 100 aan de oostrand: 14 soorten, ook rammen, katapulten, belegeringstorens en ladderdragers. Het marcheert naar een plek buiten de oostelijke poort en wacht daar (`stuurLeger` optie `houd`, `laatOpmarsLos`, `opmarsStand` in strijd.js).
+- Terwijl ze wachten volgt een les in vier stappen: boogschutters kiezen, naar de muur bij de poort sturen, ridders kiezen, achter de poort zetten. Bartholt legt elke stap uit, de gids wijst de knoppen en de gouden plek aan (`NACHT_TAKEN` in proloog.js, nieuwe gidssoorten 'kies' en 'stuur').
+- Na de laatste stap (of na 150 seconden) gaan de poorten open en stroomt het leger naar binnen.
+- Test: proloog43 (22 punten). Andere tests niet opnieuw gedraaid.
