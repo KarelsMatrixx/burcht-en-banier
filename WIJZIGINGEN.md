@@ -508,3 +508,6 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Het verhaalbeeld staat nu 20 seconden in beeld (CONFIG.verhaalbeeldSeconden) met linksonder een draaiend zandlopertje, zodat het lijkt of het level laadt.
 - Kies je een level op de levelkaart, dan komt het beeld ook als je daar al een bewaard spel hebt of in dat level zit. Via Continue (zonder kaart) gaat het spel direct door.
 - Test: tests/beeld59.mjs (10 checks).
+
+## 0.60.1: eerst 10 seconden beleg, dan gaat de poort open
+- Na de nachtles (of na 150 s) valt het leger aan, maar de poorten blijven 10 seconden dicht ("Hold the walls!"). Daarna gaat de poort van binnenuit open. Test proloog43 (27).

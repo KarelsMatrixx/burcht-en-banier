@@ -43,6 +43,7 @@ const AVOND = 20;              // daarna seconden schemering voor de nacht
 const NACHT_DUUR = 240;        // vier minuten nacht, dan de scène
 const OVERMACHT = 100;         // zoveel vijanden komen er: je hebt geen kans (naar Karel)
 const OPMARS_TEMPO = 0.55;     // zo langzaam lopen ze aan (deel van hun gewone snelheid)
+const BELEG = 10;              // zo lang houdt de poort het tijdens de aanval, dan gaat hij van binnenuit open
 const WACHT_MAX = 150;         // zo lang wacht het leger buiten de poort, ook als de speler de les niet afmaakt (seconden)
 // Het leger van Ottger: veel soorten, ook belegeringsmachines
 const LEGER_OTTGER = { ridder: 27, boogschutter: 18, bijlridder: 10, kruisboog: 8, zwaardvechter: 8, banierdrager: 3, heler: 3, sluipmoordenaar: 3, vlammenwever: 3, steenwachter: 2, ladder: 6, ram: 4, katapult: 3, toren: 2 };
@@ -395,16 +396,26 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     });
   }
   // De poort gaat van binnenuit open en het leger stroomt naar binnen.
+  // Het leger valt aan, maar de poort houdt nog stand: ze bestormen de muren (BELEG seconden).
   function openPoort() {
-    if (s.deel === 'storm') return;
-    s.deel = 'storm';
+    if (s.deel === 'storm' || s.deel === 'beleg') return;
+    s.deel = 'beleg';
     s.fasetijd = 0;
     gids.stop();
     gids.verbergKaart();
+    toonTaak('Night: hold the walls');
+    strijd.laatOpmarsLos();
+    toonMelding('They are coming! Hold the walls!');
+    bewaar();
+  }
+  // Dan gaat de poort van binnenuit open en stroomt het leger naar binnen.
+  function poortGaatOpen() {
+    if (s.deel === 'storm') return;
+    s.deel = 'storm';
+    s.fasetijd = 0;
     toonTaak('Night: hold the keep');
     wegvinder.zetPoortenOpen(true);
     kaartGewijzigd(new Set());
-    strijd.laatOpmarsLos();
     toonMelding('The gate is open! Someone opened it from the inside. The Mourning Banner is pouring in!');
     bewaar();
   }
@@ -460,6 +471,9 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
           if (s.nBegonnen && !s.nKlaar) { nachtToon(); nachtRichtGids(false); }
           else if (s.nKlaar) nachtKlaarKaart();
           else nachtIntro();
+        } else if (s.deel === 'beleg') {
+          s.deel = 'storm-wacht';
+          poortGaatOpen();
         } else {
           toonTaak('Night: hold the keep');
           wegvinder.zetPoortenOpen(true);
@@ -495,6 +509,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       } else if (s.fase === 'avond') {
         if (s.fasetijd >= VRIJ && !s.gemeld.avond) begintSchemer();
         if (s.fasetijd >= VRIJ + AVOND) naarNacht();
+      } else if (s.fase === 'nacht' && s.deel === 'beleg') {
+        if (s.fasetijd >= BELEG) poortGaatOpen();
       } else if (s.fase === 'nacht' && s.deel === 'opmars') {
         // De les over je leger; de poort gaat ook open als de speler te lang wacht
         const t = NACHT_TAKEN[s.nTaak];
@@ -541,7 +557,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     zetFase(fase) {
       if (fase === 'avond') naarAvond();
       if (fase === 'nacht') naarNacht();
-      if (fase === 'storm') { naarNacht(); openPoort(); }
+      if (fase === 'storm') { naarNacht(); openPoort(); poortGaatOpen(); }
       if (fase === 'scene') naarScene();
     },
   };
