@@ -135,6 +135,16 @@ function gezicht(ctx, x, y, v, rx = 3.7, ry = 4.1) {
   else if (v.mond === 'lach') { ctx.strokeStyle = '#7a3a30'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.arc(x + 0.2, y + 2.3, 1.2, 0.15, Math.PI - 0.35); ctx.stroke(); }
 }
 
+// Een gewone zachte schaduw, zonder ring.
+function schaduw(ctx, mx, breedte) {
+  const g = ctx.createRadialGradient(mx, 34, 1, mx, 34, breedte);
+  g.addColorStop(0, 'rgba(0,0,0,0.38)');
+  g.addColorStop(0.7, 'rgba(0,0,0,0.2)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(mx, 34, breedte, breedte * 0.36, 0, 0, Math.PI * 2); ctx.fill();
+}
+
 const ROOD = '#c23a2e';
 const arm = (ctx, ax, ay, bx, by, kleur, d = 2.6) => lijn(ctx, ax, ay, bx, by, kleur, d);
 function hals(ctx, x, y, huid) { lichtBlok(ctx, x - 1.4, y + 3.2, 2.8, 2.4, tint(huid, -0.1), 0.15); }
@@ -1088,6 +1098,100 @@ function koning(ctx, houding, beeld, def = {}) {
   }
 }
 
+
+// ---------- Dorpelingen en de hoofdpersonen van de proloog (geen strijder, geen gouden ring bij dorpelingen)
+// def: kleur (tuniek of jurk), rok (true = jurk), haar, huid, muts ('geen', 'muts', 'hoed', 'doek', 'kap', 'cirkel'),
+//      baard (kleur of leeg), stok (true), schaal (kind = kleiner), schort (kleur), band (gordel)
+function burger(ctx, houding, beeld, def = {}) {
+  const huid = def.huid || '#e0bd9a';
+  const tuniek = def.kleur || '#8a6a44';
+  const haar = def.haar || '#5a3d22';
+  const sc = def.schaal || 1;
+  const wip = houding === 'lopen' && beeld % 2 ? -0.7 : 0;
+  const pas = houding === 'lopen' ? [0, 1.5, 0, -1.5][beeld] : 0;
+  const wapper = houding === 'lopen' ? [0, 1, 0, -1][beeld] : 0;
+  const mx = 13;
+  ctx.save();
+  ctx.translate(mx, 34);
+  ctx.scale(sc, sc);
+  ctx.translate(-mx, -34);
+  const lang = !!def.rok;
+  // benen of onderkant van de jurk
+  if (lang) {
+    vlak(ctx, [[mx - 4.4, 24 + wip], [mx + 4.4, 24 + wip], [mx + 6 - wapper * 0.4, 33.4], [mx - 6 - wapper * 0.4, 33.4]], tint(tuniek, -0.1));
+    blok(ctx, mx - 6, 32.4, 12, 1.1, tint(tuniek, -0.35));
+    lijn(ctx, mx + 1.6, 25 + wip, mx + 2.6 - wapper * 0.3, 33, 'rgba(255,255,255,0.14)', 0.8);
+    vlak(ctx, [[mx - 2.8 + pas * 0.3, 33.2], [mx - 0.4 + pas * 0.3, 33.2], [mx - 0.2 + pas * 0.3, 34.2], [mx - 3 + pas * 0.3, 34.2]], '#3b2a1a');
+    vlak(ctx, [[mx + 0.6 - pas * 0.3, 33.2], [mx + 3 - pas * 0.3, 33.2], [mx + 3.2 - pas * 0.3, 34.2], [mx + 0.4 - pas * 0.3, 34.2]], '#3b2a1a');
+  } else {
+    benen(ctx, mx, wip, pas, { top: 27, b: 2.8, sp: 2, been: [def.broek || '#6b5236', tint(def.broek || '#6b5236', 0.1)], laars: '#3b2a1a', laarsH: 2.6 });
+    vlak(ctx, [[mx - 4.4, 25.4 + wip], [mx + 4.4, 25.4 + wip], [mx + 5, 29.4 + wip], [mx - 5, 29.4 + wip]], tint(tuniek, -0.14));
+  }
+  // romp
+  lichtBlok(ctx, mx - 4, 17.4 + wip, 8, lang ? 9.4 : 8.4, tuniek, 0.22);
+  if (def.schort) {
+    vlak(ctx, [[mx - 3, 21 + wip], [mx + 3, 21 + wip], [mx + 3.6, 30 + wip], [mx - 3.6, 30 + wip]], def.schort);
+    lijn(ctx, mx - 3, 21 + wip, mx + 3, 21 + wip, tint(def.schort, -0.25), 0.5);
+  }
+  if (def.band !== false) blok(ctx, mx - 4, 24.4 + wip, 8, 1, def.band || '#4a3220');
+  if (def.kraag) vlak(ctx, [[mx - 3, 17 + wip], [mx + 3, 17 + wip], [mx + 1.6, 19.6 + wip], [mx - 1.6, 19.6 + wip]], def.kraag);
+  // armen
+  const handKleur = huid;
+  arm(ctx, mx - 4.2, 18.6 + wip, mx - 5.2 + wapper * 0.5, 25 + wip, tint(tuniek, -0.12), 2.2);
+  arm(ctx, mx + 4.2, 18.6 + wip, mx + 5.4 - wapper * 0.5, 25 + wip, tint(tuniek, 0.05), 2.2);
+  ovaal(ctx, mx - 5.2 + wapper * 0.5, 25.6 + wip, 1.3, 1.3, handKleur);
+  ovaal(ctx, mx + 5.4 - wapper * 0.5, 25.6 + wip, 1.3, 1.3, handKleur);
+  if (def.stok) {
+    lijn(ctx, mx + 6.4, 34, mx + 6.4, 8 + wip, '#6b4a2b', 1.1);
+    ovaal(ctx, mx + 6.4, 7.6 + wip, 1.4, 1.4, '#d8b94a');
+    ovaal(ctx, mx + 5.4, 25.6 + wip, 1.4, 1.4, handKleur);
+  }
+  if (def.korf) {
+    ovaal(ctx, mx - 6.6, 26 + wip, 3, 2.2, '#9a7a3a');
+    ovaal(ctx, mx - 6.6, 24.8 + wip, 3, 0.9, '#d0a64a');
+  }
+  // hoofd
+  const hx = mx + 0.2;
+  const hy = 12 + wip;
+  hals(ctx, hx, hy, huid);
+  gezicht(ctx, hx, hy, { huid, brauw: def.brauw || 'recht', mond: def.mond || 'lach', brauwKleur: tint(haar, -0.2) }, 3.5, 3.9);
+  if (def.baard) {
+    vlak(ctx, [[hx - 3.2, hy + 1.4], [hx + 3.2, hy + 1.4], [hx + 2.4, hy + 6.6], [hx, hy + 7.6], [hx - 2.4, hy + 6.6]], def.baard);
+    ovaal(ctx, hx, hy + 2.8, 1.5, 0.5, tint(def.baard, 0.18));
+  }
+  const muts = def.muts || 'geen';
+  if (muts === 'geen') {
+    ovaal(ctx, hx - 0.1, hy - 3, 3.9, 2.1, haar);
+    ovaal(ctx, hx - 3.2, hy - 0.4, 1.1, 2.2, tint(haar, -0.15));
+    ovaal(ctx, hx + 3.3, hy - 0.6, 1, 2, tint(haar, 0.1));
+    if (def.vlecht) { lijn(ctx, hx - 3.4, hy + 0.6, hx - 4.2, hy + 7 + wapper * 0.2, haar, 1.5); ovaal(ctx, hx - 4.3, hy + 7.4, 0.8, 0.8, '#c23a2e'); }
+  } else if (muts === 'muts') {
+    ovaal(ctx, hx, hy - 3, 4.1, 2.8, def.mutsKleur || '#8a5a3a');
+    blok(ctx, hx - 4, hy - 1.6, 8, 1.1, tint(def.mutsKleur || '#8a5a3a', -0.25));
+  } else if (muts === 'hoed') {
+    ovaal(ctx, hx, hy - 2, 6.4, 1.5, def.mutsKleur || '#c9a85a');
+    ovaal(ctx, hx, hy - 3.6, 3.2, 2.2, def.mutsKleur || '#c9a85a');
+    ovaal(ctx, hx - 0.8, hy - 4.2, 1.2, 0.6, 'rgba(255,255,255,0.3)');
+  } else if (muts === 'doek') {
+    ovaal(ctx, hx, hy - 2.4, 4.2, 2.6, def.mutsKleur || '#f0ece0');
+    vlak(ctx, [[hx - 4, hy - 1], [hx + 4, hy - 1], [hx + 4.4, hy + 2.8], [hx - 4.4, hy + 2.8]], 'rgba(0,0,0,0)');
+    ovaal(ctx, hx - 3.8, hy + 0.6, 1, 2.6, def.mutsKleur || '#f0ece0');
+    ovaal(ctx, hx + 3.8, hy + 0.6, 1, 2.6, def.mutsKleur || '#f0ece0');
+  } else if (muts === 'kap') {
+    vlak(ctx, [[hx - 4.4, hy + 1], [hx - 3, hy - 3.6], [hx, hy - 4.8], [hx + 3, hy - 3.6], [hx + 4.4, hy + 1], [hx + 3.8, hy + 4], [hx - 3.8, hy + 4]], def.mutsKleur || '#4a3a2a');
+    ovaal(ctx, hx, hy + 0.4, 2.9, 3.2, huid);
+    ovaal(ctx, hx - 1.4, hy - 0.2, 0.5, 0.5, '#2a1b12');
+    ovaal(ctx, hx + 1.4, hy - 0.2, 0.5, 0.5, '#2a1b12');
+    lijn(ctx, hx - 1, hy + 2.2, hx + 1, hy + 2.2, '#7a3a30', 0.5);
+  } else if (muts === 'cirkel') {
+    ovaal(ctx, hx - 0.1, hy - 3, 3.9, 2.1, haar);
+    ctx.strokeStyle = '#e3c04a'; ctx.lineWidth = 0.9;
+    ctx.beginPath(); ctx.ellipse(hx, hy - 3.2, 3.6, 1.1, 0, 0, Math.PI * 2); ctx.stroke();
+    ovaal(ctx, hx, hy - 4.3, 0.7, 0.7, '#e3c04a');
+  }
+  ctx.restore();
+}
+
 export const HEREN = {
   reinout: { teken: reinout, brede: 11 },
   mechteld: { teken: mechteld, brede: 9.6 },
@@ -1100,6 +1204,9 @@ export const HEREN = {
   valkenier: { teken: valkenier, brede: 10.2 },
   ottger: { teken: ottger, brede: 10.5 },
   koning: { teken: koning, brede: 11 },
+  // Wie rondloopt in het dorp (proloog). Alleen de hoofdpersonen krijgen de gouden ring.
+  burger: { teken: burger, brede: 8, zonderRing: true },
+  hoofdpersoon: { teken: burger, brede: 9 },
 };
 
 export const heeftFiguur = (sleutel) => !!sleutel && Object.prototype.hasOwnProperty.call(HEREN, sleutel);
@@ -1138,7 +1245,8 @@ export function maakHeer(sleutel, houding, beeld, spiegel = false, def = {}) {
   u.translate(B / 2, AY);
   u.scale(1.3, 1.3);
   u.translate(-13, -34);
-  grond(u, 13, heer.brede);
+  if (heer.zonderRing) schaduw(u, 13, heer.brede);
+  else grond(u, 13, heer.brede);
   u.restore();
   const r = 1.15;
   for (let i = 0; i < 8; i++) {

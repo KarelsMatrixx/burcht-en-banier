@@ -2411,3 +2411,73 @@ export function tekenCel(naam, def) {
   blok(ctx, cx + 4, cy + hh + 0.2, 4, 0.8, '#3a2a1c');
   return { beeld: doek, b, h, ax: cx, ay: h - 1 };
 }
+
+// Een dorpskerk (proloog): een stenen schip met een leien dak, een klokkentoren met een
+// spits en een kruis, een boogdeur en een gebrandschilderd raam. Zo hoog als een toren,
+// zodat je hem van ver ziet staan.
+export function tekenKerk(naam, def) {
+  const b = TB + 14;
+  const h = TH + 74;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const hw = 26;
+  const hh = 13;
+  const wh = 24;
+  const steen = '#b7b0a2';
+  const dak = '#6a4a40';
+  const L = [cx - hw, cy];
+  const F = [cx, cy + hh];
+  const R = [cx + hw, cy];
+  const K = [cx, cy - hh];
+  const op = (p, v) => [p[0], p[1] - v];
+  ovaal(ctx, cx + 2, cy + 4, hw + 10, hh + 5, 'rgba(0,0,0,0.25)');
+  // Schip: links in de schaduw, rechts in het licht
+  vlak(ctx, [L, F, op(F, wh), op(L, wh)], tint(steen, -0.16));
+  vlak(ctx, [F, R, op(R, wh), op(F, wh)], steen);
+  for (let rij = 1; rij < 4; rij++) {
+    const v = rij * 6;
+    lijn(ctx, F[0], F[1] - v, R[0], R[1] - v, 'rgba(0,0,0,0.16)', 0.5);
+    lijn(ctx, L[0], L[1] - v, F[0], F[1] - v, 'rgba(0,0,0,0.2)', 0.5);
+  }
+  // Leien dak met een nok (twee schuine vlakken)
+  const nok = 12;
+  const Lm = [(L[0] + K[0]) / 2, (L[1] + K[1]) / 2];
+  const Fm = [(F[0] + R[0]) / 2, (F[1] + R[1]) / 2];
+  vlak(ctx, [op(L, wh), op(F, wh), op(Fm, wh + nok), op(Lm, wh + nok)], tint(dak, -0.18));
+  vlak(ctx, [op(F, wh), op(R, wh), op(Fm, wh + nok), op(F, wh)], dak);
+  vlak(ctx, [op(F, wh), op(R, wh), op(K, wh), op(Lm, wh + nok), op(Fm, wh + nok)], dak);
+  lijn(ctx, op(Lm, wh + nok)[0], op(Lm, wh + nok)[1], op(Fm, wh + nok)[0], op(Fm, wh + nok)[1], tint(dak, 0.3), 1.2);
+  // Klokkentoren op de rechterhoek
+  const tw = 8;
+  const th = 52;
+  const Tc = [cx + hw * 0.36, cy - hh * 0.1];
+  const tl = [Tc[0] - tw, Tc[1]];
+  const tf = [Tc[0], Tc[1] + tw * 0.5];
+  const tr = [Tc[0] + tw, Tc[1]];
+  const tk = [Tc[0], Tc[1] - tw * 0.5];
+  vlak(ctx, [tl, tf, op(tf, th), op(tl, th)], tint(steen, -0.12));
+  vlak(ctx, [tf, tr, op(tr, th), op(tf, th)], tint(steen, 0.06));
+  for (let rij = 1; rij < 8; rij++) lijn(ctx, tf[0], tf[1] - rij * 6.2, tr[0], tr[1] - rij * 6.2, 'rgba(0,0,0,0.14)', 0.45);
+  // Galmgat met de klok
+  vlak(ctx, [[tf[0] + 1.6, tf[1] - th + 11], [tr[0] - 1.6, tr[1] - th + 11 + 0.4], [tr[0] - 1.6, tr[1] - th + 2.6], [tf[0] + 1.6, tf[1] - th + 2.2]], '#2a2118');
+  ovaal(ctx, tf[0] + 4.4, tf[1] - th + 8.2, 1.6, 2, '#d0a64a');
+  // Spits
+  vlak(ctx, [op(tl, th), op(tf, th), [Tc[0], tf[1] - th - 24]], tint(dak, -0.1));
+  vlak(ctx, [op(tf, th), op(tr, th), [Tc[0], tf[1] - th - 24]], tint(dak, 0.12));
+  lijn(ctx, Tc[0], tf[1] - th - 24, Tc[0], tf[1] - th - 32, '#e3c04a', 1.1);
+  lijn(ctx, Tc[0] - 2.4, tf[1] - th - 28, Tc[0] + 2.4, tf[1] - th - 28, '#e3c04a', 1.1);
+  // Boogdeur en raam op de rechtervoorkant van het schip
+  const P = (u, v) => [cx + hw * u, cy + hh - hh * u - v];
+  const deur = [P(0.12, 0), P(0.3, 0), P(0.3, 11), P(0.12, 11)];
+  vlak(ctx, deur, '#4f3520');
+  ovaal(ctx, (P(0.12, 11)[0] + P(0.3, 11)[0]) / 2, (P(0.12, 11)[1] + P(0.3, 11)[1]) / 2, 4.7, 2.2, '#4f3520');
+  lijn(ctx, P(0.21, 0)[0], P(0.21, 0)[1], P(0.21, 12.6)[0], P(0.21, 12.6)[1], '#2a1b0f', 0.7);
+  for (const u of [0.5, 0.74]) {
+    vlak(ctx, [P(u, 8), P(u + 0.1, 8), P(u + 0.1, 17), P(u, 17)], '#3d6fa8');
+    ovaal(ctx, (P(u, 17)[0] + P(u + 0.1, 17)[0]) / 2, (P(u, 17)[1] + P(u + 0.1, 17)[1]) / 2, 2.6, 1.4, '#3d6fa8');
+    vlak(ctx, [P(u + 0.03, 12), P(u + 0.07, 12), P(u + 0.07, 15), P(u + 0.03, 15)], '#e3c04a');
+    lijn(ctx, P(u + 0.05, 8)[0], P(u + 0.05, 8)[1], P(u + 0.05, 18)[0], P(u + 0.05, 18)[1], '#2a2a30', 0.5);
+  }
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}

@@ -385,3 +385,10 @@
 - data/campagne.json: per level de velden "beeld" (beelden/verhaal/levelNN.webp) en "verhaal" (tekst). Ontbreekt het bestand, dan staat de tekst op een donkere achtergrond.
 - Beelden nog niet geleverd: toevoegen aan KERN in sw.js zodra ze in beelden/verhaal/ staan (anders mislukt de installatie van de offline cache bij een ontbrekend bestand).
 - ui.js: toonVerhaalbeeld(). main.js: vlag beeldOpen. index.html en css/stijl.css: #verhaalbeeld.
+
+## 0.52.0: tutorial stap voor stap, levendig dorp, 80 vijanden
+- Tutorial (nieuw: js/gids.js): geen klok meer. Elke les begint met een kaartje van Bartholt met een knop ("Let's begin", "Start lesson"), de speler bepaalt het tempo. Daarna wijst een pulserende ring de volgende knop aan (hamer, groep, bouwknop, Place, zwaard, soldaat) met één korte zin erbij. Een les is pas af als de speler het echt doet; dan volgt een kaartje met "Next lesson". Na 20 seconden zonder tik klopt de ring harder. De oude timers (6 s, 9 s, 15 minuten) zijn weg. Teksten zijn korter. Alle Engelse teksten zijn door Claude geschreven: nalezen.
+- Levendige kaart (kaart.js `FEEST`, `FEEST_GROND`, `FEEST_DORPEN`): een groot dorp ten oosten met kerk (nieuw: OBJECT.KERK = 32, `tekenKerk`), marktplein met put, tenten en vlaggen, en zes gehuchten met platgetreden pleintjes, plus wegen. Het gebied van 14 tegels rond je burcht blijft vrij om te bouwen.
+- Rondlopende figuren (nieuw: js/figuranten.js): ongeveer 60 dorpelingen, kinderen en een priester lopen bij hun dorp rond; Wessel en Bartholt wandelen bij de burcht. Nieuwe eenheidsplaatjes (SOORT 23 tot 30, heren.js `burger`). In de avond verdwijnen ze. Karel zelf (je koning) loopt niet rond.
+- Nacht van de proloog: één klap van 80 vijanden (70% ridders, 30% boogschutters) in plaats van een kleine golf met versterking. Je hebt geen kans, de scène volgt na 4 minuten of onder 40% burcht. strijd.js: maximum aantal vijanden in de proloog 90 (anders 60).
+- Tests: tests/proloog40.mjs (16 punten), tests/proloog35.mjs aangepast (41 punten).

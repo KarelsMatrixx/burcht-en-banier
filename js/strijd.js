@@ -28,6 +28,7 @@ const VIJAND = 1;
 const DENK = 5;             // om de zoveel rekenstappen kiest een krijger opnieuw wat hij doet
 const MAX_EFFECTEN = 80;    // pijlen en gevallenen die tegelijk in beeld kunnen zijn
 const MAX_VIJANDEN = 60;
+const MAX_VIJANDEN_PROLOOG = 90;   // de overmacht van de proloog: 80 ineens (naar Karel)
 const WRAAK_VER = 12;       // zo ver loopt iemand achter een schutter aan die hem raakte
 
 const ROOD = 2;              // eigenaar van wat de rode heer heeft gebouwd
@@ -1538,6 +1539,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // aanval (golf + 1) of is het een uitval van de rode heer?
   // rond en straal: waar ze verschijnen (standaard bij de burcht van rood).
   // binnen: niet dichter dan zoveel tegels bij rond (proloog: niet op de burcht zelf).
+  const maxVijanden = () => (R.proloog ? MAX_VIJANDEN_PROLOOG : MAX_VIJANDEN);
   function stuurLeger(inhoud, telAls = true, { rond = kaart.start[VIJAND], straal = 8, binnen = 0 } = {}) {
     const bezet = new Set(vijanden.map(vakVan));
     const nieuw = [];
@@ -1545,7 +1547,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const eigenStart = rond !== kaart.start[VIJAND];
     for (const [sleutel, hoeveel] of Object.entries(inhoud)) {
       if (!soorten[sleutel]) continue;
-      for (let i = 0; i < hoeveel && vijanden.length < MAX_VIJANDEN; i++) {
+      for (let i = 0; i < hoeveel && vijanden.length < maxVijanden(); i++) {
         let vak = -1;
         for (let poging = 0; poging < 6; poging++) {
           vak = wegvinder.willekeurigVak(toeval, rond, straal, VIJAND);
@@ -1827,7 +1829,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     if (Array.isArray(s.vijanden)) {
       for (const regel of s.vijanden) {
-        if (vijanden.length >= MAX_VIJANDEN) break;
+        if (vijanden.length >= maxVijanden()) break;
         if (!Array.isArray(regel)) continue;
         const [sleutel, x, y, leven] = regel;
         if (!Object.prototype.hasOwnProperty.call(soorten, sleutel)) continue;

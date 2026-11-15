@@ -56,7 +56,7 @@ for (const e of res) {
   check(`${e.k} anker`, e.anker);
   check(`${e.k} geen leeg beeld`, e.leeg === 0, e.leeg);
   check(`${e.k} niets afgesneden`, e.afgesneden === 0, e.afgesneden);
-  check(`${e.k} teamkleur (${e.team})`, e.team >= MIN, e.team);
+  if (!/^eenheid\.(bartholt|wessel|priester|dorp\d|kind)$/.test(e.k)) check(`${e.k} teamkleur (${e.team})`, e.team >= MIN, e.team);   // dorpelingen en hoofdpersonen hebben geen teamkleur
   check(`${e.k} spiegel`, e.spiegel < 0.02, e.spiegel);
   if (!['ram', 'katapult', 'belegeringstoren'].includes(e.vorm)) check(`${e.k} loopt (frames verschillen)`, e.loop > 0.01, e.loop);   // machines: alleen de wielen draaien
 }

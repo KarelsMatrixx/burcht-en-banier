@@ -17,6 +17,7 @@ export const OBJECT = {
   LOODS: 29,     // bouwloods van rood (level 6): een doel dat je moet slopen
   CEL: 30,       // gevangenencel van Broeder Ludolf (level 5), decor
   CEL_OPEN: 31,  // dezelfde cel na de bevrijding
+  KERK: 32,      // dorpskerk (proloog), decor
 };
 
 // Namen waarmee de tekenlaag het juiste plaatje opzoekt in data/assets.json.
@@ -28,13 +29,13 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
 const OBJECT_TEKST = [
   '', 'forest', 'rock', 'copper ore', 'wall', 'tower', 'gate', 'keep', 'keep', 'keep', 'watchtower',
-  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mage tower', 'festive flags', 'siege shed',
+  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mage tower', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.
@@ -120,7 +121,54 @@ const FEEST = [
   // Bij het legerkamp
   [3, -9, O.VLAGGEN], [-3, -9, O.TENT],
 ];
+// Meer dorpen op de proloogkaart (naar Karel: veel levendigheid). Allemaal ruim buiten het
+// bouwgebied van 14 tegels rond jouw burcht, zodat daar plek blijft om te bouwen.
+// Een gehucht heeft een put in het midden, huizen en hutten eromheen, hooibergen en vaten.
+const GEHUCHT = [
+  [0, 0, O.PUT], [-3, -2, O.HUIS], [3, -2, O.HUIS], [-3, 2, O.HUIS], [3, 2, O.HUIS], [0, -4, O.HUIS],
+  [-5, 0, O.HUT], [5, 0, O.HUT], [1, 4, O.HUT], [-2, 5, O.HOOIBERG], [6, 3, O.HOOIBERG], [2, 1, O.VATEN], [0, 2, O.VLAGGEN],
+];
+const GEHUCHT_SPIEGEL = GEHUCHT.map(([dx, dy, soort]) => [-dx, dy, soort === O.HUIS ? O.HUT : soort === O.HUT ? O.HUIS : soort]);
+const op = (mx, my, lijst) => lijst.map(([dx, dy, soort]) => [mx + dx, my + dy, soort]);
+// Het grote dorp met kerk en marktplein, ten oosten van het kasteel
+const DORP_OOST = [
+  [0, -5, O.KERK],
+  [-2, -2, O.TENT], [2, -2, O.TENT], [-2, 2, O.TENT], [2, 2, O.TENT], [0, 0, O.PUT],
+  [-3, 0, O.VLAGGEN], [3, 0, O.VLAGGEN], [0, -2, O.VLAGGEN], [0, 2, O.VLAGGEN],
+  [-4, -6, O.HUIS], [-6, -3, O.HUIS], [4, -7, O.HUIS], [6, -5, O.HUT], [7, -2, O.HUIS], [7, 3, O.HUIS], [5, 5, O.HUT],
+  [-5, 5, O.HUIS], [-7, 2, O.HUT], [-3, 7, O.HUIS], [2, 7, O.HUIS], [8, 0, O.HOOIBERG], [-8, -1, O.VATEN], [4, -3, O.VATEN],
+  [-8, 5, O.HUT], [9, 5, O.HUIS], [9, -5, O.HUT], [-1, 9, O.HOOIBERG],
+];
+FEEST.push(
+  ...op(27, 0, DORP_OOST),
+  ...op(6, -22, GEHUCHT),
+  ...op(3, 21, GEHUCHT_SPIEGEL),
+  ...op(-21, -1, GEHUCHT),
+  ...op(28, -22, GEHUCHT_SPIEGEL),
+  ...op(31, 19, GEHUCHT),
+  ...op(-18, 19, GEHUCHT_SPIEGEL),
+  ...op(15, -22, GEHUCHT.slice(0, 9)),
+  ...op(16, 22, GEHUCHT_SPIEGEL.slice(0, 9)),
+);
+// Waar de dorpelingen wonen en lopen (voor js/figuranten.js): midden van elk dorp, ten opzichte van jouw burcht.
+export const FEEST_DORPEN = [
+  { dx: 27, dy: 0, aantal: 12, priester: true },
+  { dx: 6, dy: -22, aantal: 5 }, { dx: 3, dy: 21, aantal: 5 }, { dx: -21, dy: -1, aantal: 5 },
+  { dx: 28, dy: -22, aantal: 5 }, { dx: 31, dy: 19, aantal: 5 }, { dx: -18, dy: 19, aantal: 5 },
+  { dx: 15, dy: -22, aantal: 3 }, { dx: 16, dy: 22, aantal: 3 },
+  { dx: 15, dy: 0, aantal: 5 }, { dx: -9, dy: 0, aantal: 3 }, { dx: -1, dy: 9, aantal: 4 },
+];
 const FEEST_GROND = [];
+// Het marktplein van het grote dorp en de pleintjes van de gehuchten: platgetreden aarde
+for (let dy = -2; dy <= 2; dy++) for (let dx = 24; dx <= 30; dx++) FEEST_GROND.push([dx, dy]);
+for (const [mx, my] of [[6, -22], [3, 21], [-21, -1], [28, -22], [31, 19], [-18, 19]]) {
+  for (let dy = -1; dy <= 3; dy++) for (let dx = -2; dx <= 2; dx++) FEEST_GROND.push([mx + dx, my + dy]);
+}
+// Wegen van het kasteel naar de dorpen
+for (let dx = 14; dx <= 24; dx++) FEEST_GROND.push([dx, 0]);
+for (let dy = 6; dy <= 20; dy++) FEEST_GROND.push([Math.round(dy / 8), dy]);
+for (let dy = -7; dy >= -21; dy--) FEEST_GROND.push([Math.round(-dy / 3.6), dy]);
+for (let dx = -6; dx >= -20; dx--) FEEST_GROND.push([dx, 0]);
 for (let dy = -2; dy <= 2; dy++) for (let dx = 13; dx <= 17; dx++) FEEST_GROND.push([dx, dy]);
 for (let dy = 8; dy <= 11; dy++) for (let dx = -5; dx <= 2; dx++) if ((dx + dy) % 3 === 0) FEEST_GROND.push([dx, dy]);
 for (let dx = 6; dx <= 13; dx++) FEEST_GROND.push([dx, 0]);
@@ -571,8 +619,11 @@ export function maakKaart(recept) {
     }
     // Platgetreden grond rond het feestplein en het tweede gehucht
     for (const [dx, dy] of FEEST_GROND) {
-      const i = (eigen.y + dy) * breedte + eigen.x + dx;
-      if (i >= 0 && i < aantal && grond[i] !== GROND.WATER) grond[i] = GROND.AARDE;
+      const gx = eigen.x + dx;
+      const gy = eigen.y + dy;
+      if (gx < 1 || gy < 1 || gx >= breedte - 1 || gy >= hoogte - 1) continue;
+      const i = gy * breedte + gx;
+      if (grond[i] !== GROND.WATER) grond[i] = GROND.AARDE;
     }
   }
 

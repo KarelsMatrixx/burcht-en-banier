@@ -22,6 +22,8 @@ import { maakUi } from './ui.js';
 import { metLidwoord } from './taal.js';
 import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
+import { maakGids } from './gids.js';
+import { maakFiguranten } from './figuranten.js';
 import { maakDoel } from './doel.js';
 import { maakLoodsen } from './loodsen.js';
 import { maakGevangene } from './gevangene.js';
@@ -771,9 +773,11 @@ async function start() {
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
   // De proloog: taken van Bartholt, de nacht en de scène.
+  const gids = missie && missie.proloog ? maakGids() : null;
+  const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder }) : null;
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, leger, strijd, wegvinder, eenheden,
-    koningSoort: 'koning',
+    koningSoort: 'koning', gids,
     toonVerhaal: (b) => ui.toonVerhaal(b),
     toonTaak: (t) => ui.toonTaak(t),
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
@@ -1065,7 +1069,7 @@ async function start() {
       leger.stap();
       strijd.stap();
       verhaal.stap(dt, verhaalStand);
-      if (proloog) proloog.stap(dt);
+      if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase() === 'bouw'); }
       if (doel) doel.stap(dt);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),
@@ -1106,7 +1110,7 @@ async function start() {
   });
 
   // Handig bij het zoeken naar fouten.
-  window.spel = { veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel };
+  window.spel = { veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na
