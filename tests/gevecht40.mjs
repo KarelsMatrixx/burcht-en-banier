@@ -19,7 +19,7 @@ await p.reload(); await wacht(); await p.waitForTimeout(300);
 await p.tap('#missie-begin'); await p.waitForTimeout(1500);
 await p.tap('#gids-kaart button'); await p.waitForTimeout(500);
 const voor = await p.evaluate(() => ({ lopers: window.spel.economie.aantalLopers(), fig: window.spel.figuranten.aantal() }));
-await p.evaluate(() => window.spel.proloog.zetFase('nacht'));
+await p.evaluate(() => window.spel.proloog.zetFase('storm'));
 // Camera naar de burcht, om het te zien
 await p.waitForTimeout(5000);
 await p.screenshot({ path: '/home/claude/gevecht-a.png' });
