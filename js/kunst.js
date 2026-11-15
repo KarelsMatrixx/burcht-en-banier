@@ -2322,3 +2322,92 @@ export function tekenVlaggen(naam, def) {
   ovaal(ctx, rechts[0], rechts[1] - 45, 1.6, 1.6, '#e2b53c');
   return { beeld: doek, b, h, ax: cx, ay: h };
 }
+
+// Een gevangenencel (level 5, Broeder Ludolf): een klein stenen hok met een raam met ijzeren
+// tralies. Achter de tralies zie je een monnik in een bruine pij met een kaal kruintje en twee
+// handen om de tralies. Ernaast stro, een emmer en een ketting aan de muur. def.open = de cel
+// na de bevrijding: tralies weg, deur open, stro en ketting blijven liggen.
+export function tekenCel(naam, def) {
+  const b = TB + 2;
+  const h = TH + 34;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const hw = 19;
+  const hh = 9.5;
+  const wh = 24;                       // hoogte van de muren
+  const steen = '#9b968a';
+  const ijzer = '#2a2a30';
+  const L = [cx - hw, cy];
+  const F = [cx, cy + hh];
+  const R = [cx + hw, cy];
+  const K = [cx, cy - hh];
+  const op = (p, v) => [p[0], p[1] - v];
+  ovaal(ctx, cx + 2, cy + 3, hw + 9, hh + 4, 'rgba(0,0,0,0.25)');
+  // Stro voor de cel
+  ovaal(ctx, cx + hw * 0.62, cy + hh * 0.55 + 3, 8, 3, '#c9a94e');
+  for (let i = 0; i < 6; i++) lijn(ctx, cx + hw * 0.5 + i * 2.2, cy + hh * 0.5 + 4, cx + hw * 0.5 + i * 2.2 + 2, cy + hh * 0.5 + 1.5 + (i % 2), '#e0c670', 0.7);
+  // Muren: links in de schaduw, rechts in het licht
+  vlak(ctx, [L, F, op(F, wh), op(L, wh)], tint(steen, -0.14));
+  vlak(ctx, [F, R, op(R, wh), op(F, wh)], steen);
+  // Stenen in de muur
+  for (let rij = 1; rij < 4; rij++) {
+    const v = rij * 6;
+    lijn(ctx, F[0], F[1] - v, R[0], R[1] - v, 'rgba(0,0,0,0.18)', 0.5);
+    lijn(ctx, L[0], L[1] - v, F[0], F[1] - v, 'rgba(0,0,0,0.22)', 0.5);
+  }
+  // Plat dak met een lage rand
+  vlak(ctx, [op(L, wh), op(F, wh), op(R, wh), op(K, wh)], tint(steen, 0.1));
+  vlak(ctx, [op(L, wh + 2), op(F, wh + 2), op(F, wh), op(L, wh)], tint(steen, -0.05));
+  vlak(ctx, [op(F, wh + 2), op(R, wh + 2), op(R, wh), op(F, wh)], tint(steen, 0.06));
+  // Het raam op de rechterkant: u loopt van de voorhoek (0) naar de rechterhoek (1)
+  const P = (u, v) => [cx + hw * u, cy + hh - hh * u - v];
+  const raam = [P(0.2, 7), P(0.8, 7), P(0.8, 21), P(0.2, 21)];
+  vlak(ctx, raam, '#33281d');
+  if (!def.open) {
+    // De monnik: pij, hoofd met kaal kruintje en een krans haar, handen om de tralies
+    const mx = P(0.5, 0)[0];
+    const my = P(0.5, 0)[1] + 4;
+    ctx.save();
+    ctx.beginPath();
+    raam.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    ctx.closePath();
+    ctx.clip();
+    vlak(ctx, raam, '#4a3a2a');   // het lichte stuk muur achter hem
+    vlak(ctx, [[mx - 7, my - 9], [mx + 7, my - 9], [mx + 6, my - 13.5], [mx + 2, my - 15.5], [mx - 2, my - 15.5], [mx - 6, my - 13.5]], '#6b4a2e');
+    vlak(ctx, [[mx - 1.8, my - 15.5], [mx + 1.8, my - 15.5], [mx + 0, my - 12.8]], '#cdb594');   // de kap om de hals
+    ovaal(ctx, mx, my - 18.4, 3.4, 3.7, '#e3bf98');
+    ovaal(ctx, mx - 2.9, my - 18, 1, 2.2, '#6a4a2a');   // haarkrans links
+    ovaal(ctx, mx + 2.9, my - 18, 1, 2.2, '#6a4a2a');   // en rechts
+    ovaal(ctx, mx, my - 20.4, 2.3, 1, '#6a4a2a');       // achter het kruintje
+    blok(ctx, mx - 1.6, my - 18.8, 0.9, 0.9, '#2a1d14');   // ogen
+    blok(ctx, mx + 0.8, my - 18.8, 0.9, 0.9, '#2a1d14');
+    lijn(ctx, mx - 1.2, my - 16.6, mx + 1.2, my - 16.3, '#8a5a44', 0.6);   // een stille mond
+    ovaal(ctx, mx - 4.6, my - 11.6, 1.5, 1.3, '#e3bf98');
+    ovaal(ctx, mx + 4.6, my - 11.6, 1.5, 1.3, '#e3bf98');
+    ctx.restore();
+    // Tralies er voorbij
+    for (const u of [0.29, 0.395, 0.5, 0.605, 0.71]) lijn(ctx, P(u, 7)[0], P(u, 7)[1], P(u, 21)[0], P(u, 21)[1], ijzer, 0.9);
+    lijn(ctx, P(0.2, 16)[0], P(0.2, 16)[1], P(0.8, 16)[0], P(0.8, 16)[1], ijzer, 0.8);
+  }
+  // Raamkozijn
+  for (let i = 0; i < 4; i++) lijn(ctx, raam[i][0], raam[i][1], raam[(i + 1) % 4][0], raam[(i + 1) % 4][1], tint(steen, -0.3), 1.1);
+  // Een deur op de linkerkant, met ijzeren banden en een slot (open na de bevrijding)
+  const D = (u, v) => [cx - hw + hw * u, cy + hh * u - v];
+  const deur = [D(0.3, 0), D(0.68, 0), D(0.68, 15), D(0.3, 15)];
+  if (def.open) {
+    vlak(ctx, deur, '#120e0a');
+    vlak(ctx, [D(0.3, 0), D(0.12, -1.5), D(0.12, 13.5), D(0.3, 15)], '#5a3d22');   // de openstaande deur
+  } else {
+    vlak(ctx, deur, '#4f3520');
+    lijn(ctx, D(0.3, 4)[0], D(0.3, 4)[1], D(0.68, 4)[0], D(0.68, 4)[1], ijzer, 0.9);
+    lijn(ctx, D(0.3, 11)[0], D(0.3, 11)[1], D(0.68, 11)[0], D(0.68, 11)[1], ijzer, 0.9);
+    ovaal(ctx, D(0.6, 7.5)[0], D(0.6, 7.5)[1], 1.2, 1.4, '#d0b25a');   // het slot
+  }
+  // Een ketting aan de muur en een emmer
+  const kt = D(0.85, 14);
+  for (let i = 0; i < 4; i++) ovaal(ctx, kt[0], kt[1] + i * 2.2, 0.8, 1.1, '#6a6a72');
+  blok(ctx, cx + 4, cy + hh + 0.5, 4, 3.2, '#6f5a3e');
+  blok(ctx, cx + 4, cy + hh + 0.2, 4, 0.8, '#3a2a1c');
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}

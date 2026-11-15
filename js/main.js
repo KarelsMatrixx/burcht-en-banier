@@ -24,6 +24,7 @@ import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
 import { maakDoel } from './doel.js';
 import { maakLoodsen } from './loodsen.js';
+import { maakGevangene } from './gevangene.js';
 import { SOORT } from './eenheden.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, eerstWinnen, ontgrendeld } from './modus.js';
 
@@ -65,6 +66,7 @@ async function start() {
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
   const tekenaar = maakTekenaar(canvas, kaart, camera, assets);
+  const gevangene = maakGevangene({ kaart, missie });   // level 5: Ludolf in zijn cel
   const wegvinder = maakWegvinder(kaart);
   // Hoe hoog je staat boven op een muur, een toren of een poort.
   const hoogtes = OBJECT_ASSET.map((naam) => (naam ? assets.haal(naam).hoogte || 0 : 0));
@@ -181,6 +183,7 @@ async function start() {
   } else {
     strijd.maakRoodKoning();
   }
+  if (gevangene && strijd.uitslag() === 'gewonnen') gevangene.bevrijd();   // de cel staat open als je het level al won
   // Jouw koning: hij staat altijd bij de burcht als hij er nog niet is.
   if (!strijd.uitslag()) leger.zetKoning((kaart.start[0].y + 2) * kaart.breedte + kaart.start[0].x + 2);   // voor de burcht, zodat je hem ziet
   bewaren = true;
@@ -639,6 +642,7 @@ async function start() {
       const na = s.golf ? ` You withstood ${s.golf} ${s.golf === 1 ? 'attack' : 'attacks'}.` : '';
       if (missie) {
         missieGewonnen(missie.id);
+        if (gevangene) gevangene.bevrijd();
         const volgende = missies.campagne.find((c) => c.id === missie.id + 1 && c.speelbaar);
         const erbij = (missie.beloning || []).map(naamVan).filter(Boolean);
         ui.verbergVerhaal();

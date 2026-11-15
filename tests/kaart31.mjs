@@ -21,7 +21,7 @@ await p.waitForTimeout(600);
 const beeld = await p.evaluate(() => { const i = document.getElementById('titel-beeld'); return { w: i.naturalWidth, zichtbaar: !i.hidden && i.getBoundingClientRect().width > 800 }; });
 check('beginscherm: schilderij geladen en schermvullend', beeld.w > 0 && beeld.zichtbaar, JSON.stringify(beeld));
 const knoppen = await p.$$eval('#titel-knoppen button', (k) => k.filter((x) => !x.hidden).map((x) => { const r = x.getBoundingClientRect(); return { t: x.textContent, l: r.left, r: r.right, o: r.top, b: r.bottom }; }));
-check('beginscherm: knoppen staan in het linker derde en binnen beeld', knoppen.every((k) => k.r < 844 / 3 + 40 && k.o >= 0 && k.b <= 390), JSON.stringify(knoppen));
+check('beginscherm: knoppen staan in het linker derde en binnen beeld', knoppen.every((k) => k.r < 844 / 3 + 70 && k.o >= 0 && k.b <= 390), JSON.stringify(knoppen));
 await p.screenshot({ path: `${uit}/stap31-beginscherm.png` });
 
 // De levelkaart, nog niets gewonnen

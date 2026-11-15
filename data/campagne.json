@@ -517,7 +517,14 @@
     }
    },
    "kasteel": "abdij",
+   "gevangene": { "naam": "Brother Ludolf" },
    "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 6,
+     "wie": "bartholt",
+     "tekst": "Sire, look at the small stone cell in her courtyard. Behind the bars, a monk in a brown habit. That must be Brother Ludolf. Take the abbey, and he walks free."
+    },
     {
      "bij": "tijd",
      "waarde": 20,

@@ -376,3 +376,5 @@
 - Continue staat altijd bovenaan. Zonder bewaard spel is hij vaag (38% dekking) en niet in te drukken (`disabled`); met bewaard spel normaal. tests/menu19.mjs controleert dat nu zo.
 - Logo: bijna doorzichtige ruis (alfa onder 24) uit logo.webp gehaald; op Karels iPhone was een vage rechthoek rond het logo zichtbaar.
 - Bekend: of de vage rechthoek hiermee weg is, is op de iPhone nog niet gezien.
+- Lijfwachten lopen ook onderweg een nieuwe route naar de heer als die meer dan 5 tegels weg is (strijd.js `lijfwachtDenk`).
+- Broeder Ludolf in level 5 (nieuw: js/gevangene.js, `gevangene` bij het level in campagne.json): een stenen cel op het binnenplein van rood (OBJECT.CEL = 30, decor, blokkeert de tegel) met een monnik in bruine pij achter ijzeren tralies, een deur met slot, stro, een emmer en een ketting. Valt de rode heer, dan staat de cel open (OBJECT.CEL_OPEN = 31: deur open, tralies weg, geen monnik). Bartholt wijst er na 6 seconden op. Plaatjes: `tekenCel` in kunst.js, `dorp.cel` en `dorp.cel_open` in assets.json. Test: tests/cel40.mjs (8 punten). Nog niet: Ludolf die zelf naar buiten loopt, en niet op de iPhone gezien (het plaatje is klein).

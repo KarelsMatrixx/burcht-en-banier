@@ -1312,7 +1312,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) jaag(e, k);
       return;
     }
-    if (!heer || e.pad || Math.hypot(heer.x - e.x, heer.y - e.y) <= 2.2) return;
+    if (!heer) return;
+    const afstandHeer = Math.hypot(heer.x - e.x, heer.y - e.y);
+    if (afstandHeer <= 2.2 || (e.pad && afstandHeer <= 5)) return;   // is hij ver weg, dan een nieuwe route, ook onderweg
     const hx = Math.floor(heer.x);
     const hy = Math.floor(heer.y);
     let best = -1;
