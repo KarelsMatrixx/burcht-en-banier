@@ -56,8 +56,9 @@ check('houthakker staat op het veld (west)', plekHut.length === 2 && plekHut[0] 
 await bouwLes(1, 'steengroeve');
 await bouwLes(2, 'boomgaard');
 await bouwLes(3, 'woning');
-const lijst = await p.evaluate(() => { const s = window.spel; const l = s.bouwer.eigenBouwwerken(); return Object.fromEntries(Object.entries(l).filter(([k]) => ['houthakker', 'steengroeve', 'boomgaard', 'woning'].includes(k)).map(([k, v]) => [k, v.length / 2])); });
-check('alle vier staan', ['houthakker', 'steengroeve', 'boomgaard', 'woning'].every((k) => lijst[k] === 1), JSON.stringify(lijst));
+await bouwLes(4, 'voorraadkamer');
+const lijst = await p.evaluate(() => { const s = window.spel; const l = s.bouwer.eigenBouwwerken(); return Object.fromEntries(Object.entries(l).filter(([k]) => ['houthakker', 'steengroeve', 'boomgaard', 'woning', 'voorraadkamer'].includes(k)).map(([k, v]) => [k, v.length / 2])); });
+check('alle vijf staan', ['houthakker', 'steengroeve', 'boomgaard', 'woning', 'voorraadkamer'].every((k) => lijst[k] === 1), JSON.stringify(lijst));
 // Werkers lopen naar het veld
 await p.evaluate(() => window.spel.economie.zetVolk && window.spel.economie.zetVolk(8));
 await p.waitForTimeout(45000);
@@ -65,11 +66,11 @@ const werkers = await p.evaluate(() => { const s = window.spel; const st = s.kaa
 check('werkers bij het veld (>= 1)', werkers >= 1, werkers);
 // Economielessen met alleen de gids
 await kaartTik(); await kaartTik();
-check('les 5 is je volk', (await st()).taak === 4 && /purse/.test(await p.textContent('#gids-zin')));
+check('les 6 is je volk', (await st()).taak === 5 && /purse/.test(await p.textContent('#gids-zin')));
 for (let k = 0; k < 6 && !(await st()).klaar; k++) { await tikGids(); await p.waitForTimeout(300); }
 check('les 5 klaar via gids', (await st()).klaar, JSON.stringify(await st()));
 await kaartTik(); await kaartTik();
-check('les 6 is belasting', (await st()).taak === 5);
+check('les 7 is belasting', (await st()).taak === 6);
 for (let k = 0; k < 8 && !(await st()).klaar; k++) { await tikGids(); await p.waitForTimeout(300); }
 check('les 6 klaar via gids', (await st()).klaar, JSON.stringify(await st()));
 await p.screenshot({ path: '/tmp/s/p42.png' });

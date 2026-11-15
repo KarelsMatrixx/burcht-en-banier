@@ -438,3 +438,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Les "Train two soldiers": de gids wees het zwaard aan, maar dat opent alleen de selectiebalk; soldaten leid je op door je kazerne op de kaart aan te tikken. Nu staat er een gouden plek "Barracks" op de kazerne, daarna wijst de gids de opleidknop aan.
 - De gids (ring, zin, gouden plek, kaartje) verdwijnt nu zolang er een beeldvullend scherm open is (titel, menu, verhaal, briefing, uitslag, logboek, instellingen) en komt daarna terug.
 - Tests: proloog35 (57 punten).
+
+## 0.56.2: voorraadkamer in de tutorial, muurles herkent de soldaat
+- Nieuwe les "Build a Storehouse" (na het huis, 11 lessen in totaal) met gouden plek op het bouwveld en uitleg: werkers brengen hout, steen en voedsel erheen, 150 van elk, tikken om overschot te verkopen.
+- Les "Put a soldier on the wall": telde niet als af als de speler een groep koos waar de wachters op de muur in zaten, of als de soldaat nog onderweg was. Nu tellen de wachters (herkend aan `e.wachter` en hun posten) nooit mee, en een soldaat van de speler telt zodra hij op de muur staat of er heen loopt (zijn doel ligt op de muurlaag).
+- Tests: proloog35 (59 punten, ook "wachters verschuiven telt niet" en "gemengde groep telt wel"), proloog42 (23).

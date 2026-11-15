@@ -22,6 +22,8 @@ const TAKEN = [
     tekst: 'A feast needs food. Your peasants eat every half minute. When the food runs out they grow unhappy and leave. An orchard grows apples, on open grass.' },
   { taak: 'Build a House', bouw: { woning: 1 }, gids: { soort: 'bouw', sleutel: 'woning', plekTekst: 'House here' }, anker: [-19, -3],
     tekst: 'Peasants live in houses. A house gives room for four more, and a new peasant arrives every so often as long as there is room, food and a happy people.' },
+  { taak: 'Build a Storehouse', bouw: { voorraadkamer: 1 }, gids: { soort: 'bouw', sleutel: 'voorraadkamer', plekTekst: 'Storehouse here' }, anker: [-21, -2],
+    tekst: 'Wood, stone and food must be kept somewhere. Your workers carry what they gather to the storehouse, and each one holds 150 of each. Later, tap it to sell what you do not need for gold.' },
   { taak: 'See your people', volk: true, gids: { soort: 'volk' },
     tekst: 'Look at the top bar, Sire: Peasants 4/6 means four peasants and room for six. Each building needs a peasant to work in it, and so does every soldier you train. A peasant without work is a spare hand. Let me show you the panel.',
     lof: 'Peasants without work are your reserve. If food runs out or taxes are too high, popularity falls, and below 50 your people leave.' },
@@ -72,26 +74,32 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     return n;
   };
   const soldaten = () => leger.soldaten().filter((e) => !e.dood && e.soldaat && e.soldaat.sleutel !== koningSoort);
-  const opDeMuur = () => soldaten().filter((e) => e.opMuur).length;
 
   // Wachters op de muren van de vier ringen: het kasteel leeft. Ze tellen niet mee voor de lessen
   // (die kijken naar wat er bijkomt) en vechten 's nachts gewoon mee.
-  function zetWachters() {
-    if (s.wachtGezet) return;
-    s.wachtGezet = true;
+  // De posten van de wachters op de muren (ook gebruikt om ze van de soldaten van de speler te onderscheiden)
+  function wachtPosten() {
     const st = kaart.start[0];
     const lijst = [];
-    let n = 0;
     for (const M of [17, 13, 9, 5]) {
       const h = Math.round(M / 2);
       for (const [dx, dy] of [[-h, -M], [h, M], [-M, h]]) {
         const x = st.x + dx;
         const y = st.y + dy;
-        if (!leger.isMuur(x, y)) continue;
-        lijst.push([n++ % 3 === 1 ? 'ridder' : 'boogschutter', x, y, 100, 1]);
+        if (leger.isMuur(x, y)) lijst.push([x, y]);
       }
     }
+    return lijst;
+  }
+  const isWachter = (e) => e.wachter || wachtPosten().some(([x, y]) => Math.hypot(e.x - x - 0.5, e.y - y - 0.5) < 1.3);
+  // Een soldaat van de speler die op de muur staat of er al naartoe loopt (zijn doel ligt dan op de muurlaag)
+  const naarDeMuur = () => soldaten().filter((e) => !isWachter(e) && (e.opMuur || (e.soldaat.doel >= kaart.breedte * kaart.hoogte && e.pad))).length;
+  function zetWachters() {
+    if (s.wachtGezet) return;
+    s.wachtGezet = true;
+    const lijst = wachtPosten().map(([x, y], n) => [n % 3 === 1 ? 'ridder' : 'boogschutter', x, y, 100, 1]);
     leger.zetStand(lijst);
+    for (const e of soldaten()) if (e.opMuur) e.wachter = true;
     bewaar();
   }
 
@@ -171,7 +179,6 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     gids.kaart({ naam: 'Bartholt', tekst: TAKEN[s.taak].tekst, knop: s.taak === 0 ? "Let's begin ›" : 'Start lesson ›' }, () => {
       s.basis = tel();
       s.basisSoldaten = soldaten().length;
-      s.basisMuur = opDeMuur();
       s.fasetijd = 0;
       richtGids(true);
       bewaar();
@@ -195,7 +202,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     if (t.belasting) return gids.belastingGekozen() && gids.volkGesloten();
     if (t.soldaten) return soldaten().length - (s.basisSoldaten || 0) >= t.soldaten;
     if (t.sturen) return s.gestuurd;
-    if (t.opMuur) return opDeMuur() > (s.basisMuur || 0);
+    if (t.opMuur) return naarDeMuur() > 0;
     return true;
   }
 
