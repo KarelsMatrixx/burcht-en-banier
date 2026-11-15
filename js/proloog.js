@@ -430,6 +430,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     wegvinder.zetPoortenOpen(true);
     kaartGewijzigd(new Set());
     toonMelding('The gate is open! Someone opened it from the inside. The Mourning Banner is pouring in!');
+    bartholt('Treason, Sire! We have been betrayed. Someone opened the gate from the inside!');
     bewaar();
   }
 

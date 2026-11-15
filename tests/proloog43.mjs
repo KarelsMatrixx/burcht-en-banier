@@ -80,6 +80,7 @@ check('eerst het beleg: poort nog dicht', (await nS()).deel === 'beleg', JSON.st
 await p.waitForTimeout(5000);
 check('na 5 s: nog niemand binnen', (await kijk()).binnen === 0, JSON.stringify(await kijk()));
 await p.waitForFunction(() => window.spel.proloog.stand().deel === 'storm', null, { timeout: 12000 }).catch(() => {});
+check('Bartholt: verraad', await p.evaluate(() => /betrayed/.test(document.getElementById('verhaal').textContent + window.spel.ui.logboek().map((r) => r.tekst).join(' '))));
 check('storm begonnen na ongeveer 10 s', (await nS()).deel === 'storm', JSON.stringify(await nS()));
 check('poorten open', await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; return s.wegvinder.verbonden(st.y * s.kaart.breedte + st.x + 40, st.y * s.kaart.breedte + st.x + 3, 1); }));
 await p.waitForTimeout(30000);

@@ -518,3 +518,6 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Karel zakt in de proloog nooit onder de helft van zijn leven (strijd.js en een controle in proloog.js).
 - Einde van de nacht: eerst de ontvoering (8 s). Een ruiter in het zwart met zwarte banier en fakkel galoppeert met Wessel van de burcht door de oostpoorten naar buiten (effect `ruiter`, getekend in tekenaar.js). Daarna de scènekaarten.
 - Tests: proloog35 (78), proloog42 (25), proloog43 (27), proloog40 (22).
+
+## 0.61.1: Bartholt meldt het verraad
+- Als de poort van binnenuit opengaat zegt Bartholt: "Treason, Sire! We have been betrayed. Someone opened the gate from the inside!" (door Claude geschreven). Test proloog43 (28).
