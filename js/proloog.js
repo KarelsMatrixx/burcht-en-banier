@@ -30,7 +30,7 @@ const TAKEN = [
     lof: 'Low is the safe level. Choose High only for a short while, when you need gold fast.' },
   { taak: 'Build Barracks', bouw: { kazerne: 1 }, gids: { soort: 'bouw', sleutel: 'kazerne', plekTekst: 'Barracks here' }, anker: [-19, 3],
     tekst: 'A king needs soldiers, even on a feast day. Barracks train soldiers from your peasants and your gold. Wood and stone were for this.' },
-  { taak: 'Train two soldiers', soldaten: 2, gids: { soort: 'opleiden' }, tekst: 'Now train two soldiers. Each costs gold and one idle peasant. Knights hold the line, archers shoot from behind it.' },
+  { taak: 'Train two soldiers', soldaten: 2, gids: { soort: 'opleiden', plekTekst: 'Barracks' }, kazernePlek: true, tekst: 'Now train two soldiers. Each costs gold and one idle peasant. Knights hold the line, archers shoot from behind it.' },
   { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen', plekTekst: 'Send him here' }, doelPlek: [4, 3], tekst: 'Now give an order. Choose a soldier, then show him where to go.' },
   { taak: 'Put a soldier on the wall', opMuur: true, gids: { soort: 'muur', plekTekst: 'Wall here' }, doelPlek: [-5, -2], tekst: "Last lesson, Sire. Ottger's messengers at the border are restless. Put a soldier on the wall to keep watch." },
 ];
@@ -146,7 +146,12 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
   }
   function richtGids(kijk) {
     const t = TAKEN[s.taak];
-    const plek = t.doelPlek ? doelPlek(t) : zoekPlek(t);
+    let plek = t.doelPlek ? doelPlek(t) : zoekPlek(t);
+    if (t.kazernePlek) {
+      // De kazerne die de speler zelf zette: daar tik je op om soldaten op te leiden
+      const k = (bouwer.eigenBouwwerken().kazerne || []).slice(0, 2);
+      plek = k.length === 2 ? { x: k[0], y: k[1] } : null;
+    }
     gids.richt(plek ? { ...t.gids, plek } : t.gids);
     if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
   }

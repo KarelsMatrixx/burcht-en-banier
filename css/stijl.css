@@ -1212,6 +1212,7 @@ button:active {
   animation: gidsPuls 1.4s ease-in-out infinite;
 }
 #gids-ring.luid { animation-duration: 0.55s; border-width: 4px; }
+body.gids-bedekt #gids-ring, body.gids-bedekt #gids-zin, body.gids-bedekt #gids-plek, body.gids-bedekt #gids-kaart { display: none !important; }
 #gids-ring[hidden], #gids-zin[hidden], #gids-kaart[hidden], #gids-plek[hidden] { display: none; }
 /* De plek op de kaart waar het bouwwerk moet komen */
 #gids-plek { position: fixed; z-index: 55; pointer-events: none; animation: gidsPuls 1.2s ease-in-out infinite; }

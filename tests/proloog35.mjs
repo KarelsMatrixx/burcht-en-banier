@@ -95,7 +95,14 @@ await p.evaluate((b) => window.spel.economie.zetBelasting(b), voor);
 await kaartTik(); await kaartTik(); await totTaak(6);
 await bouwTaak(['kazerne', 7]).catch((e) => console.log('kazerne', e));
 // Twee soldaten; ze lopen niet vanzelf weg (een bevel telt pas als de speler het geeft)
-await p.evaluate(([x, y]) => window.spel.leger.zetStand([['ridder', x, y, 50, 0], ['boogschutter', x + 1, y, 40, 0]]), vrij[i]);
+check('opleiden: gouden plek op de kazerne', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && /Barracks/.test(e.textContent) && /barracks/i.test(document.getElementById('gids-zin').textContent); }), await p.textContent('#gids-zin'));
+const plekMidden = await p.evaluate(() => { const r = document.getElementById('gids-plek').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+await p.touchscreen.tap(plekMidden[0], plekMidden[1]); await p.waitForTimeout(500);
+check('kazerne aangetikt: opleidpaneel open', await p.isVisible('#legerpaneel'));
+check('gids wijst een opleidknop aan', /train a soldier/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+for (let k = 0; k < 2; k++) { await p.tap('#leger-opleiden button:not(.kanniet)').catch(() => {}); await p.waitForTimeout(400); }
+const getraind = await p.evaluate(() => window.spel.leger.soldaten().length);
+if (!(await st()).klaar) await p.evaluate(([x, y]) => window.spel.leger.zetStand([['ridder', x, y, 50, 0], ['boogschutter', x + 1, y, 40, 0]]), vrij[i]);
 await volgende();
 await totTaak(8);
 check('twee soldaten: taak 9', (await st()).taak === 8);
@@ -109,6 +116,11 @@ await totTaak(9);
 check('gestuurd: taak 10', (await st()).taak === 9, JSON.stringify(await st()));
 // Een soldaat op de muur
 check('muur: gouden plek op de kaart', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && /Wall here/.test(e.textContent); }));
+// Een beeldvullend scherm (titel) verbergt de gids helemaal
+await p.evaluate(() => { document.getElementById('titelscherm').hidden = false; }); await p.waitForTimeout(500);
+check('titelscherm: gids verborgen', await p.evaluate(() => ['gids-ring', 'gids-zin', 'gids-plek', 'gids-kaart'].every((id) => getComputedStyle(document.getElementById(id)).display === 'none')));
+await p.evaluate(() => { document.getElementById('titelscherm').hidden = true; }); await p.waitForTimeout(500);
+check('titelscherm weg: gids terug', await p.evaluate(() => getComputedStyle(document.getElementById('gids-plek')).display !== 'none'));
 await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; const e = s.leger.soldaten().find((e) => e.soldaat.sleutel === 'boogschutter' && !e.opMuur); s.leger.kies([e]); s.leger.stuur(st.x - 5, st.y - 2, true); });
 await p.waitForFunction(() => window.spel.proloog.stand().klaar, null, { timeout: 40000 }).catch(() => {});
 await kaartTik();   // Continue

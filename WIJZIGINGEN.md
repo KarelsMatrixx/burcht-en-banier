@@ -433,3 +433,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Tests: proloog42 (nieuw, bouwt met echte tikken op de plekken, werkers lopen naar het veld, economielessen), proloog35 (10 lessen), proloog40 (acht poorten, gast los van toeval).
 - Alle teksten van de gids zijn door Claude geschreven en moeten nagelezen worden.
 - Ook de lessen "send a soldier" en "put a soldier on the wall" hebben een gouden plek ("Send him here", "Wall here"). Test: proloog35 (52 punten). Volledige reeks: alleen de bekende fouten (campagne30, verhaal31, hut36, bouwstraal38).
+
+## 0.56.1: opleiden in de tutorial wees de verkeerde knop, gids bleef op het titelscherm staan
+- Les "Train two soldiers": de gids wees het zwaard aan, maar dat opent alleen de selectiebalk; soldaten leid je op door je kazerne op de kaart aan te tikken. Nu staat er een gouden plek "Barracks" op de kazerne, daarna wijst de gids de opleidknop aan.
+- De gids (ring, zin, gouden plek, kaartje) verdwijnt nu zolang er een beeldvullend scherm open is (titel, menu, verhaal, briefing, uitslag, logboek, instellingen) en komt daarna terug.
+- Tests: proloog35 (57 punten).

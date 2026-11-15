@@ -75,7 +75,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
         const knop = el('leger-opleiden').querySelector('[data-soldaat]:not(.kanniet)') || el('leger-opleiden').querySelector('[data-soldaat]');
         if (knop) return { e: knop, tekst: 'Tap to train a soldier.' };
       }
-      return { e: el('knop-zwaard'), tekst: 'Tap the sword to open your army.' };
+      // Soldaten leid je op bij de kazerne: tik het gebouw zelf aan (het zwaard opent alleen de selectiebalk).
+      return { e: null, tekst: 'Tap your barracks on the map (the golden spot) to train soldiers.' };
     }
     if (doel.soort === 'volk') {
       if (zichtbaar(el('volkpaneel'))) return { e: el('volk-sluit'), tekst: 'This is your people. Read it, then close it.' };
@@ -96,6 +97,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
   function zetPlek() {
     const p = doel && doel.plek;
     if (!p || !plekNaarScherm) { plek.hidden = true; return; }
+    if (doel.soort === 'opleiden' && zichtbaar(el('legerpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open
     const sc = plekNaarScherm(p.x, p.y);
     const z = sc.zoom;
     const breed = tegelMaat.breedte * z * 1.1;
@@ -165,6 +167,15 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     }
     if (tekst !== vorigeTekst) { vorigeTekst = tekst; laatsteTik = nu; }
   }
+
+  // Ligt er een beeldvullend scherm over het spel (titel, menu, verhaal, uitslag), dan verdwijnt de gids helemaal.
+  // Een eigen klokje, want de spellus staat dan stil.
+  const BEDEKKERS = ['titelscherm', 'menu', 'verhaalbeeld', 'missie', 'uitslag', 'einde', 'scene', 'logboek', 'verhaal', 'instellingen'];
+  const bedektNu = () => BEDEKKERS.some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
+  setInterval(() => {
+    const bedekt = bedektNu();
+    document.body.classList.toggle('gids-bedekt', bedekt);
+  }, 150);
 
   return {
     // Richt de gids op een taak: soort 'bouw' (met sleutel), 'opleiden', 'sturen', 'muur'.
