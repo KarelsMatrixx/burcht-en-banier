@@ -24,6 +24,7 @@ import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
 import { maakGids } from './gids.js';
 import { maakFiguranten } from './figuranten.js';
+import { maakSlachting } from './slachting.js';
 import { maakDoel } from './doel.js';
 import { maakLoodsen } from './loodsen.js';
 import { maakGevangene } from './gevangene.js';
@@ -774,7 +775,8 @@ async function start() {
   // Een missie die nog niet is begonnen opent met zijn intro.
   // De proloog: taken van Bartholt, de nacht en de scène.
   const gids = missie && missie.proloog ? maakGids() : null;
-  const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder, leger }) : null;
+  const slachting = maakSlachting({ strijd, economie, wegvinder, kaart, eenheden });
+  const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd }) : null;
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, leger, strijd, wegvinder, eenheden,
     koningSoort: 'koning', gids,
@@ -1071,6 +1073,7 @@ async function start() {
       verhaal.stap(dt, verhaalStand);
       if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); }
       if (doel) doel.stap(dt);
+      slachting.stap(dt);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),
     meld: {
@@ -1110,7 +1113,7 @@ async function start() {
   });
 
   // Handig bij het zoeken naar fouten.
-  window.spel = { veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten };
+  window.spel = { veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

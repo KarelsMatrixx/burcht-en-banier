@@ -11,7 +11,7 @@ const STRAAL_BURCHT = 5;
 const PER_STAP = 2;           // hooguit zoveel nieuwe routes per stap
 const MAX_PAD = 16;           // geen lange omwegen
 
-export function maakFiguranten({ kaart, eenheden, wegvinder, leger, koningSleutel = 'koning' }) {
+export function maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd, koningSleutel = 'koning' }) {
   let lijst = [];             // { e, thuis: {x, y}, straal, wacht }
   let aan = false;
   let rng = 12345;
@@ -86,14 +86,33 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, koningSleute
 
   // De aanval: iedereen rent terug het kasteel in, naar de burcht, en is daar binnen verdwenen.
   let vluchtTijd = 0;
+  let gedood = 0;
+  const KLEUREN = ['#a58a5a', '#7a5a3a', '#8a4a3a', '#6a7a4a'];
   function vlucht(dt) {
     vluchtTijd += dt;
     const st = kaart.start[0];
+    const vijanden = strijd ? strijd.vijanden().filter((v) => v.wachter === undefined && !v.dood) : [];
     let budget = 24;
     for (let i = lijst.length - 1; i >= 0; i--) {
       const f = lijst[i];
       const e = f.e;
       if (e.gast) { lijst.splice(i, 1); continue; }
+      // De vijand maakt geen onderscheid: wie te dichtbij komt, wordt doodgeslagen. Wessel en Bartholt
+      // zijn nodig voor het verhaal en ontkomen.
+      if (e.soort !== SOORT.WESSEL && e.soort !== SOORT.BARTHOLT && strijd) {
+        let geraakt = null;
+        for (const v of vijanden) {
+          if (Math.abs(v.x - e.x) < 1.4 && Math.abs(v.y - e.y) < 1.4) { geraakt = v; break; }
+        }
+        if (geraakt && toeval() < 0.45) {
+          strijd.vermoord(e.x, e.y, KLEUREN[i % KLEUREN.length]);
+          geraakt.pose = 1;
+          eenheden.verwijder(e);
+          lijst.splice(i, 1);
+          gedood++;
+          continue;
+        }
+      }
       const dichtbij = Math.hypot(e.x - st.x - 0.5, e.y - st.y - 0.5) < 3.5;
       if (dichtbij || vluchtTijd > 70) { eenheden.verwijder(e); lijst.splice(i, 1); continue; }
       if (!f.vlucht || (!e.pad && budget > 0)) {
@@ -121,7 +140,7 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, koningSleute
     // Daarna (scène) en bij opnieuw beginnen zijn ze weg.
     stap(dt, fase) {
       const overdag = fase === 'bouw' || fase === 'avond';
-      if (overdag && !aan) { aan = true; vluchtTijd = 0; zetAan(); }
+      if (overdag && !aan) { aan = true; vluchtTijd = 0; gedood = 0; zetAan(); }
       else if (fase === 'nacht' && aan) { vlucht(dt); if (!lijst.length) { aan = false; gast = null; } return; }
       else if (!overdag && aan) { aan = false; zetUit(); return; }
       if (!aan) return;
@@ -151,6 +170,7 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, koningSleute
       }
     },
     aantal: () => lijst.length,
+    gedood: () => gedood,
     lijst: () => lijst.map((f) => f.e),
   };
 }

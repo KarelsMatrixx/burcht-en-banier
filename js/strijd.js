@@ -26,7 +26,7 @@ import { maakToeval } from './toeval.js';
 const SPELER = 0;
 const VIJAND = 1;
 const DENK = 5;             // om de zoveel rekenstappen kiest een krijger opnieuw wat hij doet
-const MAX_EFFECTEN = 80;    // pijlen en gevallenen die tegelijk in beeld kunnen zijn
+const MAX_EFFECTEN = 260;    // pijlen en gevallenen die tegelijk in beeld kunnen zijn
 const MAX_VIJANDEN = 60;
 const MAX_VIJANDEN_PROLOOG = 90;   // de overmacht van de proloog: 80 ineens (naar Karel)
 const WRAAK_VER = 12;       // zo ver loopt iemand achter een schutter aan die hem raakte
@@ -421,8 +421,24 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // door = wie de klap uitdeelde (null: de wacht op de burcht).
+  // Bloed: rode spettertjes bij een treffer, groter bij een dode, met een plas die blijft liggen.
+  function bloed(x, y, h, groot) {
+    effect({ soort: 'bloed', x, y, h: h || 0, groot: !!groot, duur: groot ? 800 : 520 });
+    if (groot) effect({ soort: 'plas', x, y, duur: 24000 });
+  }
+  // Een burger of soldaat vermoord: bloed, een plas en een lijk dat een tijdje blijft liggen.
+  function vermoord(x, y, kleur) {
+    bloed(x, y, 6, true);
+    effect({ soort: 'lijk', x, y, kleur: kleur || '#8a6a4a', duur: 24000 });
+  }
+
   function raak(doel, hoeveel, door) {
     doel.leven -= hoeveel;
+    if (hoeveel > 0) {
+      bloed(doel.x, doel.y, (doel.hoogte || 0) + 8, doel.leven <= 0);
+      // Een klap van dichtbij: een lichtflits bij het wapen
+      if (door && Math.hypot(door.x - doel.x, door.y - doel.y) < 2.6) effect({ soort: 'klap', x: (door.x + doel.x) / 2, y: (door.y + doel.y) / 2, h: (doel.hoogte || 0) + 10, duur: 150 });
+    }
     // In de proloog sneuvelt geen koning: het verhaal gaat door.
     if (R.proloog && doel.leven < 1 && krijgVan(doel).def.koning) doel.leven = 1;
     const kd = krijgVan(doel);
@@ -1910,7 +1926,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   zetWachters(null);   // rood begint met een wachter op elk stuk muur
 
   return {
-    stap, stand, effecten, balken, kaartVeranderd,
+    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),

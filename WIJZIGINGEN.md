@@ -401,3 +401,11 @@
 - Bij de aanval ('s nachts) rennen alle figuranten, dus ook Wessel en Bartholt, terug naar de burcht en verdwijnen daar naar binnen (figuranten.js `vlucht`). Wie geen weg meer vindt (bijvoorbeeld door vijanden in de poort) duikt na drie pogingen onder; na 70 seconden zijn ze er sowieso niet meer. Wessel liep al vrij rond overdag (hij is een van de figuranten).
 - Nog niet op de iPhone gezien: prestaties met 140 figuren en 80 vijanden (headless ruw 60 fps).
 - Tests: proloog40.mjs (20 punten), proloog35.mjs (41).
+
+## 0.54.0: bloed, klappen en vermoorde burgers
+- Bloed (strijd.js `bloed`, tekenaar.js): bij elke treffer op een eenheid vliegen rode spettertjes weg die vallen; bij een dode meer spetters en een bloedplas op de grond die na ongeveer 24 seconden vervaagt. Maximum aantal effecten van 80 naar 260.
+- Vechtanimatie: een soldaat die slaat springt even naar voren (3 px), en bij een klap van dichtbij komt een lichtflits tussen de twee. De bestaande slagpose (sla en schiet) blijft.
+- Burgers worden vermoord (nieuw: js/slachting.js, `economie.dodeBoer`): komt een aanvaller binnen 1,5 tegel van een boer van de speler (rondlopend of aan het werk), dan slaat hij hem dood: bloed, een lijk, en de boer verdwijnt uit je volk (een gebouw waar hij werkte wacht op een nieuwe boer). Boeren binnen 6 tegels van een aanvaller rennen naar je burcht. Rood heeft geen zichtbare burgers (zijn economie is een getal), dus de speler kan geen burgers van rood doden.
+- Proloog: tijdens de vlucht naar de burcht slaat de overmacht de dorpelingen dood (figuranten.js). In de test sneuvelden 35 van ongeveer 108 en 4 van de 4 boeren. Wessel en Bartholt ontkomen (het verhaal heeft ze nodig).
+- Aanname: kans 45 tot 50% per ronde bij 1,4 tot 1,5 tegel afstand; geschatte getallen, niet op de iPhone gezien.
+- Test: tests/gevecht40.mjs.

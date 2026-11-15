@@ -616,6 +616,31 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     ];
   }
 
+  // Een boer wordt gedood (door vijandelijke soldaten, js/slachting.js): weg uit je volk.
+  // Werkte hij, dan wacht zijn gebouw op een nieuwe boer.
+  function dodeBoer(e) {
+    const i = lopers.indexOf(e);
+    if (i >= 0) {
+      lopers.splice(i, 1);
+      eenheden.verwijder(e);
+    } else {
+      let gevonden = false;
+      for (const [werkVak, w] of werkplaatsen) {
+        if (w !== e) continue;
+        laatBronLos(w.werk);
+        eenheden.verwijder(w);
+        werkplaatsen.delete(werkVak);
+        wachtend.push({ vak: werkVak, beroepNaam: w.werk.beroep.sleutel });
+        gevonden = true;
+        break;
+      }
+      if (!gevonden) return false;
+    }
+    volk = Math.max(0, volk - 1);
+    opVoorraad();
+    return true;
+  }
+
   // Eén ronde: alle boeren eten, je int belasting en de populariteit
   // verandert. Is er te weinig voedsel, dan is alles op en komt er niemand
   // meer bij tot er weer voedsel is.
@@ -830,5 +855,6 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     aantalMetBeroep: (beroepNaam) => [...werkplaatsen.values()].filter((e) => e.werk.beroep.sleutel === beroepNaam).length,
     aantalGekapt: () => gekapt.length,
     werkers: () => [...werkplaatsen.values()],
+    dodeBoer,
   };
 }

@@ -353,6 +353,38 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         const f = effecten[i];
         if (nu - f.van >= f.duur) continue;
         effecten[over++] = f;
+        if (f.soort === 'plas' || f.soort === 'lijk') {
+          const wx0 = (f.x - f.y) * HALVE_BREEDTE;
+          const wy0 = (f.x + f.y) * HALVE_HOOGTE;
+          if (wx0 < zichtLinks || wx0 > zichtRechts || wy0 < zichtBoven || wy0 > zichtOnder) continue;
+          const rest = f.duur - (nu - f.van);
+          const vervaag = Math.min(1, rest / 6000);
+          if (f.soort === 'plas') {
+            const gr = 4 + ((f.van * 7) % 5);
+            ctx.fillStyle = `rgba(110, 12, 12, ${0.55 * vervaag})`;
+            ctx.beginPath();
+            ctx.ellipse(wx0, wy0 + 1, gr, gr * 0.48, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = `rgba(150, 20, 18, ${0.4 * vervaag})`;
+            ctx.beginPath();
+            ctx.ellipse(wx0 + 3, wy0 + 2, gr * 0.5, gr * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.globalAlpha = vervaag;
+            ctx.fillStyle = 'rgba(40, 20, 14, 0.4)';
+            ctx.beginPath();
+            ctx.ellipse(wx0, wy0 + 1, 8, 3.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = f.kleur || '#8a6a4a';
+            ctx.fillRect(wx0 - 5, wy0 - 3, 9, 3);
+            ctx.fillStyle = '#e0b890';
+            ctx.fillRect(wx0 + 4, wy0 - 3.5, 3, 3);
+            ctx.fillStyle = '#7a1010';
+            ctx.fillRect(wx0 - 2, wy0 - 3, 2.5, 2);
+            ctx.globalAlpha = 1;
+          }
+          continue;
+        }
         if (f.soort !== 'val') continue;
         const deel = 1 - (nu - f.van) / f.duur;
         const wx = (f.x - f.y) * HALVE_BREEDTE;
@@ -451,7 +483,9 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         // Een verborgen sluipmoordenaar: van jou half doorzichtig, van rood
         // alleen van dichtbij te zien (dat bepaalt strijd.js; hier vaag).
         if (e.verborgen) ctx.globalAlpha = 0.5;
-        ctx.drawImage(beelden[beeld], plekX[i] - s.ax, plekY[i] - s.ay, s.b, s.h);
+        // Een klap: de soldaat springt even naar voren (de vechtanimatie)
+        const stoot = e.pose > 0 && e.houding === 'sla' ? e.kijkt * 3 : 0;
+        ctx.drawImage(beelden[beeld], plekX[i] - s.ax + stoot, plekY[i] - s.ay - (stoot ? 1 : 0), s.b, s.h);
         ctx.globalAlpha = 1;
         // Wie geraakt is, heeft een balkje boven zijn hoofd.
         if (e.levenMax && e.leven < e.levenMax) balk(plekX[i], plekY[i] - s.ay - 5, 14, e.leven / e.levenMax);
@@ -599,6 +633,40 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         ctx.fillRect(kop[0] - 0.9, kop[1] - 0.9, 1.8, 1.8);
       }
       ctx.lineCap = 'butt';
+      // Bloed en klappen: rode spettertjes die wegvliegen en vallen, en een lichtflits bij een klap
+      for (let i = 0; i < effecten.length; i++) {
+        const f = effecten[i];
+        if (f.soort !== 'bloed' && f.soort !== 'klap') continue;
+        const t = Math.min(1, Math.max(0, (nu - f.van) / f.duur));
+        const wx = (f.x - f.y) * HALVE_BREEDTE;
+        const wy = (f.x + f.y) * HALVE_HOOGTE - (f.h || 0);
+        if (f.soort === 'klap') {
+          ctx.strokeStyle = `rgba(255, 245, 200, ${1 - t})`;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          for (let k = 0; k < 4; k++) {
+            const hoek = k * 1.57 + 0.5;
+            ctx.moveTo(wx + Math.cos(hoek) * 2, wy + Math.sin(hoek) * 2);
+            ctx.lineTo(wx + Math.cos(hoek) * (4 + t * 6), wy + Math.sin(hoek) * (4 + t * 6));
+          }
+          ctx.stroke();
+          continue;
+        }
+        const n = f.groot ? 14 : 6;
+        const sec = t * f.duur / 1000;
+        for (let j = 0; j < n; j++) {
+          const toeval = Math.sin(f.van * 0.013 + j * 12.9898) * 43758.5453;
+          const r1 = toeval - Math.floor(toeval);
+          const r2 = (toeval * 7.31) - Math.floor(toeval * 7.31);
+          const hoek = r1 * Math.PI * 2;
+          const snel = 18 + r2 * (f.groot ? 46 : 30);
+          const px = wx + Math.cos(hoek) * snel * sec;
+          const py = wy + Math.sin(hoek) * snel * 0.5 * sec - 14 * sec + 70 * sec * sec;
+          ctx.fillStyle = `rgba(${170 + Math.floor(r2 * 50)}, 14, 14, ${1 - t * t})`;
+          const gr = f.groot ? 2.1 : 1.6;
+          ctx.fillRect(px - gr / 2, py - gr / 2, gr, gr);
+        }
+      }
       // Genezen: een gouden gloed die opstijgt bij wie de heler geneest
       for (let i = 0; i < effecten.length; i++) {
         const f = effecten[i];

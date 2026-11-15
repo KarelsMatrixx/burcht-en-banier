@@ -165,6 +165,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
     s.fase = 'nacht';
     s.fasetijd = 0;
     s.golven = 1;
+    gids.stop();
+    gids.verbergKaart();
     toonTaak('Night: hold the keep');
     // De poort gaat van binnenuit open.
     wegvinder.zetPoortenOpen(true);
