@@ -605,6 +605,7 @@ export function maakKaart(recept) {
           let soort = OBJECT.MUUR;
           if (hoek) soort = OBJECT.TOREN;
           else if (dx === M && dy === 0) soort = OBJECT.POORT;
+          else if (r.bouwveld && dx === -M && dy === 0) soort = OBJECT.POORT;   // ook een poort naar het bouwveld in het westen
           else if (dx === 0 || dy === 0) soort = OBJECT.WACHTTOREN;
           const x = eigen.x + dx;
           const y = eigen.y + dy;
@@ -660,6 +661,52 @@ export function maakKaart(recept) {
       if (gx < 1 || gy < 1 || gx >= breedte - 1 || gy >= hoogte - 1) continue;
       const i = gy * breedte + gx;
       if (grond[i] !== GROND.WATER) grond[i] = GROND.AARDE;
+    }
+  }
+
+  // 5e. Het bouwveld van de proloog (naar Karel): een open stuk gras buiten de muren in het westen
+  //     (links boven op het scherm), met rotsen en bomen, bereikbaar door een poort en een weg.
+  //     De lessen van Bartholt wijzen hier de plekken aan.
+  if (r.bouwveld) {
+    const bv = r.bouwveld;
+    const maten = Array.isArray(r.eigenRingen) && r.eigenRingen.length ? r.eigenRingen : [RING];
+    const buiten = maten[maten.length - 1];
+    const veldIn = (dx, dy) => dx >= bv.dx0 && dx <= bv.dx1 && dy >= bv.dy0 && dy <= bv.dy1;
+    for (let dy = bv.dy0; dy <= bv.dy1; dy++) {
+      for (let dx = bv.dx0; dx <= bv.dx1; dx++) {
+        const x = eigen.x + dx;
+        const y = eigen.y + dy;
+        if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1) continue;
+        const i = y * breedte + x;
+        object[i] = OBJECT.GEEN;
+        eigenaar[i] = 0;
+        grond[i] = GROND.GRAS;
+      }
+    }
+    // De weg van de westpoort naar het veld
+    for (let dx = -2; dx >= bv.dx1 - 1; dx--) {
+      const x = eigen.x + dx;
+      const i = eigen.y * breedte + x;
+      if (x < 1) break;
+      if (object[i] === OBJECT.GEEN || object[i] === OBJECT.BOOM) {
+        object[i] = OBJECT.GEEN;
+        if (grond[i] !== GROND.WATER) grond[i] = GROND.AARDE;
+      }
+    }
+    // Rotsen (voor de steengroeve) en een groepje bomen (voor de houthakker)
+    for (const v of bv.vlekken) {
+      for (let dy = -Math.ceil(v.straal); dy <= Math.ceil(v.straal); dy++) {
+        for (let dx = -Math.ceil(v.straal); dx <= Math.ceil(v.straal); dx++) {
+          if (Math.hypot(dx, dy) > v.straal) continue;
+          const gx = v.dx + dx;
+          const gy = v.dy + dy;
+          if (!veldIn(gx, gy)) continue;
+          const x = eigen.x + gx;
+          const y = eigen.y + gy;
+          if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1) continue;
+          object[y * breedte + x] = OBJECT[v.soort];
+        }
+      }
     }
   }
 

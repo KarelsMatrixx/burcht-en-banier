@@ -14,14 +14,25 @@ const SLEUTEL = 'burcht-banier.proloog';
 
 // De taken. telt: hoeveel van dit bouwwerk er bij moeten komen.
 const TAKEN = [
-  { taak: "Build a Woodcutter's Hut", bouw: { houthakker: 1 }, gids: { soort: 'bouw', sleutel: 'houthakker' }, tekst: "Happy birthday to Wessel, Sire! While the cooks work, let us put the land to work. First lesson: wood. I will show you each button." },
-  { taak: 'Build a Stone Mine', bouw: { steengroeve: 1 }, gids: { soort: 'bouw', sleutel: 'steengroeve' }, tekst: 'Wood we have, now stone. Build a stone mine right against the grey rocks.' },
-  { taak: 'Build an Orchard', bouw: { boomgaard: 1 }, gids: { soort: 'bouw', sleutel: 'boomgaard' }, tekst: 'A feast needs food, and so does an army. Build an orchard on open grass.' },
-  { taak: 'Build a House', bouw: { woning: 1 }, gids: { soort: 'bouw', sleutel: 'woning' }, tekst: 'More hands, more work. A house brings new villagers.' },
-  { taak: 'Build Barracks', bouw: { kazerne: 1 }, gids: { soort: 'bouw', sleutel: 'kazerne' }, tekst: 'A king needs soldiers, even on a feast day. Build barracks.' },
-  { taak: 'Train two soldiers', soldaten: 2, gids: { soort: 'opleiden' }, tekst: 'Now train two soldiers. Knights hold the line, archers shoot from behind it.' },
-  { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen' }, tekst: 'Now give an order. Choose a soldier, then show him where to go.' },
-  { taak: 'Put a soldier on the wall', opMuur: true, gids: { soort: 'muur' }, tekst: "Last lesson, Sire. Ottger's messengers at the border are restless. Put a soldier on the wall to keep watch." },
+  { taak: "Build a Woodcutter's Hut", bouw: { houthakker: 1 }, gids: { soort: 'bouw', sleutel: 'houthakker', plekTekst: 'Woodcutter here' }, anker: [-21, 4],
+    tekst: "Happy birthday to Wessel, Sire! While the cooks work, let us put the land to work. First lesson: wood. A woodcutter's hut sends one peasant to chop the trees nearby. Every building starts with wood. I will show you each button and the spot on the map." },
+  { taak: 'Build a Stone Mine', bouw: { steengroeve: 1 }, gids: { soort: 'bouw', sleutel: 'steengroeve', plekTekst: 'Stone mine here' }, anker: [-21, -5],
+    tekst: 'Wood we have, now stone. A stone mine must stand right against the grey rocks. Its worker brings stone for barracks and walls.' },
+  { taak: 'Build an Orchard', bouw: { boomgaard: 1 }, gids: { soort: 'bouw', sleutel: 'boomgaard', plekTekst: 'Orchard here' }, anker: [-22, 2],
+    tekst: 'A feast needs food. Your peasants eat every half minute. When the food runs out they grow unhappy and leave. An orchard grows apples, on open grass.' },
+  { taak: 'Build a House', bouw: { woning: 1 }, gids: { soort: 'bouw', sleutel: 'woning', plekTekst: 'House here' }, anker: [-19, -3],
+    tekst: 'Peasants live in houses. A house gives room for four more, and a new peasant arrives every so often as long as there is room, food and a happy people.' },
+  { taak: 'See your people', volk: true, gids: { soort: 'volk' },
+    tekst: 'Look at the top bar, Sire: Peasants 4/6 means four peasants and room for six. Each building needs a peasant to work in it, and so does every soldier you train. A peasant without work is a spare hand. Let me show you the panel.',
+    lof: 'Peasants without work are your reserve. If food runs out or taxes are too high, popularity falls, and below 50 your people leave.' },
+  { taak: 'Set the taxes', belasting: true, gids: { soort: 'belasting' },
+    tekst: 'Taxes, Sire. Every half minute each peasant pays gold. Higher taxes bring more gold but make your people unhappier; lower taxes make them happier. Try a different level.',
+    lof: 'Low is the safe level. Choose High only for a short while, when you need gold fast.' },
+  { taak: 'Build Barracks', bouw: { kazerne: 1 }, gids: { soort: 'bouw', sleutel: 'kazerne', plekTekst: 'Barracks here' }, anker: [-19, 3],
+    tekst: 'A king needs soldiers, even on a feast day. Barracks train soldiers from your peasants and your gold. Wood and stone were for this.' },
+  { taak: 'Train two soldiers', soldaten: 2, gids: { soort: 'opleiden' }, tekst: 'Now train two soldiers. Each costs gold and one idle peasant. Knights hold the line, archers shoot from behind it.' },
+  { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen', plekTekst: 'Send him here' }, doelPlek: [4, 3], tekst: 'Now give an order. Choose a soldier, then show him where to go.' },
+  { taak: 'Put a soldier on the wall', opMuur: true, gids: { soort: 'muur', plekTekst: 'Wall here' }, doelPlek: [-5, -2], tekst: "Last lesson, Sire. Ottger's messengers at the border are restless. Put a soldier on the wall to keep watch." },
 ];
 
 const LOF = ['Well done, Sire.', 'Good work.', 'Splendid. The people see their king at work.', 'That will do nicely.', 'Very good.'];
@@ -29,7 +40,7 @@ const AVOND = 20;              // seconden schemering voor de nacht
 const NACHT_DUUR = 240;        // vier minuten nacht, dan de scène
 const OVERMACHT = 80;          // zoveel vijanden komen er ineens: je hebt geen kans (naar Karel)
 
-export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
+export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
   let s = lees() || nieuw();
   let loopt = false;
   let reinout = null;
@@ -103,6 +114,43 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
     }
   }
 
+  // De bouwplek voor een les: de dichtstbijzijnde tegel bij het ankerpunt waar het bouwwerk mag staan.
+  function zoekPlek(t) {
+    if (!t.anker || !bouwwerken) return null;
+    const werk = bouwwerken[t.gids.sleutel];
+    const st = kaart.start[0];
+    const ax = st.x + t.anker[0];
+    const ay = st.y + t.anker[1];
+    for (let r = 0; r <= 8; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          // Niet op de weg naar de poort
+          if (ay + dy === st.y) continue;
+          if (bouwer.waaromNiet(ax + dx, ay + dy, werk) === '') return { x: ax + dx, y: ay + dy };
+        }
+      }
+    }
+    return null;
+  }
+  // Voor 'sturen' en 'muur': een vaste plek bij de burcht om naartoe te wijzen
+  function doelPlek(t) {
+    const st = kaart.start[0];
+    const x = st.x + t.doelPlek[0];
+    const y = st.y + t.doelPlek[1];
+    if (t.gids.soort === 'muur') return leger.isMuur(x, y) ? { x, y } : null;
+    for (let r = 0; r <= 4; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) === r && wegvinder.isVrij(x + dx, y + dy, 0) && !eenheden.staatOp(x + dx, y + dy)) return { x: x + dx, y: y + dy };
+    }
+    return null;
+  }
+  function richtGids(kijk) {
+    const t = TAKEN[s.taak];
+    const plek = t.doelPlek ? doelPlek(t) : zoekPlek(t);
+    gids.richt(plek ? { ...t.gids, plek } : t.gids);
+    if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
+  }
+
   // Eerst een kaartje van Bartholt met een knop (geen klok), dan pas de gids.
   function begin(taak) {
     s.taak = taak;
@@ -120,13 +168,13 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
       s.basisSoldaten = soldaten().length;
       s.basisMuur = opDeMuur();
       s.fasetijd = 0;
-      gids.richt(TAKEN[s.taak].gids);
+      richtGids(true);
       bewaar();
     });
   }
   function klaarKaart() {
     const laatste = s.taak + 1 >= TAKEN.length;
-    gids.kaart({ naam: 'Bartholt', tekst: LOF[s.taak % LOF.length], knop: laatste ? 'Continue ›' : 'Next lesson ›' }, () => {
+    gids.kaart({ naam: 'Bartholt', tekst: TAKEN[s.taak].lof || LOF[s.taak % LOF.length], knop: laatste ? 'Continue ›' : 'Next lesson ›' }, () => {
       if (!laatste) begin(s.taak + 1);
       else naarAvond();
     });
@@ -138,6 +186,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
       const n = tel();
       return Object.entries(t.bouw).every(([k, nodig]) => (n[k] || 0) - ((s.basis || {})[k] || 0) >= nodig);
     }
+    if (t.volk) return gids.volkGesloten();
+    if (t.belasting) return gids.belastingGekozen() && gids.volkGesloten();
     if (t.soldaten) return soldaten().length - (s.basisSoldaten || 0) >= t.soldaten;
     if (t.sturen) return s.gestuurd;
     if (t.opMuur) return opDeMuur() > (s.basisMuur || 0);
@@ -199,7 +249,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
         toonTaak(`Task ${s.taak + 1} of ${TAKEN.length}: ${TAKEN[s.taak].taak}`);
         if (s.klaar) { toonTaak(`Done: ${TAKEN[s.taak].taak}`); klaarKaart(); }
         else if (!s.basis) introKaart();
-        else gids.richt(TAKEN[s.taak].gids);
+        else richtGids(false);
       } else if (s.fase === 'avond') toonTaak('Evening: the feast is over');
       else if (s.fase === 'nacht') {
         toonTaak('Night: hold the keep');
@@ -220,9 +270,13 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
           s.gemeld.reinout = true;
           toonVerhaal({ naam: 'Lord Reinout of Witherheath', portret: 'reinout', tekst: 'A fine feast, King Karel. Your boy has grown. Nine already... time runs fast in Aldervale.' });
         }
+        const huidig = TAKEN[s.taak];
+        const g = gids.doel();
+        if (huidig.bouw && g && g.plek && !s.klaar && bouwer.waaromNiet(g.plek.x, g.plek.y, bouwwerken && bouwwerken[huidig.gids.sleutel]) !== '') gids.zetPlek(zoekPlek(huidig));
         if (!s.klaar && taakKlaar()) {
           s.klaar = true;
           gids.stop();
+          if (stopBouw) stopBouw();   // klaar met bouwen: de bouwstand uit, zodat een tik niet per ongeluk nog een hut zet
           toonTaak(`Done: ${TAKEN[s.taak].taak}`);
           bewaar();
           klaarKaart();

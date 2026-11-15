@@ -451,7 +451,12 @@
    ],
    "zonderRood": true,
    "eigenMuur": true,
-   "eigenRingen": [5, 9, 13, 17],
+   "eigenRingen": [
+    5,
+    9,
+    13,
+    17
+   ],
    "feest": true,
    "vindplaatsen": [
     {
@@ -473,7 +478,27 @@
      "straal": 2
     }
    ],
-   "midden": []
+   "midden": [],
+   "bouwveld": {
+    "dx0": -24,
+    "dx1": -18,
+    "dy0": -7,
+    "dy1": 7,
+    "vlekken": [
+     {
+      "soort": "STEEN",
+      "dx": -23,
+      "dy": -5,
+      "straal": 1.6
+     },
+     {
+      "soort": "BOOM",
+      "dx": -23,
+      "dy": 5,
+      "straal": 1.7
+     }
+    ]
+   }
   }
  }
 }

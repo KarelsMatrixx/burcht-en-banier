@@ -38,7 +38,7 @@ s = await st();
 check('Bartholt praat', /wood/.test(intro0), intro0);
 check('gids wijst de hamer', await p.isVisible('#gids-ring') && /hammer/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 check('taak 1', s.fase === 'bouw' && s.taak === 0, JSON.stringify(s));
-check('taak in beeld', /Task 1 of 8/.test(await p.textContent('#taak')));
+check('taak in beeld', /Task 1 of 10/.test(await p.textContent('#taak')));
 check('Reinout staat bij de burcht', s.reinout && (await p.evaluate(() => window.spel.eenheden.lijst.some((e) => e.gast))));
 check('geen rode koning', (await p.evaluate(() => window.spel.strijd.koning(1))) === null);
 check('geen uitslag', (await p.evaluate(() => window.spel.strijd.uitslag())) === null);
@@ -58,7 +58,7 @@ const zet = (lijst) => p.evaluate((l) => window.spel.bouwer.zetTerug(l), lijst);
 const volgende = async () => { await p.waitForFunction(() => window.spel.proloog.stand().klaar, null, { timeout: 8000 }).catch(() => {}); await kaartTik(); await kaartTik(); };
 const totTaak = (n) => p.waitForFunction((n) => { const s = window.spel.proloog.stand(); return s.fase !== 'bouw' || (s.taak >= n && !s.klaar); }, n, { timeout: 16000 }).catch(() => {});
 let i = 0;
-for (const [sleutel, n] of [['houthakker', 1], ['steengroeve', 2], ['boomgaard', 3], ['woning', 4], ['kazerne', 5]]) {
+const bouwTaak = async ([sleutel, n]) => {
   await zet({ [sleutel]: vrij[i++] });
   if (n === 1) {
     await p.waitForFunction(() => window.spel.proloog.stand().klaar, null, { timeout: 4000 }).catch(() => {});
@@ -71,20 +71,44 @@ for (const [sleutel, n] of [['houthakker', 1], ['steengroeve', 2], ['boomgaard',
   await kaartTik();   // Start lesson
   await totTaak(n);
   check(`${sleutel} gebouwd: taak ${n + 1}`, (await st()).taak === n, JSON.stringify(await st()));
-}
+};
+for (const t of [['houthakker', 1], ['steengroeve', 2], ['boomgaard', 3], ['woning', 4]]) await bouwTaak(t);
+// Taak 5 en 6: je volk en de belasting, met echte tikken
+check('taak 5: je volk', (await st()).taak === 4 && /purse/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+await p.tap('#knop-buidel'); await p.waitForTimeout(500);
+check('paneel open: gids wijst naar Close', await p.isVisible('#volkpaneel') && /close/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+check('nog niet klaar zolang het paneel openstaat', !(await st()).klaar);
+await p.tap('#volk-sluit'); await p.waitForTimeout(900);
+check('volk gezien en gesloten: klaar', (await st()).klaar);
+await kaartTik(); await kaartTik(); await totTaak(5);
+check('taak 6: belasting', (await st()).taak === 5 && /purse|people/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+await p.tap('#knop-buidel'); await p.waitForTimeout(500);
+check('gids wijst een belastingknop aan', /tax level/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+const voor = await p.evaluate(() => window.spel.economie.stemming().belasting);
+await p.tap('#volk-belasting button:not(.actief)'); await p.waitForTimeout(500);
+const na = await p.evaluate(() => window.spel.economie.stemming().belasting);
+check('belasting veranderd', na !== voor, `${voor} ${na}`);
+check('na de keuze: sluiten', /close/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+await p.tap('#volk-sluit'); await p.waitForTimeout(900);
+check('belasting klaar', (await st()).klaar);
+await p.evaluate((b) => window.spel.economie.zetBelasting(b), voor);
+await kaartTik(); await kaartTik(); await totTaak(6);
+await bouwTaak(['kazerne', 7]).catch((e) => console.log('kazerne', e));
 // Twee soldaten; ze lopen niet vanzelf weg (een bevel telt pas als de speler het geeft)
 await p.evaluate(([x, y]) => window.spel.leger.zetStand([['ridder', x, y, 50, 0], ['boogschutter', x + 1, y, 40, 0]]), vrij[i]);
 await volgende();
-await totTaak(6);
-check('twee soldaten: taak 7', (await st()).taak === 6);
+await totTaak(8);
+check('twee soldaten: taak 9', (await st()).taak === 8);
 await p.waitForTimeout(2000);
 check('sturen nog niet klaar zonder bevel', !(await st()).klaar);
 // Sturen
+check('sturen: gouden plek op de kaart', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && /Send him here/.test(e.textContent); }));
 await p.evaluate(([x, y]) => { const s = window.spel; const e = s.leger.soldaten().find((e) => e.soldaat.sleutel === 'ridder' && !e.opMuur); s.leger.kies([e]); s.leger.stuur(x, y); }, vrij[i + 1]);
 await volgende();
-await totTaak(7);
-check('gestuurd: taak 8', (await st()).taak === 7, JSON.stringify(await st()));
+await totTaak(9);
+check('gestuurd: taak 10', (await st()).taak === 9, JSON.stringify(await st()));
 // Een soldaat op de muur
+check('muur: gouden plek op de kaart', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && /Wall here/.test(e.textContent); }));
 await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; const e = s.leger.soldaten().find((e) => e.soldaat.sleutel === 'boogschutter' && !e.opMuur); s.leger.kies([e]); s.leger.stuur(st.x - 5, st.y - 2, true); });
 await p.waitForFunction(() => window.spel.proloog.stand().klaar, null, { timeout: 40000 }).catch(() => {});
 await kaartTik();   // Continue

@@ -419,3 +419,17 @@
 - Nieuwe API in strijd.js: `zetRoodBouw`, `haalRoodBouwWeg`, `aantalExtraWachters`, `voegExtraWachterToe`. Wachter-nummers vanaf het aantal routes zijn extra wachters (worden niet bewaard, de groei zet ze terug, een per 45 seconden).
 - Niet gedaan: rood bouwt geen kazernes of muren erbij; zijn nieuwe burgers werken niet echt (ze lopen alleen rond).
 - Test: tests/groei41.mjs (12 punten).
+
+## 0.56.0: bouwveld en lessen over je volk (proloog)
+
+Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven was te ver van de burcht.
+
+- **Bouwveld in het westen** (links boven op het scherm): open gras buiten de buitenste muur met rotsen (voor de steengroeve) en een groepje bomen (houthakker), bereikbaar via nieuwe westpoorten in alle vier de ringen en een weg. Kaartgegevens: `bouwveld` in data/kaarten.json (aldervale), code in kaart.js (5e).
+- **Geen bouwafstand in de proloog**: `bouwStraal` 0 (in de gewone levels blijft 14).
+- **Gouden bouwplek**: bij elke bouwles een pulserende gouden ruit op de kaart met label ("Woodcutter here"). De camera springt bij "Start lesson" naar de plek; staat de plek buiten beeld, dan een pijl aan de rand. De plek wordt per les gezocht bij een ankerpunt (proloog.js `zoekPlek`) en schuift mee als hij bezet raakt.
+- **Uitleg per gebouw**: wat de houthakker, steengroeve, boomgaard, woning en kazerne doen en kosten.
+- **Twee nieuwe lessen** (nu 10 in totaal): "See your people" (paneel achter de buidel: boeren, werk, ruimte) en "Set the taxes" (belasting, populariteit, vertrekkende boeren). De gids licht de knoppen uit; de les is af als het paneel gelezen en gesloten is en een belastingstand gekozen.
+- **Bugfix**: na een klare les gaat de bouwstand uit (een extra tik zette anders nog een hut). De gids kiest het juiste bouwwerk als er een ander aan staat.
+- Tests: proloog42 (nieuw, bouwt met echte tikken op de plekken, werkers lopen naar het veld, economielessen), proloog35 (10 lessen), proloog40 (acht poorten, gast los van toeval).
+- Alle teksten van de gids zijn door Claude geschreven en moeten nagelezen worden.
+- Ook de lessen "send a soldier" en "put a soldier on the wall" hebben een gouden plek ("Send him here", "Wall here"). Test: proloog35 (52 punten). Volledige reeks: alleen de bekende fouten (campagne30, verhaal31, hut36, bouwstraal38).

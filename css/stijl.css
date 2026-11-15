@@ -1212,7 +1212,15 @@ button:active {
   animation: gidsPuls 1.4s ease-in-out infinite;
 }
 #gids-ring.luid { animation-duration: 0.55s; border-width: 4px; }
-#gids-ring[hidden], #gids-zin[hidden], #gids-kaart[hidden] { display: none; }
+#gids-ring[hidden], #gids-zin[hidden], #gids-kaart[hidden], #gids-plek[hidden] { display: none; }
+/* De plek op de kaart waar het bouwwerk moet komen */
+#gids-plek { position: fixed; z-index: 55; pointer-events: none; animation: gidsPuls 1.2s ease-in-out infinite; }
+#gids-plek svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+#gids-plek polygon { fill: rgba(243, 211, 122, 0.28); stroke: #f3d37a; stroke-width: 3; filter: drop-shadow(0 0 5px rgba(243, 211, 122, 0.95)); }
+#gids-plek span { position: absolute; left: 50%; top: -22px; transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 700; color: #3b2a10; background: #f3d37a; border-radius: 9px; padding: 1px 8px; }
+#gids-plek span:empty { display: none; }
+#gids-plek.buiten polygon { display: none; }
+#gids-plek.buiten::after { content: ''; position: absolute; inset: 6px; background: #f3d37a; clip-path: polygon(0 20%, 60% 20%, 60% 0, 100% 50%, 60% 100%, 60% 80%, 0 80%); filter: drop-shadow(0 0 5px rgba(0,0,0,.6)); }
 @keyframes gidsPuls { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.7; } }
 #gids-zin {
   position: fixed; z-index: 61; width: 260px; padding: 6px 10px; font-size: 13px; line-height: 1.3;

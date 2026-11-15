@@ -11,7 +11,7 @@ const IDLE = 20;      // seconden zonder tik, dan een duwtje
 const el = (id) => document.getElementById(id);
 const zichtbaar = (e) => !!e && !e.hidden && !!(e.offsetWidth || e.offsetHeight) && !e.closest('[hidden]');
 
-export function maakGids() {
+export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoogte: 32 } } = {}) {
   let doel = null;        // { sleutel, soort } of null
   let laatsteTik = 0;
   let nu = 0;
@@ -28,9 +28,21 @@ export function maakGids() {
   kaart.id = 'gids-kaart';
   kaart.className = 'plaat';
   kaart.hidden = true;
-  document.body.append(ring, zin, kaart);
+  // De plek op de kaart waar het bouwwerk moet komen: een gouden ruit die klopt, met een pijl aan de rand als hij uit beeld is.
+  const plek = document.createElement('div');
+  plek.id = 'gids-plek';
+  plek.hidden = true;
+  plek.innerHTML = '<svg viewBox="-34 -18 68 36" aria-hidden="true"><polygon points="0,-16 32,0 0,16 -32,0"/></svg><span></span>';
+  const plekPijl = plek.querySelector('span');
+  document.body.append(ring, zin, kaart, plek);
 
   document.addEventListener('pointerdown', () => { laatsteTik = nu; ring.classList.remove('luid'); }, true);
+  // Heeft de speler een stand van de belasting gekozen, of het volkspaneel geopend?
+  let belastingTik = false;
+  let paneelGezien = false;
+  document.addEventListener('click', (ev) => {
+    if (ev.target.closest && ev.target.closest('#volk-belasting button')) belastingTik = true;
+  }, true);
 
   // Wat is nu de eerstvolgende knop? Per soort taak.
   function volgende() {
@@ -40,7 +52,12 @@ export function maakGids() {
       if (hamer.classList.contains('plaats')) return { e: hamer, tekst: 'Now tap the glowing hammer to build it.' };
       const knoppen = el('bouw-knoppen');
       const bouwt = knoppen && knoppen.querySelector('.actief');
-      if (bouwt) return { e: null, tekst: 'Tap the ground where it should stand. A green outline means it fits.' };
+      // Staat een ander bouwwerk aan? Dan eerst het juiste kiezen.
+      if (bouwt && bouwt.dataset.sleutel !== doel.sleutel && zichtbaar(knoppen.querySelector(`[data-sleutel="${doel.sleutel}"]`))) {
+        return { e: knoppen.querySelector(`[data-sleutel="${doel.sleutel}"]`), tekst: `Tap ${knoppen.querySelector(`[data-sleutel="${doel.sleutel}"]`).firstChild.textContent.trim()}.` };
+      }
+      if (bouwt && bouwt.dataset.sleutel !== doel.sleutel) { const terug = el('knop-terug'); if (zichtbaar(terug)) return { e: terug, tekst: 'Not this one. Go back.' }; }
+      if (bouwt) return { e: null, tekst: doel.plek ? 'Tap the golden spot on the map. A green outline means it fits.' : 'Tap the ground where it should stand. A green outline means it fits.' };
       if (zichtbaar(knoppen)) {
         const knop = knoppen.querySelector(`[data-sleutel="${doel.sleutel}"]`);
         if (zichtbaar(knop)) return { e: knop, tekst: `Tap ${knop.firstChild.textContent.trim()}.` };
@@ -60,9 +77,56 @@ export function maakGids() {
       }
       return { e: el('knop-zwaard'), tekst: 'Tap the sword to open your army.' };
     }
+    if (doel.soort === 'volk') {
+      if (zichtbaar(el('volkpaneel'))) return { e: el('volk-sluit'), tekst: 'This is your people. Read it, then close it.' };
+      return { e: el('knop-buidel'), tekst: 'Tap the purse to see your people.' };
+    }
+    if (doel.soort === 'belasting') {
+      if (!zichtbaar(el('volkpaneel'))) return { e: el('knop-buidel'), tekst: 'Tap the purse to open your people.' };
+      if (belastingTik) return { e: el('volk-sluit'), tekst: 'Good. Now close the panel.' };
+      const knop = el('volk-belasting').querySelector('button:not(.actief)');
+      return { e: knop, tekst: 'Tap a tax level. Low is safe, High brings gold but angers your people.' };
+    }
     if (doel.soort === 'sturen') return { e: null, tekst: 'Tap a soldier, then tap the ground where he must go.' };
     if (doel.soort === 'muur') return { e: null, tekst: 'Tap a soldier, then tap a piece of your castle wall.' };
     return null;
+  }
+
+  // Zet de ruit op de plek van de les (alleen bij bouwlessen).
+  function zetPlek() {
+    const p = doel && doel.plek;
+    if (!p || !plekNaarScherm) { plek.hidden = true; return; }
+    const sc = plekNaarScherm(p.x, p.y);
+    const z = sc.zoom;
+    const breed = tegelMaat.breedte * z * 1.1;
+    const hoog = tegelMaat.hoogte * z * 1.1;
+    const veilig = 34;
+    const buiten = sc.x < veilig || sc.y < veilig || sc.x > window.innerWidth - veilig || sc.y > window.innerHeight - veilig;
+    plek.hidden = false;
+    plek.classList.toggle('buiten', buiten);
+    if (!buiten) {
+      plek.style.width = `${breed}px`;
+      plek.style.height = `${hoog}px`;
+      plek.style.left = `${sc.x - breed / 2}px`;
+      plek.style.top = `${sc.y - hoog / 2}px`;
+      plek.style.transform = '';
+      plekPijl.textContent = doel.plekTekst || 'Build here';
+    } else {
+      // Een pijl aan de rand van het scherm, in de richting van de plek
+      const mx = window.innerWidth / 2;
+      const my = window.innerHeight / 2;
+      const hoek = Math.atan2(sc.y - my, sc.x - mx);
+      const rx = Math.max(-1, Math.min(1, Math.cos(hoek) * 1e3));
+      const ry = Math.max(-1, Math.min(1, Math.sin(hoek) * 1e3));
+      const x = Math.max(veilig, Math.min(window.innerWidth - veilig, mx + rx * (mx - veilig)));
+      const y = Math.max(veilig + 40, Math.min(window.innerHeight - veilig - 20, my + ry * (my - veilig - 20)));
+      plek.style.width = '44px';
+      plek.style.height = '44px';
+      plek.style.left = `${x - 22}px`;
+      plek.style.top = `${y - 22}px`;
+      plek.style.transform = `rotate(${hoek}rad)`;
+      plekPijl.textContent = '';
+    }
   }
 
   function zet(r) {
@@ -104,12 +168,20 @@ export function maakGids() {
 
   return {
     // Richt de gids op een taak: soort 'bouw' (met sleutel), 'opleiden', 'sturen', 'muur'.
-    richt(taak) { doel = taak; laatsteTik = nu; vorigeTekst = ''; },
-    stop() { doel = null; zet(null); },
+    richt(taak) { doel = taak; laatsteTik = nu; vorigeTekst = ''; belastingTik = false; paneelGezien = false; },
+    belastingGekozen: () => belastingTik,
+    // Is het volkspaneel in deze les geopend geweest?
+    volkGezien: () => paneelGezien,
+    volkGesloten: () => paneelGezien && !zichtbaar(el('volkpaneel')),
+    // De ruit op de kaart verplaatsen (als de plek bezet raakt)
+    zetPlek(p) { if (doel) doel.plek = p; },
+    stop() { doel = null; plek.hidden = true; zet(null); },
     // Elke halve seconde of sneller.
     stap(dt) {
       nu += dt;
       if (!doel) return;
+      zetPlek();
+      if (zichtbaar(el('volkpaneel'))) paneelGezien = true;
       zet(volgende());
       if (nu - laatsteTik > IDLE) ring.classList.add('luid');
     },

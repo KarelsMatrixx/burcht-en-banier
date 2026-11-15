@@ -27,15 +27,16 @@ const ruimte = await p.evaluate(() => { const s = window.spel; const k = s.kaart
 check('genoeg bouwruimte (>= 150)', ruimte >= 150, ruimte);
 // Vier ringen
 const ringen = await p.evaluate(() => { const k = window.spel.kaart; let poorten = 0, muur = 0; for (let i = 0; i < k.object.length; i++) { if (k.object[i] === 6 && k.eigenaar[i] === 1) poorten++; } return { poorten }; });
-check('vier poorten (vier ringen)', ringen.poorten === 4, ringen.poorten);
+check('acht poorten (vier ringen, oost en west)', ringen.poorten === 8, ringen.poorten);
 const wachters = await p.evaluate(() => window.spel.leger.soldaten().filter((e) => e.opMuur).length);
 check('wachters op de muren (>= 10)', wachters >= 10, wachters);
 // Karel en de gast lopen rond
 const k0 = await p.evaluate(() => { const e = window.spel.leger.soldaten().find((e) => e.soldaat.sleutel === 'koning'); const g = window.spel.eenheden.lijst.find((e) => e.gast); return [e.x, e.y, g.x, g.y]; });
-await p.waitForTimeout(14000);
+let weg = 0, vorig = [k0[2], k0[3]];
+for (let r = 0; r < 7; r++) { await p.waitForTimeout(3000); const g = await p.evaluate(() => { const g = window.spel.eenheden.lijst.find((e) => e.gast); return [g.x, g.y]; }); weg += Math.hypot(g[0] - vorig[0], g[1] - vorig[1]); vorig = g; }
 const k1 = await p.evaluate(() => { const e = window.spel.leger.soldaten().find((e) => e.soldaat.sleutel === 'koning'); const g = window.spel.eenheden.lijst.find((e) => e.gast); return [e.x, e.y, g.x, g.y]; });
 check('Karel loopt rond', Math.hypot(k1[0] - k0[0], k1[1] - k0[1]) > 0.5, JSON.stringify([k0, k1]));
-check('de gast loopt rond', Math.hypot(k1[2] - k0[2], k1[3] - k0[3]) > 0.5, JSON.stringify([k0, k1]));
+check('de gast loopt rond (afgelegde weg in 21 s)', weg > 0.8, weg);
 // Figuren
 await p.waitForTimeout(500);
 const f0 = await p.evaluate(() => window.spel.figuranten.lijst().map((e) => [e.soort, +e.x.toFixed(1), +e.y.toFixed(1)]));

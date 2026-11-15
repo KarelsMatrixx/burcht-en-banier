@@ -130,7 +130,7 @@ async function start() {
   });
   let naBouw = () => {};       // wordt hieronder ingevuld, als het gevecht er is
   const bouwer = maakBouwer({
-    kaart, wegvinder, tekenaar, eenheden, economie, bouwwerken, bouwStraal: regels.bouwStraal,
+    kaart, wegvinder, tekenaar, eenheden, economie, bouwwerken, bouwStraal: missie && missie.proloog ? 0 : regels.bouwStraal,   // proloog: bouw waar Bartholt het wijst
     opVerandering: () => {
       naBouw();
       bewaar();
@@ -776,12 +776,18 @@ async function start() {
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
   // De proloog: taken van Bartholt, de nacht en de scène.
-  const gids = missie && missie.proloog ? maakGids() : null;
+  const gids = missie && missie.proloog ? maakGids({
+    // Waar staat een tegel op het scherm, en hoe groot is hij? Voor de gouden ruit op de bouwplek.
+    plekNaarScherm: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); const sc = camera.wereldNaarScherm(w.x, w.y); return { x: sc.x, y: sc.y, zoom: camera.zoom }; },
+    tegelMaat: { breedte: CONFIG.tegel.breedte, hoogte: CONFIG.tegel.hoogte },
+  }) : null;
   const slachting = maakSlachting({ strijd, economie, wegvinder, kaart, eenheden, leger, rood });
   const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd }) : null;
   proloog = missie && missie.proloog ? maakProloog({
-    soortKoning: SOORT.KONING, kaart, bouwer, leger, strijd, wegvinder, eenheden,
+    soortKoning: SOORT.KONING, kaart, bouwer, bouwwerken, leger, strijd, wegvinder, eenheden,
     koningSoort: 'koning', gids,
+    stopBouw: () => stopBouw(),
+    kijkNaar: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); camera.kijkNaar(w.x, w.y); },
     toonVerhaal: (b) => ui.toonVerhaal(b),
     toonTaak: (t) => ui.toonTaak(t),
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
