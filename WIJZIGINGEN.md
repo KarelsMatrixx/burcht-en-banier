@@ -486,3 +486,5 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Gidszin schuift boven de legerhint linksonder als die elkaar raken.
 - Het leger van Ottger begint helemaal aan de oostrand (groepjes langs de rand) en loopt aan op 55% snelheid; bij de storm weer gewone snelheid (`traag` in stuurLeger).
 - Tests: proloog35 (68), proloog43 (25).
+## 0.59.2: verhaalbeeld ook voor de proloog
+- data/campagne.json: level 0 krijgt "beeld" (beelden/verhaal/level00.webp) en "verhaal". Zonder bestand staat de tekst op een donkere achtergrond. De proloog toont dus 12 seconden het beeld voor de briefing van Bartholt.

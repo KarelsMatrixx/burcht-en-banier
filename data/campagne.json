@@ -80,6 +80,8 @@
    },
    "speelbaar": true,
    "intro": "Wessel turns nine today, and all of Aldervale is at the feast. Bartholt will show you how to build and how to train soldiers. Lord Reinout of Witherheath is your guest.",
+   "beeld": "beelden/verhaal/level00.webp",
+   "verhaal": "Elzendaal, the day Wessel turns nine. Banners hang from every wall, and Lord Reinout raises his cup at the king's table. Bartholt says the duke's messengers are restless, but tonight there is music. It is the last peaceful day.",
    "uit": "",
    "wessel": "",
    "beloning": [
