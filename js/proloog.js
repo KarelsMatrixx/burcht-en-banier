@@ -109,7 +109,13 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
   const stuurWas = leger.stuur;
   leger.stuur = (...a) => {
     const gelukt = stuurWas(...a);
-    if (gelukt && s.fase === 'bouw' && s.basis && TAKEN[s.taak].sturen) s.gestuurd = true;
+    // Grondles: alleen een bevel op de grond, bij de gouden plek (niet op een muur)
+    if (gelukt && s.fase === 'bouw' && s.basis && TAKEN[s.taak].sturen && !a[2] && !leger.isMuur(a[0], a[1])) {
+      const g = gids.doel();
+      const st = kaart.start[0];
+      const p = (g && g.plek) || { x: st.x + TAKEN[s.taak].doelPlek[0], y: st.y + TAKEN[s.taak].doelPlek[1] };
+      if (Math.hypot(a[0] - p.x, a[1] - p.y) <= 4) s.gestuurd = true;
+    }
     // Muurles: elk bevel naar een stuk muur telt
     if (gelukt && s.fase === 'bouw' && s.basis && TAKEN[s.taak].opMuur && (a[2] || leger.isMuur(a[0], a[1]))) s.gestuurd = true;
     // Nachtles: een bevel telt alleen als het bij de gouden plek is (bij de muurles: op de muur)
@@ -282,7 +288,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     if (t.belasting) return gids.belastingGekozen() && gids.volkGesloten();
     if (t.soldaten) return soldaten().length - (s.basisSoldaten || 0) >= t.soldaten;
     if (t.sturen) return s.gestuurd;
-    if (t.opMuur) return s.gestuurd || naarDeMuur() > 0;
+    if (t.opMuur) return s.gestuurd;   // alleen een bevel in deze les naar een stuk muur
     return true;
   }
 

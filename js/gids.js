@@ -117,6 +117,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
   const wijsSoldaat = () => (doel && doel.soldaat && doel.heeftKeuze && !doel.heeftKeuze() ? doel.soldaat() : null);
   function zetPlek() {
     const sol = wijsSoldaat();
+    // Grondles: de doelplek pas tonen als het oog is uitgelegd
+    if (!sol && doel && doel.soort === 'sturen' && !oogGezien) { plek.hidden = true; return; }
     const p = sol ? { x: Math.floor(sol.x), y: Math.floor(sol.y) } : doel && doel.plek;
     if (!p || !plekNaarScherm) { plek.hidden = true; return; }
     if (doel.soort === 'opleiden' && zichtbaar(el('legerpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open

@@ -982,7 +982,9 @@ async function start() {
         return;
       }
       // Zijn er soldaten gekozen en tik je je eigen muur aan, dan gaan ze erop.
-      const muur = leger.aantalGekozen() ? muurOnder(wereld.x, wereld.y) : null;
+      // Met het oog aan (muren doorzichtig) telt de grond: alleen een tik op de muur zelf zet ze erop.
+      const grondEerst = tekenaar.doorzicht() && !leger.isMuur(x, y);
+      const muur = leger.aantalGekozen() && !grondEerst ? muurOnder(wereld.x, wereld.y) : null;
       if (muur) {
         if (leger.stuur(muur.x, muur.y, true)) {
           staat.doel = { x: muur.x, y: muur.y, duur: 900, tot: performance.now() + 900, hoogte: hoogteOp(muur.y * kaart.breedte + muur.x) };
@@ -1122,7 +1124,7 @@ async function start() {
   });
 
   // Handig bij het zoeken naar fouten.
-  window.spel = { veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting };
+  window.spel = { gids, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

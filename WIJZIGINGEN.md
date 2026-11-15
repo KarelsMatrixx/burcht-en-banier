@@ -492,3 +492,9 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 ## 0.59.3: de elf verhaalbeelden
 - beelden/verhaal/level00.webp tot en met level10.webp (Gemini, 1024 x 434, samen ongeveer 650 KB) en in KERN van sw.js.
 - Tekst level 1: "Karel has put on the black band" (de rouwband komt pas na de proloog).
+
+## 0.59.4: grondles en muurles strenger, oog eerst
+- Grondles ("Send a soldier"): volgorde nieuwe soldaat, oog, dan pas de gouden plek. Alleen een bevel op de grond binnen 4 tegels van de plek telt; een soldaat op de muur zetten telt niet meer.
+- Muurles: alleen een bevel in die les naar een stuk muur telt (een soldaat die er al stond niet).
+- Met het oog aan gaat een tik naar de grond, behalve als je de muur zelf aantikt (main.js). Zonder deze regel ging een tik op de gouden plek achter een muur naar de muurtop.
+- `window.spel.gids` voor tests. proloog35 (72 punten) wacht op het verhaalbeeld.

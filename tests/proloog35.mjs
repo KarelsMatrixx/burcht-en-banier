@@ -17,6 +17,7 @@ await p.evaluate(() => {
 });
 await p.reload(); await wacht(); await p.waitForTimeout(300);
 check('proloog gekozen', (await p.evaluate(() => window.spel.modus.missie)) === 0);
+await p.waitForSelector('#missie:not([hidden])', { timeout: 20000 }).catch(() => {});
 check('briefing open', await p.isVisible('#missie'));
 await p.tap('#missie-begin');
 const st = () => p.evaluate(() => window.spel.proloog.stand());
@@ -117,22 +118,40 @@ check('sturen: eerst de nieuwe soldaat aanwijzen', await p.evaluate(() => { cons
 await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().filter((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning').pop(); s.leger.kies([e]); });
 await p.waitForTimeout(500);
 check('gekozen: nu het oog', /eye/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+check('zolang het oog niet is uitgelegd: geen doelplek', await p.evaluate(() => document.getElementById('gids-plek').hidden));
+// Een bevel naar de muur telt niet voor de grondles
+await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; s.leger.stuur(st.x - 5, st.y - 2, true); });
+await p.waitForTimeout(1200);
+check('grondles: soldaat op de muur telt niet', !(await st()).klaar);
+await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().filter((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning').pop() || s.leger.soldaten().filter((e) => !e.wachter && e.soldaat.sleutel !== 'koning').pop(); s.leger.kies([e]); });
 await p.tap('#knop-oog'); await p.waitForTimeout(400);
 check('oog aan: nu de gouden plek', /golden spot/i.test(await p.textContent('#gids-zin')) && /Send him here/.test(await p.textContent('#gids-plek')), await p.textContent('#gids-zin'));
 await p.tap('#knop-oog'); await p.waitForTimeout(400);
 check('oog weer uit: gids vraagt er niet opnieuw om', !/eye/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 check('zin niet over de legerhint', await p.evaluate(() => { const h = document.getElementById('legerhint'); if (h.hidden) return true; const a = h.getBoundingClientRect(), z = document.getElementById('gids-zin').getBoundingClientRect(); return !(z.left < a.right && z.right > a.left && z.top < a.bottom && z.bottom > a.top); }));
-await p.evaluate(([x, y]) => { const s = window.spel; const e = s.leger.soldaten().find((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning'); s.leger.kies([e]); s.leger.stuur(x, y); }, vrij[i + 1]);
+// Nu echt: oog aan, soldaat kiezen en op de gouden plek tikken
+await p.tap('#knop-oog'); await p.waitForTimeout(300);
+await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().find((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning'); s.leger.kies([e]); });
+await p.waitForTimeout(500);
+const gp = await p.evaluate(() => { const r = document.getElementById('gids-plek'); const c = r.getBoundingClientRect(); return [c.left + c.width / 2, c.top + c.height / 2, r.hidden, r.classList.contains('buiten')]; });
+check('gouden plek in beeld voor het bevel', !gp[2] && !gp[3], JSON.stringify(gp));
+await p.evaluate(() => { const l = window.spel.leger; const w = l.stuur; l.stuur = (...a) => { window.__st = a; return w(...a); }; });
+await p.touchscreen.tap(gp[0], gp[1]);
+await p.waitForTimeout(800); check('bevel op de gouden plek telt', (await st()).gestuurd);
+
 await volgende();
 await totTaak(10);
 check('gestuurd: taak 11', (await st()).taak === 10, JSON.stringify(await st()));
 // Een soldaat op de muur
+if (await p.isVisible('#gids-kaart')) await kaartTik();   // het introkaartje van de muurles
+await p.waitForFunction(() => !document.getElementById('gids-plek').hidden, null, { timeout: 4000 }).catch(() => {});
 check('muur: gouden plek op de kaart', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && (/Wall here|Tap this soldier/.test(e.textContent) || e.classList.contains('buiten')); }));
 // Een beeldvullend scherm (titel) verbergt de gids helemaal
 await p.evaluate(() => { document.getElementById('titelscherm').hidden = false; }); await p.waitForTimeout(500);
 check('titelscherm: gids verborgen', await p.evaluate(() => ['gids-ring', 'gids-zin', 'gids-plek', 'gids-kaart'].every((id) => getComputedStyle(document.getElementById(id)).display === 'none')));
 await p.evaluate(() => { document.getElementById('titelscherm').hidden = true; }); await p.waitForTimeout(500);
-check('titelscherm weg: gids terug', await p.evaluate(() => getComputedStyle(document.getElementById('gids-plek')).display !== 'none'));
+await p.waitForFunction(() => !document.body.classList.contains('gids-bedekt'), null, { timeout: 4000 }).catch(() => {});
+check('titelscherm weg: gids terug', await p.evaluate(() => !document.body.classList.contains('gids-bedekt') && getComputedStyle(document.getElementById('gids-zin')).display !== 'none'));
 // Elk bevel naar de muur telt, ook als de speler een wachter verplaatst (zo speelde Karel het)
 await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; s.leger.kies(s.leger.soldaten().filter((e) => e.opMuur && e.wachter).slice(0, 3)); s.leger.stuur(st.x - 5, st.y - 2, true); });
 await p.waitForTimeout(1500);
