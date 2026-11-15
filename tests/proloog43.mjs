@@ -57,8 +57,9 @@ check('plek in beeld', !m[2], JSON.stringify(m));
 await p.touchscreen.tap(m[0], m[1]); await p.waitForTimeout(800);
 check('les 2 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 await kaartTik(); await kaartTik();
-await p.tap('#knop-zwaard').catch(() => {}); await p.waitForTimeout(300);
-await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap().catch(async () => { await p.tap('#knop-zwaard'); await p.waitForTimeout(300); await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap(); });
+console.log('DBG', await p.evaluate(() => ({ g: !document.getElementById('leger-groepen').hidden, btn: [...document.querySelectorAll('#leger-groepen button')].map((b) => b.textContent + ':' + (b.offsetParent ? 'v' : 'h')), zin: document.getElementById('gids-zin').textContent, pan: !!document.querySelector('#legerpaneel:not([hidden])') })));
+if (!(await p.isVisible('#leger-groepen button'))) { await p.tap('#knop-zwaard'); await p.waitForTimeout(400); }
+await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap({ timeout: 5000 });
 await p.waitForTimeout(900);
 check('les 3 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 await kaartTik(); await kaartTik();

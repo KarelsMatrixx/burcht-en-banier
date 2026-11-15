@@ -454,3 +454,6 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Terwijl ze wachten volgt een les in vier stappen: boogschutters kiezen, naar de muur bij de poort sturen, ridders kiezen, achter de poort zetten. Bartholt legt elke stap uit, de gids wijst de knoppen en de gouden plek aan (`NACHT_TAKEN` in proloog.js, nieuwe gidssoorten 'kies' en 'stuur').
 - Na de laatste stap (of na 150 seconden) gaan de poorten open en stroomt het leger naar binnen.
 - Test: proloog43 (22 punten). Andere tests niet opnieuw gedraaid.
+
+## 0.58.1: nachtles soepeler
+- De lessen over je leger tellen nu ruimer: elk stuk muur telt voor de boogschutters, de plek bij de poort mag 6 tegels ernaast liggen, en heeft de speler het gevraagde soort niet, dan telt elke soldaat van hem.

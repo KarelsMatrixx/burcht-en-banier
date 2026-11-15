@@ -238,7 +238,17 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     bewaar();
   }
 
-  const nachtKlaar = (t) => (t.keuze ? leger.gekozen().some((e) => e.soldaat.sleutel === t.keuze) : bijPlek(t, (e) => e.soldaat.sleutel === t.stuurSoort));
+  // Soepel: heeft de speler dat soort niet (meer), dan telt elke soldaat van hem.
+  const heeftSoort = (sleutel) => soldaten().some((e) => e.soldaat.sleutel === sleutel && !isWachterZonderBevel(e) && !e.wachter);
+  const nachtKlaar = (t) => {
+    const sleutel = t.keuze || t.stuurSoort;
+    const soortPast = (e) => e.soldaat.sleutel === sleutel || !heeftSoort(sleutel);
+    if (t.keuze) return leger.gekozen().some((e) => soortPast(e) && e.soldaat.sleutel !== 'koning');
+    // De muur: elk stuk muur telt, een soldaat van de speler die erop staat of erheen loopt
+    if (t.opMuur && bijPlek(t, soortPast)) return true;
+    if (t.opMuur) return soldaten().some((e) => !isWachterZonderBevel(e) && !e.wachter && soortPast(e) && (e.opMuur || (e.soldaat.doel >= kaart.breedte * kaart.hoogte && e.pad)));
+    return bijPlek(t, soortPast);
+  };
   // Staat of loopt er een soldaat van de speler naar deze plek? (muur: de bovenkant van het stuk muur)
   function bijPlek(t, past) {
     const B = kaart.breedte;
@@ -250,9 +260,9 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       const doel = e.soldaat && e.soldaat.doel >= 0 ? e.soldaat.doel : -1;
       if (doel >= 0) {
         const vak = doel >= N ? doel - N : doel;
-        return Math.hypot((vak % B) - p.x, Math.floor(vak / B) - p.y) <= 3.5;
+        return Math.hypot((vak % B) - p.x, Math.floor(vak / B) - p.y) <= 6;
       }
-      return Math.hypot(e.x - p.x - 0.5, e.y - p.y - 0.5) <= 3.5 && (!t.opMuur || e.opMuur);
+      return Math.hypot(e.x - p.x - 0.5, e.y - p.y - 0.5) <= 6;
     });
   }
   // Een wachter die nog op zijn vaste post staat, telt niet als bevel van de speler
