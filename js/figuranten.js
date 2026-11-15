@@ -18,6 +18,7 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd, koni
   let gast = null;
   let bartholt = null;        // de vermelding van Bartholt in de lijst: hij gaat mee naar de plek van de les
   let koningWacht = 3;
+  let garnizoenWacht = 2;
   const toeval = () => { rng = (rng * 1664525 + 1013904223) >>> 0; return rng / 4294967296; };
 
   function zetFiguur(soort, x, y, straal, snelheid) {
@@ -158,6 +159,18 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd, koni
           koningWacht = 4 + toeval() * 8;
           const st = kaart.start[0];
           leger.wandel(k, Math.round(st.x + (toeval() * 2 - 1) * 4), Math.round(st.y + (toeval() * 2 - 1) * 4));
+        }
+      }
+      // Het garnizoen loopt rond op de binnenpleinen (een paar per keer, alleen wie niets te doen heeft)
+      garnizoenWacht -= dt;
+      if (garnizoenWacht <= 0) {
+        garnizoenWacht = 0.6;
+        const gekozen = leger.gekozen();
+        const vrij = leger.lijst.filter((e) => e.garnizoen && !e.dood && !e.pad && !e.opMuur && !gekozen.includes(e) && !(e.soldaat && e.soldaat.doel >= 0));
+        for (let n = 0; n < 2 && vrij.length; n++) {
+          const e = vrij.splice(Math.floor(toeval() * vrij.length), 1)[0];
+          if (!e.thuis) e.thuis = { x: Math.floor(e.x), y: Math.floor(e.y) };
+          leger.wandel(e, Math.round(e.thuis.x + (toeval() * 2 - 1) * 3), Math.round(e.thuis.y + (toeval() * 2 - 1) * 3));
         }
       }
       let budget = PER_STAP;

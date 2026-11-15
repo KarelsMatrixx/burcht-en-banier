@@ -100,6 +100,7 @@ async function start() {
   if (ontwerp && ontwerp.hoog) regels.strijd.roodMuurHoog = true;   // te hoog voor ladders
   // De proloog: geen winst of verlies, geen rode heer in zijn burcht (js/proloog.js).
   if (missie && missie.proloog) regels.strijd.proloog = true;
+  if (missie && missie.proloog) regels.legerMax = Math.max(regels.legerMax, 80);   // het garnizoen van Aldervale (ongeveer 40) plus wat je traint
   const opslag = maakOpslag(kaart.zaad, opslagSleutel(modus));
 
   // Bewaren: na elke keer bouwen, slopen, hakken of afleveren.
@@ -794,6 +795,7 @@ async function start() {
     soortKoning: SOORT.KONING, kaart, bouwer, bouwwerken, leger, strijd, wegvinder, eenheden,
     koningSoort: 'koning', gids, figuranten,
     kiesGeen: () => { leger.kiesGeen(); if (naLeger) naLeger(); },
+    sluitPanelen: () => { stopBouw(); sluitKazerne(); leger.kiesGeen(); if (naLeger) naLeger(); },
     stopBouw: () => stopBouw(),
     kijkNaar: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); camera.kijkNaar(w.x, w.y); },
     toonVerhaal: (b) => ui.toonVerhaal(b),

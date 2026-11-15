@@ -511,3 +511,10 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 
 ## 0.60.1: eerst 10 seconden beleg, dan gaat de poort open
 - Na de nachtles (of na 150 s) valt het leger aan, maar de poorten blijven 10 seconden dicht ("Hold the walls!"). Daarna gaat de poort van binnenuit open. Test proloog43 (27).
+
+## 0.61.0: garnizoen, logboekles, koning niet onder de helft, ontvoering te paard
+- Aldervale begint met ongeveer 40 soldaten (wachters op de muur plus ridders, schutters, zwaardvechters en bijlridders op de binnenpleinen). Die lopen overdag rond (figuranten.js) en tellen als wachter. legerMax in de proloog 80.
+- Nieuwe laatste dagles 12 "Read your messages": de gids wijst Bartholts portret linksboven aan; open en weer dicht = klaar. Het laatste gesprek komt daarna.
+- Karel zakt in de proloog nooit onder de helft van zijn leven (strijd.js en een controle in proloog.js).
+- Einde van de nacht: eerst de ontvoering (8 s). Een ruiter in het zwart met zwarte banier en fakkel galoppeert met Wessel van de burcht door de oostpoorten naar buiten (effect `ruiter`, getekend in tekenaar.js). Daarna de scènekaarten.
+- Tests: proloog35 (78), proloog42 (25), proloog43 (27), proloog40 (22).

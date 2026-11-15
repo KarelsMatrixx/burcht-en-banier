@@ -100,6 +100,10 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       if (doel.heeftKeuze && !doel.heeftKeuze()) return { e: el('knop-zwaard'), tekst: 'Your soldiers are no longer chosen. Open the army and choose them again.' };
       return { e: null, tekst: 'Tap the golden spot on the map.' };
     }
+    if (doel.soort === 'logboek') {
+      if (zichtbaar(el('logboek'))) logboekOpen = true;
+      return { e: el('adviseur'), tekst: logboekOpen ? 'Tap the portrait again to close the messages.' : 'Tap Bartholt\'s portrait to read your messages.' };
+    }
     if (doel.soort === 'sturen' || doel.soort === 'muur') {
       // 1. de soldaat die je net trainde aantikken, 2. (grond) het oog, 3. de gouden plek
       const oog = el('knop-oog');
@@ -112,6 +116,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
   }
 
   // Zet de ruit op de plek van de les (alleen bij bouwlessen).
+  let logboekOpen = false;   // de logboekles: het logboek is open geweest
   let oogGezien = false;   // het oog is al een keer aangezet (de les over bevelen op de grond)
   // Nog niemand gekozen in een les met een bevel: de gouden plek staat op een nieuwe soldaat
   const wijsSoldaat = () => (doel && doel.soldaat && doel.heeftKeuze && !doel.heeftKeuze() ? doel.soldaat() : null);
@@ -224,6 +229,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
 
   return {
     // Richt de gids op een taak: soort 'bouw' (met sleutel), 'opleiden', 'sturen', 'muur'.
+    // Logboekles: open geweest en weer dicht
+    logboekGelezen: () => { if (!el('logboek').hidden) logboekOpen = true; return logboekOpen && el('logboek').hidden; },
     richt(taak) { doel = taak; laatsteTik = nu; vorigeTekst = ''; belastingTik = false; paneelGezien = false; },
     belastingGekozen: () => belastingTik,
     // Is het volkspaneel in deze les geopend geweest?

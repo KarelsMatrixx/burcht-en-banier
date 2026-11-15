@@ -42,7 +42,8 @@ s = await st();
 check('Bartholt praat', /wood/.test(intro0), intro0);
 check('gids wijst de hamer', await p.isVisible('#gids-ring') && /hammer/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 check('taak 1', s.fase === 'bouw' && s.taak === 0, JSON.stringify(s));
-check('taak in beeld', /Task 1 of 11/.test(await p.textContent('#taak')));
+check('garnizoen van ongeveer 40', (await p.evaluate(() => window.spel.leger.soldaten().length)) >= 36, await p.evaluate(() => window.spel.leger.soldaten().length));
+check('taak in beeld', /Task 1 of 12/.test(await p.textContent('#taak')));
 check('Reinout staat bij de burcht', s.reinout && (await p.evaluate(() => window.spel.eenheden.lijst.some((e) => e.gast))));
 check('geen rode koning', (await p.evaluate(() => window.spel.strijd.koning(1))) === null);
 check('geen uitslag', (await p.evaluate(() => window.spel.strijd.uitslag())) === null);
@@ -158,6 +159,14 @@ await p.waitForTimeout(1500);
 check('bevel naar de muur telt', (await st()).klaar);
 // Alle soldaten gekozen (wachters en nieuwe), dan naar de muur: de nieuwe telt wel
 await p.waitForFunction(() => window.spel.proloog.stand().klaar, null, { timeout: 40000 }).catch(() => {});
+await kaartTik(); await kaartTik();   // lof, dan het introkaartje van de logboekles
+// Logboekles: Bartholts portret linksboven
+await p.waitForTimeout(500);
+check('logboekles: gids wijst het portret', /portrait/i.test(await p.textContent('#gids-zin')) && (await p.evaluate(() => { const r = document.getElementById('gids-ring').getBoundingClientRect(), a = document.getElementById('adviseur').getBoundingClientRect(); return Math.abs(r.left - a.left) < 12 && Math.abs(r.top - a.top) < 12; })), await p.textContent('#gids-zin'));
+await p.tap('#adviseur'); await p.waitForTimeout(800);
+check('logboek open, nog niet klaar', await p.isVisible('#logboek') && !(await st()).klaar);
+await p.tap('#adviseur'); await p.waitForTimeout(900);
+check('logboek dicht: les klaar', (await st()).klaar, JSON.stringify(await st()));
 await kaartTik();   // Continue
 await p.waitForFunction(() => window.spel.proloog.stand().fase === 'avond', null, { timeout: 8000 }).catch(() => {});
 s = await st();
@@ -187,10 +196,15 @@ await p.screenshot({ path: '/home/claude/proloog-nacht.png' });
 await p.evaluate(() => { const k = window.spel.strijd.koning(0); k.leven = 2; });
 await p.waitForTimeout(4000);
 check('koning leeft nog', (await p.evaluate(() => { const k = window.spel.strijd.koning(0); return !!k && k.leven >= 1; })));
+check('koning niet onder de helft na een treffer', await p.evaluate(() => { const k = window.spel.strijd.koning(0); return k.leven >= Math.ceil(k.levenMax / 2); }), await p.evaluate(() => { const k = window.spel.strijd.koning(0); return k.leven + '/' + k.levenMax; }));
 check('nog steeds geen uitslag', (await p.evaluate(() => window.spel.strijd.uitslag())) === null);
 // Burcht onder 40%: de scène
 await p.evaluate(() => { const b = window.spel.strijd.burcht(); window.spel.strijd.zetBurcht(Math.floor(b.max * 0.35)); });
-await p.waitForFunction(() => !document.getElementById('scene').hidden, null, { timeout: 5000 }).catch(() => {});
+await p.waitForFunction(() => window.spel.proloog.stand().fase === 'ontvoering', null, { timeout: 5000 }).catch(() => {});
+check('eerst de ontvoering: een ruiter', (await st()).fase === 'ontvoering' && (await p.evaluate(() => window.spel.strijd.effecten.some((f) => f.soort === 'ruiter'))));
+await p.waitForTimeout(3500);
+await p.screenshot({ path: '/tmp/s/ruiter.png' });
+await p.waitForFunction(() => !document.getElementById('scene').hidden, null, { timeout: 9000 }).catch(() => {});
 check('scène open', await p.isVisible('#scene'));
 await p.screenshot({ path: '/home/claude/proloog-scene.png' });
 let kaarten = 0;

@@ -326,7 +326,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // --- Wat je ziet: pijlen, gevallenen en de balkjes boven bouwwerken ------------------
   function effect(wat) {
-    if (effecten.length >= MAX_EFFECTEN) effecten.shift();
+    if (effecten.length >= MAX_EFFECTEN) { const i = effecten.findIndex((f) => f.soort !== 'ruiter'); effecten.splice(Math.max(0, i), 1); }
     wat.van = performance.now();
     effecten.push(wat);
   }
@@ -335,6 +335,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const val = (e) => effect({ soort: 'val', x: e.x, y: e.y, team: e.team, duur: 1500 });
   // Een rookwolkje (Bartholt verschijnt of verdwijnt)
   const rook = (x, y) => effect({ soort: 'rook', x, y, duur: 800 });
+  // Een ruiter galoppeert langs een route (lijst van [x, y]) en draagt Wessel weg (proloog)
+  const ruiter = (route, duur) => effect({ soort: 'ruiter', route, duur });
 
   function balkenBij() {
     balken.length = 0;
@@ -442,7 +444,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (door && Math.hypot(door.x - doel.x, door.y - doel.y) < 2.6) effect({ soort: 'klap', x: (door.x + doel.x) / 2, y: (door.y + doel.y) / 2, h: (doel.hoogte || 0) + 10, duur: 150 });
     }
     // In de proloog sneuvelt geen koning: het verhaal gaat door.
-    if (R.proloog && doel.leven < 1 && krijgVan(doel).def.koning) doel.leven = 1;
+    if (R.proloog && krijgVan(doel).def.koning && doel.team === SPELER) doel.leven = Math.max(doel.leven, Math.ceil(doel.levenMax / 2));   // naar Karel: niet onder de helft
     const kd = krijgVan(doel);
     kd.rust = 0;
     if (doel.leven <= 0) {
@@ -1995,7 +1997,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   zetWachters(null);   // rood begint met een wachter op elk stuk muur
 
   return {
-    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, laatOpmarsLos, opmarsStand, hinderlaag,
+    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, ruiter, laatOpmarsLos, opmarsStand, hinderlaag,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),

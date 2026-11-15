@@ -35,6 +35,7 @@ const TAKEN = [
   { taak: 'Train two soldiers', soldaten: 2, gids: { soort: 'opleiden', plekTekst: 'Barracks' }, kazernePlek: true, tekst: 'Now train two soldiers. Each costs gold and one idle peasant. Knights hold the line, archers shoot from behind it.' },
   { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen', plekTekst: 'Send him here' }, doelPlek: [4, 3], tekst: 'Now give an order on the ground. First tap your new soldier to choose him. The spot lies behind a wall, so then tap the eye in the top right corner: walls and buildings turn see-through. Then show him where to go.' },
   { taak: 'Put a soldier on the wall', opMuur: true, gids: { soort: 'muur', plekTekst: 'Wall here' }, doelPlek: [-5, -2], tekst: "Last lesson, Sire. Ottger's messengers at the border are restless. Put a soldier on the wall to keep watch." },
+  { taak: 'Read your messages', logboek: true, gids: { soort: 'logboek' }, tekst: 'One more thing, Sire. My portrait in the top left corner keeps every message that comes in: reports, warnings and words from other lords. A red number means there is something new. Tap my portrait to read them, and tap it again to close the list.' },
 ];
 
 const LOF = ['Well done, Sire.', 'Good work.', 'Splendid. The people see their king at work.', 'That will do nicely.', 'Very good.'];
@@ -43,6 +44,7 @@ const AVOND = 20;              // daarna seconden schemering voor de nacht
 const NACHT_DUUR = 240;        // vier minuten nacht, dan de scène
 const OVERMACHT = 100;         // zoveel vijanden komen er: je hebt geen kans (naar Karel)
 const OPMARS_TEMPO = 0.55;     // zo langzaam lopen ze aan (deel van hun gewone snelheid)
+const GARNIZOEN = 40;          // zoveel soldaten heeft Aldervale bij het begin (wachters en wie rondloopt)
 const BELEG = 10;              // zo lang houdt de poort het tijdens de aanval, dan gaat hij van binnenuit open
 const WACHT_MAX = 150;         // zo lang wacht het leger buiten de poort, ook als de speler de les niet afmaakt (seconden)
 // Het leger van Ottger: veel soorten, ook belegeringsmachines
@@ -82,14 +84,14 @@ const GESPREKKEN = {
     [KAREL, 'Enough. Why do you ask?'],
     [REINOUT, 'An old soldier\'s habit. The roads are restless. Riders of Duke Ottger were seen near the border.'],
   ],
-  10: [
+  11: [
     [WESSEL, 'Look, Father! Lord Reinout gave me a falcon feather. He says it brings luck.'],
     [REINOUT, 'Keep it close tonight, boy. Luck is a fickle guest.'],
     [KAREL, 'Come, both of you. The minstrels are waiting.'],
   ],
 };
 
-export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
+export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, sluitPanelen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
   let s = lees() || nieuw();
   let loopt = false;
   let reinout = null;
@@ -168,8 +170,18 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     if (s.wachtGezet) return;
     s.wachtGezet = true;
     const lijst = wachtPosten().map(([x, y], n) => [n % 3 === 1 ? 'ridder' : 'boogschutter', x, y, 100, 1]);
+    // Het garnizoen: ongeveer 40 soldaten in totaal, de rest loopt rond op de binnenpleinen
+    const st = kaart.start[0];
+    const soorten = ['ridder', 'boogschutter', 'ridder', 'zwaardvechter', 'boogschutter', 'bijlridder'];
+    let n = 0;
+    for (const r of [3, 6, 7, 10, 11, 14, 15]) {
+      for (let k = 0; k < 4 && lijst.length < GARNIZOEN; k++) {
+        const hoek = (k + r * 0.37) * Math.PI / 2;
+        lijst.push([soorten[n++ % soorten.length], Math.round(st.x + Math.cos(hoek) * r), Math.round(st.y + Math.sin(hoek) * r), 100, 0]);
+      }
+    }
     leger.zetStand(lijst);
-    for (const e of soldaten()) if (e.opMuur) e.wachter = true;
+    for (const e of soldaten()) { e.wachter = true; if (!e.opMuur) e.garnizoen = true; }
     bewaar();
   }
 
@@ -289,7 +301,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     if (t.belasting) return gids.belastingGekozen() && gids.volkGesloten();
     if (t.soldaten) return soldaten().length - (s.basisSoldaten || 0) >= t.soldaten;
     if (t.sturen) return s.gestuurd;
-    if (t.opMuur) return s.gestuurd;   // alleen een bevel in deze les naar een stuk muur
+    if (t.opMuur) return s.gestuurd;
+    if (t.logboek) return gids.logboekGelezen();   // alleen een bevel in deze les naar een stuk muur
     return true;
   }
 
@@ -439,6 +452,22 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     bewaar();
   }
 
+  // De ontvoering: een ruiter in het zwart rijdt met Wessel van de burcht door de oostpoorten naar buiten.
+  const RIT = 8;   // seconden
+  function naarOntvoering() {
+    if (s.fase === 'ontvoering' || s.fase === 'scene') return;
+    s.fase = 'ontvoering';
+    s.fasetijd = 0;
+    const st = kaart.start[0];
+    const route = [[st.x + 1, st.y + 3], [st.x + 4, st.y], [st.x + 12, st.y], [st.x + 20, st.y], [st.x + 32, st.y + 1]];
+    strijd.ruiter(route, RIT * 1000);
+    if (sluitPanelen) sluitPanelen();
+    if (kijkNaar) kijkNaar(st.x + 8, st.y);
+    toonTaak('');
+    toonMelding('A rider in black breaks out of the keep... he has Wessel!');
+    bewaar();
+  }
+
   function naarScene() {
     s.fase = 'scene';
     bewaar();
@@ -479,10 +508,13 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
           wegvinder.zetPoortenOpen(true);
           kaartGewijzigd(new Set());
         }
-      } else if (s.fase === 'scene') naarScene();
+      } else if (s.fase === 'scene' || s.fase === 'ontvoering') naarScene();
     },
     stap(dt) {
       if (!loopt || s.fase === 'scene') return;
+      // Karel zakt nooit onder de helft van zijn leven (naar Karel)
+      const kon = strijd.koning(0);
+      if (kon && kon.levenMax && kon.leven < Math.ceil(kon.levenMax / 2)) kon.leven = Math.ceil(kon.levenMax / 2);
       s.tijd += dt;
       s.fasetijd += dt;
       kijk += dt;
@@ -509,6 +541,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       } else if (s.fase === 'avond') {
         if (s.fasetijd >= VRIJ && !s.gemeld.avond) begintSchemer();
         if (s.fasetijd >= VRIJ + AVOND) naarNacht();
+      } else if (s.fase === 'ontvoering') {
+        if (s.fasetijd >= RIT) naarScene();
       } else if (s.fase === 'nacht' && s.deel === 'beleg') {
         if (s.fasetijd >= BELEG) poortGaatOpen();
       } else if (s.fase === 'nacht' && s.deel === 'opmars') {
@@ -525,14 +559,14 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         if (s.fasetijd >= WACHT_MAX) openPoort();
       } else if (s.fase === 'nacht') {
         const st = strijd.stand();
-        if (s.fasetijd >= NACHT_DUUR || (st.burchtMax > 0 && st.burcht / st.burchtMax < 0.4)) naarScene();
+        if (s.fasetijd >= NACHT_DUUR || (st.burchtMax > 0 && st.burcht / st.burchtMax < 0.4)) naarOntvoering();
         else if (Math.round(s.fasetijd) % 10 === 0) bewaar();
       }
     },
     // Hoe donker het is: 0 overdag, 1 in de nacht.
     nacht() {
       if (s.fase === 'avond') return Math.max(0, Math.min(1, (s.fasetijd - VRIJ) / AVOND));
-      if (s.fase === 'nacht' || s.fase === 'scene') return 1;
+      if (s.fase === 'nacht' || s.fase === 'scene' || s.fase === 'ontvoering') return 1;
       return 0;
     },
     // Voor de rol rechtsonder: de lijst taken.

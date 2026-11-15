@@ -680,6 +680,69 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
           ctx.fillRect(px - gr / 2, py - gr / 2, gr, gr);
         }
       }
+      // De ruiter van de Rouwbanier met Wessel over zijn zadel (proloog)
+      for (let i = 0; i < effecten.length; i++) {
+        const f = effecten[i];
+        if (f.soort !== 'ruiter') continue;
+        const t = Math.min(1, Math.max(0, (nu - f.van) / f.duur));
+        // Positie langs de route (gelijke stukken per deel)
+        const r = f.route;
+        const deel = t * (r.length - 1);
+        const k = Math.min(r.length - 2, Math.floor(deel));
+        const u = deel - k;
+        const x = r[k][0] + (r[k + 1][0] - r[k][0]) * u;
+        const y = r[k][1] + (r[k + 1][1] - r[k][1]) * u;
+        const wx = (x - y) * HALVE_BREEDTE;
+        const wy = (x + y) * HALVE_HOOGTE;
+        const dxs = (r[k + 1][0] - r[k][0]) - (r[k + 1][1] - r[k][1]);
+        const kant = dxs >= 0 ? 1 : -1;
+        const galop = Math.sin(nu / 70);
+        ctx.save();
+        ctx.translate(wx, wy);
+        ctx.scale(kant * 1.5, 1.5);
+        // Een fakkelgloed, zodat je hem in het donker ziet
+        const gloed = ctx.createRadialGradient(4, -26, 2, 4, -26, 30);
+        gloed.addColorStop(0, 'rgba(255, 190, 90, 0.55)');
+        gloed.addColorStop(1, 'rgba(255, 150, 60, 0)');
+        ctx.fillStyle = gloed;
+        ctx.beginPath(); ctx.arc(4, -26, 30, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = t > 0.92 ? (1 - t) / 0.08 : 1;
+        // schaduw
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.beginPath(); ctx.ellipse(0, 1, 13, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+        // benen
+        ctx.strokeStyle = '#1b1512'; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-7, -9); ctx.lineTo(-9 - galop * 3, 0);
+        ctx.moveTo(-4, -9); ctx.lineTo(-3 + galop * 3, 0);
+        ctx.moveTo(6, -9); ctx.lineTo(8 + galop * 3, 0);
+        ctx.moveTo(8, -9); ctx.lineTo(11 - galop * 3, 0);
+        ctx.stroke();
+        // lijf, hals en kop van het zwarte paard
+        ctx.fillStyle = '#231b17';
+        ctx.beginPath(); ctx.ellipse(0, -11 + galop * 0.6, 11, 5, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(8, -14); ctx.lineTo(13, -22); ctx.lineTo(17, -20); ctx.lineTo(12, -11); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(16, -20, 4, 2.2, 0.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0d0b0a';
+        ctx.fillRect(-13, -14, 3, 9);   // staart
+        // Wessel dwars over het paard (blauw, voor de ruiter)
+        ctx.fillStyle = '#2f5fc4'; ctx.fillRect(1, -19, 8, 4);
+        ctx.fillStyle = '#e0b890'; ctx.fillRect(8.5, -19.5, 3, 3);
+        ctx.fillStyle = '#6a4a2a'; ctx.fillRect(-1, -18, 2.5, 2);
+        // de ruiter in het zwart, met de zwarte banier
+        ctx.fillStyle = '#121010'; ctx.fillRect(-5, -28, 7, 12);
+        ctx.fillStyle = '#2a2422'; ctx.beginPath(); ctx.arc(-1.5, -30, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#5a4a3a'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(-6, -16); ctx.lineTo(-6, -42); ctx.stroke();
+        ctx.fillStyle = '#0a0a0a';
+        ctx.beginPath(); ctx.moveTo(-6, -42); ctx.lineTo(-18 - galop * 2, -40); ctx.lineTo(-17 + galop, -35); ctx.lineTo(-6, -35); ctx.closePath(); ctx.fill();
+        // de fakkel in zijn andere hand
+        ctx.strokeStyle = '#6a4a2a'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(2, -24); ctx.lineTo(5, -32); ctx.stroke();
+        ctx.fillStyle = '#ffb347'; ctx.beginPath(); ctx.ellipse(5.5, -34 + galop * 0.5, 2, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff1b0'; ctx.fillRect(5, -34, 1.2, 1.6);
+        ctx.restore();
+      }
       // Genezen: een gouden gloed die opstijgt bij wie de heler geneest
       for (let i = 0; i < effecten.length; i++) {
         const f = effecten[i];
