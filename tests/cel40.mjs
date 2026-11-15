@@ -5,7 +5,7 @@ const srv = spawn('python3', ['-m', 'http.server', '8286'], { cwd: '/home/claude
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 } })).newPage();
-const fouten = []; p.on('pageerror', (e) => fouten.push(String(e))); p.on('console', (m) => { if (m.type() === 'error' && !/404/.test(m.text())) fouten.push(m.text());   // 404: verhaalbeelden van 0.51.0 ontbreken nog });
+const fouten = []; p.on('pageerror', (e) => fouten.push(String(e))); p.on('console', (m) => { if (m.type() === 'error' && !/404/.test(m.text())) fouten.push(m.text()); });   // 404: de verhaalbeelden van 0.51.0 ontbreken nog
 let ok = 0, fout = 0;
 const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
 const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 20000 });
