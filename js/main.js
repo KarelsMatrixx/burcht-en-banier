@@ -33,6 +33,7 @@ import { SOORT } from './eenheden.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, eerstWinnen, ontgrendeld } from './modus.js';
 
 const GEEN_TITEL = 'burcht-banier.geenTitel';
+const TOON_BEELD = 'burcht-banier.toonBeeld';   // na het kiezen van een level op de kaart: eerst het verhaalbeeld
 
 async function start() {
   const canvas = document.getElementById('spel');
@@ -705,6 +706,7 @@ async function start() {
       return;
     }
     bewaar();   // wat je nu hebt blijft bewaard bij deze modus
+    try { window.sessionStorage.setItem(TOON_BEELD, soort === 'missie' ? '1' : '0'); } catch (fout) { /* dan geen beeld */ }
     try { window.sessionStorage.setItem(GEEN_TITEL, '1'); } catch (fout) { /* dan zie je het beginscherm nog eens */ }
     window.location.reload();
   };
@@ -722,7 +724,11 @@ async function start() {
       const tekst = document.getElementById('kaart-tekst');
       if (!c.speelbaar) { tekst.textContent = `${c.titel}${c.heer ? ` (${c.heer})` : ''}: coming later.`; return; }
       if (!open(c)) { tekst.textContent = `${c.titel}: ${eerstWinnen(id).toLowerCase()}`; return; }
-      if (modus.soort === 'campagne' && modus.missie === id) { sluitTitel(); return; }
+      if (modus.soort === 'campagne' && modus.missie === id) {
+        sluitTitel();
+        if (c.beeld && c.verhaal) toonLevelBeeld();   // ook als je verder speelt: eerst het verhaalbeeld
+        return;
+      }
       kiesModus(`missie:${id}`);
     }, 'Tap a level to start it. You can replay a level you have won.', missies.levelkaart);
   };
@@ -821,8 +827,17 @@ async function start() {
     toonVerhaal: (tekst) => ui.toonVerhaal({ naam: missie.heer, portret: missie.portret, tekst }),
   }) : null;
   let beeldOpen = false;   // het verhaalbeeld staat in beeld: het spel wacht
+  const toonLevelBeeld = () => {
+    beeldOpen = true;
+    return ui.toonVerhaalbeeld({ beeld: missie.beeld, tekst: missie.verhaal, seconden: CONFIG.verhaalbeeldSeconden })
+      .then(() => { beeldOpen = false; });
+  };
   const beginLevel = () => { verhaal.start(); if (proloog) proloog.start(); if (doel) doel.start(); };
   ui.opMissieBegin(() => { ui.toonMissie({ open: false }); beginLevel(); });
+  // Is dit een start via de levelkaart? Dan eerst het beeld, ook bij een bewaard spel.
+  let viaKaart = false;
+  try { viaKaart = window.sessionStorage.getItem(TOON_BEELD) === '1'; window.sessionStorage.removeItem(TOON_BEELD); } catch (fout) { /* geen beeld */ }
+  const heeftBeeld = !!(missie && missie.beeld && missie.verhaal);
   if (missie && !bewaard && !strijd.uitslag()) {
     const verteller = missies.figuren[missie.verteller || 'bartholt'];
     const toonBriefing = () => ui.toonMissie({
@@ -833,13 +848,11 @@ async function start() {
       tegen: missie.heer ? { naam: missie.heer, portret: missie.portret } : null,
       extra: [nieuwHier().trim(), kaart.naam ? `Map: ${kaart.naam}.` : ''].filter(Boolean),
     });
-    // Eerst het verhaalbeeld, altijd 12 seconden, dan de briefing.
-    if (missie.beeld && missie.verhaal) {
-      beeldOpen = true;
-      ui.toonVerhaalbeeld({ beeld: missie.beeld, tekst: missie.verhaal, seconden: 12 }).then(() => { beeldOpen = false; toonBriefing(); });
-    } else {
-      toonBriefing();
-    }
+    // Eerst het verhaalbeeld, dan de briefing.
+    if (heeftBeeld) toonLevelBeeld().then(toonBriefing);
+    else toonBriefing();
+  } else if (heeftBeeld && viaKaart && !strijd.uitslag()) {
+    toonLevelBeeld().then(beginLevel);
   } else {
     beginLevel();
   }

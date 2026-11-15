@@ -1241,3 +1241,21 @@ body.gids-bedekt #gids-ring, body.gids-bedekt #gids-zin, body.gids-bedekt #gids-
 /* Gesprek in de tutorial: portret links in het kaartje */
 #gids-kaart.met-portret { padding-left: 76px; min-height: 76px; }
 #gids-kaart img.portret { position: absolute; left: 10px; top: 10px; width: 56px; height: 56px; border-radius: 50%; border: 2px solid #e9c46a; object-fit: cover; }
+
+/* Draaiend zandlopertje linksonder: het lijkt of het level laadt. */
+#verhaalbeeld-zand {
+  position: absolute;
+  z-index: 2;
+  left: max(10px, env(safe-area-inset-left));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  width: 24px;
+  height: 32px;
+  filter: drop-shadow(0 1px 3px #000);
+  animation: zandloper 2.4s ease-in-out infinite;
+}
+@keyframes zandloper {
+  0%, 35% { transform: rotate(0deg); }
+  50%, 85% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) { #verhaalbeeld-zand { animation: none; } }

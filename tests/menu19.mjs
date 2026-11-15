@@ -36,7 +36,7 @@ const m = await p.evaluate(() => window.spel.modus);
 check('missie 1 actief', m.soort === 'campagne' && m.missie === 1, JSON.stringify(m));
 check('eerst het verhaalbeeld', await zicht('verhaalbeeld') && !(await zicht('missie')));
 await p.waitForTimeout(1500); await p.screenshot({ path: '/home/claude/verhaalbeeld.png' });
-await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 15000 });
+await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 30000 });
 check('daarna de missie-intro', await zicht('missie'));
 await p.tap('#missie-begin');
 // De rol toont het doel van dit level
@@ -56,6 +56,8 @@ const k0 = await p.evaluate(() => JSON.stringify(window.spel.strijd.stand().heer
 check('spel stil bij open kaart', k0 === (await p.evaluate(() => JSON.stringify(window.spel.strijd.stand().heer.voorraad))));
 [x, y] = await bx(1); await p.touchscreen.tap(x, y);   // nu-level: gewoon verder
 check('tik op huidig level sluit kaart', !(await zicht('titelscherm')));
+check('tik op huidig level: eerst het verhaalbeeld', await zicht('verhaalbeeld'));
+await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 30000 });
 await p.waitForTimeout(1500);
 check('spel loopt weer', (await p.evaluate(() => JSON.stringify(window.spel.strijd.stand().heer.voorraad))) > k0);
 // vrij spel via voorpagina na verversen

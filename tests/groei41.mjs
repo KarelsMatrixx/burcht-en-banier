@@ -19,7 +19,7 @@ async function start(missie, klaar) {
   }, [missie, klaar]);
   await p.reload(); await wacht();
   // Het verhaalbeeld (12 s) en de briefing eerst weg: pas dan loopt het spel
-  await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 20000 }).catch(() => {});
+  await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 30000 }).catch(() => {});
   if (await p.isVisible('#missie-begin')) await p.tap('#missie-begin');
   await p.waitForTimeout(500);
 }

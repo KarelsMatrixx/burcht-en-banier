@@ -5,6 +5,7 @@
 export const CONFIG = {
   versie: '0.60.0',
   stap: 41,
+  verhaalbeeldSeconden: 20,   // zo lang staat het verhaalbeeld voor een level in beeld
 
   // Het speelveld. Hetzelfde zaad geeft altijd dezelfde kaart.
   kaart: { breedte: 64, hoogte: 64, zaad: 20261110 },

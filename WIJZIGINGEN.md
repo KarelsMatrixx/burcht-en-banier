@@ -503,3 +503,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - De eerste keer dat een soldaat van de speler binnen 7 tegels van het midden van de pas komt, maakt de rotswand aan beide kanten 4 nissen en staan daar 4 boogschutters van Mechteld. Ze blijven staan, schieten op wat binnen bereik komt (2 tegels extra bereik, zoals op een muur) en lopen er niet achteraan. Mechteld zegt erbij: "Did you think my pass was empty, King Karel? Every rock here has eyes." (door Claude geschreven).
 - Nieuw: js/hinderlaag.js, `strijd.hinderlaag(sleutel, vak)`, `hinderlaag` in data/campagne.json bij level 2. Niet bewaard: na herladen kan hij nog een keer komen.
 - Test: hinderlaag44 (10 punten).
+
+## 0.59.4: verhaalbeeld 20 seconden, zandloper, ook via de levelkaart
+- Het verhaalbeeld staat nu 20 seconden in beeld (CONFIG.verhaalbeeldSeconden) met linksonder een draaiend zandlopertje, zodat het lijkt of het level laadt.
+- Kies je een level op de levelkaart, dan komt het beeld ook als je daar al een bewaard spel hebt of in dat level zit. Via Continue (zonder kaart) gaat het spel direct door.
+- Test: tests/beeld59.mjs (10 checks).

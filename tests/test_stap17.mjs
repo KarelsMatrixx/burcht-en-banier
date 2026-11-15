@@ -9,7 +9,7 @@ p.on('pageerror', (e) => fouten.push(String(e)));
 p.on('console', (m) => { if (m.type() === 'error') fouten.push(m.text()); });
 let ok = 0, fout = 0;
 const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
-const laad = async () => { await p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 20000 }); };
+const laad = async () => { await p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 30000 }); };
 await p.goto(url + '/?x=' + Date.now()); await laad();
 await p.evaluate(() => localStorage.clear()); await p.reload(); await laad();
 // 1. standaard: vrij normaal, bestaande bewaarsleutel
@@ -27,7 +27,7 @@ check('missie 2 en 3 dicht, missie 1 open', menu.knoppen.find((k) => k[0] === 'm
 await p.screenshot({ path: '/home/claude/stap17-menu.png' });
 // 3. kies missie 1 via menu
 await Promise.all([p.waitForNavigation(), p.click('button[data-sleutel="missie:1"]')]); await laad();
-await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 20000 });
+await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 30000 });
 i = await p.evaluate(() => ({ m: window.spel.modus, eerste: window.spel.regels.heer.eersteAanval, hout: window.spel.regels.grondstoffen.hout.begin, wacht: window.spel.regels.strijd.wachters, burcht: window.spel.strijd.stand().rood, intro: !document.getElementById('missie').hidden, titel: document.getElementById('missie-titel').textContent, voorraadHout: window.spel.economie.voorraad.hout, versie: document.getElementById('versie').textContent, heerStand: window.spel.strijd.stand().heer }));
 console.log('missie1:', JSON.stringify(i));
 check('missie 1 gekozen', i.m.soort === 'campagne' && i.m.missie === 1);
@@ -45,7 +45,7 @@ check('missie 1 gewonnen scherm', /Victory at Witherheath/.test(e1.titel) && /Re
 check('volgende-knop zichtbaar', e1.volgende);
 check('voortgang bewaard', /\[0,1\]/.test(e1.klaar || ''), e1.klaar);
 await Promise.all([p.waitForNavigation(), p.click('#einde-volgende')]); await laad();
-await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 20000 });
+await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 30000 });
 i = await p.evaluate(() => ({ m: window.spel.modus, eerste: window.spel.regels.heer.eersteAanval, titel: document.getElementById('missie-titel').textContent, ridders: window.spel.regels.heer.ridderPerSchutter }));
 check('missie 2 gestart (normaal)', i.m.missie === 2 && i.eerste === 300 && /Sevenwinds/.test(i.titel), JSON.stringify(i));
 // menu: missie 3 nu dicht, missie 2 open; missie 1 blijft bewaard apart
