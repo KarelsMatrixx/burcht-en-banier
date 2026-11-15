@@ -1,0 +1,46 @@
+# Overdracht Aldervale (versie 0.59.1, 15 november 2026)
+
+Lees dit eerst in een nieuwe chat. Repo: github.com/KarelsMatrixx/burcht-en-banier, branch main (laatste commit e83aa1a). Project "Stronghold".
+
+## Werkafspraken met Karel
+- Karel is geen programmeur; Claude is de ontwikkelaar en werkt zelfstandig, test, commit en pusht.
+- Antwoord in het Nederlands, zakelijk, kern eerst, kort. Geen koppelstreepjes in lopende tekst. Aannames apart.
+- Markeer door Claude geschreven (Engelse) speltekst en geschatte getallen als "na te lezen".
+- Hooguit een vraag; anders de waarschijnlijkste lezing kiezen en leveren.
+- Speltekst Engels, code en commentaar Nederlands.
+- Karel test op zijn iPhone (liggend, ongeveer 859 x 396 met veilige randen) en stuurt screenshots.
+
+## Techniek in het kort
+- Platte HTML/CSS/JS canvas PWA, isometrisch, 844 x 390, geen build. Data in `data/*.json`. `window.spel` geeft onderdelen voor tests.
+- Versie staat in `js/config.js`, `sw.js`, `tests/test_stap15.mjs`, `tests/test_stap17.mjs` (alle vier ophogen). Nieuwe JS-bestanden toevoegen aan KERN in `sw.js`. Wijzigingen onderaan `WIJZIGINGEN.md`.
+- Tests: Playwright met `/usr/bin/google-chrome`, elke test een eigen http.server-poort. Los draaien: `node tests/proloog35.mjs`. Alles: `bash tests/alles.sh` (ongeveer 25 min). Oude tests hebben de symlink `/home/claude/spel -> /home/claude/burcht-en-banier` nodig.
+- Een level starten in een test: localStorage `burcht-banier.modus` = {soort:'campagne', missie:N}, sessionStorage `burcht-banier.geenTitel`=1, `tipGesloten`=1, dan `#missie-begin` tikken.
+- Pushen: `git fetch && git merge origin/main`, dan `git -c push.negotiate=true push origin HEAD:main`.
+
+## De proloog (tutorial, missie 0), stand nu
+Bestanden: `js/proloog.js` (verloop), `js/gids.js` (aanwijzer: ring, zin, gouden plek, kaartje met portret), `js/figuranten.js` (dorpelingen, Bartholt), `js/strijd.js` (opmars).
+
+**Dag, 11 lessen** op het bouwveld linksboven (west): houthakker, steengroeve, boomgaard, huis, voorraadkamer, je volk, belasting, kazerne, twee soldaten trainen, soldaat sturen, soldaat op de muur.
+- Bartholt verschijnt met een rookwolkje bij de plek van elke les.
+- Gesprekken met portret (`GESPREKKEN`): na les 4 Wessel en Karel (verjaardag), na les 8 Reinout vraagt naar de oostpoort, na les 11 de valkenveer.
+- Bevel-lessen: eerst gouden plek op je nieuwste soldaat, dan (grondles) het oog uitgelegd, dan de doelplek. Muurles telt elk bevel naar een stuk muur.
+- Daarna 20 s vrij bij daglicht, 20 s schemering met avondbericht.
+
+**Nacht:** leger van 100 (14 soorten, ook ram, katapult, toren, ladder) begint helemaal aan de oostrand en loopt op 55% snelheid naar een wachtplek buiten de oostpoort. Les in 4 stappen (`NACHT_TAKEN`): boogschutters kiezen, naar de muur bij de poort (alleen een bevel naar de gouden plek telt), ridders kiezen, achter de poort. Daarna (of na 150 s) poorten open, storm. Na 4 min of burcht onder 40%: scène, Wessel ontvoerd, door naar de levelkaart.
+
+**Tests die groen zijn:** proloog35 (68), proloog42 (25), proloog43 (25), proloog40 (22), gevecht40 (5).
+**Bekend rood (ouder, niet van deze reeks):** campagne30, verhaal31, hut36, bouwstraal38.
+
+## Open punten en te controleren
+- Karel heeft 0.59.1 nog niet op de iPhone gezien: volgorde in de bevel-lessen, legerhint en gidszin, opmars aan de rand.
+- Prestaties op iPhone met ongeveer 100 vijanden en 140 figuren.
+- Gouden plekken van de nachtles ([17,-1] muur bij poort, [14,2] achter poort) zijn schattingen.
+- Na herladen midden in de opmars verschijnt het leger opnieuw aan de rand.
+- Reinouts losse opmerking in les 3 ("Nine already") overlapt met het eerste gesprek; mogelijk weghalen.
+- Alle Engelse teksten van Bartholt, Wessel, Reinout en Karel zijn door Claude geschreven: na te lezen.
+- Eerder open: Ludolf loopt niet naar buiten, rood bemant het dak van de burcht niet, rode burgers werken niet, rood bouwt geen kazerne of muren, extra wachters worden niet bewaard.
+
+## Volgende stappen volgens plan (`claude/stappenplan-campagne.md`)
+1. Karels iPhone-feedback op de tutorial verwerken.
+2. Stap 39: Windzanger en level 7 Grauwvoort (drie poorten achter elkaar).
+3. Stap 40: Saboteur en level 8 Witte Dijk; 41 Ziener en level 9 Rouwpoort; 42 level 10 Rouwburcht; 43 balansronde.
