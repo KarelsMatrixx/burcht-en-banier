@@ -488,3 +488,7 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Tests: proloog35 (68), proloog43 (25).
 ## 0.59.2: verhaalbeeld ook voor de proloog
 - data/campagne.json: level 0 krijgt "beeld" (beelden/verhaal/level00.webp) en "verhaal". Zonder bestand staat de tekst op een donkere achtergrond. De proloog toont dus 12 seconden het beeld voor de briefing van Bartholt.
+
+## 0.59.3: de elf verhaalbeelden
+- beelden/verhaal/level00.webp tot en met level10.webp (Gemini, 1024 x 434, samen ongeveer 650 KB) en in KERN van sw.js.
+- Tekst level 1: "Karel has put on the black band" (de rouwband komt pas na de proloog).
