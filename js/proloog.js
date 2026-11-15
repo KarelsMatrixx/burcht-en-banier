@@ -42,7 +42,7 @@ const AVOND = 20;              // seconden schemering voor de nacht
 const NACHT_DUUR = 240;        // vier minuten nacht, dan de scène
 const OVERMACHT = 80;          // zoveel vijanden komen er ineens: je hebt geen kans (naar Karel)
 
-export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
+export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
   let s = lees() || nieuw();
   let loopt = false;
   let reinout = null;
@@ -161,6 +161,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       plek = k.length === 2 ? { x: k[0], y: k[1] } : null;
     }
     gids.richt(plek ? { ...t.gids, plek } : t.gids);
+    // Bartholt gaat mee naar de plek van de les (of staat bij de burcht als er geen plek is)
+    if (kijk && figuranten) figuranten.leid(plek);
     if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
   }
 

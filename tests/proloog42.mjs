@@ -48,6 +48,9 @@ const bouwLes = async (n, naam) => {
 };
 await kaartTik(); // Let's begin
 const les1 = await p.evaluate(() => { const e = document.getElementById('gids-plek'); return { zichtbaar: !e.hidden, label: e.textContent }; });
+const bart = await p.evaluate(() => { const s = window.spel; const g = document.getElementById('gids-plek'); const b = s.figuranten.lijst().find((e) => e.soort === 23); const plek = s.proloog.stand(); return { b: b && [b.x, b.y] }; });
+const plekTegel = await p.evaluate(() => { const s = window.spel; const t = s.kaart.start[0]; return [t.x, t.y]; });
+check('Bartholt staat bij het bouwveld (west)', bart.b && bart.b[0] < plekTegel[0] - 15, JSON.stringify([bart, plekTegel]));
 check('les 1 plek met label', les1.zichtbaar && /Woodcutter/.test(les1.label), JSON.stringify(les1));
 for (let k = 0; k < 14 && !(await st()).klaar; k++) { await tikGids(); await p.waitForTimeout(200); }
 check('les 1 houthakker gebouwd met tikken', (await st()).klaar, JSON.stringify(await st()));

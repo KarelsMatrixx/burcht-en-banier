@@ -16,6 +16,7 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd, koni
   let aan = false;
   let rng = 12345;
   let gast = null;
+  let bartholt = null;        // de vermelding van Bartholt in de lijst: hij gaat mee naar de plek van de les
   let koningWacht = 3;
   const toeval = () => { rng = (rng * 1664525 + 1013904223) >>> 0; return rng / 4294967296; };
 
@@ -55,7 +56,8 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd, koni
         }
       }
     }
-    zetFiguur(SOORT.BARTHOLT, st.x + 3, st.y + 3, STRAAL_BURCHT, 0.55);
+    const bart = zetFiguur(SOORT.BARTHOLT, st.x + 3, st.y + 3, STRAAL_BURCHT, 0.55);
+    bartholt = bart ? lijst.find((f) => f.e === bart) : null;
     zetFiguur(SOORT.WESSEL, st.x - 2, st.y + 2, STRAAL_BURCHT, 0.7);
     zetFiguur(SOORT.DORP1, st.x + 2, st.y - 3, STRAAL_BURCHT, 0.5);
     zetFiguur(SOORT.DORP3, st.x - 3, st.y - 2, STRAAL_BURCHT, 0.5);
@@ -161,6 +163,7 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd, koni
       let budget = PER_STAP;
       for (const f of lijst) {
         const e = f.e;
+        if (f.vast) continue;   // Bartholt staat bij de plek van de les
         if (e.pad) continue;
         f.wacht -= dt;
         if (f.wacht > 0 || budget <= 0) continue;
@@ -169,6 +172,34 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd, koni
         nieuweRoute(f);
       }
     },
+    // Bartholt verschijnt (in een rookwolkje) naast de plek van de les en blijft daar staan
+    // tot de volgende les. Geen plek (null): bij de burcht.
+    leid(plek) {
+      if (!bartholt || !aan || !lijst.includes(bartholt)) return false;
+      const st = kaart.start[0];
+      const doel = plek || { x: st.x + 2, y: st.y + 3 };
+      const e = bartholt.e;
+      for (let r = 1; r <= 4; r++) {
+        for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          // Liefst een tegel naast (niet op) de plek, aan de kant van de burcht
+          const x = doel.x + dx;
+          const y = doel.y + dy;
+          if (!wegvinder.isVrij(x, y, 0)) continue;
+          strijd && strijd.rook && strijd.rook(e.x, e.y);
+          e.pad = null; e.stap = 0;
+          e.x = x + 0.5; e.y = y + 0.5;
+          e.kijkt = (doel.x - x) - (doel.y - y) >= 0 ? 1 : -1;
+          bartholt.vast = true;
+          bartholt.thuis = { x, y };
+          strijd && strijd.rook && strijd.rook(e.x, e.y);
+          return true;
+        }
+      }
+      return false;
+    },
+    // Bartholt gaat weer rondlopen
+    laatLos() { if (bartholt) { bartholt.vast = false; bartholt.wacht = 2; } },
     aantal: () => lijst.length,
     gedood: () => gedood,
     lijst: () => lijst.map((f) => f.e),

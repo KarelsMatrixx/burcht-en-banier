@@ -18,7 +18,7 @@ const r = await p.evaluate(() => {
   const st = s.strijd.stand();
   return { v: s.CONFIG.versie, heer: !!st.heer, werken: st.heer && st.heer.werkenTotaal, golf: st.golf, w: s.rood.werken() };
 });
-check('versie', r.v === '0.56.2', r.v);
+check('versie', r.v === '0.57.0', r.v);
 check('heer aanwezig', r.heer);
 check('3 werken', r.werken === 3, r.werken);
 const spoel = (sec) => p.evaluate((sec) => { const s = window.spel; for (let i = 0; i < sec * 10; i++) s.strijd.stap(); return s.strijd.stand(); }, sec);
@@ -37,7 +37,7 @@ st = await spoel(20);
 check('geen tweede aanval binnen 100s', st.golf === 1, st.golf);
 // werken slopen -> inkomen daalt
 const inkomenVoor = (await p.evaluate(() => window.spel.strijd.stand().heer.inkomen));
-const werkenVoor = await p.evaluate(() => window.spel.strijd.stand().heer.werken);   // rood groeit nu mee (0.56.2): het aantal is niet vast
+const werkenVoor = await p.evaluate(() => window.spel.strijd.stand().heer.werken);   // rood groeit nu mee (0.57.0): het aantal is niet vast
 const sl = await p.evaluate(() => {
   const s = window.spel; const k = s.kaart; const v = s.rood.werken()[0];
   s.strijd.zetVijand; k.object[v] = 0; k.eigenaar[v] = 0; s.strijd.kaartVeranderd();

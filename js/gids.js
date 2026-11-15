@@ -32,8 +32,9 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
   const plek = document.createElement('div');
   plek.id = 'gids-plek';
   plek.hidden = true;
-  plek.innerHTML = '<svg viewBox="-34 -18 68 36" aria-hidden="true"><polygon points="0,-16 32,0 0,16 -32,0"/></svg><span></span>';
+  plek.innerHTML = '<svg viewBox="-34 -18 68 36" aria-hidden="true"><polygon points="0,-16 32,0 0,16 -32,0"/></svg><span><img src="beelden/portretten/bartholt.jpg" alt=""><b></b></span>';
   const plekPijl = plek.querySelector('span');
+  const plekTekstEl = plek.querySelector('b');
   document.body.append(ring, zin, kaart, plek);
 
   document.addEventListener('pointerdown', () => { laatsteTik = nu; ring.classList.remove('luid'); }, true);
@@ -112,7 +113,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       plek.style.left = `${sc.x - breed / 2}px`;
       plek.style.top = `${sc.y - hoog / 2}px`;
       plek.style.transform = '';
-      plekPijl.textContent = doel.plekTekst || 'Build here';
+      plekTekstEl.textContent = doel.plekTekst || 'Build here';
+      plekPijl.hidden = false;
     } else {
       // Een pijl aan de rand van het scherm, in de richting van de plek
       const mx = window.innerWidth / 2;
@@ -127,7 +129,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       plek.style.left = `${x - 22}px`;
       plek.style.top = `${y - 22}px`;
       plek.style.transform = `rotate(${hoek}rad)`;
-      plekPijl.textContent = '';
+      plekPijl.hidden = true;
     }
   }
 

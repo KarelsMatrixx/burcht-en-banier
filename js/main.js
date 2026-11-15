@@ -785,7 +785,7 @@ async function start() {
   const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd }) : null;
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, bouwwerken, leger, strijd, wegvinder, eenheden,
-    koningSoort: 'koning', gids,
+    koningSoort: 'koning', gids, figuranten,
     stopBouw: () => stopBouw(),
     kijkNaar: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); camera.kijkNaar(w.x, w.y); },
     toonVerhaal: (b) => ui.toonVerhaal(b),

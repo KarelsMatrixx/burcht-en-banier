@@ -385,6 +385,19 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
           }
           continue;
         }
+        if (f.soort === 'rook') {
+          const t = (nu - f.van) / f.duur;
+          const wxr = (f.x - f.y) * HALVE_BREEDTE;
+          const wyr = (f.x + f.y) * HALVE_HOOGTE;
+          for (let k = 0; k < 6; k++) {
+            const hoek = k * 1.047 + 0.4;
+            ctx.fillStyle = `rgba(245, 232, 190, ${0.6 * (1 - t)})`;
+            ctx.beginPath();
+            ctx.arc(wxr + Math.cos(hoek) * (4 + 14 * t), wyr - 6 - 12 * t + Math.sin(hoek) * (2 + 6 * t), 3 + 5 * t, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          continue;
+        }
         if (f.soort !== 'val') continue;
         const deel = 1 - (nu - f.van) / f.duur;
         const wx = (f.x - f.y) * HALVE_BREEDTE;

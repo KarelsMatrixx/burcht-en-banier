@@ -333,6 +333,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const pijl = (x1, y1, h1, x2, y2, h2, steen = false) =>
     effect({ soort: 'pijl', steen, x1, y1, h1, x2, y2, h2, duur: (steen ? 400 : 130) + 45 * Math.hypot(x2 - x1, y2 - y1) });
   const val = (e) => effect({ soort: 'val', x: e.x, y: e.y, team: e.team, duur: 1500 });
+  // Een rookwolkje (Bartholt verschijnt of verdwijnt)
+  const rook = (x, y) => effect({ soort: 'rook', x, y, duur: 800 });
 
   function balkenBij() {
     balken.length = 0;
@@ -1929,7 +1931,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   zetWachters(null);   // rood begint met een wachter op elk stuk muur
 
   return {
-    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord,
+    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),
