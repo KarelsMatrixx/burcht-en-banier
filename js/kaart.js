@@ -594,17 +594,53 @@ export function maakKaart(recept) {
     }
   }
   if (r.eigenMuur) {
-    for (let dy = -RING; dy <= RING; dy++) {
-      for (let dx = -RING; dx <= RING; dx++) {
-        if (Math.max(Math.abs(dx), Math.abs(dy)) !== RING) continue;
-        const hoek = Math.abs(dx) === RING && Math.abs(dy) === RING;
-        let soort = OBJECT.MUUR;
-        if (hoek) soort = OBJECT.TOREN;
-        else if (dx === RING && dy === 0) soort = OBJECT.POORT;
-        else if (dx === 0 || dy === 0) soort = OBJECT.WACHTTOREN;
-        const i = (eigen.y + dy) * breedte + eigen.x + dx;
-        object[i] = soort;
-        eigenaar[i] = 1;
+    // Eén ring (gewoon spel) of meer ringen (proloog: vier ringen, naar Karel). Alle poorten
+    // aan de oostkant, op één lijn: dat is de weg naar het dorp.
+    const maten = Array.isArray(r.eigenRingen) && r.eigenRingen.length ? r.eigenRingen : [RING];
+    for (const M of maten) {
+      for (let dy = -M; dy <= M; dy++) {
+        for (let dx = -M; dx <= M; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== M) continue;
+          const hoek = Math.abs(dx) === M && Math.abs(dy) === M;
+          let soort = OBJECT.MUUR;
+          if (hoek) soort = OBJECT.TOREN;
+          else if (dx === M && dy === 0) soort = OBJECT.POORT;
+          else if (dx === 0 || dy === 0) soort = OBJECT.WACHTTOREN;
+          const x = eigen.x + dx;
+          const y = eigen.y + dy;
+          if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1) continue;
+          const i = y * breedte + x;
+          object[i] = soort;
+          eigenaar[i] = 1;
+          if (maten.length > 1 && (grond[i] === GROND.WATER || grond[i] === GROND.ZAND)) grond[i] = GROND.GRAS_DONKER;
+        }
+      }
+    }
+    // Tussen de ringen: huizen, hutten, hooibergen, vaten en tenten, met lege stroken om te lopen en te bouwen.
+    if (maten.length > 1) {
+      const SOORTEN = [OBJECT.HUIS, OBJECT.HUT, OBJECT.HUIS, OBJECT.HOOIBERG, OBJECT.VATEN, OBJECT.TENT, OBJECT.HUT];
+      let teller = 0;
+      for (let k = 0; k + 1 < maten.length; k++) {
+        const d = maten[k] + Math.round((maten[k + 1] - maten[k]) / 2);   // het midden van de strook
+        for (let dy = -d; dy <= d; dy++) {
+          for (let dx = -d; dx <= d; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== d) continue;
+            if ((dx + 2 * dy + 100) % 3 !== 0) continue;                    // niet elke tegel: er blijft loopruimte
+            if (dy >= -1 && dy <= 1 && dx > 0) continue;                    // de weg naar de poort blijft vrij
+            if (Math.abs(dx) <= 1 || Math.abs(dy) <= 1) continue;          // en de plek bij de wachttorens
+            const x = eigen.x + dx;
+            const y = eigen.y + dy;
+            if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1) continue;
+            const i = y * breedte + x;
+            if (grond[i] === GROND.WATER || (object[i] !== OBJECT.GEEN && object[i] !== OBJECT.BOOM)) continue;
+            object[i] = SOORTEN[teller++ % SOORTEN.length];
+          }
+        }
+      }
+      // De weg door de poorten
+      for (let dx = 1; dx <= maten[maten.length - 1] + 12; dx++) {
+        const i = eigen.y * breedte + eigen.x + dx;
+        if (object[i] === OBJECT.GEEN && grond[i] !== GROND.WATER) grond[i] = GROND.AARDE;
       }
     }
   }

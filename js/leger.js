@@ -412,6 +412,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     zetKoning,
     groepVan, kiesGroep, kiesSoort, telling,
     kiesGeen: () => kies([]),
+    // Een wandelingetje op de grond (voor de koning in de proloog); telt niet als bevel van de speler.
+    wandel: (e, x, y) => x >= 0 && y >= 0 && x < B && y < H && isVrij(y * B + x) && !bezet(y * B + x, [e]) ? loopNaar(e, y * B + x) : false,
     bewaarStand, zetStand, herstel, sneuvel, kaartVeranderd,
     isMuur: (x, y) => x >= 0 && y >= 0 && x < B && y < H && isMuur(y * B + x),
     // Zit er aan dit stuk muur een toren, wachttoren of poort vast?

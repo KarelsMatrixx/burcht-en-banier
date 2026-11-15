@@ -451,6 +451,7 @@
    ],
    "zonderRood": true,
    "eigenMuur": true,
+   "eigenRingen": [5, 9, 13, 17],
    "feest": true,
    "vindplaatsen": [
     {

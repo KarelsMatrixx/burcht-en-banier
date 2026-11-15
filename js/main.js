@@ -774,7 +774,7 @@ async function start() {
   // Een missie die nog niet is begonnen opent met zijn intro.
   // De proloog: taken van Bartholt, de nacht en de scène.
   const gids = missie && missie.proloog ? maakGids() : null;
-  const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder }) : null;
+  const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder, leger }) : null;
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, leger, strijd, wegvinder, eenheden,
     koningSoort: 'koning', gids,
@@ -1069,7 +1069,7 @@ async function start() {
       leger.stap();
       strijd.stap();
       verhaal.stap(dt, verhaalStand);
-      if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase() === 'bouw'); }
+      if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); }
       if (doel) doel.stap(dt);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),

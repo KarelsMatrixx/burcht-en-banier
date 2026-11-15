@@ -61,6 +61,28 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
     return n;
   };
   const soldaten = () => leger.soldaten().filter((e) => !e.dood && e.soldaat && e.soldaat.sleutel !== koningSoort);
+  const opDeMuur = () => soldaten().filter((e) => e.opMuur).length;
+
+  // Wachters op de muren van de vier ringen: het kasteel leeft. Ze tellen niet mee voor de lessen
+  // (die kijken naar wat er bijkomt) en vechten 's nachts gewoon mee.
+  function zetWachters() {
+    if (s.wachtGezet) return;
+    s.wachtGezet = true;
+    const st = kaart.start[0];
+    const lijst = [];
+    let n = 0;
+    for (const M of [17, 13, 9, 5]) {
+      const h = Math.round(M / 2);
+      for (const [dx, dy] of [[-h, -M], [h, M], [-M, h]]) {
+        const x = st.x + dx;
+        const y = st.y + dy;
+        if (!leger.isMuur(x, y)) continue;
+        lijst.push([n++ % 3 === 1 ? 'ridder' : 'boogschutter', x, y, 100, 1]);
+      }
+    }
+    leger.zetStand(lijst);
+    bewaar();
+  }
 
   // Reinout staat als gast bij de burcht (alleen om te zien, hij doet niets).
   function zetReinout(aan) {
@@ -96,6 +118,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
     gids.kaart({ naam: 'Bartholt', tekst: TAKEN[s.taak].tekst, knop: s.taak === 0 ? "Let's begin ›" : 'Start lesson ›' }, () => {
       s.basis = tel();
       s.basisSoldaten = soldaten().length;
+      s.basisMuur = opDeMuur();
       s.fasetijd = 0;
       gids.richt(TAKEN[s.taak].gids);
       bewaar();
@@ -115,9 +138,9 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
       const n = tel();
       return Object.entries(t.bouw).every(([k, nodig]) => (n[k] || 0) - ((s.basis || {})[k] || 0) >= nodig);
     }
-    if (t.soldaten) return soldaten().length >= t.soldaten;
+    if (t.soldaten) return soldaten().length - (s.basisSoldaten || 0) >= t.soldaten;
     if (t.sturen) return s.gestuurd;
-    if (t.opMuur) return soldaten().some((e) => e.opMuur);
+    if (t.opMuur) return opDeMuur() > (s.basisMuur || 0);
     return true;
   }
 
@@ -170,6 +193,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, leger, strijd, wegvind
       loopt = true;
       if (s.fase === 'bouw') {
         zetReinout(true);
+        zetWachters();
         toonTaak(`Task ${s.taak + 1} of ${TAKEN.length}: ${TAKEN[s.taak].taak}`);
         if (s.klaar) { toonTaak(`Done: ${TAKEN[s.taak].taak}`); klaarKaart(); }
         else if (!s.basis) introKaart();

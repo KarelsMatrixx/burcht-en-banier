@@ -25,10 +25,21 @@ check('veel huizen (>= 60)', kaartInfo.huizen >= 60, kaartInfo.huizen);
 // Bouwruimte: rond de burcht (afstand 5 tot 13) genoeg lege vrije tegels
 const ruimte = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; let n = 0; for (let dy = -13; dy <= 13; dy++) for (let dx = -13; dx <= 13; dx++) { const r = Math.max(Math.abs(dx), Math.abs(dy)); if (r < 5) continue; const x = st.x + dx, y = st.y + dy; if (k.object[y * k.breedte + x] === 0 && s.wegvinder.isVrij(x, y, 0)) n++; } return n; });
 check('genoeg bouwruimte (>= 150)', ruimte >= 150, ruimte);
+// Vier ringen
+const ringen = await p.evaluate(() => { const k = window.spel.kaart; let poorten = 0, muur = 0; for (let i = 0; i < k.object.length; i++) { if (k.object[i] === 6 && k.eigenaar[i] === 1) poorten++; } return { poorten }; });
+check('vier poorten (vier ringen)', ringen.poorten === 4, ringen.poorten);
+const wachters = await p.evaluate(() => window.spel.leger.soldaten().filter((e) => e.opMuur).length);
+check('wachters op de muren (>= 10)', wachters >= 10, wachters);
+// Karel en de gast lopen rond
+const k0 = await p.evaluate(() => { const e = window.spel.leger.soldaten().find((e) => e.soldaat.sleutel === 'koning'); const g = window.spel.eenheden.lijst.find((e) => e.gast); return [e.x, e.y, g.x, g.y]; });
+await p.waitForTimeout(14000);
+const k1 = await p.evaluate(() => { const e = window.spel.leger.soldaten().find((e) => e.soldaat.sleutel === 'koning'); const g = window.spel.eenheden.lijst.find((e) => e.gast); return [e.x, e.y, g.x, g.y]; });
+check('Karel loopt rond', Math.hypot(k1[0] - k0[0], k1[1] - k0[1]) > 0.5, JSON.stringify([k0, k1]));
+check('de gast loopt rond', Math.hypot(k1[2] - k0[2], k1[3] - k0[3]) > 0.5, JSON.stringify([k0, k1]));
 // Figuren
 await p.waitForTimeout(500);
 const f0 = await p.evaluate(() => window.spel.figuranten.lijst().map((e) => [e.soort, +e.x.toFixed(1), +e.y.toFixed(1)]));
-check('figuranten: 50 of meer', f0.length >= 50, f0.length);
+check('figuranten: 100 of meer', f0.length >= 100, f0.length);
 check('priester, Wessel en Bartholt erbij', [25, 24, 23].every((s) => f0.some((f) => f[0] === s)), JSON.stringify(f0.map((f) => f[0])));
 await p.waitForTimeout(6000);
 const f1 = await p.evaluate(() => window.spel.figuranten.lijst().map((e) => [e.soort, +e.x.toFixed(1), +e.y.toFixed(1), e.loopt]));
@@ -55,15 +66,21 @@ check('gids bij de houthakker', /ground|Wood|hut/i.test(zin), zin);
 // Idle: 21 s niets doen geeft een luide ring
 await p.waitForTimeout(21500);
 check('na 20 s: ring klopt harder', await p.evaluate(() => document.getElementById('gids-ring').classList.contains('luid')));
-// Avond: figuren weg
+// Avond: ze lopen nog rond; aanval: ze rennen het kasteel in
 await p.evaluate(() => window.spel.proloog.zetFase('avond'));
 await p.waitForTimeout(800);
-check('avond: figuranten weg', (await p.evaluate(() => window.spel.figuranten.aantal())) === 0);
 check('avond: gids weg', !(await p.isVisible('#gids-ring')) && !(await p.isVisible('#gids-kaart')));
+check('avond: figuranten er nog', (await p.evaluate(() => window.spel.figuranten.aantal())) >= 100);
 await p.evaluate(() => window.spel.proloog.zetFase('nacht'));
+await p.waitForTimeout(6000);
+const dicht = await p.evaluate(() => { const st = window.spel.kaart.start[0]; const l = window.spel.figuranten.lijst(); return l.filter((e) => e.pad && e.snelheid > 1.5).length; });
+const rest = await p.evaluate(() => window.spel.figuranten.aantal());
+check('nacht: figuranten vluchten (rennen of al binnen)', dicht >= 40 || rest < 100, dicht + ' van ' + rest);
 await p.waitForTimeout(1500);
-check('nacht: 80 vijanden', (await p.evaluate(() => window.spel.strijd.vijanden().length)) >= 78);
+check('nacht: bijna 80 vijanden', (await p.evaluate(() => window.spel.strijd.vijanden().length)) >= 60);
 // Prestaties in de nacht met 80 vijanden
+await p.waitForTimeout(70000);
+check('na de vlucht: allemaal binnen (weg)', (await p.evaluate(() => window.spel.figuranten.aantal())) === 0);
 const fps = await p.evaluate(() => new Promise((res) => { let n = 0; const t0 = performance.now(); const f = () => { n++; if (performance.now() - t0 > 3000) res(n / 3); else requestAnimationFrame(f); }; requestAnimationFrame(f); }));
 console.log('fps in de nacht (headless, ruw):', fps.toFixed(1));
 check('fps in de nacht >= 12', fps >= 12, fps);

@@ -392,3 +392,12 @@
 - Rondlopende figuren (nieuw: js/figuranten.js): ongeveer 60 dorpelingen, kinderen en een priester lopen bij hun dorp rond; Wessel en Bartholt wandelen bij de burcht. Nieuwe eenheidsplaatjes (SOORT 23 tot 30, heren.js `burger`). In de avond verdwijnen ze. Karel zelf (je koning) loopt niet rond.
 - Nacht van de proloog: één klap van 80 vijanden (70% ridders, 30% boogschutters) in plaats van een kleine golf met versterking. Je hebt geen kans, de scène volgt na 4 minuten of onder 40% burcht. strijd.js: maximum aantal vijanden in de proloog 90 (anders 60).
 - Tests: tests/proloog40.mjs (16 punten), tests/proloog35.mjs aangepast (41 punten).
+
+## 0.53.0: groot tutorialkasteel met vier ringen, Karel en de gast lopen rond
+- Het kasteel in de proloog heeft vier muurringen (maat 5, 9, 13 en 17; `eigenRingen` in data/kaarten.json, recept aldervale). Alle poorten liggen aan de oostkant op één lijn: de weg naar het grote dorp. Tussen de ringen staan huizen, hutten, hooibergen, vaten en tenten (kaart.js, bij `eigenMuur`), met lege stroken om te lopen en te bouwen.
+- Wachters op de muren: 12 schutters en ridders staan vanaf het begin op de vier ringen (proloog.js `zetWachters`). De lessen tellen nu wat erbij komt (soldaten en soldaten op de muur t.o.v. het begin van de les), dus de wachters tellen niet mee. 's Nachts vechten ze mee.
+- Ongeveer 140 figuranten: ook tussen de ringen lopen dorpelingen en kinderen rond (figuranten.js).
+- Karel (je koning) en Lord Reinout (de gast) lopen nu rond bij de burcht. Nieuw: `leger.wandel(e, x, y)`, een wandeling die niet telt als bevel van de speler. Karel loopt alleen als hij niet is geselecteerd en niet op de muur staat.
+- Bij de aanval ('s nachts) rennen alle figuranten, dus ook Wessel en Bartholt, terug naar de burcht en verdwijnen daar naar binnen (figuranten.js `vlucht`). Wie geen weg meer vindt (bijvoorbeeld door vijanden in de poort) duikt na drie pogingen onder; na 70 seconden zijn ze er sowieso niet meer. Wessel liep al vrij rond overdag (hij is een van de figuranten).
+- Nog niet op de iPhone gezien: prestaties met 140 figuren en 80 vijanden (headless ruw 60 fps).
+- Tests: proloog40.mjs (20 punten), proloog35.mjs (41).
