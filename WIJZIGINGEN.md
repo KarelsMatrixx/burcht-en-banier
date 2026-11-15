@@ -466,3 +466,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 
 ## 0.58.3: gidszin niet over het taaklabel
 - Valt de zin van de gids over het taaklabel rechtsboven (zoals bij het oog op een iPhone met veilige randen), dan schuift hij eronder.
+
+## 0.58.4: nachtles strenger, keuzehint weg
+- Nachtles 2 en 4 tellen alleen een bevel dat de speler in die les geeft, naar de gouden plek (binnen 6 tegels; bij de muurles op de muur). Soldaten die al op een muur stonden tellen niet meer.
+- Na een les met een bevel (dag en nacht) en bij het begin van de nacht is er niemand meer gekozen: de melding "soldier selected" linksonder verdwijnt.
+- Test: proloog43 (25 punten, ook een bevel naar een andere muur telt niet).

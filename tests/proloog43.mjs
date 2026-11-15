@@ -18,6 +18,7 @@ await p.tap('#missie-begin'); await p.waitForTimeout(1200);
 const st = () => p.evaluate(() => window.spel.proloog.stand());
 const kaartTik = async () => { await p.waitForSelector('#gids-kaart:not([hidden]) button', { timeout: 8000 }); const voor = await p.textContent('#gids-kaart'); await p.tap('#gids-kaart button'); await p.waitForFunction((v) => { const k = document.getElementById('gids-kaart'); return k.hidden || k.textContent !== v; }, voor, { timeout: 4000 }).catch(() => {}); await p.waitForTimeout(250); };
 await kaartTik();   // eerste kaartje van de dag
+await p.evaluate(() => { const s = window.spel; s.leger.kies([s.leger.soldaten()[0]]); });
 await p.evaluate(() => window.spel.proloog.zetFase('nacht'));
 await p.waitForTimeout(1500);
 const kijk = () => p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0];
@@ -34,16 +35,17 @@ check('machines erbij (ram, katapult, toren, ladder)', ['ram', 'katapult', 'tore
 check('aan de oostrand van de kaart', k0.minX > k0.B - 24, JSON.stringify(k0));
 check('niemand in het kasteel', k0.binnen === 0, k0.binnen);
 check('poort nog dicht (Bartholt-kaartje)', await p.isVisible('#gids-kaart'));
+check('nacht begint zonder gekozen soldaat', await p.evaluate(() => window.spel.leger.aantalGekozen() === 0));
 check('les 1 kaartje', /archers/i.test(await p.textContent('#gids-kaart')), await p.textContent('#gids-kaart'));
 await kaartTik();
-check('gids wijst het zwaard', /sword/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+check('gids wijst het zwaard of de groep', /sword|Archer/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 // Het leger marcheert
 await p.waitForTimeout(25000);
 const k1 = await kijk();
 check('ze marcheren naar het westen', k1.minX < k0.minX - 8, JSON.stringify([k0.minX, k1.minX]));
 check('nog niemand binnen de muren', k1.binnen === 0, k1.binnen);
 // Les 1 met echte tikken
-await p.tap('#knop-zwaard'); await p.waitForTimeout(500);
+if (!(await p.isVisible('#leger-groepen button'))) await p.tap('#knop-zwaard'); await p.waitForTimeout(500);
 check('gids wijst Archer', /Archer/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 await p.locator('#leger-groepen button', { hasText: /^Archer/ }).tap(); await p.waitForTimeout(900);
 const nS = async () => (await st());
@@ -52,6 +54,10 @@ await kaartTik(); await kaartTik();
 check('les 2: gouden plek', await p.evaluate(() => !document.getElementById('gids-plek').hidden), '');
 const bevel = async () => { await p.waitForTimeout(400); const m = await p.evaluate(() => { const r = document.getElementById('gids-plek'); const c = r.getBoundingClientRect(); return [c.left + c.width / 2, c.top + c.height / 2, r.classList.contains('buiten')]; }); return m; };
 // de camera springt naar de plek bij "Understood"; sluit het paneel van het leger niet
+await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; s.leger.stuur(st.x - 13, st.y, true); });
+await p.waitForTimeout(1200);
+check('les 2: bevel naar een andere muur telt niet', !(await nS()).nKlaar, JSON.stringify(await nS()));
+await p.evaluate(() => { const s = window.spel; s.leger.kiesSoort('boogschutter'); });
 let m = await bevel();
 check('plek in beeld', !m[2], JSON.stringify(m));
 await p.touchscreen.tap(m[0], m[1]); await p.waitForTimeout(800);
@@ -66,6 +72,7 @@ await kaartTik(); await kaartTik();
 m = await bevel();
 await p.touchscreen.tap(m[0], m[1]); await p.waitForTimeout(800);
 check('les 4 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
+check('na de laatste stuurles: niemand gekozen, geen hint', await p.evaluate(() => window.spel.leger.aantalGekozen() === 0 && document.getElementById('legerhint').hidden));
 const voor = await kijk();
 check('voor de poort: ze staan buiten (nog niemand binnen)', voor.binnen === 0 && voor.klaar.klaar > 30, JSON.stringify(voor));
 await kaartTik();   // Hold

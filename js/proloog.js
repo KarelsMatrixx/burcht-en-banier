@@ -61,7 +61,7 @@ const NACHT_TAKEN = [
     stuurSoort: 'ridder' },
 ];
 
-export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
+export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
   let s = lees() || nieuw();
   let loopt = false;
   let reinout = null;
@@ -83,6 +83,15 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
   leger.stuur = (...a) => {
     const gelukt = stuurWas(...a);
     if (gelukt && s.fase === 'bouw' && s.basis && TAKEN[s.taak].sturen) s.gestuurd = true;
+    // Nachtles: een bevel telt alleen als het bij de gouden plek is (bij de muurles: op de muur)
+    if (gelukt && s.fase === 'nacht' && s.deel === 'opmars' && s.nBegonnen && !s.nKlaar) {
+      const t = NACHT_TAKEN[s.nTaak];
+      const p = t.doelPlek && nachtPlek(t);
+      const [x, y, opMuur] = a;
+      const groep = leger.gekozen();
+      const soortOk = !t.stuurSoort || groep.some((e) => e.soldaat.sleutel === t.stuurSoort) || !heeftSoort(t.stuurSoort);
+      if (p && soortOk && Math.hypot(x - p.x, y - p.y) <= 6 && (!t.opMuur || opMuur || leger.isMuur(x, y))) s.nBevel = s.nTaak + 1;
+    }
     return gelukt;
   };
   const bartholt = (tekst) => toonVerhaal({ naam: 'Bartholt', portret: 'bartholt', tekst });
@@ -250,11 +259,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     const sleutel = t.keuze || t.stuurSoort;
     // Kiezen: de groep telt ook de wachters mee (zo staat het in het paneel)
     if (t.keuze) return leger.gekozen().some((e) => e.soldaat.sleutel === sleutel || !soldaten().some((x) => x.soldaat.sleutel === sleutel));
-    const soortPast = (e) => e.soldaat.sleutel === sleutel || !heeftSoort(sleutel);
-    // De muur: elk stuk muur telt, een soldaat van de speler die erop staat of erheen loopt
-    if (t.opMuur && bijPlek(t, soortPast)) return true;
-    if (t.opMuur) return soldaten().some((e) => !isWachterZonderBevel(e) && !e.wachter && soortPast(e) && (e.opMuur || (e.soldaat.doel >= kaart.breedte * kaart.hoogte && e.pad)));
-    return bijPlek(t, soortPast);
+    // Sturen: alleen een bevel in deze les naar (de buurt van) de gouden plek telt
+    return s.nBevel === s.nTaak + 1;
   };
   // Staat of loopt er een soldaat van de speler naar deze plek? (muur: de bovenkant van het stuk muur)
   function bijPlek(t, past) {
@@ -349,6 +355,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     s.golven = 1;
     gids.stop();
     gids.verbergKaart();
+    if (kiesGeen) kiesGeen();
     stuurOvermacht();
     toonMelding('Torches on the eastern road! A great army is marching on Aldervale.');
     // De camera kijkt naar de poort in het oosten, waar ze aankomen
@@ -415,6 +422,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         if (!s.klaar && taakKlaar()) {
           s.klaar = true;
           gids.stop();
+          if (kiesGeen && (TAKEN[s.taak].sturen || TAKEN[s.taak].opMuur)) kiesGeen();   // de hint 'soldier selected' weg
           if (stopBouw) stopBouw();   // klaar met bouwen: de bouwstand uit, zodat een tik niet per ongeluk nog een hut zet
           toonTaak(`Done: ${TAKEN[s.taak].taak}`);
           bewaar();
@@ -429,6 +437,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
           s.nKlaar = true;
           gids.stop();
           toonTaak(`Done: ${t.taak}`);
+          if (kiesGeen && t.stuurSoort) kiesGeen();
           bewaar();
           nachtKlaarKaart();
         }
