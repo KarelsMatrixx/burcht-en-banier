@@ -227,8 +227,10 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       if (nu - laatsteTik > IDLE) ring.classList.add('luid');
     },
     // Een kaartje midden onderin met een knop. Geen klok: de speler bepaalt het tempo.
-    kaart({ naam, tekst, knop }, opKlik) {
+    kaart({ naam, tekst, knop, portret }, opKlik) {
       kaart.replaceChildren();
+      kaart.classList.toggle('met-portret', !!portret);
+      if (portret) { const i = document.createElement('img'); i.className = 'portret'; i.alt = ''; i.src = `beelden/portretten/${portret}.jpg`; kaart.appendChild(i); }
       if (naam) { const n = document.createElement('strong'); n.textContent = naam; kaart.appendChild(n); }
       const p = document.createElement('p');
       p.textContent = tekst;

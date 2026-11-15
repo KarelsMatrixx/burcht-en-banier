@@ -1237,3 +1237,7 @@ body.gids-bedekt #gids-ring, body.gids-bedekt #gids-zin, body.gids-bedekt #gids-
 #gids-kaart strong { display: block; font-size: 12px; color: #e9c46a; }
 #gids-kaart p { margin: 2px 0 8px; font-size: 13px; line-height: 1.35; }
 #gids-kaart button { display: block; margin-left: auto; min-height: 36px; padding: 4px 16px; font-size: 14px; }
+
+/* Gesprek in de tutorial: portret links in het kaartje */
+#gids-kaart.met-portret { padding-left: 76px; min-height: 76px; }
+#gids-kaart img.portret { position: absolute; left: 10px; top: 10px; width: 56px; height: 56px; border-radius: 50%; border: 2px solid #e9c46a; object-fit: cover; }

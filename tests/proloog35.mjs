@@ -31,7 +31,10 @@ check('feest: vlaggen en meer huisjes', (await p.evaluate(() => { const k = wind
 check('kaart groter', (await p.evaluate(() => window.spel.kaart.breedte)) === 84);
 check('geen rode heer', (await p.evaluate(() => window.spel.rood)) === null);
 await p.screenshot({ path: '/home/claude/proloog-feest.png' });
-const kaartTik = async () => { await p.waitForSelector('#gids-kaart:not([hidden]) button', { timeout: 6000 }); await p.tap('#gids-kaart button'); await p.waitForTimeout(150); };
+let gesprekken = 0;
+// Gesprekken tussen de lessen (knop '›') doorklikken; telt de kaartjes
+const slaGesprekOver = async () => { let n = 0; while (n < 12 && await p.isVisible('#gids-kaart') && (await p.textContent('#gids-kaart button')).trim() === '›') { if (n === 0) check('gesprek met portret', await p.isVisible('#gids-kaart img.portret')); n++; await p.tap('#gids-kaart button'); await p.waitForTimeout(120); } return n; };
+const kaartTik = async () => { await p.waitForSelector('#gids-kaart:not([hidden]) button', { timeout: 6000 }); await p.tap('#gids-kaart button'); await p.waitForTimeout(150); gesprekken += await slaGesprekOver(); };
 const intro0 = await p.textContent('#gids-kaart');
 await kaartTik();
 s = await st();
@@ -175,5 +178,6 @@ check('vijf kaarten', kaarten === 5, kaarten);
 check('levelkaart open', await p.isVisible('#titel-kaart'));
 check('proloog gewonnen', (await p.evaluate(() => JSON.parse(localStorage.getItem('burcht-banier.campagne')).klaar)).includes(0));
 check('proloogstand gewist', (await p.evaluate(() => localStorage.getItem('burcht-banier.proloog'))) === null);
+check('drie gesprekken, 12 kaartjes', gesprekken === 12, gesprekken);
 console.log('fouten', fouten, 'ok', ok, 'fout', fout);
 await b.close(); srv.kill();

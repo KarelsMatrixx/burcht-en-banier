@@ -474,3 +474,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 
 ## 0.58.5: 20 seconden vrij na de dagles
 - Na de laatste dagles blijft het nog 20 seconden dag ("The feast goes on"), daarna komt Bartholts avondbericht, 20 seconden schemering en de nacht.
+
+## 0.59.0: gesprekken tussen de dagloessen
+- Na les 4 (huis): Wessel en Karel over zijn negende verjaardag. Na les 8 (kazerne): Reinout vraagt Karel uit over de wacht bij de oostpoort. Na les 11: Wessel met de valkenveer van Reinout, Karel roept ze naar het feest. Daarna 20 s vrij, 20 s schemering, nacht.
+- Kaartje van de gids kan een portret tonen (`gids.kaart({ portret })`), `GESPREKKEN` en `toonGesprek` in proloog.js. Teksten door Claude geschreven, na te lezen.
+- Tests: proloog35 (67), proloog42 (25).

@@ -15,7 +15,10 @@ await p.evaluate(() => { localStorage.clear(); sessionStorage.clear(); localStor
 await p.reload(); await wacht(); await p.waitForTimeout(300);
 await p.tap('#missie-begin'); await p.waitForTimeout(1200);
 const st = () => p.evaluate(() => window.spel.proloog.stand());
-const kaartTik = async () => { await p.waitForSelector('#gids-kaart:not([hidden]) button', { timeout: 8000 }); await p.tap('#gids-kaart button'); await p.waitForTimeout(200); };
+let gesprekken = 0;
+// Gesprekken tussen de lessen (knop '›') doorklikken; telt de kaartjes
+const slaGesprekOver = async () => { let n = 0; while (n < 12 && await p.isVisible('#gids-kaart') && (await p.textContent('#gids-kaart button')).trim() === '›') { if (n === 0) check('gesprek met portret', await p.isVisible('#gids-kaart img.portret')); n++; await p.tap('#gids-kaart button'); await p.waitForTimeout(120); } return n; };
+const kaartTik = async () => { await p.waitForSelector('#gids-kaart:not([hidden]) button', { timeout: 8000 }); await p.tap('#gids-kaart button'); await p.waitForTimeout(200); gesprekken += await slaGesprekOver(); };
 // Het veld
 const veld = await p.evaluate(() => { const k = window.spel.kaart; const st = k.start[0]; let steen = 0, boom = 0, vrij = 0, poort = 0;
   for (let dy = -7; dy <= 7; dy++) for (let dx = -24; dx <= -18; dx++) { const o = k.object[(st.y + dy) * k.breedte + st.x + dx]; if (o === 2) steen++; else if (o === 1) boom++; else if (o === 0) vrij++; }

@@ -62,6 +62,31 @@ const NACHT_TAKEN = [
     stuurSoort: 'ridder' },
 ];
 
+// Gesprekken tussen de lessen door: kennismaken met Wessel en Reinout (Engels, door Claude geschreven, na te lezen).
+const KAREL = { naam: 'King Karel', portret: 'karel' };
+const WESSEL = { naam: 'Wessel', portret: 'wessel_blij' };
+const REINOUT = { naam: 'Lord Reinout of Witherheath', portret: 'reinout' };
+const GESPREKKEN = {
+  3: [
+    [WESSEL, 'Father! Father! Bartholt says I am nine today. Nine! Is it true there is honey cake?'],
+    [KAREL, 'Honey cake, minstrels, and a wooden sword with your name cut into the hilt. Do not tell Bartholt I told you.'],
+    [WESSEL, 'A real sword? Then I can guard the gate with you tonight!'],
+    [KAREL, 'One day, son. Tonight you guard the cake.'],
+  ],
+  7: [
+    [REINOUT, 'You keep a strong house, Karel. Good walls, loyal men. Your father would be proud.'],
+    [KAREL, 'My father built these walls. I only keep them standing. You will stay for the feast, Reinout?'],
+    [REINOUT, 'I would not miss it. Tell me, how many men watch your eastern gate at night?'],
+    [KAREL, 'Enough. Why do you ask?'],
+    [REINOUT, 'An old soldier\'s habit. The roads are restless. Riders of Duke Ottger were seen near the border.'],
+  ],
+  10: [
+    [WESSEL, 'Look, Father! Lord Reinout gave me a falcon feather. He says it brings luck.'],
+    [REINOUT, 'Keep it close tonight, boy. Luck is a fickle guest.'],
+    [KAREL, 'Come, both of you. The minstrels are waiting.'],
+  ],
+};
+
 export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids }) {
   let s = lees() || nieuw();
   let loopt = false;
@@ -221,11 +246,19 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       bewaar();
     });
   }
+  // Een gesprek, kaartje voor kaartje, met portret
+  function toonGesprek(regels, klaar, i = 0) {
+    if (i >= regels.length) { klaar(); return; }
+    const [wie, tekst] = regels[i];
+    gids.kaart({ naam: wie.naam, portret: wie.portret, tekst, knop: '›' }, () => toonGesprek(regels, klaar, i + 1));
+  }
   function klaarKaart() {
     const laatste = s.taak + 1 >= TAKEN.length;
     gids.kaart({ naam: 'Bartholt', tekst: TAKEN[s.taak].lof || LOF[s.taak % LOF.length], knop: laatste ? 'Continue ›' : 'Next lesson ›' }, () => {
-      if (!laatste) begin(s.taak + 1);
-      else naarAvond();
+      const verder = () => { if (!laatste) begin(s.taak + 1); else naarAvond(); };
+      const gesprek = GESPREKKEN[s.taak];
+      if (gesprek) toonGesprek(gesprek, verder);
+      else verder();
     });
   }
 
