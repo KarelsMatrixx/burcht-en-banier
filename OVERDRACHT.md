@@ -1,4 +1,4 @@
-# Overdracht Aldervale (versie 0.59.1, 15 november 2026)
+# Overdracht Aldervale (versie 0.60.0, 15 november 2026)
 
 Plak in de nieuwe chat: "Lees claude/overdracht.md in het project Stronghold en ga verder." Lees dit eerst. Repo: github.com/KarelsMatrixx/burcht-en-banier, branch main (laatste commit e83aa1a). Project "Stronghold".
 
@@ -30,6 +30,11 @@ Bestanden: `js/proloog.js` (verloop), `js/gids.js` (aanwijzer: ring, zin, gouden
 
 **Tests die groen zijn:** proloog35 (68), proloog42 (25), proloog43 (25), proloog40 (22), gevecht40 (5).
 **Bekend rood (ouder, niet van deze reeks):** campagne30, verhaal31, hut36, bouwstraal38.
+
+## Na 0.59.1
+- 0.59.4: grondles telt alleen een bevel op de grond bij de gouden plek (volgorde soldaat, oog, plek); muurles alleen een bevel naar de muur in die les. Met het oog aan gaat een tik naar de grond (main.js).
+- 0.60.0: hinderlaag in level 2 Sevenwinds (`js/hinderlaag.js`): eerste keer in het midden van de pas 4 boogschutters per kant in de rotsen. Test hinderlaag44. Niet bewaard bij herladen.
+- Een andere chat voegde de verhaalbeelden toe (0.59.2 en 0.59.3); de proloog begint nu met 12 s verhaalbeeld.
 
 ## Open punten en te controleren
 - Karel heeft 0.59.1 nog niet op de iPhone gezien: volgorde in de bevel-lessen, legerhint en gidszin, opmars aan de rand.

@@ -22,6 +22,7 @@ import { maakUi } from './ui.js';
 import { metLidwoord } from './taal.js';
 import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
+import { maakHinderlaag } from './hinderlaag.js';
 import { maakGids } from './gids.js';
 import { maakFiguranten } from './figuranten.js';
 import { maakSlachting } from './slachting.js';
@@ -813,6 +814,12 @@ async function start() {
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
     kaartGewijzigd,
   }) : null;
+  // Level 2: boogschutters in de rotsen van de pas (js/hinderlaag.js)
+  const hinderlaag = missie && missie.hinderlaag ? maakHinderlaag({
+    instelling: missie.hinderlaag, kaart, leger, strijd, kaartGewijzigd,
+    toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
+    toonVerhaal: (tekst) => ui.toonVerhaal({ naam: missie.heer, portret: missie.portret, tekst }),
+  }) : null;
   let beeldOpen = false;   // het verhaalbeeld staat in beeld: het spel wacht
   const beginLevel = () => { verhaal.start(); if (proloog) proloog.start(); if (doel) doel.start(); };
   ui.opMissieBegin(() => { ui.toonMissie({ open: false }); beginLevel(); });
@@ -1084,6 +1091,7 @@ async function start() {
       verhaal.stap(dt, verhaalStand);
       if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); }
       if (doel) doel.stap(dt);
+      if (hinderlaag && !strijd.uitslag()) hinderlaag.stap(dt);
       slachting.stap(dt);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),
@@ -1124,7 +1132,7 @@ async function start() {
   });
 
   // Handig bij het zoeken naar fouten.
-  window.spel = { gids, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting };
+  window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

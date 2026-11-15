@@ -498,3 +498,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Muurles: alleen een bevel in die les naar een stuk muur telt (een soldaat die er al stond niet).
 - Met het oog aan gaat een tik naar de grond, behalve als je de muur zelf aantikt (main.js). Zonder deze regel ging een tik op de gouden plek achter een muur naar de muurtop.
 - `window.spel.gids` voor tests. proloog35 (72 punten) wacht op het verhaalbeeld.
+
+## 0.60.0: hinderlaag in de pas van Sevenwinds (level 2)
+- De eerste keer dat een soldaat van de speler binnen 7 tegels van het midden van de pas komt, maakt de rotswand aan beide kanten 4 nissen en staan daar 4 boogschutters van Mechteld. Ze blijven staan, schieten op wat binnen bereik komt (2 tegels extra bereik, zoals op een muur) en lopen er niet achteraan. Mechteld zegt erbij: "Did you think my pass was empty, King Karel? Every rock here has eyes." (door Claude geschreven).
+- Nieuw: js/hinderlaag.js, `strijd.hinderlaag(sleutel, vak)`, `hinderlaag` in data/campagne.json bij level 2. Niet bewaard: na herladen kan hij nog een keer komen.
+- Test: hinderlaag44 (10 punten).

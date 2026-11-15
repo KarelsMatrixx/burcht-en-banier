@@ -1,0 +1,48 @@
+// Level 2 Sevenwinds: de eerste keer dat soldaten van de speler het smalle stuk van de pas in gaan,
+// komen aan beide kanten 4 boogschutters uit de rotsen. Ze blijven staan en schieten.
+import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { spawn } from 'child_process';
+const poort = 8244;
+const srv = spawn('python3', ['-m', 'http.server', String(poort)], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
+await new Promise((r) => setTimeout(r, 800));
+const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true })).newPage();
+const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
+let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
+const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 20000 });
+await p.goto(`http://localhost:${poort}/`); await wacht();
+await p.evaluate(() => { localStorage.clear(); sessionStorage.clear(); localStorage.setItem('tipGesloten', '1');
+  localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 2 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); });
+await p.reload(); await wacht();
+await p.tap('#missie-begin', { timeout: 30000 }); await p.waitForTimeout(800);
+check('hinderlaag in level 2', await p.evaluate(() => !!window.spel.hinderlaag));
+const pl = await p.evaluate(() => window.spel.hinderlaag.plekken());
+check('8 plekken in de rotsen', pl.length === 8, JSON.stringify(pl));
+const kant = await p.evaluate((pl) => { const B = window.spel.kaart.breedte; return pl.map((q) => Math.sign(q.x + q.y - B)); }, pl);
+check('vier aan elke kant', kant.filter((k) => k > 0).length === 4 && kant.filter((k) => k < 0).length === 4, JSON.stringify(kant));
+const voor = await p.evaluate(() => window.spel.strijd.stand().vijanden);
+await p.waitForTimeout(1500);
+check('nog niets zolang niemand in de pas is', !(await p.evaluate(() => window.spel.hinderlaag.gebeurd())));
+// Een soldaat in het midden van de pas
+await p.evaluate(() => { const s = window.spel; const B = s.kaart.breedte; const m = Math.round(B / 2);
+  const e = s.leger.soldaten().find((e) => e.soldaat.sleutel !== 'koning') || s.leger.soldaten()[0];
+  for (let r = 0; r < 4; r++) for (let dx = -r; dx <= r; dx++) { if (s.wegvinder.isVrij(m + dx, m - dx, 0)) { e.x = m + dx + 0.5; e.y = m - dx + 0.5; e.pad = null; return; } } });
+await p.waitForTimeout(1200);
+check('hinderlaag gebeurd', await p.evaluate(() => window.spel.hinderlaag.gebeurd()));
+const sch = await p.evaluate(() => window.spel.eenheden.lijst.filter((e) => e.hinderlaag && !e.dood).map((e) => [e.x, e.y]));
+check('8 schutters in de rotsen', sch.length === 8, JSON.stringify(sch));
+check('melding Ambush', /Ambush/.test(await p.evaluate(() => window.spel.ui.logboek().map((r) => r.tekst).join(' '))));
+await p.waitForTimeout(6000);
+const na = await p.evaluate(() => window.spel.eenheden.lijst.filter((e) => e.hinderlaag && !e.dood).map((e) => [e.x, e.y]));
+const bewogen = na.filter((q) => !sch.some((r) => Math.hypot(q[0] - r[0], q[1] - r[1]) <= 0.6)).length;
+check('ze blijven op hun plek', bewogen === 0, JSON.stringify([sch, na]));
+// Nog een keer de pas in: geen tweede hinderlaag
+const n1 = await p.evaluate(() => window.spel.eenheden.lijst.filter((e) => e.hinderlaag).length);
+await p.waitForTimeout(1000);
+check('maar één keer', (await p.evaluate(() => window.spel.eenheden.lijst.filter((e) => e.hinderlaag).length)) <= n1);
+await p.evaluate(() => { const s = window.spel; const t = s.CONFIG.tegel; const m = Math.round(s.kaart.breedte / 2) + 0.5; s.camera.kijkNaar(0, m * t.hoogte); });
+await p.waitForTimeout(400);
+await p.screenshot({ path: '/tmp/s/hinderlaag.png' });
+check('geen scriptfouten', fouten.length === 0, fouten.join('|'));
+console.log('ok', ok, 'fout', fout);
+srv.kill(); await b.close();

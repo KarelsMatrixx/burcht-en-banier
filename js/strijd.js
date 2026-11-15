@@ -199,7 +199,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const houdingVan = (def) => (def.bereik > 2 ? 'schiet' : 'sla');
   const isSchutter = (k) => k.def.bereik > 2;
   // Hoe ver iemand raakt: een schutter op de muur komt verder.
-  const bereikVan = (e, k) => k.def.bereik + (e.opMuur && isSchutter(k) ? R.muurBereik : 0);
+  const bereikVan = (e, k) => k.def.bereik + ((e.opMuur || e.hinderlaag) && isSchutter(k) ? R.muurBereik : 0);   // hoog in de rotsen schiet ook verder
   // Een ridder kan alleen iemand raken die op dezelfde hoogte staat.
   const kanRaken = (e, k, a) => isSchutter(k) || !!a.opMuur === !!e.opMuur;
   const klem = (getal, laag, hoog) => Math.max(laag, Math.min(hoog, getal));
@@ -513,7 +513,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     // Een schutter van de speler blijft staan waar je hem neerzet: hij
     // schiet op wat binnen bereik komt en loopt er niet achteraan. Wie op
     // de muur staat, blijft daar ook.
-    const blijft = !!e.opMuur || (e.team === SPELER && schutter);
+    const blijft = !!e.opMuur || !!e.hinderlaag || (e.team === SPELER && schutter);
     if (k.bevel) {
       if (k.bevel.dood || !kanRaken(e, k, k.bevel)) k.bevel = null;
       else if (!e.opMuur || Math.hypot(k.bevel.x - e.x, k.bevel.y - e.y) <= bereik) return k.bevel;
@@ -1388,7 +1388,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (k.doelwit) {
       k.bouw = null;
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) {
-        if (e.opMuur) k.doelwit = null;   // van de muur af gaat hij er niet achteraan
+        if (e.opMuur || e.hinderlaag) k.doelwit = null;   // van de muur (of uit de rotsen) gaat hij er niet achteraan
         else jaag(e, k);
       }
     } else if (e.team === VIJAND) {
@@ -1615,6 +1615,19 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     opVerandering();
     opStand();
     return aantal;
+  }
+
+  // Een hinderlaag: een vijand op een vaste plek (bijvoorbeeld een nis in de rotsen) die blijft staan en schiet.
+  function hinderlaag(sleutel, vak) {
+    if (!soorten[sleutel] || vak < 0) return null;
+    const e = maakVijand(sleutel, vak);
+    e.hinderlaag = true;
+    const t = tak(e);
+    t.houd = true;
+    t.via = -1;
+    opVerandering();
+    opStand();
+    return e;
   }
 
   // De opmars is klaar: iedereen die wachtte, gaat naar de burcht.
@@ -1982,7 +1995,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   zetWachters(null);   // rood begint met een wachter op elk stuk muur
 
   return {
-    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, laatOpmarsLos, opmarsStand,
+    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, laatOpmarsLos, opmarsStand, hinderlaag,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),
