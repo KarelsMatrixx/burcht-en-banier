@@ -471,3 +471,6 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Nachtles 2 en 4 tellen alleen een bevel dat de speler in die les geeft, naar de gouden plek (binnen 6 tegels; bij de muurles op de muur). Soldaten die al op een muur stonden tellen niet meer.
 - Na een les met een bevel (dag en nacht) en bij het begin van de nacht is er niemand meer gekozen: de melding "soldier selected" linksonder verdwijnt.
 - Test: proloog43 (25 punten, ook een bevel naar een andere muur telt niet).
+
+## 0.58.5: 20 seconden vrij na de dagles
+- Na de laatste dagles blijft het nog 20 seconden dag ("The feast goes on"), daarna komt Bartholts avondbericht, 20 seconden schemering en de nacht.

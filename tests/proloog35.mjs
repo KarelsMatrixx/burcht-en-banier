@@ -138,7 +138,11 @@ await kaartTik();   // Continue
 await p.waitForFunction(() => window.spel.proloog.stand().fase === 'avond', null, { timeout: 8000 }).catch(() => {});
 s = await st();
 check('lijst af: avond', s.fase === 'avond', JSON.stringify(s));
-check('Reinout is weg', !s.reinout && !(await p.evaluate(() => window.spel.eenheden.lijst.some((e) => e.gast))));
+// Eerst 20 seconden vrij bij daglicht
+await p.waitForTimeout(5000);
+check('vrije tijd: nog licht, Reinout er nog', (await p.evaluate(() => window.spel.proloog.nacht())) === 0 && (await st()).reinout);
+await p.waitForTimeout(16000);
+check('Reinout is weg', !(await st()).reinout && !(await p.evaluate(() => window.spel.eenheden.lijst.some((e) => e.gast))));
 // Het wordt donker
 await p.waitForTimeout(6000);
 const n1 = await p.evaluate(() => window.spel.proloog.nacht());

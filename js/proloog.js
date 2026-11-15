@@ -38,7 +38,8 @@ const TAKEN = [
 ];
 
 const LOF = ['Well done, Sire.', 'Good work.', 'Splendid. The people see their king at work.', 'That will do nicely.', 'Very good.'];
-const AVOND = 20;              // seconden schemering voor de nacht
+const VRIJ = 20;               // seconden vrij spelen bij daglicht na de laatste dagles
+const AVOND = 20;              // daarna seconden schemering voor de nacht
 const NACHT_DUUR = 240;        // vier minuten nacht, dan de scène
 const OVERMACHT = 100;         // zoveel vijanden komen er: je hebt geen kans (naar Karel)
 const WACHT_MAX = 150;         // zo lang wacht het leger buiten de poort, ook als de speler de les niet afmaakt (seconden)
@@ -247,6 +248,12 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     s.fasetijd = 0;
     gids.stop();
     gids.verbergKaart();
+    toonTaak('The feast goes on');
+    bewaar();
+  }
+  // Na de vrije tijd: het wordt avond
+  function begintSchemer() {
+    s.gemeld.avond = true;
     toonTaak('Evening: the feast is over');
     bartholt('The feast is over and Wessel is asleep. Lord Reinout has gone out for some air. Sire, I count more torches on the road than I like. If they come tonight, they come in force. Hold the keep as long as you can.');
     zetReinout(false);
@@ -388,7 +395,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         if (s.klaar) { toonTaak(`Done: ${TAKEN[s.taak].taak}`); klaarKaart(); }
         else if (!s.basis) introKaart();
         else richtGids(false);
-      } else if (s.fase === 'avond') toonTaak('Evening: the feast is over');
+      } else if (s.fase === 'avond') toonTaak(s.gemeld.avond ? 'Evening: the feast is over' : 'The feast goes on');
       else if (s.fase === 'nacht') {
         if (s.deel === 'opmars') {
           // Na het herladen is het leger er niet meer: opnieuw laten marcheren, de les gaat verder
@@ -429,7 +436,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
           klaarKaart();
         } else if (Math.round(s.tijd) % 10 === 0) bewaar();
       } else if (s.fase === 'avond') {
-        if (s.fasetijd >= AVOND) naarNacht();
+        if (s.fasetijd >= VRIJ && !s.gemeld.avond) begintSchemer();
+        if (s.fasetijd >= VRIJ + AVOND) naarNacht();
       } else if (s.fase === 'nacht' && s.deel === 'opmars') {
         // De les over je leger; de poort gaat ook open als de speler te lang wacht
         const t = NACHT_TAKEN[s.nTaak];
@@ -450,7 +458,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     },
     // Hoe donker het is: 0 overdag, 1 in de nacht.
     nacht() {
-      if (s.fase === 'avond') return Math.min(1, s.fasetijd / AVOND);
+      if (s.fase === 'avond') return Math.max(0, Math.min(1, (s.fasetijd - VRIJ) / AVOND));
       if (s.fase === 'nacht' || s.fase === 'scene') return 1;
       return 0;
     },
