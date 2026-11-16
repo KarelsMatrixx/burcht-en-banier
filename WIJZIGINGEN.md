@@ -529,3 +529,6 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Gedetailleerdere zwarte ruiter (tekenRuiter in tekenaar.js): paard met manen, oor, teugels, dekkleed met rode zoom, ruiter met harnas, helm, pluim, wapperende mantel, lans met zwarte banier en fakkel; Wessel met armen en benen.
 - Langere slotscène: 13 kaarten, Karel woedend, wil zijn zoon terughalen, vraagt naar Reinout (door Claude geschreven).
 - Logboekbericht van Bartholt bij het begin van de proloog: eerst houthakker, voorraadkamer, huis en boomgaard.
+
+## 0.62.1: herstel config.js
+- Bij het ophogen naar 0.62.0 veranderde een te ruime zoekopdracht ook het kaartzaad (20261110) in "20.62.00": het spel startte niet. Hersteld. Versies worden voortaan alleen met letterlijke punten vervangen en alle JS-bestanden daarna op syntax gecontroleerd.

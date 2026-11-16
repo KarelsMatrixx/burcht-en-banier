@@ -3,12 +3,12 @@
 // van de code hoeft te zijn.
 
 export const CONFIG = {
-  versie: '0.62.0',
+  versie: '0.62.1',
   stap: 41,
   verhaalbeeldSeconden: 20,   // zo lang staat het verhaalbeeld voor een level in beeld
 
   // Het speelveld. Hetzelfde zaad geeft altijd dezelfde kaart.
-  kaart: { breedte: 64, hoogte: 64, zaad: 20.62.00 },
+  kaart: { breedte: 64, hoogte: 64, zaad: 20261110 },
 
   // Maat van één ruitvormige tegel in pixels (verhouding 2:1).
   tegel: { breedte: 64, hoogte: 32 },
