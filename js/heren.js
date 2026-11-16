@@ -1006,7 +1006,7 @@ function valkenier(ctx, houding, beeld) {
 }
 
 // ---------- De koning (jouw blauwe koning, en de rode in vrij spel): geen kroon, wel een
-// bontkraag, een gouden speld, bruin haar en baard, zwaard en schild in teamkleur.
+// bontkraag, een gouden speld, bruin haar en baard, en een dik tweehandig zwaard (geen schild).
 function koning(ctx, houding, beeld, def = {}) {
   const K = def.kleur || '#2f5fc4';
   const goud = def.wapen && def.wapen !== '#1d1d22' ? def.wapen : '#e3c04a';
@@ -1055,43 +1055,41 @@ function koning(ctx, houding, beeld, def = {}) {
   ovaal(ctx, hx, hy - 2.6, 4.5, 3.2, haar);
   vlak(ctx, [[hx - 4.4, hy - 1.6], [hx - 3.2, hy + 3.6], [hx - 2.6, hy - 0.6]], haar);
   ovaal(ctx, hx + 1.8, hy - 4.4, 1.6, 0.8, 'rgba(255,255,255,0.18)');
-  // schild en zwaard
-  const schild = (sx, sy) => {
-    const P = [[sx - 3.8, sy - 6], [sx + 3.8, sy - 6], [sx + 3.8, sy + 3.2], [sx, sy + 6.8], [sx - 3.8, sy + 3.2]];
-    vlak(ctx, P, goud);
-    vlak(ctx, [[sx - 3.1, sy - 5.3], [sx + 3.1, sy - 5.3], [sx + 3.1, sy + 2.9], [sx, sy + 6], [sx - 3.1, sy + 2.9]], K);
-    vlak(ctx, [[sx - 3.1, sy - 5.3], [sx - 1.2, sy - 5.3], [sx - 1.2, sy + 4.6], [sx - 3.1, sy + 2.9]], 'rgba(0,0,0,0.2)');
-    lijn(ctx, sx, sy - 4.4, sx, sy + 4.4, goud, 1.2);
-    lijn(ctx, sx - 2.4, sy - 1, sx + 2.4, sy - 1, goud, 1.2);
-    ovaal(ctx, sx, sy - 1, 0.9, 0.9, '#efece4');
-  };
+  // tweehandig zwaard: een brede, dikke kling met bloedgeul, brede pareerstang en een lange greep
   const zwaard = (x1, y1, x2, y2) => {
     const hoek = Math.atan2(y2 - y1, x2 - x1);
     const dx = Math.cos(hoek), dy = Math.sin(hoek), nx = -dy, ny = dx;
-    lijn(ctx, x1, y1, x2, y2, '#e6e9ee', 1.7);
-    lijn(ctx, x1, y1, x2, y2, 'rgba(255,255,255,0.7)', 0.5);
-    lijn(ctx, x1 - nx * 2.7, y1 - ny * 2.7, x1 + nx * 2.7, y1 + ny * 2.7, goud, 1.3);
-    lijn(ctx, x1, y1, x1 - dx * 3, y1 - dy * 3, '#5a3d22', 1.4);
-    ovaal(ctx, x1 - dx * 3.5, y1 - dy * 3.5, 0.9, 0.9, goud);
+    const br = 1.9;   // halve breedte van de kling bij de pareerstang
+    vlak(ctx, [[x1 + nx * br, y1 + ny * br], [x2 + nx * 0.5 + dx * 0.4, y2 + ny * 0.5 + dy * 0.4], [x2 + dx * 1.8, y2 + dy * 1.8], [x2 - nx * 0.5 + dx * 0.4, y2 - ny * 0.5 + dy * 0.4], [x1 - nx * br, y1 - ny * br]], '#dfe3e9');
+    vlak(ctx, [[x1 - nx * br, y1 - ny * br], [x2 - nx * 0.5 + dx * 0.4, y2 - ny * 0.5 + dy * 0.4], [x2 + dx * 1.8, y2 + dy * 1.8], [x2, y2], [x1, y1]], 'rgba(60,70,90,0.28)');
+    lijn(ctx, x1 + dx * 2.5, y1 + dy * 2.5, x1 + (x2 - x1) * 0.85, y1 + (y2 - y1) * 0.85, 'rgba(110,120,140,0.55)', 0.7);   // bloedgeul
+    lijn(ctx, x1 + nx * br * 0.8, y1 + ny * br * 0.8, x2 + nx * 0.4, y2 + ny * 0.4, 'rgba(255,255,255,0.75)', 0.5);
+    lijn(ctx, x1 - nx * 4, y1 - ny * 4, x1 + nx * 4, y1 + ny * 4, goud, 1.7);   // brede pareerstang
+    ovaal(ctx, x1 - nx * 4, y1 - ny * 4, 0.9, 0.9, goud);
+    ovaal(ctx, x1 + nx * 4, y1 + ny * 4, 0.9, 0.9, goud);
+    lijn(ctx, x1, y1, x1 - dx * 5, y1 - dy * 5, '#5a3d22', 1.7);   // lange greep voor twee handen
+    lijn(ctx, x1 - dx * 1.2, y1 - dy * 1.2, x1 - dx * 4.6, y1 - dy * 4.6, 'rgba(0,0,0,0.3)', 0.6);
+    ovaal(ctx, x1 - dx * 5.6, y1 - dy * 5.6, 1.2, 1.2, goud);
   };
   const arm = (ax, ay, bx, by) => lijn(ctx, ax, ay, bx, by, staal, 2.6);
   if (houding === 'lopen') {
-    schild(mx - 6.8, 23.2 + wip);
-    hand(ctx, mx - 4.6, 24 + wip, staalD, 1.6);
+    // zwaard schuin voor je uit, met beide handen op de greep
+    arm(mx - 5.4, 19.8 + wip, mx + 5.3, 24.8 + wip);
     zwaard(mx + 6, 22 + wip, mx + 9.6, 5 + wip);
     arm(mx + 5.4, 19.6 + wip, mx + 6, 22 + wip);
+    hand(ctx, mx + 5.4, 24.8 + wip, staalD, 1.7);
     hand(ctx, mx + 6, 22.4 + wip, staalD, 1.7);
   } else if (houding === 'hoog') {
-    schild(mx - 5.6, 21.6);
-    hand(ctx, mx - 4, 22.4, staalD, 1.6);
+    arm(mx - 5.4, 19.8, mx + 4.6, 19.8);
     zwaard(mx + 5, 15.4, mx + 7.4, -3);
-    arm(mx + 5.4, 19.6, mx + 5, 15.8);
-    hand(ctx, mx + 5, 15.6, staalD, 1.7);
+    arm(mx + 5.4, 19.6, mx + 5, 17.2);
+    hand(ctx, mx + 4.6, 19.8, staalD, 1.7);
+    hand(ctx, mx + 5, 17.2, staalD, 1.7);
   } else {
-    schild(mx - 4.4, 22);
-    hand(ctx, mx - 3.2, 22.6, staalD, 1.6);
+    arm(mx - 5.4, 19.8, mx + 2.4, 19.6);
     zwaard(mx + 5, 20, mx + 22.6, 25.6);
     arm(mx + 5.4, 19.6, mx + 5.2, 20.4);
+    hand(ctx, mx + 2.4, 19.6, staalD, 1.7);
     hand(ctx, mx + 5.4, 20.4, staalD, 1.7);
     ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 0.7;
     ctx.beginPath(); ctx.arc(mx + 4, 17, 15, -1.2, 0.4); ctx.stroke();

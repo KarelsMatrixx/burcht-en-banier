@@ -13,6 +13,7 @@
 import { CONFIG } from './config.js';
 import { SOORT } from './eenheden.js';
 import { OBJECT } from './kaart.js';
+import { SPELER as EIGENAAR_SPELER } from './bouwen.js';
 
 const TEAM = 0;   // de speler
 
@@ -26,7 +27,13 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   const HH = CONFIG.tegel.hoogte / 2;
   const stappenPerSeconde = CONFIG.spel.stappenPerSeconde;
   const soorten = regels.soldaten;
-  const max = regels.legerMax;
+  const maxLevel = regels.legerMax;                 // harde bovengrens van dit level
+  const perKazerne = regels.legerPerKazerne || 0;   // 0: geen kazerneregel (de proloog)
+  // Hoeveel soldaten er boven op een toren en een wachttoren passen (data/economie.json torenPlekken).
+  const TORENPLEKKEN = {
+    [OBJECT.TOREN]: Math.max(1, Math.round((regels.torenPlekken || {}).toren || 2)),
+    [OBJECT.WACHTTOREN]: Math.max(1, Math.round((regels.torenPlekken || {}).wachttoren || 2)),
+  };
   const soldaten = [];
 
   for (const [sleutel, def] of Object.entries(soorten)) {
@@ -58,13 +65,13 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   }
 
   // Staat op deze knoop een soldaat, of is er een naar onderweg? (behalve wie in "zonder" zit)
-  // Op de grond past er een per tegel. Boven op een toren of wachttoren passen er twee,
-  // en op het hoofdkasteel (de burcht) samen hooguit vijf, een per tegel.
+  // Op de grond past er een per tegel. Boven op een toren (Watchtower: 7) of wachttoren
+  // (Tower: 3) passen er meer, en op het hoofdkasteel (de burcht) samen hooguit vijf, een per tegel.
   const KASTEEL_PLEKKEN = 5;
   const kapaciteit = (knoop) => {
     if (knoop < N) return 1;
     const o = kaart.object[knoop - N];
-    return o === OBJECT.TOREN || o === OBJECT.WACHTTOREN ? 2 : 1;
+    return TORENPLEKKEN[o] || 1;
   };
   const isKasteelKnoop = (knoop) => knoop >= N && kaart.object[knoop - N] === OBJECT.BURCHT;
   const telOp = (knoop, zonder, plan = []) => {
@@ -127,12 +134,34 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     return n;
   }
 
+  // Hoeveel kazernes (en magiertorens) heeft de speler? Elk geeft plek aan perKazerne soldaten.
+  function aantalKazernes() {
+    let n = 0;
+    for (let i = 0; i < N; i++) {
+      if (kaart.eigenaar[i] !== EIGENAAR_SPELER) continue;
+      const o = kaart.object[i];
+      if (o === OBJECT.KAZERNE || o === OBJECT.MAGIERTOREN) n++;
+    }
+    return n;
+  }
+
+  // Hoeveel plekken heeft je leger nu? Per kazerne perKazerne, nooit meer dan de grens van het level.
+  function legerMax() {
+    return perKazerne ? Math.min(maxLevel, perKazerne * aantalKazernes()) : maxLevel;
+  }
+
   // Lege tekst als je deze soldaat kunt opleiden, anders de reden.
   function waaromNiet(sleutel) {
     const def = soorten[sleutel];
     if (!def) return 'that soldier does not exist';
     if (def.koning) return 'there is only one king';
-    if (plekken() + (def.legerPlekken || 1) > max) return `your army is full (${max} places)`;
+    const grens = legerMax();
+    if (plekken() + (def.legerPlekken || 1) > grens) {
+      // Staat de grens lager dan die van het level, dan helpt een kazerne erbij.
+      return perKazerne && grens < maxLevel
+        ? `your army is full (${grens} places). Each barracks holds ${perKazerne}: build another barracks`
+        : `your army is full (${grens} places)`;
+    }
     const tekort = economie.tekort(def.kosten);
     if (tekort) return tekort;
     const boeren = def.boeren || 1;
@@ -301,9 +330,24 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
         const vak = vakVan(e);
         const mx = (vak % B) + 0.5;
         const my = Math.floor(vak / B) + 0.5;
-        const kant = lijst.length < 2 ? 0 : (i === 0 ? 1 : -1);
-        const tx = mx + kant * 0.22;
-        const ty = my - kant * 0.22;
+        // Eén in het midden, twee naast elkaar, meer in een kring (bij zeven: een in het midden en zes eromheen).
+        const n = lijst.length;
+        let dx = 0;
+        let dy = 0;
+        if (n === 2) {
+          dx = i === 0 ? 0.22 : -0.22;
+          dy = -dx;
+        } else if (n > 2) {
+          const kring = n >= 7 ? n - 1 : n;
+          const j = n >= 7 ? i - 1 : i;
+          if (j >= 0) {
+            const hoek = (j / kring) * Math.PI * 2 + Math.PI / 4;
+            dx = Math.cos(hoek) * 0.3;
+            dy = Math.sin(hoek) * 0.3;
+          }
+        }
+        const tx = mx + dx;
+        const ty = my + dy;
         if (Math.abs(e.x - tx) > 0.005 || Math.abs(e.y - ty) > 0.005) {
           e.x += (tx - e.x) * 0.25;
           e.y += (ty - e.y) * 0.25;
@@ -354,7 +398,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
       if (!Array.isArray(regel)) continue;
       const [sleutel, x, y, leven, boven] = regel;
       if (!Object.prototype.hasOwnProperty.call(soorten, sleutel)) continue;
-      if (plekken() + (soorten[sleutel].legerPlekken || 1) > max) break;
+      if (plekken() + (soorten[sleutel].legerPlekken || 1) > maxLevel) break;
       if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= B || y >= H) continue;
       // Stond hij op de muur en staat die er nog, dan staat hij er weer op.
       if (boven === 1 && isMuur(y * B + x) && !bezet(N + y * B + x)) {
@@ -407,7 +451,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   }
 
   return {
-    soorten, max, waaromNiet, leidOp, vind, kies, stuur, stap,
+    soorten, get max() { return legerMax(); }, waaromNiet, leidOp, vind, kies, stuur, stap,
     kiesAlles: () => kies(soldaten.filter((e) => !isKoning(e))),
     zetKoning,
     groepVan, kiesGroep, kiesSoort, telling,

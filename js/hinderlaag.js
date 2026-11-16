@@ -14,6 +14,7 @@ export function maakHinderlaag({ instelling, kaart, leger, strijd, kaartGewijzig
   const mx = Math.round(B / 2);
   const my = Math.round(H / 2);
   let gebeurd = false;   // niet bewaard: na herladen kan de hinderlaag opnieuw komen
+  let nissen = [];       // de rotstegels die voor de schutters zijn weggehaald, om ze bij opnieuw beginnen terug te zetten
   let kijk = 0;
 
   const isRots = (x, y) => x >= 0 && y >= 0 && x < B && y < H && kaart.object[y * B + x] === OBJECT.STEEN;
@@ -49,6 +50,7 @@ export function maakHinderlaag({ instelling, kaart, leger, strijd, kaartGewijzig
       kaart.object[vak] = OBJECT.GEEN;
       vakken.add(vak);
     }
+    nissen = [...vakken];
     kaartGewijzigd(vakken);
     let n = 0;
     for (const p of lijst) if (strijd.hinderlaag(soort, p.y * B + p.x)) n++;
@@ -68,7 +70,19 @@ export function maakHinderlaag({ instelling, kaart, leger, strijd, kaartGewijzig
     },
     gebeurd: () => gebeurd,
     plekken,
-    // Opnieuw beginnen
-    wis() { gebeurd = false; },
+    // Opnieuw beginnen: de rotsen staan weer dicht en de hinderlaag kan opnieuw komen.
+    // (De schutters zelf verdwijnen met strijd.herstel.)
+    wis() {
+      const vakken = new Set();
+      for (const vak of nissen) {
+        if (kaart.object[vak] !== OBJECT.GEEN) continue;   // er staat inmiddels iets anders
+        kaart.object[vak] = OBJECT.STEEN;
+        vakken.add(vak);
+      }
+      nissen = [];
+      gebeurd = false;
+      kijk = 0;
+      if (vakken.size) kaartGewijzigd(vakken);
+    },
   };
 }

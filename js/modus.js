@@ -110,7 +110,7 @@ export function profielVan(missies, modus) {
 //   doelBegin, doelPerAanval, doelMax: hoe groot zijn aanvallen zijn (gewichten, ridder = 1); komt na sterkte
 //   leger, extra_soorten, rammenVanaf, wachters: zoals in een profiel
 //   aanval        veldheer: niveau (1 tot 5), max, stijgElke, flank en meer, zie js/veldheer.js
-//   legerMax      hoeveel soldaten jij in dit level hoogstens mag hebben
+//   legerMax      hoeveel soldaten jij in dit level hoogstens mag hebben (en ook: legerPerKazerne in economie.json, 40 per kazerne)
 //   koning.leven  procent van het leven van de rode koning
 export function pasProfielToe(regels, profiel, rood = null) {
   regels.heer = { ...regels.heer, ...(profiel.heer || {}) };

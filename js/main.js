@@ -100,6 +100,7 @@ async function start() {
   if (ontwerp && ontwerp.hoog) regels.strijd.roodMuurHoog = true;   // te hoog voor ladders
   // De proloog: geen winst of verlies, geen rode heer in zijn burcht (js/proloog.js).
   if (missie && missie.proloog) regels.strijd.proloog = true;
+  if (missie && missie.proloog) regels.legerPerKazerne = 0;   // geen kazerneregel: het garnizoen van Aldervale staat er al
   if (missie && missie.proloog) regels.legerMax = Math.max(regels.legerMax, 120);   // het garnizoen van Aldervale (ongeveer 80) plus wat je traint
   const opslag = maakOpslag(kaart.zaad, opslagSleutel(modus));
 
@@ -577,6 +578,7 @@ async function start() {
     if (bomenTerug.size) kaartGewijzigd(bomenTerug);
     leger.herstel();
     strijd.herstel();
+    if (hinderlaag) hinderlaag.wis();   // level 2: de nissen in de rotsen dicht, de hinderlaag komt weer
     sluitKazerne();
     ui.toonEinde({ open: false });
     ui.verbergVerhaal();

@@ -11,6 +11,7 @@
     "leidtOp: true betekent dat je hier soldaten opleidt: tik het gebouw aan (zie soldaten in data/economie.json).",
     "dichtbij: het gebouw moet binnen afstand tegels van dat object staan; reden is de uitleg als dat niet zo is.",
     "tip is een extra zin in de uitleg boven de bouwbalk.",
+    "Let op: de sleutels toren en wachttoren zijn historisch. De duurdere (toren) heet in beeld Watchtower en heeft 7 plekken, de goedkopere (wachttoren) heet Tower en heeft 3 plekken (torenPlekken in data/economie.json). De sleutels blijven zo, anders raken bewaarde spelstanden stuk.",
     "leven: hoeveel het bouwwerk kan hebben voordat de vijand erdoorheen is. Staat het er niet, dan geldt gebouwLeven uit data/economie.json."
   ],
   "groepen": {
@@ -21,8 +22,10 @@
   },
   "bouwwerken": {
     "muur":        { "naam": "Wall",        "groep": "kasteel", "leven": 200, "object": "MUUR",        "kosten": { "steen": 2 },  "lijn": true },
-    "toren":       { "naam": "Tower",       "groep": "kasteel", "leven": 400, "object": "TOREN",       "kosten": { "steen": 12 } },
-    "wachttoren":  { "naam": "Watchtower",  "groep": "kasteel", "leven": 300, "object": "WACHTTOREN",  "kosten": { "steen": 8 } },
+    "toren":       { "naam": "Watchtower",  "groep": "kasteel", "leven": 400, "object": "TOREN",       "kosten": { "steen": 12 },
+                     "tip": "Room for 7 soldiers on top." },
+    "wachttoren":  { "naam": "Tower",       "groep": "kasteel", "leven": 300, "object": "WACHTTOREN",  "kosten": { "steen": 8 },
+                     "tip": "Room for 3 soldiers on top." },
     "poort":       { "naam": "Gate",        "groep": "kasteel", "leven": 250, "object": "POORT",       "kosten": { "steen": 4, "planken": 2 }, "inMuur": true },
     "houthakker":  { "naam": "Woodcutter's Hut",  "groep": "werk",    "object": "HOUTHAKKER",  "kosten": { "hout": 20 }, "werker": "houthakker",
                      "tip": "Build it close to trees." },
@@ -46,7 +49,7 @@
                      "tip": "A house gives room to 4 peasants." },
     "voorraadkamer": { "naam": "Storehouse", "groep": "dorp", "leven": 250, "object": "VOORRAADKAMER", "kosten": { "hout": 30 },
                      "handel": true,
-                     "tip": "Your workers store wood, stone and food here. Each storehouse holds 150 of each. Tap it to sell surplus for gold." },
+                     "tip": "Your workers store wood, stone and apples here. Each storehouse holds 150 of each. Tap it to sell surplus for gold." },
     "kazerne":     { "naam": "Barracks",     "groep": "leger",   "object": "KAZERNE",     "kosten": { "planken": 10, "steen": 10 }, "leidtOp": "klassiek",
                      "tip": "Tap it afterwards to train soldiers." }
   }

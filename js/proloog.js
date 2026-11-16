@@ -23,7 +23,7 @@ const TAKEN = [
   { taak: 'Build a House', bouw: { woning: 1 }, gids: { soort: 'bouw', sleutel: 'woning', plekTekst: 'House here' }, anker: [-19, -3],
     tekst: 'Peasants live in houses. A house gives room for four more, and a new peasant arrives every so often as long as there is room, food and a happy people.' },
   { taak: 'Build a Storehouse', bouw: { voorraadkamer: 1 }, gids: { soort: 'bouw', sleutel: 'voorraadkamer', plekTekst: 'Storehouse here' }, anker: [-21, -2],
-    tekst: 'Wood, stone and food must be kept somewhere. Your workers carry what they gather to the storehouse, and each one holds 150 of each. Later, tap it to sell what you do not need for gold.' },
+    tekst: 'Wood, stone and apples must be kept somewhere. Your workers carry what they gather to the storehouse, and each one holds 150 of each. Later, tap it to sell what you do not need for gold.' },
   { taak: 'See your people', volk: true, gids: { soort: 'volk' },
     tekst: 'Look at the top bar, Sire: Peasants 4/6 means four peasants and room for six. Each building needs a peasant to work in it, and so does every soldier you train. A peasant without work is a spare hand. Let me show you the panel.',
     lof: 'Peasants without work are your reserve. If food runs out or taxes are too high, popularity falls, and below 50 your people leave.' },
@@ -512,7 +512,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         // In het logboek: welke gebouwen het eerst moeten (naar Karel)
         if (logMelding && !s.gemeld.advies) {
           s.gemeld.advies = true;
-          logMelding('Build these first, Sire, as soon as you can. Woodcutter\'s Hut: wood for everything you build. Storehouse: without it your people have nowhere to keep wood, stone and food. House: room for more peasants. Orchard: apples to feed your people.');
+          logMelding('Build these first, Sire, as soon as you can. Woodcutter\'s Hut: wood for everything you build. Storehouse: without it your people have nowhere to keep wood, stone and apples. House: room for more peasants. Orchard: apples to feed your people.');
           bewaar();
         }
         zetReinout(true);

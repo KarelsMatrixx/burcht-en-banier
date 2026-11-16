@@ -1,4 +1,4 @@
-// Torens: twee soldaten per toren. Hoofdkasteel: te beklimmen, samen vijf man.
+// Torens: sinds 0.65 passen er 7 op een Watchtower (toren) en 3 op een Tower (wachttoren). Hoofdkasteel: te beklimmen, samen vijf man.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
 import { spawn } from 'child_process';
 const srv = spawn('python3', ['-m', 'http.server', '8282'], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
@@ -46,7 +46,7 @@ const r = await p.evaluate(() => {
   sim(500);
   const opTw = s.leger.soldaten().filter((e) => e.opMuur && Math.floor(e.y) * B + Math.floor(e.x) === tw);
   uit.opToren = opTw.length;
-  uit.afstand = opTw.length === 2 ? Math.hypot(opTw[0].x - opTw[1].x, opTw[0].y - opTw[1].y) : 0;
+  uit.afstand = 9; for (let i = 0; i < opTw.length; i++) for (let j = i + 1; j < opTw.length; j++) uit.afstand = Math.min(uit.afstand, Math.hypot(opTw[0 + i].x - opTw[j].x, opTw[i].y - opTw[j].y));
   uit.opMuur = s.leger.soldaten().filter((e) => e.opMuur).length;
   return uit;
 });
@@ -55,9 +55,9 @@ check('burcht van de speler is beklimbaar', r.burchtTegels > 0 && r.blauwMuur ==
 check('burcht van rood is beklimbaar voor rood', r.roodMuur > 0, r.roodMuur);
 check('precies vijf man op het hoofdkasteel (van zeven)', r.opKasteel === 5, r.opKasteel);
 check('torens bestaan', r.torens > 0);
-check('twee soldaten op een toren (van drie gestuurd)', r.opToren === 2, r.opToren);
-check('de twee staan naast elkaar', r.afstand > 0.3, r.afstand);
-check('de derde staat op de muur ernaast', r.opMuur === 3, r.opMuur);
+check('alle drie op een Watchtower (past 7)', r.opToren === 3, r.opToren);
+check('ze staan naast elkaar', r.afstand > 0.3 && r.afstand < 9, r.afstand);
+check('alle drie staan op de muur', r.opMuur === 3, r.opMuur);
 check('geen pagina-fouten', fouten.length === 0, fouten.join('|'));
 console.log(`torens40: ${ok} goed, ${fout} fout`);
 await b.close(); srv.kill(); process.exit(fout ? 1 : 0);

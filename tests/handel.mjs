@@ -13,7 +13,7 @@ await p.evaluate(() => localStorage.clear()); await p.reload(); await wacht();
 const vak = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; for (let r = 3; r < 9; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = st.x + dx, y = st.y + dy; if (s.wegvinder.isVrij(x, y, 0) && k.object[y * 64 + x] === 0 && Math.max(Math.abs(dx), Math.abs(dy)) === r && dx > 0) return [x, y]; } return null; });
 await p.evaluate(async (vak) => { window.__iso = await import('/js/iso.js'); const s = window.spel; s.economie.voorraad.hout = 100; s.bouwer.plaats(s.bouwwerken.voorraadkamer, [{ x: vak[0], y: vak[1] }]); document.getElementById('tip').hidden = true; }, vak);
 check('kamer staat', (await p.evaluate((v) => window.spel.kaart.object[v[1] * 64 + v[0]], vak)) === 22);
-const sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.zetZoom(2); return s.camera.wereldNaarScherm(w.x, w.y - 8); }, vak);
+const sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x + 90; s.camera.y = w.y; s.camera.zetZoom(2); return s.camera.wereldNaarScherm(w.x, w.y - 8); }, vak);
 await p.touchscreen.tap(sp.x, sp.y);
 await p.waitForTimeout(300);
 check('handelpaneel open', await p.evaluate(() => !document.getElementById('handelpaneel').hidden));

@@ -47,7 +47,7 @@
     "dorp.kerk":      { "vorm": "kerk", "hoogte": 80, "sprite": "" },
     "dorp.cel":       { "vorm": "cel", "hoogte": 28, "sprite": "" },
     "dorp.cel_open":  { "vorm": "cel", "open": true, "hoogte": 28, "sprite": "" },
-    "werk.zagerij":   { "vorm": "huis", "wand": "#b58c5a", "daken": ["#7a5a3a"], "hoogte": 22, "sprite": "" },
+    "werk.zagerij":   { "vorm": "zagerij", "wand": "#b58c5a", "daken": ["#7a5a3a"], "hoogte": 26, "sprite": "" },
     "werk.tarweveld": { "vorm": "tarweveld", "aar": "#d9b44a", "hoogte": 10, "sprite": "" },
     "werk.bakkerij":  { "vorm": "bakkerij", "wand": "#b4573a", "schoorsteen": true, "pannen": true, "daken": ["#5b4636"], "hoogte": 24, "sprite": "" },
     "werk.kopermijn": { "vorm": "kopermijn", "kleur": "#7d7368", "hoogte": 24, "sprite": "" },

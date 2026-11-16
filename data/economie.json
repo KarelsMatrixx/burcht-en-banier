@@ -27,7 +27,9 @@
   "zwaai: deze soldaat raakt ook één vijand naast zijn doelwit, met dit deel van zijn schade (1 = volle schade). bouwBonus: keer zoveel schade aan de genoemde bouwwerken. doorboort: pijlDekking van het doelwit telt niet (de bolt gaat door een schild).",
   "kazerne: klassiek of mystiek, bij welke kazerne je hem opleidt. boeren: zoveel boeren zonder werk kost hij (anders 1). eersteSlag: zijn eerste slag op een nieuw doelwit doet zoveel keer schade. klimMuur: hij klimt in zoveel seconden een gewone muur op zonder ladder. verborgen: vijanden zien hem pas binnen zoveel tegels, tot hij slaat. gebied: dit deel van zijn schade raakt ook wie naast het doelwit staat. brand: hout dat hij raakt brandt duur seconden en verliest perSeconde leven per seconde.",
   "koning: er is er één voor jou en één voor rood, niet op te leiden. Valt jouw koning, dan heb je verloren; valt de koning van rood, dan heb je gewonnen. zwaaiAantal: zoveel vijanden naast het doelwit raakt zijn slag. vaandel: eigen soldaten binnen bereik doen extra meer schade. zwak: zijn schade als zijn burcht kapot is. thuisBereik: de koning van rood verdedigt alleen binnen zoveel tegels van zijn burcht. zwerfStraal: hij loopt tot zoveel tegels van zijn burcht rond. alarmAfstand: zijn je soldaten zoveel tegels bij zijn burcht of bij hem, dan gaat hij terug naar zijn hoofdkasteel. Een koning geneest alleen bij zijn eigen burcht.",
-  "legerMax: zoveel soldaten kun je hoogstens hebben.",
+  "legerMax: zoveel soldaten kun je hoogstens hebben (een level kan dit hoger zetten).",
+  "legerPerKazerne: elke kazerne en elke magiertoren van jou geeft plek aan zoveel soldaten. Je leger is hoogstens legerPerKazerne maal het aantal van die gebouwen, en nooit meer dan legerMax. 0 zet deze regel uit (de proloog doet dat: daar staat het garnizoen van Aldervale al).",
+  "torenPlekken: hoeveel soldaten er boven op een toren (de Watchtower) en een wachttoren (de Tower) kunnen staan.",
   "bouwStraal: je mag alleen bouwen binnen zoveel tegels (vierkant) van het midden van je burcht.",
   "strijd: de aanvallen van de rode heer. eersteGolf is na hoeveel seconden de eerste aanval komt, tussenGolven de tijd tussen twee aanvallen.",
   "golven: wie er per aanval komt. Na de laatste regel blijft die laatste aanval terugkomen, tot de burcht van rood valt.",
@@ -53,7 +55,7 @@
    "begin": 30
   },
   "voedsel": {
-   "naam": "Food",
+   "naam": "Apples",
    "begin": 30
   },
   "tarwe": {
@@ -583,6 +585,8 @@
   }
  },
  "legerMax": 40,
+ "legerPerKazerne": 40,
+ "torenPlekken": { "toren": 7, "wachttoren": 3 },
  "bouwStraal": 14,
  "strijd": {
   "eersteGolf": 240,

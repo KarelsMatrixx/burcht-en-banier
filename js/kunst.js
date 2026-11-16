@@ -2074,6 +2074,146 @@ export function tekenBakkerij(naam, def) {
   return huis;
 }
 
+// De zagerij: een open houten schuur met een dak over de achterste helft.
+// Links een stapel stammen, in het midden een stam op schragen met een zaagraam,
+// rechts de stapel planken, zaagsel op de vloer en een rondzaagblad voor de schuur.
+export function tekenZagerij(naam, def) {
+  const wand = 20;
+  const b = TB + 6;
+  const h = TH + wand + 24;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const L = [cx - 25, cy];
+  const R = [cx + 25, cy];
+  const B = [cx, cy + 12.5];
+  const T = [cx, cy - 12.5];
+  const op = ([x, y], hoog) => [x, y - hoog];
+  const donker = '#4a3624';
+  const hout = def.wand || '#b58c5a';
+  const dakKleur = (def.daken && def.daken[0]) || '#7a5a3a';
+
+  ovaal(ctx, cx, cy + 1, 30, 13.5, 'rgba(0,0,0,0.26)');
+
+  // Vloer van planken
+  vlak(ctx, [L, B, R, T], tint(hout, -0.18));
+  for (let k = 1; k < 6; k++) lijn(ctx, ...tussen(L, B, k / 6), ...tussen(T, R, k / 6), 'rgba(40,25,10,0.3)', 0.6);
+
+  // Achterwanden van staande planken
+  vlak(ctx, [L, T, op(T, wand), op(L, wand)], tint(hout, -0.34));
+  vlak(ctx, [T, R, op(R, wand), op(T, wand)], tint(hout, -0.08));
+  for (let k = 1; k < 8; k++) {
+    const a = tussen(L, T, k / 8);
+    const c = tussen(T, R, k / 8);
+    lijn(ctx, a[0], a[1], a[0], a[1] - wand, 'rgba(30,18,6,0.32)', 0.6);
+    lijn(ctx, c[0], c[1], c[0], c[1] - wand, 'rgba(30,18,6,0.28)', 0.6);
+  }
+  lijn(ctx, ...op(L, 1), ...op(T, 1), donker, 1.2);
+  lijn(ctx, ...op(T, 1), ...op(R, 1), donker, 1.2);
+
+  // Links: een stapel stammen met de zaagsneden naar ons toe
+  const q = tussen(L, T, 0.5);
+  const qx = q[0] + 3;
+  const qy = q[1] + 5;
+  const stam = (x, y) => {
+    ovaal(ctx, x, y, 2.6, 2.8, '#5e3f24');
+    ovaal(ctx, x, y, 1.8, 2, '#d8b27a');
+    ovaal(ctx, x, y, 0.9, 1, '#b98c52');
+  };
+  for (const dx of [-5, 0, 5]) stam(qx + dx, qy);
+  for (const dx of [-2.5, 2.5]) stam(qx + dx, qy - 4);
+  stam(qx, qy - 8);
+
+  // Rechts: de stapel planken tegen de wand
+  const s = tussen(T, R, 0.5);
+  const sx = s[0] + 1;
+  const sy = s[1] + 6;
+  for (let i = 0; i < 6; i++) {
+    blok(ctx, sx - 7, sy - i * 1.9, 14, 1.7, i % 2 ? '#e2c58f' : '#d2b27a');
+    blok(ctx, sx - 7, sy - i * 1.9 + 1.2, 14, 0.5, 'rgba(60,35,10,0.35)');
+  }
+  blok(ctx, sx - 6, sy - 6 * 1.9 + 1.7, 1.6, 6 * 1.9, 'rgba(70,45,20,0.45)');
+  blok(ctx, sx + 4.4, sy - 6 * 1.9 + 1.7, 1.6, 6 * 1.9, 'rgba(70,45,20,0.45)');
+  blok(ctx, sx - 7, sy - 6 * 1.9, 14, 0.8, 'rgba(255,245,215,0.4)');
+
+  // Zaagsel op de vloer
+  ovaal(ctx, cx + 2, cy + 4, 9, 3, 'rgba(245,222,170,0.65)');
+  for (const [dx, dy] of [[-6, 3], [1, 6], [8, 3], [4, 1]]) blok(ctx, cx + dx, cy + dy, 1.2, 0.8, 'rgba(255,240,200,0.8)');
+
+  // De stam op twee schragen, met een zaagraam erdoor
+  const p1 = [cx - 11, cy - 4];
+  const p2 = [cx + 9, cy + 6];
+  for (const t of [0.22, 0.8]) {
+    const m = tussen(p1, p2, t);
+    lijn(ctx, m[0] - 3.2, m[1] + 8, m[0], m[1] + 1, donker, 1.4);
+    lijn(ctx, m[0] + 3.2, m[1] + 8, m[0], m[1] + 1, donker, 1.4);
+    lijn(ctx, m[0] - 1.6, m[1] + 5, m[0] + 1.6, m[1] + 5, donker, 0.9);
+  }
+  lijn(ctx, p1[0], p1[1], p2[0], p2[1], '#5e3f24', 5);
+  lijn(ctx, p1[0], p1[1] - 1.4, p2[0], p2[1] - 1.4, '#8c6338', 1.5);
+  ovaal(ctx, p2[0], p2[1], 2.6, 2.9, '#5e3f24');
+  ovaal(ctx, p2[0], p2[1], 1.9, 2.1, '#d8b27a');
+  ovaal(ctx, p2[0], p2[1], 0.9, 1, '#b98c52');
+  const z = tussen(p1, p2, 0.5);
+  lijn(ctx, z[0] - 3, z[1] - 15, z[0] - 3, z[1] + 1, '#5a3d22', 1.3);      // zaagraam: twee stijlen,
+  lijn(ctx, z[0] + 3, z[1] - 14, z[0] + 3, z[1] + 2, '#5a3d22', 1.3);
+  lijn(ctx, z[0] - 3, z[1] - 15, z[0] + 3, z[1] - 14, '#5a3d22', 1.5);     // een dwarsbalk
+  lijn(ctx, z[0] - 0.2, z[1] - 14, z[0] + 0.1, z[1] + 1.5, '#d5d9de', 1);  // en het blad
+  // Een gezaagde plank die naar beneden glijdt
+  lijn(ctx, p2[0] + 1, p2[1] + 3.5, p2[0] + 9, p2[1] + 7.5, '#e8cf9c', 1.8);
+
+  // Voorrand van de vloer
+  lijn(ctx, L[0], L[1], B[0], B[1], donker, 1.6);
+  lijn(ctx, B[0], B[1], R[0], R[1], donker, 1.6);
+  lijn(ctx, L[0], L[1] + 1.2, B[0], B[1] + 1.2, 'rgba(0,0,0,0.3)', 1);
+  lijn(ctx, B[0], B[1] + 1.2, R[0], R[1] + 1.2, 'rgba(0,0,0,0.3)', 1);
+
+  // Een rondzaagblad dat buiten tegen de linkerhoek leunt
+  const bx = cx - 21;
+  const by = cy + 8;
+  ctx.fillStyle = '#b8bdc4';
+  ctx.beginPath();
+  for (let i = 0; i < 28; i++) {
+    const hoek = (i / 28) * Math.PI * 2;
+    const r = i % 2 ? 4.6 : 6.4;
+    const x = bx + Math.cos(hoek) * r * 0.92;
+    const y = by + Math.sin(hoek) * r;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ovaal(ctx, bx - 1, by - 1.2, 3.4, 3.8, 'rgba(255,255,255,0.28)');
+  ovaal(ctx, bx, by, 1.5, 1.7, '#5f656e');
+  ovaal(ctx, bx, by, 0.6, 0.7, '#2a2d33');
+
+  // De palen en het dak over de achterste helft
+  const dakL = [cx - 28, cy - wand + 2];
+  const dakR = [cx + 28, cy - wand + 2];
+  const dak = [dakL, dakR, [cx + 26, cy - wand - 7], [cx, cy - 12.5 - wand - 10], [cx - 26, cy - wand - 7]];
+  lijn(ctx, L[0], L[1], L[0], L[1] - wand + 2, donker, 2.4);
+  lijn(ctx, R[0], R[1], R[0], R[1] - wand + 2, donker, 2.4);
+  lijn(ctx, L[0] + 1, L[1], L[0] + 1, L[1] - wand + 2, 'rgba(255,230,190,0.2)', 0.7);
+  // Schuine schoren onder de rand
+  lijn(ctx, L[0], L[1] - wand + 9, L[0] + 6, L[1] - wand + 2, donker, 1.2);
+  lijn(ctx, R[0], R[1] - wand + 9, R[0] - 6, R[1] - wand + 2, donker, 1.2);
+  vlak(ctx, dak, dakKleur);
+  ctx.save();
+  omtrek(ctx, dak);
+  ctx.clip();
+  for (let rij = 1; rij < 7; rij++) {
+    const y = dakL[1] - rij * 3.1;
+    lijn(ctx, cx - 30, y, cx + 30, y, 'rgba(0,0,0,0.24)', 0.8);
+    for (let k = (rij % 2) * 3; k < 60; k += 6) lijn(ctx, cx - 30 + k, y, cx - 30 + k, y + 3.1, 'rgba(0,0,0,0.16)', 0.6);
+  }
+  vlak(ctx, [[cx, cy - 12.5 - wand - 10], [cx + 26, cy - wand - 7], [cx + 28, cy - wand + 2], [cx + 4, cy - wand - 10]], 'rgba(255,240,200,0.12)');
+  ctx.restore();
+  lijn(ctx, dakL[0], dakL[1], dakR[0], dakR[1], tint(dakKleur, -0.45), 2.2);
+  lijn(ctx, dakL[0], dakL[1] - 1.1, dakR[0], dakR[1] - 1.1, tint(dakKleur, 0.18), 0.8);
+  lijn(ctx, dak[4][0], dak[4][1], dak[3][0], dak[3][1], tint(dakKleur, -0.3), 1.1);
+  lijn(ctx, dak[3][0], dak[3][1], dak[2][0], dak[2][1], tint(dakKleur, 0.1), 1.1);
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
 // Een kopermijn: een heuvel van rots met een stollenmond van balken,
 // rails met een karretje vol oranje erts en een lantaarn.
 export function tekenKopermijn(naam, def) {
