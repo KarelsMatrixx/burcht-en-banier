@@ -567,3 +567,9 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - HUD: "Defeating the red king wins the level." (na te lezen)
 - Nieuwe tests: poort_open48, koningsdak48, koningsdak_speler48.
 - Bekend: de rode koning is sterk en doodt een kleine groep op het dak; de pijlen van het rode kasteel blijven schieten.
+
+## 0.65.2: geen zwarte balk meer bij het opstarten
+- Oorzaak (aanname, niet op een echte iPhone gezien): bij het opstarten als app van het beginscherm geeft iOS soms een verkeerde vensterhoogte door, waardoor het spel te laag of vreemd uitgerekend wordt getekend.
+- index.html meet de schermmaat nu zelf (als app: precies de schermmaat, anders het zichtbare venster), zet die in --app-w en --app-h, en meet opnieuw bij draaien, terugkeren naar de app en een paar keer kort na het opstarten. Het canvas past zich daarna aan.
+- css/stijl.css gebruikt die maat voor body, de levelkaart en de instellingen.
+- Nieuwe test: schermmaat48.

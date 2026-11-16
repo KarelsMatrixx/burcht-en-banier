@@ -13,8 +13,8 @@
 html,
 body {
   margin: 0;
-  width: 100%;
-  height: 100%;
+  width: var(--app-w, 100%);
+  height: var(--app-h, 100%);
   overflow: hidden;
   background: #14130f;
   color: #f1ead8;
@@ -29,7 +29,8 @@ body {
 
 body {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
 }
 
 #spel {
@@ -672,7 +673,7 @@ body:has(#handelpaneel:not([hidden])) #legerhint { display: none !important; }
 #titel-kaart { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 #titel-kaart[hidden] { display: none; }
 #kaart-doek { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-.kaartvlak { position: relative; width: min(100vw, calc(100vh * 2.357)); max-height: 100vh; }
+.kaartvlak { position: relative; width: min(var(--app-w, 100vw), calc(var(--app-h, 100vh) * 2.357)); max-height: var(--app-h, 100vh); }
 .kaartbeeld, .kaartvlak svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 #kaart-kop {
   position: absolute;
@@ -920,7 +921,7 @@ body:has(#handelpaneel:not([hidden])) #legerhint { display: none !important; }
 #instellingen .menu-knoppen button { min-height: 44px; min-width: 150px; text-align: left; padding: 6px 12px; }
 #instellingen .menu-knoppen button.klein { grid-column: 1 / -1; min-height: 32px; font-size: 0.85em; opacity: 0.8; }
 #instellingen .menu-knoppen button.gevaar { border-color: #c23a2e; color: #ffd9d2; }
-#instellingen { max-height: calc(100vh - 70px); overflow-y: auto; }
+#instellingen { max-height: calc(var(--app-h, 100vh) - 70px); overflow-y: auto; }
 #doelpaneel {
   background-color: #1f1a14f2;
   position: absolute;

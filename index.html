@@ -18,6 +18,46 @@
   <link rel="stylesheet" href="css/stijl.css">
 
   <script>
+    // Schermmaat (0.65.2). Op een iPhone, vooral bij het opstarten als app van het beginscherm, klopt de hoogte
+    // van het venster soms nog niet (een zwarte balk onderin, of een vreemd uitgerekend scherm). Daarom meten we
+    // zelf: als app is het venster precies zo groot als het scherm. We meten opnieuw bij elke gebeurtenis die
+    // het kan veranderen, en een paar keer kort na het opstarten.
+    (function () {
+      var root = document.documentElement;
+      var laatste = '';
+      function meet() {
+        var w = window.innerWidth, h = window.innerHeight;
+        var vv = window.visualViewport;
+        if (vv && vv.width && vv.height) { w = Math.round(vv.width); h = Math.round(vv.height); }
+        var app = window.navigator.standalone === true ||
+          (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+        var sw = window.screen && window.screen.width, sh = window.screen && window.screen.height;
+        if (app && sw && sh) {
+          var lang = Math.max(sw, sh), kort = Math.min(sw, sh);
+          var liggend = w >= h;
+          // Alleen als de gemeten maat in dezelfde stand zit: anders wacht hij op de draai.
+          if (liggend) { w = lang; h = kort; } else { w = kort; h = lang; }
+        }
+        var sleutel = w + 'x' + h;
+        if (sleutel === laatste) return;
+        laatste = sleutel;
+        root.style.setProperty('--app-w', w + 'px');
+        root.style.setProperty('--app-h', h + 'px');
+        // Laat het spel (canvas) zijn maat opnieuw opnemen.
+        try { window.dispatchEvent(new Event('resize')); } catch (fout) {}
+      }
+      window.__meetScherm = meet;
+      meet();
+      window.addEventListener('resize', meet);
+      window.addEventListener('orientationchange', function () { [0, 150, 400, 900].forEach(function (t) { setTimeout(meet, t); }); });
+      window.addEventListener('pageshow', meet);
+      window.addEventListener('focus', meet);
+      document.addEventListener('visibilitychange', meet);
+      if (window.visualViewport) window.visualViewport.addEventListener('resize', meet);
+      window.addEventListener('load', function () { [0, 100, 300, 700, 1500, 3000].forEach(function (t) { setTimeout(meet, t); }); });
+    })();
+  </script>
+  <script>
     // Laat fouten in beeld zien. Zonder dit zie je op een telefoon alleen
     // een zwart scherm als er iets misgaat.
     (function () {
