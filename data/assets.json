@@ -42,7 +42,7 @@
     "werk.steengroeve": { "vorm": "steengroeve", "kleur": "#a8a59c", "hoogte": 26, "sprite": "" },
     "werk.boomgaard":  { "vorm": "boomgaard", "blad": "#4f8a3c", "appel": "#c8402f", "hoogte": 15, "sprite": "" },
     "leger.kazerne":   { "vorm": "kazerne", "wand": "#b9b3a3", "pannen": true, "daken": ["#4d5564"], "kleur": "#2f5fc4", "hoogte": 26, "sprite": "" },
-    "dorp.voorraadkamer": { "vorm": "huis", "wand": "#9a7a4e", "pannen": true, "daken": ["#8a4a34"], "hoogte": 22, "sprite": "" },
+    "dorp.voorraadkamer": { "vorm": "pakhuis", "wand": "#b08a5a", "daken": ["#8a5a3c"], "hoogte": 30, "sprite": "" },
     "werk.loods":     { "vorm": "huis", "wand": "#6b4a2a", "daken": ["#8a3b2a", "#7a3326"], "hoogte": 28, "sprite": "" },
     "dorp.kerk":      { "vorm": "kerk", "hoogte": 80, "sprite": "" },
     "dorp.cel":       { "vorm": "cel", "hoogte": 28, "sprite": "" },

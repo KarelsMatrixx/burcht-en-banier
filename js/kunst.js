@@ -2074,6 +2074,142 @@ export function tekenBakkerij(naam, def) {
   return huis;
 }
 
+// Het pakhuis (storehouse): stenen onderbouw, houten bovenbouw en een steil dak met de nok
+// van links naar rechts. Aan de lange kant een open deur met zakken erin; buiten staan de
+// drie dingen die je erin opslaat: stammen (links), een hoop steen (rechts) en een mandje
+// appels (voor de deur).
+export function tekenPakhuis(naam, def) {
+  const wand = 16;
+  const steen = 6;
+  const nok = 12;
+  const b = TB + 6;
+  const h = TH + wand + nok + 14;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const L = [cx - 19.5, cy];
+  const R = [cx + 19.5, cy];
+  const B = [cx, cy + 9.75];
+  const T = [cx, cy - 9.75];
+  const op = ([x, y], hoog) => [x, y - hoog];
+  const donker = '#3e2a18';
+  const hout = def.wand || '#b08a5a';
+  const rots = '#9a9a92';
+  const dakKleur = (def.daken && def.daken[0]) || '#8a5a3c';
+
+  ovaal(ctx, cx, cy + 2, 30, 13, 'rgba(0,0,0,0.26)');
+
+  // Linkerwand (de kopse kant): steen onder, planken boven
+  vlak(ctx, [L, B, op(B, steen), op(L, steen)], tint(rots, 0.1));
+  vlak(ctx, [op(L, steen), op(B, steen), op(B, wand), op(L, wand)], tint(hout, 0.1));
+  // Rechterwand (de lange kant): wat donkerder
+  vlak(ctx, [B, R, op(R, steen), op(B, steen)], tint(rots, -0.1));
+  vlak(ctx, [op(B, steen), op(R, steen), op(R, wand), op(B, wand)], tint(hout, -0.1));
+  // Planken en voegen
+  for (const d of [0.2, 0.4, 0.6, 0.8]) {
+    const p = tussen(L, B, d);
+    lijn(ctx, p[0], p[1] - steen, p[0], p[1] - wand, 'rgba(30,18,6,0.3)', 0.6);
+    lijn(ctx, p[0], p[1], p[0], p[1] - steen, 'rgba(50,50,45,0.35)', 0.6);
+  }
+  for (const d of [0.1, 0.9]) {
+    const p = tussen(B, R, d);
+    lijn(ctx, p[0], p[1] - steen, p[0], p[1] - wand, 'rgba(30,18,6,0.28)', 0.6);
+  }
+  for (const d of [0.15, 0.9]) {
+    const p = tussen(B, R, d);
+    lijn(ctx, p[0], p[1], p[0], p[1] - steen, 'rgba(50,50,45,0.35)', 0.6);
+  }
+  const mid1 = tussen(L, B, 0);
+  lijn(ctx, ...op(tussen(L, B, 0), steen / 2), ...op(tussen(L, B, 1), steen / 2), 'rgba(50,50,45,0.3)', 0.6);
+  lijn(ctx, ...op(tussen(B, R, 0), steen / 2), ...op(tussen(B, R, 1), steen / 2), 'rgba(50,50,45,0.3)', 0.6);
+  lijn(ctx, ...op(L, steen), ...op(B, steen), 'rgba(40,40,36,0.45)', 0.9);
+  lijn(ctx, ...op(B, steen), ...op(R, steen), 'rgba(40,40,36,0.45)', 0.9);
+  void mid1;
+
+  // De open deur in de lange wand, met zakken en een kist erin
+  const d1 = tussen(B, R, 0.3);
+  const d2 = tussen(B, R, 0.72);
+  vlak(ctx, [d1, d2, op(d2, 13), op(d1, 13)], '#2e2014');
+  const zakken = [[0.4, 0, 2.5, 3.0], [0.58, 0, 2.5, 3.0], [0.49, 4.6, 2.3, 2.6]];
+  for (const [t, hoog, rx, ry] of zakken) {
+    const p = tussen(B, R, t);
+    ovaal(ctx, p[0], p[1] - hoog - 3, rx + 0.7, ry + 0.7, '#6e5a38');
+    ovaal(ctx, p[0], p[1] - hoog - 3, rx, ry, '#dccb9c');
+    ovaal(ctx, p[0] - 0.6, p[1] - hoog - 3.6, rx * 0.5, ry * 0.5, '#efe3bc');
+    blok(ctx, p[0] - rx * 0.5, p[1] - hoog - 3 - ry - 0.2, rx, 0.9, '#a8946a');
+  }
+  lijn(ctx, ...d1, ...op(d1, 13), donker, 1.3);
+  lijn(ctx, ...d2, ...op(d2, 13), donker, 1.3);
+  lijn(ctx, ...op(d1, 13), ...op(d2, 13), donker, 1.5);
+  // Gaten van de gevel boven de deur: een klein luik
+  const lk = tussen(B, R, 0.51);
+  vlak(ctx, [op(lk, wand - 3.4), op(tussen(B, R, 0.6), wand - 3.4), op(tussen(B, R, 0.6), wand - 1), op(lk, wand - 1)], '#3a2a1c');
+
+  // Kopse kant: een luikje onder de nok
+  const l1 = tussen(L, B, 0.38);
+  const l2 = tussen(L, B, 0.62);
+  vlak(ctx, [op(l1, 8.4), op(l2, 8.4), op(l2, 12.6), op(l1, 12.6)], '#4a3624');
+  lijn(ctx, ...op(l1, 8.4), ...op(l2, 8.4), 'rgba(255,230,190,0.35)', 0.6);
+
+  // Dak: kopse driehoek en de voorste dakhelft
+  const nokL = op(tussen(op(L, wand), op(B, wand), 0.5), nok);
+  const nokR = op(tussen(op(T, wand), op(R, wand), 0.5), nok);
+  vlak(ctx, [op(L, wand), op(B, wand), nokL], tint(hout, 0.14));
+  lijn(ctx, ...op(L, wand), ...nokL, donker, 1.1);
+  lijn(ctx, ...op(B, wand), ...nokL, donker, 1.1);
+  const dak = [op(B, wand), op(R, wand), nokR, nokL];
+  vlak(ctx, dak, dakKleur);
+  ctx.save();
+  omtrek(ctx, dak);
+  ctx.clip();
+  for (let rij = 1; rij < 5; rij++) {
+    const f = rij / 5;
+    const a = tussen(op(B, wand), nokL, f);
+    const c = tussen(op(R, wand), nokR, f);
+    lijn(ctx, a[0], a[1], c[0], c[1], 'rgba(0,0,0,0.26)', 0.8);
+    for (let k = (rij % 2) * 0.5; k < 6; k += 1) {
+      const p = tussen(a, c, k / 6);
+      lijn(ctx, p[0], p[1], p[0], p[1] + 3.2, 'rgba(0,0,0,0.16)', 0.6);
+    }
+  }
+  vlak(ctx, [nokL, nokR, tussen(nokR, op(R, wand), 0.3), tussen(nokL, op(B, wand), 0.3)], 'rgba(255,240,200,0.14)');
+  ctx.restore();
+  lijn(ctx, ...nokL, ...nokR, tint(dakKleur, -0.5), 2.2);
+  lijn(ctx, op(B, wand)[0], op(B, wand)[1], op(R, wand)[0], op(R, wand)[1], tint(dakKleur, -0.5), 2);
+
+  // Buiten: links de stapel stammen (kopse kanten naar ons toe)
+  const stam = (x, y) => {
+    ovaal(ctx, x, y, 2.6, 2.7, '#5e3f24');
+    ovaal(ctx, x, y, 1.8, 1.9, '#d8b27a');
+    ovaal(ctx, x, y, 0.8, 0.9, '#b98c52');
+  };
+  for (const dx of [-20.5, -15.5, -10.5]) stam(cx + dx, cy + 9);
+  for (const dx of [-18, -13]) stam(cx + dx, cy + 5.2);
+  stam(cx - 15.5, cy + 1.4);
+
+  // Rechts: een hoop gehouwen steen
+  const klip = (x, y, w, hh, kleur) => {
+    vlak(ctx, [[x, y], [x + w * 0.5, y - hh * 0.35], [x + w, y - hh * 0.1], [x + w * 0.9, y + hh * 0.5], [x + w * 0.2, y + hh * 0.6]], kleur);
+    lijn(ctx, x + w * 0.2, y + hh * 0.6, x + w * 0.9, y + hh * 0.5, 'rgba(0,0,0,0.3)', 0.6);
+  };
+  klip(cx + 17, cy + 10, 9, 4.6, '#a6a69e');
+  klip(cx + 19.5, cy + 6, 7.5, 4, '#bdbdb4');
+  klip(cx + 21, cy + 9.4, 6, 3.4, '#cfcfc6');
+  klip(cx + 12.5, cy + 11, 6, 3.2, '#92928a');
+
+  // Voor de deur: een mandje appels
+  ovaal(ctx, cx + 7.5, cy + 10.8, 5.2, 2, 'rgba(0,0,0,0.25)');
+  ovaal(ctx, cx + 7.5, cy + 9.8, 4.8, 2.4, '#8a5a3c');
+  ovaal(ctx, cx + 7.5, cy + 9.2, 4, 1.7, '#5a3520');
+  for (const [dx, dy] of [[-2.6, -1.9], [0.2, -2.6], [2.8, -1.8], [-0.9, -0.6], [1.6, -0.4]]) {
+    ovaal(ctx, cx + 7.5 + dx, cy + 9.6 + dy, 1.9, 1.8, '#a82e22');
+    ovaal(ctx, cx + 7.5 + dx, cy + 9.6 + dy, 1.7, 1.6, dx > 0 ? '#d2452f' : '#e2553b');
+    ovaal(ctx, cx + 7.5 + dx - 0.5, cy + 9.6 + dy - 0.6, 0.5, 0.4, 'rgba(255,230,210,0.7)');
+  }
+  lijn(ctx, cx + 3, cy + 9.4, cx + 12, cy + 9.4, '#5a3520', 0.8);
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
 // De zagerij: een open houten schuur met een dak over de achterste helft.
 // Links een stapel stammen, in het midden een stam op schragen met een zaagraam,
 // rechts de stapel planken, zaagsel op de vloer en een rondzaagblad voor de schuur.

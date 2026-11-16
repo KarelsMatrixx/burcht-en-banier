@@ -578,3 +578,6 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Je leger mag vanaf het begin 150 soldaten zijn (economie.json legerMax 150). Latere levels hebben een hogere grens: de levels die 60 hadden zijn nu 150, die met 80 zijn 180 (geschat, na te lezen en te verdelen per level in data/campagne.json). Per kazerne of magiertoren blijven het 40 plekken: voor 150 heb je dus vier kazernes nodig.
 - Soldaten die al op een muur staan, kunnen er ook bij een dichte poort overheen lopen (leger.js stuur). Soldaten op de grond komen er met een dichte poort nog steeds niet op.
 - Nieuwe test: muur_dicht49. Test kazerne_torens47 aangepast aan 150.
+
+## 0.65.4: nieuw ontwerp voor de storehouse
+- De storehouse is geen standaard huisje meer maar een pakhuis (kunst.js tekenPakhuis, vorm "pakhuis" in assets.json): stenen onderbouw, houten bovenbouw, steil dak, open deur met zakken, een luikje onder de nok. Buiten staan stammen (links), een hoop steen (rechts) en een mandje appels voor de deur: de drie dingen die je opslaat.
