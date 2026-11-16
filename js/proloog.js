@@ -64,8 +64,8 @@ const NACHT_TAKEN = [
   { taak: 'Knights behind the gate', gids: { soort: 'stuur', plekTekst: 'Knights here' }, doelPlek: [14, 2],
     tekst: 'When the gate falls, knights must meet them in the passage. Tap the glowing spot just inside the gate.',
     stuurSoort: 'ridder' },
-  { taak: 'Close the outer gates', poort: [[17, 0], [-17, 0]], gids: { soort: 'poort', plekTekst: 'Close this gate' },
-    tekst: 'Last order, Sire. Our men must not run out to meet them in the open. Close the outer gates: with no soldiers chosen, tap a gate to shut it. A closed gate stops everyone, friend and foe. Tap it again to open it.' },
+  { taak: 'Close the east gate', poort: [[17, 0]], gids: { soort: 'poort', plekTekst: 'Close this gate' },
+    tekst: 'Last order, Sire. Our men must not run out to meet them in the open. Close the outer gate on the east side, where their army stands: with no soldiers chosen, tap the gate to shut it. A closed gate stops everyone, friend and foe. Tap it again to open it.' },
 ];
 
 // Gesprekken tussen de lessen door: kennismaken met Wessel en Reinout (Engels, door Claude geschreven, na te lezen).

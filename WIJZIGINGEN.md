@@ -537,3 +537,6 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Poorten hebben 9 beelden van het valhek (dicht tot open). Het hek schuift in ruim 2 seconden omhoog en iets sneller omlaag; open zie je een lichte doorgang. Jouw poort staat open tenzij je hem dichtdeed; een poort van rood gaat open als er een rode soldaat vlak bij is (kunst.js `tekenPoort`, tekenaar.js `zetHekDoel`, main.js).
 - Op het hoofdkasteel kom je alleen via de deurtegel (midden aan de rechterkant, start x + 1); de andere tegels van de burcht zijn geen opgang meer (wegvinden.js).
 - Test poort45 (2 punten plus screenshots); koning40, torens40 en proloog43 groen.
+
+## 0.63.1: poortles alleen de oostpoort
+- Nachtles 5 heet nu "Close the east gate": alleen de buitenste poort aan de oostkant, waar het leger staat, moet dicht. De westpoort blijft open. Test proloog43 (32).

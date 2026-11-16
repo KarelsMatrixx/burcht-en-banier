@@ -90,11 +90,9 @@ const poortTik = async () => {
 };
 check('les 5: de poortles', /gate/i.test(await p.textContent('#taak')), await p.textContent('#taak'));
 const g1 = await poortTik();
-check('eerste poort dicht', await p.evaluate(() => window.spel.wegvinder.dichtePoorten().length === 1), JSON.stringify(g1));
-check('les 5 nog niet klaar met één poort', !(await nS()).nKlaar);
-await poortTik();
-check('les 5 klaar: beide poorten dicht', (await nS()).nKlaar, JSON.stringify(await nS()));
-check('eigen soldaten kunnen niet meer naar buiten', await p.evaluate(() => { const s = window.spel, st = s.kaart.start[0], B = s.kaart.breedte; return !s.wegvinder.verbonden(st.y * B + st.x + 3, st.y * B + st.x + 30, 0); }));
+check('de oostpoort is dicht', await p.evaluate(() => { const s = window.spel, st = s.kaart.start[0], B = s.kaart.breedte; return s.wegvinder.isPoortDicht(st.y * B + st.x + 17); }), JSON.stringify(g1));
+check('les 5 klaar met alleen de oostpoort', (await nS()).nKlaar, JSON.stringify(await nS()));
+check('de westpoort blijft open', await p.evaluate(() => { const s = window.spel, st = s.kaart.start[0], B = s.kaart.breedte; return !s.wegvinder.isPoortDicht(st.y * B + st.x - 17); }));
 await kaartTik();   // Hold
 check('eerst het beleg: poort nog dicht', (await nS()).deel === 'beleg', JSON.stringify(await nS()));
 await p.waitForTimeout(5000);
