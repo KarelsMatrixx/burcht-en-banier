@@ -584,7 +584,7 @@
    "tip": "Your king. Much stronger than a knight; his swing hits the target and two enemies beside it. Soldiers within 4 tiles deal 10% more damage. If he falls, you lose. If your keep is destroyed, he grows weaker and no longer heals."
   }
  },
- "legerMax": 40,
+ "legerMax": 150,
  "legerPerKazerne": 40,
  "torenPlekken": { "toren": 7, "wachttoren": 3 },
  "bouwStraal": 14,

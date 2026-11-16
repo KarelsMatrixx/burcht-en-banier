@@ -573,3 +573,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - index.html meet de schermmaat nu zelf (als app: precies de schermmaat, anders het zichtbare venster), zet die in --app-w en --app-h, en meet opnieuw bij draaien, terugkeren naar de app en een paar keer kort na het opstarten. Het canvas past zich daarna aan.
 - css/stijl.css gebruikt die maat voor body, de levelkaart en de instellingen.
 - Nieuwe test: schermmaat48.
+
+## 0.65.3: leger van 150 en lopen over de muur bij een dichte poort
+- Je leger mag vanaf het begin 150 soldaten zijn (economie.json legerMax 150). Latere levels hebben een hogere grens: de levels die 60 hadden zijn nu 150, die met 80 zijn 180 (geschat, na te lezen en te verdelen per level in data/campagne.json). Per kazerne of magiertoren blijven het 40 plekken: voor 150 heb je dus vier kazernes nodig.
+- Soldaten die al op een muur staan, kunnen er ook bij een dichte poort overheen lopen (leger.js stuur). Soldaten op de grond komen er met een dichte poort nog steeds niet op.
+- Nieuwe test: muur_dicht49. Test kazerne_torens47 aangepast aan 150.

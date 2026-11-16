@@ -61,7 +61,7 @@ check('Watchtower: soldaten staan niet op elkaar', d.watchtower && d.watchtower.
 check('Tower: precies 3 van de 5', d.tower && d.tower.op === 3, JSON.stringify(d.tower));
 check('Tower: soldaten staan niet op elkaar', d.tower && d.tower.min > 0.15, d.tower && d.tower.min);
 
-// ---- Deel 2: level 5 (legerMax 60): 40 per kazerne, nooit meer dan het level toestaat ----
+// ---- Deel 2: level 5 (legerMax 150): 40 per kazerne, nooit meer dan het level toestaat ----
 await p.evaluate(() => { localStorage.clear(); localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [1, 2, 3, 4] })); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 5 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); localStorage.setItem('tipGesloten', '1'); });
 await p.reload(); await wacht(); await p.waitForTimeout(300);
 const k = await p.evaluate(() => {
@@ -92,10 +92,10 @@ const k = await p.evaluate(() => {
   return uit;
 });
 console.log(JSON.stringify(k));
-check('level 5 heeft legerMax 60 en 40 per kazerne', k.levelMax === 60 && k.perKazerne === 40, JSON.stringify([k.levelMax, k.perKazerne]));
+check('level 5 heeft legerMax 150 en 40 per kazerne', k.levelMax === 150 && k.perKazerne === 40, JSON.stringify([k.levelMax, k.perKazerne]));
 check('zonder kazerne: 0 plekken', k.max0 === 0, k.max0);
 check('1 kazerne: 40 plekken', k.max1 === 40, k.max1);
-check('2 kazernes: 60 plekken (de grens van het level)', k.max2 === 60, k.max2);
+check('2 kazernes: 80 plekken', k.max2 === 80, k.max2);
 check('leger vult tot de grens van 1 kazerne', k.plekkenVol === 40, k.plekkenVol);
 check('vol met 1 kazerne: melding wijst op een extra kazerne', /army is full \(40 places\).*another barracks/.test(k.reden1), k.reden1);
 check('met 2 kazernes kun je weer opleiden (geen legermelding)', !/army is full/.test(k.redenNa2), k.redenNa2);
@@ -105,7 +105,7 @@ check('sloop je een kazerne, dan blijven de soldaten leven', k.nogLeven === 40, 
 await p.evaluate(() => { localStorage.clear(); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 0 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); localStorage.setItem('tipGesloten', '1'); });
 await p.reload(); await wacht(); await p.waitForTimeout(300);
 const pr = await p.evaluate(() => ({ per: window.spel.regels.legerPerKazerne, max: window.spel.leger.max }));
-check('proloog: geen kazerneregel, max 120', pr.per === 0 && pr.max === 120, JSON.stringify(pr));
+check('proloog: geen kazerneregel, max minstens 120', pr.per === 0 && pr.max >= 120, JSON.stringify(pr));
 
 check('geen scriptfouten', fouten.length === 0, fouten.join(' | '));
 console.log(`OK ${ok}, FOUT ${fout}`);

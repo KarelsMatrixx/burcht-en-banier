@@ -295,14 +295,18 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // waar die tegel bij hoort. Geeft terug hoeveel er op weg zijn gegaan.
   function stuur(x, y, opMuur = false) {
     // Een stormram kan de muur niet op.
-    const groep = opMuur ? gekozen().filter((e) => !soorten[e.soldaat.sleutel].alleenBouw) : gekozen();
+    let groep = opMuur ? gekozen().filter((e) => !soorten[e.soldaat.sleutel].alleenBouw) : gekozen();
     if (!groep.length || x < 0 || y < 0 || x >= B || y >= H) return 0;
     const doel = y * B + x;
     const plekken = [];
     if (opMuur) {
       if (!isMuur(doel)) return 0;
       const stuk = muurstuk(doel);
-      if (!stuk.trap) return 0;   // zonder open poort kom je er niet op
+      // Zonder open poort kom je er niet op, maar wie al op de muur staat, loopt er gewoon overheen.
+      if (!stuk.trap) {
+        groep = groep.filter((e) => e.opMuur);
+        if (!groep.length) return 0;
+      }
       for (const vak of stuk.vakken) {
         // Op een toren passen er twee: dan staat dezelfde knoop twee keer in de lijst.
         while (plekken.length < groep.length && !bezet(N + vak, groep, plekken)) plekken.push(N + vak);
