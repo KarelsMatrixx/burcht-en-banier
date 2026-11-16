@@ -540,3 +540,7 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 
 ## 0.63.1: poortles alleen de oostpoort
 - Nachtles 5 heet nu "Close the east gate": alleen de buitenste poort aan de oostkant, waar het leger staat, moet dicht. De westpoort blijft open. Test proloog43 (32).
+
+## 0.63.2: economiepaneel past altijd op het scherm
+- Het paneel achter de buidel is nooit hoger dan het scherm: de uitleg in het midden scrolt (`#volk-scroll`), de grondstoffen, Tax en de knoppen blijven altijd zichtbaar. De hint over gekozen soldaten verdwijnt zolang dit paneel of het handelpaneel open is.
+- Sterkte van rood afgerond op één decimaal (was 3.78000000000002).

@@ -349,7 +349,23 @@ button:active {
   z-index: 3;
   font-size: 13px;
   line-height: 1.45;
+  /* Past altijd op het scherm: de tekst in het midden scrolt, belasting en Close blijven onderaan zichtbaar */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - max(8px, env(safe-area-inset-top)) - 54px - max(8px, env(safe-area-inset-bottom)));
+  box-sizing: border-box;
 }
+#volkpaneel[hidden] { display: none; }
+#volk-scroll {
+  flex: 1 1 auto;
+  min-height: 40px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#volk-grondstoffen, #volk-kop, #volk-rij { flex: 0 0 auto; }
+/* Open paneel: de hint over gekozen soldaten mag er niet overheen */
+body:has(#volkpaneel:not([hidden])) #legerhint,
+body:has(#handelpaneel:not([hidden])) #legerhint { display: none !important; }
 
 #volk-kop {
   margin-top: 6px;

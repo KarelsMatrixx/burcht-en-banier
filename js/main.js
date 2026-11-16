@@ -613,7 +613,7 @@ async function start() {
       else if (h.wacht > 3600) kort = '';   // rood valt in dit level niet vanzelf aan: de klok zegt niets
       else kort = klaar ? tijd(h.wacht) : `Red ${Math.floor(h.sterkte)}/${Math.ceil(h.doel)}`;
       lang = (s.vijanden ? `Attack ${s.golf}: ${s.vijanden} ${s.vijanden === 1 ? 'enemy' : 'enemies'} left. ` : `Attack ${s.golf + 1}: `) +
-        `${heerNaam} has ${rij || 'no one yet'} in reserve (strength ${h.sterkte} of ${h.doel}). ` +
+        `${heerNaam} has ${rij || 'no one yet'} in reserve (strength ${Math.round(h.sterkte * 10) / 10} of ${Math.round(h.doel * 10) / 10}). ` +
         `Workshops still standing: ${h.werken} of ${h.werkenTotaal}. Stock: ${h.voorraad.goud} gold, ${h.voorraad.hout} wood, ${h.voorraad.steen} stone.`;
     } else if (s.vijanden) {
       kort = 'Attack!';
