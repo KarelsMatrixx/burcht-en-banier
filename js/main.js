@@ -1173,6 +1173,14 @@ async function start() {
   });
 
   // Handig bij het zoeken naar fouten.
+  // Valhekken: jouw poort is open tenzij je hem dichtdeed; een poort van rood gaat open als er een rode
+  // soldaat vlak bij is (zo zie je ze erdoor komen).
+  tekenaar.zetHekDoel((i) => {
+    if (kaart.eigenaar[i] === 1) return wegvinder.isPoortDicht(i) ? 0 : 1;
+    const x = (i % kaart.breedte) + 0.5;
+    const y = Math.floor(i / kaart.breedte) + 0.5;
+    return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
+  });
   window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting };
 }
 

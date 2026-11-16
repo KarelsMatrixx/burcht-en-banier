@@ -122,7 +122,9 @@ export function maakWegvinder(kaart) {
         const eigenKasteel = soort === OBJECT.BURCHT && Math.max(Math.abs(ix - kaart.start[team].x), Math.abs(iy - kaart.start[team].y)) <= 1;
         const trap = soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT || eigenKasteel;
         muurVan[team][i] = (eigen && (trap || soort === OBJECT.MUUR)) || eigenKasteel ? 1 : 0;
-        opgangVan[team][i] = (eigen && trap) || eigenKasteel ? 1 : 0;
+        // Op het hoofdkasteel kom je alleen via de deur: de tegel midden aan de rechterkant (x + 1).
+        const kasteelDeur = eigenKasteel && ix === kaart.start[team].x + 1 && iy === kaart.start[team].y;
+        opgangVan[team][i] = (eigen && trap && soort !== OBJECT.BURCHT) || kasteelDeur ? 1 : 0;
         // Een ladder staat alleen zolang de muur van de ander er nog staat.
         if (ladderVan[team][i] && !(kaart.object[i] === OBJECT.MUUR && kaart.eigenaar[i] === ander)) ladderVan[team][i] = 0;
         if (ladderVan[team][i]) {

@@ -129,6 +129,21 @@ function tegelToeval(x, y, extra) {
 }
 
 export function maakTekenaar(canvas, kaart, camera, assets) {
+  // Valhekken: per poorttegel hoe ver het hek omhoog is (0 dicht, 1 open). Het doel komt van main.js
+  // (zetHekDoel); de stand schuift er langzaam naartoe, zo zie je het hek bewegen.
+  const HEK_TEMPO = 0.45;   // deel per seconde: ruim 2 seconden van dicht naar open
+  const hekNu = new Map();
+  let hekDoel = () => 0;
+  let hekTijd = 0;
+  let hekDt = 0;
+  const hekStand = (i) => {
+    const doel = hekDoel(i);
+    let nu = hekNu.has(i) ? hekNu.get(i) : doel;
+    if (nu < doel) nu = Math.min(doel, nu + HEK_TEMPO * hekDt);
+    else if (nu > doel) nu = Math.max(doel, nu - HEK_TEMPO * 1.6 * hekDt);
+    hekNu.set(i, nu);
+    return nu;
+  };
   const ctx = canvas.getContext('2d', { alpha: false });
   const grond = GROND_ASSET.map((naam) => assets.haal(naam));
   const objecten = OBJECT_ASSET.map((naam) => (naam ? assets.haal(naam) : null));
@@ -353,6 +368,9 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
 
   // tussenstand: 0 tot 1, hoe ver we zijn tussen twee rekenstappen.
   function teken(staat, tussenstand) {
+    const hekNuTijd = performance.now();
+    hekDt = hekTijd ? Math.min(0.1, (hekNuTijd - hekTijd) / 1000) : 0;
+    hekTijd = hekNuTijd;
     const nu = performance.now();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = CONFIG.beeld.achtergrond;
@@ -626,7 +644,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
       const totX = Math.min(maxX, som - minY);
       for (let x = vanX; x <= totX; x++) {
         const y = som - x;
-        const o = objectBeeld[y * kaart.breedte + x];
+        let o = objectBeeld[y * kaart.breedte + x];
         if (!o) continue;
         const wx = (x - y) * HALVE_BREEDTE;
         const wy = som * HALVE_HOOGTE;
@@ -635,6 +653,8 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         const dy = o.spreiding ? (tegelToeval(x, y, 2) - 0.5) * o.spreiding : 0;
         const l = ladderOp.size ? ladderOp.get(y * kaart.breedte + x) : null;
         if (l && (l.dx < 0 || l.dy < 0)) tekenLadder(l);
+        // Een poort: het valhek staat zo hoog als hekStand zegt (gaat langzaam open en dicht)
+        if (o.hek) o = { ...o, beeld: o.hek[Math.round(hekStand(y * kaart.breedte + x) * (o.hek.length - 1))].beeld };
         if (doorzicht) {
           // Het oog staat aan: natuur en gebouwen bijna doorzichtig, met een
           // vlak op de grond zodat je ziet waar ze staan. Troepen blijven vol.
@@ -888,5 +908,5 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     return asset && asset.varianten ? asset.varianten.indexOf(objectBeeld[i]) : -1;
   };
 
-  return { pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, zetDoorzicht: (aan) => { doorzicht = !!aan; }, doorzicht: () => doorzicht, aantalGetekend: () => getekend, aantalInPoort: () => inPoort };
+  return { zetHekDoel: (f) => { hekDoel = f; }, pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, zetDoorzicht: (aan) => { doorzicht = !!aan; }, doorzicht: () => doorzicht, aantalGetekend: () => getekend, aantalInPoort: () => inPoort };
 }

@@ -1537,11 +1537,20 @@ export function tekenToren(naam, def) {
 // De poort bestaat in twee richtingen: met de doorgang in het rechter
 // zijvlak (de muur loopt van linksonder naar rechtsboven) of in het
 // linker zijvlak (de muur loopt van linksboven naar rechtsonder).
+// Elke richting heeft ook beelden met het valhek half en helemaal omhoog
+// (hek[0] = dicht, hek[HEK_STANDEN - 1] = open): zo kan het hek langzaam omhoog.
+const HEK_STANDEN = 9;
 export function tekenPoort(naam, def) {
-  return { kies: 'poort', varianten: [poortTegel(naam, def, false), poortTegel(naam, def, true)] };
+  const richting = (links) => {
+    const v = poortTegel(naam, def, links, 0);
+    v.hek = [v];
+    for (let k = 1; k < HEK_STANDEN; k++) v.hek.push(poortTegel(naam, def, links, k / (HEK_STANDEN - 1)));
+    return v;
+  };
+  return { kies: 'poort', varianten: [richting(false), richting(true)] };
 }
 
-function poortTegel(naam, def, links) {
+function poortTegel(naam, def, links, op_ = 0) {
   const H = def.hoogte;
   const b = TB + 2;
   const h = TH + H + 14;
@@ -1576,11 +1585,24 @@ function poortTegel(naam, def, links) {
   ctx.save();
   boog(0);
   ctx.clip();
+  // Hoe verder het valhek omhoog is, hoe meer je door de doorgang ziet: een lichte vloer en wat licht.
+  const hekOp = op_ * 30;
+  if (op_ > 0) {
+    ctx.beginPath();
+    ctx.moveTo(...op(0.2, 0)); ctx.lineTo(...op(0.8, 0)); ctx.lineTo(...op(0.8, hekOp * 0.5)); ctx.lineTo(...op(0.2, hekOp * 0.5)); ctx.closePath();
+    ctx.fillStyle = `rgba(150, 125, 90, ${0.55 * op_})`;
+    ctx.fill();
+  }
+  // Het valhek: ijzeren tralies met punten onderaan, opgetrokken met hekOp
   for (const deel of [0.3, 0.4, 0.5, 0.6, 0.7]) {
-    lijn(ctx, ...op(deel, 0), ...op(deel, 42), '#8a7350', 0.9);
+    lijn(ctx, ...op(deel, hekOp), ...op(deel, 42 + hekOp), '#8a7350', 0.9);
+    const [px, py] = op(deel, hekOp);
+    ctx.fillStyle = '#6a5838';
+    ctx.beginPath(); ctx.moveTo(px - 1, py - 1.5); ctx.lineTo(px + 1, py - 1.5); ctx.lineTo(px, py + 1); ctx.closePath(); ctx.fill();
   }
   for (const hoog of [7, 15, 23, 31]) {
-    lijn(ctx, ...op(0.2, hoog), ...op(0.8, hoog), '#8a7350', 0.9);
+    if (hoog + hekOp > 40) continue;
+    lijn(ctx, ...op(0.2, hoog + hekOp), ...op(0.8, hoog + hekOp), '#8a7350', 0.9);
   }
   ctx.restore();
   schietgat(ctx, links ? cx + 16 : cx - 16, top + 8 + 14);

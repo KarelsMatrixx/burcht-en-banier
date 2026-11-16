@@ -532,3 +532,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 
 ## 0.62.1: herstel config.js
 - Bij het ophogen naar 0.62.0 veranderde een te ruime zoekopdracht ook het kaartzaad (20261110) in "20.62.00": het spel startte niet. Hersteld. Versies worden voortaan alleen met letterlijke punten vervangen en alle JS-bestanden daarna op syntax gecontroleerd.
+
+## 0.63.0: valhek gaat zichtbaar open en dicht, hoofdkasteel alleen via de deur
+- Poorten hebben 9 beelden van het valhek (dicht tot open). Het hek schuift in ruim 2 seconden omhoog en iets sneller omlaag; open zie je een lichte doorgang. Jouw poort staat open tenzij je hem dichtdeed; een poort van rood gaat open als er een rode soldaat vlak bij is (kunst.js `tekenPoort`, tekenaar.js `zetHekDoel`, main.js).
+- Op het hoofdkasteel kom je alleen via de deurtegel (midden aan de rechterkant, start x + 1); de andere tegels van de burcht zijn geen opgang meer (wegvinden.js).
+- Test poort45 (2 punten plus screenshots); koning40, torens40 en proloog43 groen.
