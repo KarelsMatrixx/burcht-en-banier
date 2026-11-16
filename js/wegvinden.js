@@ -105,6 +105,7 @@ export function maakWegvinder(kaart) {
     return ax + ay + (SCHUIN - 2) * Math.min(ax, ay);
   }
 
+  const dicht = new Set();   // poorten die de speler heeft dichtgedaan: niemand kan erdoor of erop, ook jouw soldaten niet
   // Bepaalt opnieuw waar je kunt lopen en welke stukken aan elkaar zitten,
   // voor elk team apart.
   function herbereken() {
@@ -120,8 +121,9 @@ export function maakWegvinder(kaart) {
         const ix = i % B;
         const iy = (i - ix) / B;
         const eigenKasteel = soort === OBJECT.BURCHT && Math.max(Math.abs(ix - kaart.start[team].x), Math.abs(iy - kaart.start[team].y)) <= 1;
-        const trap = soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT || eigenKasteel;
-        muurVan[team][i] = (eigen && (trap || soort === OBJECT.MUUR)) || eigenKasteel ? 1 : 0;
+        // Naar boven alleen via een poort die open is (naar Karel). Torens en muren loop je op, maar je klimt er niet op.
+        const trap = (soort === OBJECT.POORT && !dicht.has(i)) || eigenKasteel;
+        muurVan[team][i] = (eigen && (trap || soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT)) || eigenKasteel ? 1 : 0;
         // Op het hoofdkasteel kom je alleen via de deur: de tegel midden aan de rechterkant (x + 1).
         const kasteelDeur = eigenKasteel && ix === kaart.start[team].x + 1 && iy === kaart.start[team].y;
         opgangVan[team][i] = (eigen && trap && soort !== OBJECT.BURCHT) || kasteelDeur ? 1 : 0;
@@ -156,7 +158,6 @@ export function maakWegvinder(kaart) {
   }
 
   let poortenOpen = false;   // proloog: de poort van de speler staat open voor rood
-  const dicht = new Set();   // poorten die de speler heeft dichtgedaan: niemand kan erdoor, ook jouw soldaten niet
   function herberekenVoor(beeld) {
     kiesTeam(beeld);
     const team = beeld === BREEK ? 1 : beeld;

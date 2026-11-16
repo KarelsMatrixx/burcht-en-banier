@@ -621,7 +621,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     zetFase(fase) {
       if (fase === 'avond') naarAvond();
       if (fase === 'nacht') naarNacht();
-      if (fase === 'storm') { naarNacht(); openPoort(); poortGaatOpen(); }
+      if (fase === 'storm') { naarNacht(); strijd.opmarsDirect(); openPoort(); poortGaatOpen(); }
       if (fase === 'scene') naarScene();
     },
   };

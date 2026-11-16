@@ -263,7 +263,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     if (opMuur) {
       if (!isMuur(doel)) return 0;
       const stuk = muurstuk(doel);
-      if (!stuk.trap) return 0;   // zonder toren, wachttoren of poort kom je er niet op
+      if (!stuk.trap) return 0;   // zonder open poort kom je er niet op
       for (const vak of stuk.vakken) {
         // Op een toren passen er twee: dan staat dezelfde knoop twee keer in de lijst.
         while (plekken.length < groep.length && !bezet(N + vak, groep, plekken)) plekken.push(N + vak);

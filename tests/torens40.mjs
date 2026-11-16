@@ -33,16 +33,16 @@ const r = await p.evaluate(() => {
   uit.opKasteel = op.length;
   uit.hoogte = op.length ? op[0].hoogte : 0;
   // Torens
-  // Een toren met een stuk muur ernaast, van jou, op open grond.
+  // Een toren met een stuk muur en een poort ernaast (sinds 0.64 klim je alleen via een poort), van jou, op open grond.
   const tw = (st.y + 8) * B + st.x + 6;
-  for (const [i, o] of [[tw, 5], [tw + 1, 4]]) { K.object[i] = o; K.eigenaar[i] = 1; }
+  for (const [i, o] of [[tw, 5], [tw + 1, 4], [tw + 2, 4], [tw + 3, 6]]) { K.object[i] = o; K.eigenaar[i] = 1; }
   s.wegvinder.herbereken(); s.leger.kaartVeranderd();
   const torens = [tw];
   uit.torens = torens.length;
   for (const e of s.leger.soldaten()) if (!e.koning) s.leger.sneuvel(e);
   zet(3);
   s.leger.kiesAlles();
-  s.leger.stuur(tw % B, Math.floor(tw / B), true);
+  uit.trap = s.wegvinder.isOpgang((tw + 3) % B, Math.floor(tw / B), 0); uit.gestuurd = s.leger.stuur(tw % B, Math.floor(tw / B), true); uit.obj = [tw, tw+1, tw+2, tw+3].map((i) => K.object[i] + '/' + K.eigenaar[i]);
   sim(500);
   const opTw = s.leger.soldaten().filter((e) => e.opMuur && Math.floor(e.y) * B + Math.floor(e.x) === tw);
   uit.opToren = opTw.length;

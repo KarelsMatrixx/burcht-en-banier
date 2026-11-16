@@ -1271,19 +1271,53 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         if (pad && pad.length) { zetPad(e, pad); return; }
       }
     };
-    // Staat hij op een muur en moet hij vechten of terug, dan eerst naar beneden.
-    if (e.opMuur && (k.doelwit || bedreigd) && !e.klimt) {
+    // Onraad: hij vlucht naar het dak van zijn hoofdkasteel (via de deur), achter zijn binnenmuren.
+    // Daar blijft hij en slaat alleen wie binnen zijn bereik komt (naar Karel: niet buiten te vangen).
+    const st = kaart.start[e.team];
+    const opDak = e.opMuur && kaart.object[vakVan(e)] === OBJECT.BURCHT;
+    const naarDak = () => {
+      const tegels = [];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) tegels.push((st.y + dy) * B + st.x + dx);
+      tegels.sort((a, b) => Math.hypot((a % B) - e.x, Math.floor(a / B) - e.y) - Math.hypot((b % B) - e.x, Math.floor(b / B) - e.y));
+      for (const vak of tegels) {
+        if (kaart.object[vak] !== OBJECT.BURCHT || bezetDoorVriend(N + vak, e)) continue;
+        const pad = padNaar(N + vak);
+        if (pad && pad.length) { zetPad(e, pad); return true; }
+      }
+      return false;
+    };
+    if (bedreigd) k.schuilTot = stapNr + stappen(25);   // na het gevaar blijft hij nog even binnen
+    const schuilt = bedreigd || stapNr < (k.schuilTot || 0);
+    if (schuilt && !opDak) {
       k.zwerft = false;
-      if (!e.pad || k.doelwit) naarHuis();
+      if (!k.vlucht || !e.pad) {
+        k.vlucht = true;
+        if (!naarDak()) naarHuis();
+      }
+      // Onderweg slaat hij alleen terug als iemand hem al raakt (binnen bereik), hij gaat er niet achteraan.
+      if (k.doelwit && Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) k.doelwit = null;
+      return;
+    }
+    if (opDak) {
+      k.vlucht = false;
+      k.zwerft = false;
+      if (schuilt) {
+        // Op het dak: alleen slaan wat binnen bereik is
+        const binnen = anderen.filter((a) => Math.hypot(a.x - e.x, a.y - e.y) <= bereikVan(e, k));
+        k.doelwit = binnen.length ? kiesDoelwit(e, k, binnen) : null;
+        e.pad = null;
+        return;
+      }
+    }
+    k.vlucht = false;
+    // Staat hij op een muur en moet hij vechten, dan eerst naar beneden.
+    if (e.opMuur && !opDak && k.doelwit && !e.klimt) {
+      k.zwerft = false;
+      if (!e.pad) naarHuis();
       return;
     }
     if (k.doelwit) {
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) jaag(e, k);
-      return;
-    }
-    if (bedreigd && k.zwerft && !bijThuis(e, 4.5)) {
-      k.zwerft = false;
-      naarHuis();   // ook als hij al onderweg was: meteen terug
       return;
     }
     if (e.pad) return;
@@ -1646,6 +1680,17 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     return n;
   }
+  // Voor tests: iedereen van de opmars staat meteen op zijn wachtplek
+  function opmarsDirect() {
+    for (const e of vijanden) {
+      const k = krijgVan(e);
+      if (!k.tak || !k.tak.houd || k.tak.via < 0) continue;
+      e.x = (k.tak.via % B) + 0.5;
+      e.y = Math.floor(k.tak.via / B) + 0.5;
+      e.pad = null;
+      k.tak.via = -1;
+    }
+  }
   // Hoeveel mannen staan er klaar (aangekomen) en hoeveel zijn er in totaal onderweg of klaar?
   function opmarsStand() {
     let totaal = 0;
@@ -1997,7 +2042,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   zetWachters(null);   // rood begint met een wachter op elk stuk muur
 
   return {
-    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, ruiter, laatOpmarsLos, opmarsStand, hinderlaag,
+    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, ruiter, laatOpmarsLos, opmarsDirect, opmarsStand, hinderlaag,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),

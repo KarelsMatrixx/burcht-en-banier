@@ -1027,7 +1027,7 @@ async function start() {
         if (leger.stuur(muur.x, muur.y, true)) {
           staat.doel = { x: muur.x, y: muur.y, duur: 900, tot: performance.now() + 900, hoogte: hoogteOp(muur.y * kaart.breedte + muur.x) };
         } else if (!leger.heeftTrap(muur.x, muur.y)) {
-          ui.toonMelding('Your soldiers cannot get onto this wall. Attach a tower, watchtower or gate to it.', { soort: 'leger' });
+          ui.toonMelding('Your soldiers cannot get onto this wall yet. They can only climb up through an open gate: build a gate in this wall, or open it.', { soort: 'leger' });
         } else {
           ui.toonMelding('Your soldiers cannot get there.', { soort: 'leger' });
         }

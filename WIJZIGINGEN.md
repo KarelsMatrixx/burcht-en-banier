@@ -544,3 +544,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 ## 0.63.2: economiepaneel past altijd op het scherm
 - Het paneel achter de buidel is nooit hoger dan het scherm: de uitleg in het midden scrolt (`#volk-scroll`), de grondstoffen, Tax en de knoppen blijven altijd zichtbaar. De hint over gekozen soldaten verdwijnt zolang dit paneel of het handelpaneel open is.
 - Sterkte van rood afgerond op één decimaal (was 3.78000000000002).
+
+## 0.64.0: klimmen alleen via een open poort, rode koning schuilt in zijn burcht
+- Muren en torens op kan in de hele game alleen nog via een poort die open is (en het hoofdkasteel via zijn deur). Torens en wachttorens zijn geen opgang meer; je loopt er wel overheen. Een dichte poort is geen opgang. Melding als het niet kan: "They can only climb up through an open gate: build a gate in this wall, or open it." (wegvinden.js, leger.js, main.js).
+- De rode koning vlucht bij onraad naar het dak van zijn hoofdkasteel (via de deur, achter zijn binnenmuren) en blijft daar nog 25 seconden na het gevaar. Op het dak slaat hij alleen wie binnen zijn bereik komt (strijd.js `koningDenk`).
+- Test klim46 (7); torens40 aangepast (toren met poort); gevecht40 zet de opmars direct op zijn plek (`strijd.opmarsDirect`).
