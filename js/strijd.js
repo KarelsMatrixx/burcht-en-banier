@@ -202,6 +202,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const bereikVan = (e, k) => k.def.bereik + ((e.opMuur || e.hinderlaag) && isSchutter(k) ? R.muurBereik : 0);   // hoog in de rotsen schiet ook verder
   // Een ridder kan alleen iemand raken die op dezelfde hoogte staat.
   const kanRaken = (e, k, a) => isSchutter(k) || !!a.opMuur === !!e.opMuur;
+  // Een soldaat van de speler op de grond mag een vijand op het dak van zijn hoofdkasteel als doel houden: hij klimt erheen.
+  const klimtNaar = (e, k, a) => !isSchutter(k) && !!a.opMuur && !e.opMuur && a.team !== e.team && kaart.object[vakVan(a)] === OBJECT.BURCHT;
   const klem = (getal, laag, hoog) => Math.max(laag, Math.min(hoog, getal));
   const verVan = (e, vak) => Math.hypot((vak % B) + 0.5 - e.x, Math.floor(vak / B) + 0.5 - e.y);
   // Het vak waar iemand staat, of waar hij naar op weg is.
@@ -466,6 +468,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       const doel = burchten[b.team];
       // In de proloog valt de burcht van rood niet en de jouwe niet helemaal.
       if (R.proloog && b.team !== SPELER) return;
+      // Een hoofdkasteel krijgt nooit schade (jouw kasteel ook niet): het gaat altijd om de koning.
+      if (koningSleutel) return;
       doel.leven = Math.max(R.proloog ? 1 : 0, doel.leven - hoeveel);
       doel.rust = 0;
       if (b.team === SPELER && !burchtGemeld) {
@@ -517,7 +521,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     // de muur staat, blijft daar ook.
     const blijft = !!e.opMuur || !!e.hinderlaag || (e.team === SPELER && schutter);
     if (k.bevel) {
-      if (k.bevel.dood || !kanRaken(e, k, k.bevel)) k.bevel = null;
+      if (k.bevel.dood || (!kanRaken(e, k, k.bevel) && !klimtNaar(e, k, k.bevel))) k.bevel = null;
       else if (!e.opMuur || Math.hypot(k.bevel.x - e.x, k.bevel.y - e.y) <= bereik) return k.bevel;
     }
     const ver = blijft ? bereik : k.def.zicht;
@@ -526,7 +530,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     for (let i = 0; i < anderen.length; i++) {
       const a = anderen[i];
       if (a.dood || a.klimt || (a === k.negeer && stapNr < k.negeerTot)) continue;
-      if (!kanRaken(e, k, a)) continue;
+      if (!kanRaken(e, k, a) && !klimtNaar(e, k, a)) continue;
       const d = Math.hypot(a.x - e.x, a.y - e.y);
       if (d >= min || verborgenVoor(a, d)) continue;
       if (d > bereik && !kanBij(e, a)) continue;   // hij kan er niet bij en niet op schieten
@@ -545,10 +549,42 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Loop naar je doelwit toe: een ridder naar een vrije tegel ernaast, een
   // schutter tot hij binnen bereik is.
+  // Staat het doelwit boven op een muur of op het dak van een kasteel, dan gaat wie van dichtbij vecht
+  // er via de trap naartoe: de kortste route naar een muurtegel naast het doelwit. Of null.
+  function padNaarDoelOpMuur(e, doel) {
+    const dv = vakVan(doel);
+    const x0 = dv % B;
+    const y0 = Math.floor(dv / B);
+    const van = vakVan(e) + (e.opMuur ? N : 0);
+    let beste = null;
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const nx = x0 + dx;
+        const ny = y0 + dy;
+        if (nx < 0 || ny < 0 || nx >= B || ny >= H || !wegvinder.isMuur(nx, ny, e.team)) continue;
+        const knoop = N + ny * B + nx;
+        if (bezetDoorVriend(knoop, e)) continue;
+        const pad = wegvinder.zoekPadLagen(van, knoop, e.team);
+        if (pad && (!beste || pad.length < beste.length)) beste = pad;
+      }
+    }
+    return beste;
+  }
+
   function jaag(e, k) {
     const doel = k.doelwit;
     const dv = vakVan(doel);
     if (e.pad && k.doelVak === dv) return;   // hij is al op weg naar waar het doelwit staat
+    if (doel.opMuur && !isSchutter(k)) {
+      const padOmhoog = padNaarDoelOpMuur(e, doel);
+      if (padOmhoog) {
+        zetPad(e, padOmhoog);
+        k.doelVak = dv;
+        k.schuif = false;
+        return;
+      }
+    }
     let naar;
     if (isSchutter(k)) {
       naar = wegvinder.verbonden(vakVan(e), dv, e.team) ? dv : plekRond(e, dv, 1);
@@ -573,7 +609,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   function vecht(e, k) {
     const doel = k.doelwit;
-    if (Math.hypot(doel.x - e.x, doel.y - e.y) > bereikVan(e, k)) {
+    if (Math.hypot(doel.x - e.x, doel.y - e.y) > bereikVan(e, k) || !kanRaken(e, k, doel)) {
       zetHouding(e, null);   // nog onderweg
       return;
     }
@@ -1134,6 +1170,17 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   function naarBurcht(e, k) {
+    // Rood gaat op je koning af (ook als hij op het dak van je hoofdkasteel staat): dat beslist het level.
+    if (koningSleutel && !R.proloog && !vreedzaam(k) && !isSchutter(k) && !hutStaat() && stapNr >= (k.koningPoging || 0)) {
+      const ks = koningVan(SPELER);
+      if (ks && !ks.dood) {
+        k.doelwit = ks;
+        jaag(e, k);
+        if (k.doelwit === ks) { k.bouw = null; return; }
+        k.negeer = null;
+        k.koningPoging = stapNr + 20;   // er is nog geen weg: eerst de muren door
+      }
+    }
     if (k.bouw && staatNog(k.bouw) && (e.pad || bijBouw(e, k))) return;   // onderweg of bezig
     k.bouw = null;
     k.doelVak = -1;
@@ -1423,7 +1470,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.doelwit = kiesDoelwit(e, k, anderen);
     if (k.doelwit) {
       k.bouw = null;
-      if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) {
+      if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k) || !kanRaken(e, k, k.doelwit)) {
         if (e.opMuur || e.hinderlaag) k.doelwit = null;   // van de muur (of uit de rotsen) gaat hij er niet achteraan
         else jaag(e, k);
       }
@@ -1810,7 +1857,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // Is dit vak een bouwwerk van rood dat je kunt aanvallen?
-  const isVanRood = (vak) => vak >= 0 && vak < B * H && kaart.eigenaar[vak] === ROOD && (!inBurcht(vak, rood) || rood.leven > 0);
+  // Het hoofdkasteel van rood hoort er niet bij: dat kun je niet aanvallen, alleen op klimmen. Winnen doe je door zijn koning te verslaan.
+  const isVanRood = (vak) => vak >= 0 && vak < B * H && kaart.eigenaar[vak] === ROOD && !inBurcht(vak, rood);
 
   // Deze soldaten vallen het bouwwerk van rood op dat vak aan: zijn muur,
   // zijn poort of zijn burcht. Geeft terug hoeveel er gaan.

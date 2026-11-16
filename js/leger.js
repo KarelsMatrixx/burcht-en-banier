@@ -74,6 +74,14 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     return TORENPLEKKEN[o] || 1;
   };
   const isKasteelKnoop = (knoop) => knoop >= N && kaart.object[knoop - N] === OBJECT.BURCHT;
+  // Welk hoofdkasteel (0: jouw kasteel, 1: dat van rood) is dit? De vijf plekken gelden per kasteel.
+  const kasteelVan = (knoop) => {
+    const vak = knoop - N;
+    const x = vak % B;
+    const y = (vak - x) / B;
+    const st = kaart.start;
+    return Math.max(Math.abs(x - st[1].x), Math.abs(y - st[1].y)) <= 1 ? 1 : 0;
+  };
   const telOp = (knoop, zonder, plan = []) => {
     let n = 0;
     for (const k of plan) if (k === knoop) n++;
@@ -84,8 +92,10 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   function bezet(knoop, zonder, plan = []) {
     if (telOp(knoop, zonder, plan) >= kapaciteit(knoop)) return true;
     if (isKasteelKnoop(knoop)) {
-      let n = plan.filter(isKasteelKnoop).length;
-      for (const e of soldaten) if (!(zonder && zonder.includes(e)) && (isKasteelKnoop(knoopVan(e)) || isKasteelKnoop(e.soldaat.doel))) n++;
+      const kasteel = kasteelVan(knoop);
+      const zelfde = (k) => isKasteelKnoop(k) && kasteelVan(k) === kasteel;
+      let n = plan.filter(zelfde).length;
+      for (const e of soldaten) if (!(zonder && zonder.includes(e)) && (zelfde(knoopVan(e)) || zelfde(e.soldaat.doel))) n++;
       if (n >= KASTEEL_PLEKKEN) return true;
     }
     return false;

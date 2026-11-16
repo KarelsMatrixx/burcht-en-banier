@@ -625,7 +625,7 @@ async function start() {
       lang = `Attack ${s.golf + 1} comes in ${tijd(s.klok)}.`;
     }
     lang += ` Keep: ${s.burcht} of ${s.burchtMax}.`;
-    if (!s.vrede && !regels.strijd.proloog) lang += ` Red keep: ${s.rood} of ${s.roodMax}. Break it and the red king grows weaker.`;
+    if (!s.vrede && !regels.strijd.proloog) lang += ' Defeating the red king wins the level.';
     ui.toonStrijd({ kort, lang: lang.trim(), slecht: s.vijanden > 0 });
     // De uitleg bij je soldaten verandert als er vijanden zijn.
     if (vijandInBeeld !== s.vijanden > 0) {

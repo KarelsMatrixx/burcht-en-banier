@@ -121,11 +121,17 @@ export function maakWegvinder(kaart) {
         const ix = i % B;
         const iy = (i - ix) / B;
         const eigenKasteel = soort === OBJECT.BURCHT && Math.max(Math.abs(ix - kaart.start[team].x), Math.abs(iy - kaart.start[team].y)) <= 1;
+        // Ook het hoofdkasteel van rood kun je op (via zijn deur): daar zit zijn koning als hij onraad voelt.
+        const roodKasteel = team === 0 && soort === OBJECT.BURCHT && Math.max(Math.abs(ix - kaart.start[1].x), Math.abs(iy - kaart.start[1].y)) <= 1;
+        // Het hoofdkasteel van de speler kan rood ook op (via de deur): daar kan hij je koning vermoorden.
+        const spelerKasteel = team === 1 && soort === OBJECT.BURCHT && Math.max(Math.abs(ix - kaart.start[0].x), Math.abs(iy - kaart.start[0].y)) <= 1;
         // Naar boven alleen via een poort die open is (naar Karel). Torens en muren loop je op, maar je klimt er niet op.
         const trap = (soort === OBJECT.POORT && !dicht.has(i)) || eigenKasteel;
-        muurVan[team][i] = (eigen && (trap || soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT)) || eigenKasteel ? 1 : 0;
+        muurVan[team][i] = (eigen && (trap || soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT)) || eigenKasteel || roodKasteel || spelerKasteel ? 1 : 0;
         // Op het hoofdkasteel kom je alleen via de deur: de tegel midden aan de rechterkant (x + 1).
-        const kasteelDeur = eigenKasteel && ix === kaart.start[team].x + 1 && iy === kaart.start[team].y;
+        const kasteelDeur = (eigenKasteel && ix === kaart.start[team].x + 1 && iy === kaart.start[team].y)
+          || (roodKasteel && ix === kaart.start[1].x + 1 && iy === kaart.start[1].y)
+          || (spelerKasteel && ix === kaart.start[0].x + 1 && iy === kaart.start[0].y);
         opgangVan[team][i] = (eigen && trap && soort !== OBJECT.BURCHT) || kasteelDeur ? 1 : 0;
         // Een ladder staat alleen zolang de muur van de ander er nog staat.
         if (ladderVan[team][i] && !(kaart.object[i] === OBJECT.MUUR && kaart.eigenaar[i] === ander)) ladderVan[team][i] = 0;
@@ -163,9 +169,11 @@ export function maakWegvinder(kaart) {
     const team = beeld === BREEK ? 1 : beeld;
     for (let i = 0; i < N; i++) {
       const land = kaart.grond[i] !== GROND.WATER;
-      // Een poort die je zelf hebt gebouwd is voor jouw team een doorgang.
-      // In de proloog gaat jouw poort van binnenuit open: dan is hij ook voor rood een doorgang.
-      const eigenPoort = kaart.object[i] === OBJECT.POORT && !dicht.has(i) && (kaart.eigenaar[i] === team + 1 || (poortenOpen && team === 1 && kaart.eigenaar[i] === 1));
+      // Een poort die open staat is een doorgang, ook voor de vijand: doe je hem niet dicht, dan lopen
+      // de soldaten van rood er gewoon doorheen. Een poort die dicht is (dicht) is een muur, voor iedereen.
+      // De poorten van rood zelf zijn voor jou geen doorgang.
+      // (poortenOpen: in de proloog staat jouw poort vast open voor rood.)
+      const eigenPoort = kaart.object[i] === OBJECT.POORT && !dicht.has(i) && (kaart.eigenaar[i] === team + 1 || (team === 1 && kaart.eigenaar[i] === 1));
       // Wat de speler heeft gebouwd, kan de vijand kapotmaken.
       const breekbaar = beeld === BREEK && kaart.eigenaar[i] === 1;
       vrij[i] = land && (kaart.object[i] === OBJECT.GEEN || kaart.object[i] === OBJECT.BOOM || eigenPoort || breekbaar) ? 1 : 0;

@@ -558,3 +558,12 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Nieuw gebouw: de zagerij is niet meer hetzelfde huisje als de voorraadkamer maar een open houten schuur met stammen, een stam op schragen met zaagraam, planken, zaagsel en een rondzaagblad (kunst.js `tekenZagerij`).
 - Fix: level 2 Sevenwinds: na "Start over" gaat de hinderlaag weer af. De nissen in de rotsen werden niet teruggezet en `gebeurd` bleef staan (hinderlaag.js `wis`, main.js `opnieuw`).
 - Tests: nieuw kazerne_torens47 (17) en hinderlaag_opnieuw47 (6); torens40 aangepast aan 7 en 3 plekken; handel verschuift de camera zodat het paneel de testtik niet opvangt.
+
+## 0.65.1: poorten, hoofdkasteel en koning
+- Een open poort van jou laat rood gewoon door; een dichte poort is voor iedereen een muur. Rode poorten blijven voor jou dicht.
+- In elk level met een koning gaat het alleen om de koning: geen enkel hoofdkasteel (rood of van jou) krijgt nog schade, en het level is gewonnen of verloren als een koning valt. Rammen en katapulten hebben het kasteel niet meer als doel.
+- Jouw soldaten kunnen het hoofdkasteel van rood op via zijn deur en de rode koning op het dak aanvallen. Rood kan hetzelfde bij jou: rode ridders lopen op je koning af, ook op het dak van je kasteel. Op elk hoofdkasteel passen 5 man.
+- Grondsoldaten mogen een koning op een dak als doel houden en klimmen erheen (strijd.js: klimtNaar, padNaarDoelOpMuur).
+- HUD: "Defeating the red king wins the level." (na te lezen)
+- Nieuwe tests: poort_open48, koningsdak48, koningsdak_speler48.
+- Bekend: de rode koning is sterk en doodt een kleine groep op het dak; de pijlen van het rode kasteel blijven schieten.
