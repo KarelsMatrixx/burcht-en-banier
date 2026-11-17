@@ -29,7 +29,7 @@ check('kruisboog 2x en speer 1.5x tegen ruiters', d.kr.ruiter === 2 && d.rid.rui
 const plek = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0]; for (let r = 4; r < 20; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = st.x + dx, y = st.y + dy; let goed = true; for (let a = -2; a <= 6; a++) for (let c = -2; c <= 2; c++) if (!s.wegvinder.isVrij(x + a, y + c, 0) || k.object[(y + c) * 64 + x + a] !== 0) goed = false; if (goed) return [x, y]; } return null; });
 check('vrije plek gevonden', !!plek);
 const r1 = await p.evaluate(([x, y]) => {
-  const s = window.spel; const v = s.economie.voorraad; v.planken = 100; v.steen = 100; v.hout = 100; v.goud = 500; v.koper = 40; v.brood = 100;
+  const s = window.spel; const v = s.economie.voorraad; v.planken = 100; v.steen = 100; v.hout = 100; v.goud = 500; v.koper = 40; v.brood = 100; v.tarwe = 100;
   s.economie.zetStand({ volk: 30 });
   const voor = s.leger.waaromNiet('ruiter');
   s.bouwer.plaats(s.bouwwerken.kazerne, [{ x, y }]);
@@ -42,19 +42,31 @@ check('stal staat op de kaart', r1.object === 33, r1.object);
 check('de stal krijgt een paardenboer', r1.boeren === 1, r1.boeren);
 await p.waitForTimeout(300);
 const r2 = await p.evaluate(([x, y]) => {
-  const s = window.spel; const stalVak = y * 64 + x + 4; const uit = [];
+  const s = window.spel; const stalVak = y * 64 + x + 4; const uit = []; const v = s.economie.voorraad; const t0 = v.tarwe, b0 = v.brood, st0 = v.steen;
   for (let i = 0; i < 6; i++) uit.push(s.leger.leidOp('ruiter', stalVak));
   const ruiters = s.leger.soldaten().filter((e) => e.soldaat.sleutel === 'ruiter');
-  return { uit, n: ruiters.length, lagen: ruiters.map((e) => e.lagen), plekken: s.leger.plekken() };
+  return { uit, n: ruiters.length, lagen: ruiters.map((e) => e.lagen), plekken: s.leger.plekken(), dt: t0 - v.tarwe, db: b0 - v.brood, dst: st0 - v.steen, stal: s.bouwwerken.stal.kosten };
 }, plek);
 check('vijf ruiters lukken', r2.uit.slice(0, 5).every((t) => t === ''), JSON.stringify(r2.uit));
 check('de zesde past niet in de stal (5 per stal)', r2.uit[5].includes('stable place'), r2.uit[5]);
 check('precies 5 ruiters, elk 2 legerplekken (10 plekken plus koning)', r2.n === 5 && r2.plekken >= 10, JSON.stringify(r2));
+check('ruiters kosten tarwe (5 x 6), geen brood', r2.dt === 30 && r2.db === 0, JSON.stringify([r2.dt, r2.db]));
+check('een stal kost geen steen', r2.stal.steen === undefined && r2.stal.hout === 30 && r2.stal.planken === 20, JSON.stringify(r2.stal));
 check('ruiters kunnen niet klimmen', r2.lagen.every((l) => l === false));
 // de paardenboer loopt rond bij de stal
 const w = await p.evaluate(async () => { const s = window.spel; const e = s.economie.werkers().find((a) => a.werk.beroep.sleutel === 'paardenboer'); const p0 = [e.x, e.y]; let verschil = 0; const t0 = performance.now(); while (performance.now() - t0 < 9000) { await new Promise((r) => setTimeout(r, 200)); verschil = Math.max(verschil, Math.hypot(e.x - p0[0], e.y - p0[1])); } return { verschil, houding: e.houding, beschrijf: s.economie.beschrijf(e.werk.plaats) }; });
 check('paardenboer loopt rond met hooi', w.verschil > 0.3 && w.houding === 'last', JSON.stringify(w));
 check('paardenboer: tekst in beeld', /horse keeper is tending the horses/.test(w.beschrijf), w.beschrijf);
+// ---- Paarden op het erf: bij 5 ruiters geen, na twee gesneuvelde ruiters twee paarden
+const erf0 = await p.evaluate(() => window.spel.eenheden.lijst.filter((e) => e.paard).length);
+check('bij vijf ruiters staan er geen paarden op het erf', erf0 === 0, erf0);
+await p.evaluate(() => { const r = window.spel.leger.soldaten().filter((e) => e.soldaat.sleutel === 'ruiter'); r[0].dood = true; r[1].dood = true; });
+await p.waitForTimeout(1200);
+const erf1 = await p.evaluate(() => { const s = window.spel; const n = s.leger.soldaten().filter((e) => e.soldaat.sleutel === 'ruiter').length; return { n, paarden: s.eenheden.lijst.filter((e) => e.paard).length }; });
+check('na twee gesneuvelde ruiters staan er twee paarden op het erf', erf1.paarden === 5 - erf1.n && erf1.paarden >= 1, JSON.stringify(erf1));
+// ---- Bakker laat 20 tarwe liggen
+const bk = await p.evaluate(() => { const s = window.spel; const b = s.regels.beroepen.bakker; return { r: b.reserve, n: b.neemt }; });
+check('bakker laat minstens 20 tarwe liggen', bk.r && bk.r.tarwe === 20 && bk.n.tarwe === 4, JSON.stringify(bk));
 // ---- Charge
 const c = await p.evaluate(async ([x, y]) => {
   const s = window.spel; for (const v of s.strijd.vijanden()) v.dood = true;
@@ -79,7 +91,7 @@ check('eerste klap na een rit is een charge (25 = 10 x 2,5, met het vaandel van 
 check('tweede klap is gewoon (10, met het vaandel 11)', c[1] >= 10 && c[1] <= 11, JSON.stringify(c));
 // ---- Rood in Stillwater
 await start(5, [1, 2, 3, 4]);
-const h = await p.evaluate(() => { const s = window.spel; const H = s.regels.heer; return { extra: H.extra_soorten, gew: H.gewicht.ruiter, prijs: H.broodPrijs, mag: s.bouwwerken.stal && true }; });
+const h = await p.evaluate(() => { const s = window.spel; const H = s.regels.heer; return { extra: H.extra_soorten, gew: H.gewicht.ruiter, prijs: H.tarwePrijs, mag: s.bouwwerken.stal && true }; });
 check('rood in level 5 koopt ruiters: vanaf aanval 5 (dus de zesde), hooguit 2', h.extra.ruiter && h.extra.ruiter.vanaf === 5 && h.extra.ruiter.max === 2, JSON.stringify(h));
 check('katapult en toren blijven in level 5', h.extra.katapult && h.extra.toren);
 check('ruiter weegt 1,8', h.gew === 1.8);

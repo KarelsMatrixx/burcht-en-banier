@@ -798,15 +798,15 @@ function steenwachter(def) {
 // Een ridder in staal op een bruin strijdpaard. Teamkleur in het dek van het paard,
 // de tabbaard, de pluim en het schild. Groter dan een gewone ridder: het canvas laat
 // ruimte voor het paard (tot x = 31 rechts en x = -1 links van het midden).
-function ruiter(def) {
+function ruiter(def, zonder = false) {
   const K = def.kleur;
   const VACHT = '#7a4e2c', VD = '#4e3018', MAAN = '#2a1a10', HOEF = '#1c130b';
   const teken = (ctx, houding, beeld) => {
     const vecht = houding !== 'lopen';
     const slag = houding === 'slag';
     const wip = !vecht && beeld % 2 ? -1 : 0;
-    const pas = vecht ? 0 : LOOP[beeld];
-    const duik = slag ? 1.2 : 0;
+    const pas = vecht || zonder ? 0 : LOOP[beeld];
+    const duik = zonder ? 4.2 : slag ? 1.2 : 0;   // een paard op het erf eet met zijn kop omlaag
     const mx = 12.5;
     // staart
     vlak(ctx, [[mx - 8.8, 21 + wip], [mx - 13.4, 23.6 + wip + pas * 0.4], [mx - 12.4, 30 + wip], [mx - 9.4, 25.4 + wip]], MAAN);
@@ -832,6 +832,7 @@ function ruiter(def) {
     vlak(ctx, [[mx - 5.8, 20.6 + wip], [mx + 5.8, 20.6 + wip], [mx + 5.2, 28.6 + wip], [mx - 5.4, 28.6 + wip]], K);
     blok(ctx, mx - 5.4, 27.8 + wip, 10.6, 0.9, '#f1ead6');
     ovaal(ctx, mx, 19.8 + wip, 4.4, 1.7, '#5a3a20');
+    if (zonder) return;
     // ruiter: been, romp met tabbaard, schild, hoofd met helm en pluim
     lijn(ctx, mx - 0.6, 19 + wip, mx + 2.4, 26 + wip, STAAL, 2.3);
     ovaal(ctx, mx + 2.8, 26.6 + wip, 1.5, 0.9, '#5a4126');
@@ -861,7 +862,7 @@ function ruiter(def) {
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
-  zwaardvechter, banierdrager, heler, steenwachter, ruiter,
+  zwaardvechter, banierdrager, heler, steenwachter, ruiter, paard: (def) => ruiter(def, true),
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

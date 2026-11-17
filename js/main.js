@@ -408,7 +408,7 @@ async function start() {
       open: true,
       regels: [
         `${gebouw.naam}. Army places: ${leger.plekken()} of ${leger.max}. Gold: ${economie.voorraad.goud}. Idle peasants: ${Math.max(0, volk.vrij)}.`,
-        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : gebouw.leidtOp === 'stal' ? 'A mounted knight costs gold, copper, bread and one idle peasant. Each stable holds five horses and needs a horse keeper.' : 'A soldier costs gold and one idle peasant.'),
+        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : gebouw.leidtOp === 'stal' ? 'A mounted knight costs gold, copper, wheat and one idle peasant. Each stable holds five horses and needs a horse keeper.' : 'A soldier costs gold and one idle peasant.'),
       ],
       knoppen: Object.values(leger.soorten).filter((def) => mag(def.sleutel) && (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
     });
