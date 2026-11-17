@@ -745,8 +745,8 @@ async function start() {
   // --- Het menu: vrij spel en de campagne -------------------------------------------------
   const modusNaam = missie ? missie.titel : `Free play: ${missies.profielen[modus.profiel].naam}`;
   document.getElementById('versie').textContent += ` · ${missie ? 'mission ' + missie.id : missies.profielen[modus.profiel].naam.toLowerCase()}`;
-  const gewonnen = voortgang();
-  const menuItems = () => [
+  const gewonnenNu = () => voortgang();   // elke keer opnieuw lezen: na een winst in dit level moet het volgende level meteen open zijn
+  const menuItems = () => { const gewonnen = gewonnenNu(); return [
     ...missies.campagne.filter((c) => c.speelbaar).map((c) => ({
       groep: 'Campaign', sleutel: `missie:${c.id}`, naam: `${c.titel}${gewonnen.includes(c.id) ? ' (won)' : ''}`,
       tekst: isOpen(c, gewonnen) ? c.intro.split('. ')[0] + '.' : eerstWinnen(c.id),
@@ -757,7 +757,7 @@ async function start() {
       groep: 'Free play', sleutel: `vrij:${v.profiel}`, naam: missies.profielen[v.profiel].naam, tekst: v.tekst,
       nu: modus.soort === 'vrij' && modus.profiel === v.profiel,
     })),
-  ];
+  ]; };
   const kiesModus = (sleutel) => {
     const [soort, waarde] = sleutel.split(':');
     const nieuw = soort === 'missie' ? { soort: 'campagne', missie: Number(waarde) } : { soort: 'vrij', profiel: waarde };
@@ -773,12 +773,12 @@ async function start() {
   const openMenu = () => ui.toonMenu({ open: true, nu: `Now: ${modusNaam}. Each mode keeps its own game.`, items: menuItems() });
   const kanVerder = !!bewaard || !!missie;   // is er al iets gespeeld?
   const toonKaart = () => {
-    const open = (c) => isOpen(c, gewonnen);
+    const open = (c) => isOpen(c, gewonnenNu());
     ui.toonTitel({ open: true, weergave: 'kaart' });
     ui.toonLevelkaart(missies.campagne.map((c, i) => ({
       id: c.id, naam: c.naam, portret: c.portret,
       x: c.punt ? c.punt.x : 10 + i * 8, y: c.punt ? c.punt.y : 50,
-      staat: gewonnen.includes(c.id) ? 'gewonnen' : !c.speelbaar ? 'later' : !open(c) ? 'dicht' : modus.soort === 'campagne' && modus.missie === c.id ? 'nu' : 'open',
+      staat: gewonnenNu().includes(c.id) ? 'gewonnen' : !c.speelbaar ? 'later' : !open(c) ? 'dicht' : modus.soort === 'campagne' && modus.missie === c.id ? 'nu' : 'open',
     })), (id) => {
       const c = missies.campagne.find((m) => m.id === id);
       const tekst = document.getElementById('kaart-tekst');

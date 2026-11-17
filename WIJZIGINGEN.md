@@ -1,3 +1,7 @@
+## 0.70.2
+- Fout opgelost: na 'Keep playing' bleef het volgende level dicht in het menu en op de levelkaart, omdat de lijst met gewonnen levels maar één keer bij het laden werd gelezen. Nu wordt hij elke keer opnieuw gelezen (tests/menu70.mjs).
+- Stillwater: rode ruiters komen al vanaf aanval 2 (max 2) in plaats van vanaf aanval 5.
+
 ## 0.70.1 (deel 5)
 - Stillwater (level 5): de banierdrager van rood komt nu echt in aanval 2, zodat Bartholts tip klopt (vanaf 1 en vast in extra_soorten).
 - Stillwater: vanaf aanval 4 zijn de aanvallen van rood ongeveer 2x zo groot (heer.doelVanaf in campagne.json, gelezen in rood.js en modus.js).
