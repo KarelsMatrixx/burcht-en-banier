@@ -36,7 +36,7 @@
                      "tip": "The sawyer takes wood from your stores and brings back planks." },
     "boomgaard":   { "naam": "Orchard",   "groep": "werk",    "object": "BOOMGAARD",   "kosten": { "hout": 15 }, "werker": "fruitteler",
                      "tip": "Apples are food for your peasants." },
-    "magiertoren": { "naam": "Mage Tower", "groep": "leger",   "object": "MAGIERTOREN", "kosten": { "planken": 15, "steen": 15, "koper": 5 }, "leidtOp": "mystiek",
+    "magiertoren": { "naam": "Mystic Lodge", "groep": "leger",   "object": "MAGIERTOREN", "kosten": { "planken": 15, "steen": 15, "koper": 5 }, "leidtOp": "mystiek",
                      "tip": "The mystic barracks: train assassins and flameweavers here. They cost two peasants." },
     "tarweveld":   { "naam": "Wheat Field",   "groep": "werk",    "object": "TARWEVELD",   "kosten": { "hout": 10 }, "werker": "tarweboer",
                      "tip": "The farmer harvests wheat and brings it to the stores. A baker turns it into bread." },
