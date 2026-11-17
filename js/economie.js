@@ -41,7 +41,7 @@ export async function laadEconomie() {
 // opKaart(vakken): de kaart is veranderd (er is een boom om).
 // opVoorraad(): de voorraad is veranderd. opVerandering(): tijd om te bewaren.
 // opMelding(tekst): iets dat de speler moet weten.
-export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVoorraad, opVerandering, opMelding }) {
+export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVoorraad, opVerandering, opMelding, opGeveld = () => {} }) {
   const B = kaart.breedte;
   const H = kaart.hoogte;
   const stappenPerSeconde = CONFIG.spel.stappenPerSeconde;
@@ -553,6 +553,10 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
         gekapt.push(bron);
         opKaart(new Set([bron]));
         opVerandering();
+        // De boom valt (van de hakker af); hij wacht even tot hij ligt en
+        // sleept hem dan mee (alleen beeld, zie tekenaar.js).
+        opGeveld(bron, e.kijkt);
+        w.wacht = Math.round(1.1 * stappenPerSeconde);
       }
       return;
     }

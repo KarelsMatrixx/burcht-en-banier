@@ -198,7 +198,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
   const sfeer = maakSfeer(kaart, landschap);
   const basis = [1, 0, 0, 1, 0, 0];   // de cameratransformatie van dit beeld
   // Zelfbewaking: blijft het beeld langer traag (onder ongeveer 30 beelden per
-  // seconde), dan gaan wind en wolken uit. Schaduwen, rook en water blijven.
+  // seconde), dan gaat de wind uit. Schaduwen, rook en water blijven.
   let traagTijd = 0;
   let sfeerLicht = false;
   // Hoe sterk de wind elk soort object beweegt (scheefstand in radialen ongeveer).
@@ -339,6 +339,74 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
   kiesPlaatjes();
   landschap.herbouw();
   sfeer.herbouw();
+
+  // --- Bomen vellen en wegslepen (alleen beeld) ------------------------------
+  const boomAsset = objecten[OBJECT.BOOM];
+  // Het plaatje van de boom die op (x, y) stond, en zijn verschuiving.
+  function boomOp(x, y) {
+    const o = boomAsset && boomAsset.varianten
+      ? boomAsset.varianten[Math.floor(tegelToeval(x, y, 4) * boomAsset.varianten.length)]
+      : boomAsset;
+    const sp = boomAsset && boomAsset.spreiding ? boomAsset.spreiding : 0;
+    return { o, dx: sp ? (tegelToeval(x, y, 1) - 0.5) * 2 * sp : 0, dy: sp ? (tegelToeval(x, y, 2) - 0.5) * sp : 0 };
+  }
+  const sleeptBoom = (e) => e.houding === 'last' && e.werk && e.werk.beroep && e.werk.beroep.ruimtOp;
+  // Richting waarin de hakker loopt (op het scherm, in radialen). Staat hij
+  // stil, dan houden we de laatste richting aan.
+  function sleepRichting(e) {
+    const mx = e.x - e.vorigeX;
+    const my = e.y - e.vorigeY;
+    const sx = mx - my;
+    const sy = (mx + my) / 2;
+    if (Math.abs(sx) + Math.abs(sy) > 1e-4) e.sleepHoek = Math.atan2(sy, sx);
+    if (e.sleepHoek === undefined) e.sleepHoek = e.kijkt < 0 ? Math.PI : 0;
+    return e.sleepHoek;
+  }
+  // De boom ligt achter de hakker: de stam in zijn hand, de kruin over de grond.
+  function tekenSleepboom(e, i, px, py, hoek, nu) {
+    const b = boomOp(0, 0).o;
+    if (!b || !b.beeld) return;
+    const draai = hoek - Math.PI / 2 + Math.sin(nu / 110 + i) * 0.05;
+    ctx.translate(px - Math.cos(hoek) * 3, py - 4);
+    ctx.scale(0.72, 0.72 * 0.8);
+    ctx.rotate(draai);
+    ctx.drawImage(b.beeld, -b.ax, -b.ay, b.b, b.h);
+    ctx.setTransform(basis[0], 0, 0, basis[3], basis[4], basis[5]);
+  }
+  // Een gevelde boom valt om: eerst langzaam, dan steeds sneller, een kleine
+  // stuit en een stofwolk. Daarna pakt de hakker hem op.
+  function tekenBoomval(f, nu, l, b, r, o) {
+    const wx = (f.x - f.y) * HALVE_BREEDTE;
+    const wy = (f.x + f.y) * HALVE_HOOGTE;
+    if (wx < l || wx > r || wy < b || wy > o + 80) return;
+    const { o: boom, dx, dy } = boomOp(f.x, f.y);
+    if (!boom || !boom.beeld) return;
+    const leeftijd = nu - f.van;
+    const VAL = 700;
+    const p = Math.min(1, leeftijd / VAL);
+    let hoek = (Math.PI / 2) * 0.9 * p * p;
+    if (leeftijd > VAL) hoek -= 0.1 * Math.sin((leeftijd - VAL) / 45) * Math.exp(-(leeftijd - VAL) / 110);
+    const voetX = wx + dx;
+    const voetY = wy + TEGEL_HOOGTE + dy - 2;
+    ctx.globalAlpha = Math.max(0, Math.min(1, (f.duur - leeftijd) / 150));
+    ctx.translate(voetX, voetY);
+    ctx.scale(1, 1 - 0.25 * p);   // liggend wordt hij platter (de grond loopt schuin weg)
+    ctx.rotate(f.kant * hoek);
+    ctx.drawImage(boom.beeld, -boom.ax, -boom.ay, boom.b, boom.h);
+    ctx.setTransform(basis[0], 0, 0, basis[3], basis[4], basis[5]);
+    // Stof bij het neerkomen
+    if (leeftijd > VAL - 40) {
+      const s = Math.min(1, (leeftijd - VAL + 40) / 450);
+      for (let k = 0; k < 6; k++) {
+        const afstand = 8 + k * 7;
+        ctx.fillStyle = `rgba(214, 198, 160, ${0.5 * (1 - s)})`;
+        ctx.beginPath();
+        ctx.arc(voetX + f.kant * afstand, voetY - 3 - s * 6 - (k % 2) * 2, 2.5 + s * 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
 
   // Werkgeheugen voor de zichtbare eenheden, steeds hergebruikt.
   const zichtbaar = new Uint16Array(MAX_EENHEDEN);     // nummers van zichtbare eenheden
@@ -563,6 +631,10 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
           }
           continue;
         }
+        if (f.soort === 'boomval') {
+          tekenBoomval(f, nu, zichtLinks, zichtBoven, zichtRechts, zichtOnder);
+          continue;
+        }
         if (f.soort !== 'val') continue;
         const deel = 1 - (nu - f.van) / f.duur;
         const wx = (f.x - f.y) * HALVE_BREEDTE;
@@ -636,8 +708,9 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     // Welk plaatje een eenheid nu laat zien (lopen, hakken, slaan).
     const kiesBeeld = (e, i, s) => {
       // Een werker die hakt of iets draagt heeft daar eigen plaatjes voor,
-      // net als een soldaat die slaat of schiet.
-      const eigen = e.houding && s.houdingen ? s.houdingen[e.houding] : null;
+      // net als een soldaat die slaat of schiet. Een houthakker die een boom
+      // sleept loopt gewoon (de boom tekenen we er los achter).
+      const eigen = e.houding && s.houdingen && !sleeptBoom(e) ? s.houdingen[e.houding] : null;
       const set = eigen || s;
       const beelden = e.kijkt < 0 ? set.links : set.rechts;
       let beeld = 0;
@@ -677,8 +750,12 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
           ctx.stroke();
         }
         const plaatje = kiesBeeld(e, i, s);
+        // Een houthakker sleept zijn boom achter zich aan.
+        const sleep = sleeptBoom(e) && !(e.werk.wacht > 0) ? sleepRichting(e) : null;
+        if (sleep !== null && Math.sin(sleep) >= 0) tekenSleepboom(e, i, plekX[i], plekY[i], sleep, nu);
         // Een verborgen sluipmoordenaar: van jou half doorzichtig, van rood
         // alleen van dichtbij te zien (dat bepaalt strijd.js; hier vaag).
+        if (sleep !== null && Math.sin(sleep) < 0) tekenSleepboom(e, i, plekX[i], plekY[i], sleep, nu);
         if (e.verborgen) ctx.globalAlpha = 0.5;
         // Een klap: de soldaat springt even naar voren (de vechtanimatie)
         const stoot = e.pose > 0 && e.houding === 'sla' ? e.kijkt * 3 : 0;
@@ -745,11 +822,8 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     }
     tekenEenhedenTot(Infinity);
 
-    // Wolkenschaduwen die over het land trekken, en vogels erboven.
-    if (sfeerAan) {
-      if (!sfeerLicht) sfeer.tekenWolken(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t, zon);
-      sfeer.tekenVogels(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t, zon);
-    }
+    // Vogels boven het land.
+    if (sfeerAan) sfeer.tekenVogels(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t, zon);
 
     // --- De schim, bovenop alles ------------------------------------------------
     // Groen: het bouwwerk, half doorzichtig. Rood: hier kan het niet, of
