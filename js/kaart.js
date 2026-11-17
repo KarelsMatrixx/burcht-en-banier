@@ -439,6 +439,14 @@ export function maakKaart(recept) {
           }
         }
       }
+      // Decor binnen en buiten de muren (detailronde): [naam, dx, dy] in dezelfde maat als de ringen.
+      // Alleen op een lege tegel zonder water; het pad naar de poort blijft vrij omdat het ontwerp dat bewaakt.
+      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN };
+      for (const [naam, dx, dy] of ontwerp.decor || []) {
+        const i = plek(dx, dy);
+        if (i < 0 || !DECOR[naam] || object[i] !== OBJECT.GEEN || grond[i] === GROND.WATER) continue;
+        object[i] = DECOR[naam];
+      }
       // De gracht: water rondom, met een dam van aarde voor elke poort van de buitenste ring.
       if (gracht) {
         const dammen = (ringen[ringen.length - 1].poorten || ['voor']).map((k) => POORTPLEK[k] || POORTPLEK.voor);

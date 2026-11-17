@@ -127,6 +127,29 @@ export function maakSfeer(kaart, landschap) {
     }
   }
 
+  // --- Windvaan -------------------------------------------------------------
+  // Een lichte wimpel op een dunne paal, die altijd met de wind mee wappert.
+  // (x, y) is de voet van de paal, bovenop een toren.
+  function tekenWimpel(ctx, x, y, t, zaad) {
+    const w = wind(x, y, t + zaad);
+    const top = y - 15;
+    ctx.strokeStyle = '#4a4036';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, top); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, top);
+    ctx.lineTo(x - 11 + w * 3, top + 1.5 + w * 1.2);
+    ctx.lineTo(x - 17 + w * 5, top + 4 + w * 2);
+    ctx.lineTo(x - 11 + w * 3, top + 6.5 + w * 1.2);
+    ctx.lineTo(x, top + 6);
+    ctx.closePath();
+    ctx.fillStyle = '#e9efe4';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(60, 80, 55, 0.55)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  }
+
   // --- Vogels ---------------------------------------------------------------
   // Twee vluchten die in een lange lus over de kaart trekken, met hun
   // schaduw op de grond.
@@ -174,5 +197,5 @@ export function maakSfeer(kaart, landschap) {
     ctx.stroke();
   }
 
-  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels };
+  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenWimpel };
 }

@@ -30,7 +30,34 @@
      ]
     }
    ],
-   "materiaal": "dor"
+   "materiaal": "dor",
+   "decor": [
+    [
+     "tent",
+     3,
+     -3
+    ],
+    [
+     "hooiberg",
+     -3,
+     3
+    ],
+    [
+     "hooiberg",
+     -4,
+     2
+    ],
+    [
+     "vaten",
+     3,
+     3
+    ],
+    [
+     "put",
+     -3,
+     -3
+    ]
+   ]
   },
   "rotsvesting": {
    "naam": "Rock fortress",
@@ -44,7 +71,35 @@
     }
    ],
    "materiaal": "rots",
-   "hoog": true
+   "hoog": true,
+   "wimpels": true,
+   "decor": [
+    [
+     "steen",
+     -8,
+     -6
+    ],
+    [
+     "steen",
+     8,
+     -7
+    ],
+    [
+     "steen",
+     -8,
+     6
+    ],
+    [
+     "steen",
+     7,
+     8
+    ],
+    [
+     "vaten",
+     3,
+     -3
+    ]
+   ]
   },
   "dubbel": {
    "naam": "Mining keep",
@@ -62,7 +117,39 @@
      ]
     }
    ],
-   "materiaal": "grijs"
+   "materiaal": "grijs",
+   "decor": [
+    [
+     "huis",
+     8,
+     -4
+    ],
+    [
+     "huis",
+     8,
+     4
+    ],
+    [
+     "vaten",
+     8,
+     -3
+    ],
+    [
+     "vaten",
+     9,
+     5
+    ],
+    [
+     "hooiberg",
+     -8,
+     3
+    ],
+    [
+     "hut",
+     -8,
+     -4
+    ]
+   ]
   },
   "jachtkamp": {
    "naam": "Hunting camp",
