@@ -1770,11 +1770,13 @@ function huisVariant(naam, def, variant) {
   lijn(ctx, dak[0][0], dak[0][1], dak[3][0], dak[3][1], tint(dakKleur, -0.4), 1.6);
   lijn(ctx, dak[0][0], dak[0][1], dak[1][0], dak[1][1], tint(dakKleur, -0.35), 1.1);
 
+  let rook = null;   // waar de rook uit de schoorsteen komt (sfeer.js), t.o.v. het ankerpunt
   if (def.schoorsteen) {
     const voet = tussen(tussen(dak[0], dak[3], 0.62), tussen(dak[1], dak[2], 0.62), 0.74);
     steenBlok(ctx, voet[0], voet[1], 3.2, 1.6, 8, '#9d9484', null);
+    rook = [voet[0] - cx, voet[1] - 9 - (h - 1)];
   }
-  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+  return { beeld: doek, b, h, ax: cx, ay: h - 1, rook };
 }
 
 export function tekenHuis(naam, def) {

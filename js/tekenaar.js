@@ -14,6 +14,7 @@
 import { CONFIG } from './config.js';
 import { GROND_ASSET, OBJECT_ASSET, OBJECT, GROND, aansluiting } from './kaart.js';
 import { maakNabewerking } from './nabewerking.js';
+import { maakSfeer, tekenSchaduw } from './sfeer.js';
 import { maakLandschap } from './landschap.js';
 import { wereldNaarRaster, HALVE_BREEDTE, HALVE_HOOGTE, TEGEL_HOOGTE } from './iso.js';
 import { tekenLadderOp } from './kunst.js';
@@ -191,6 +192,21 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
   const landschap = maakLandschap(kaart);
+  // Sfeer (stap G-A/B): echte slagschaduwen, wind, rook, water, wolken en vogels.
+  // Uit te zetten met CONFIG.beeld.sfeer = false, of ?sfeer=uit in de adresbalk.
+  const sfeerAan = (new URLSearchParams(location.search).get('sfeer') || (CONFIG.beeld.sfeer === false ? 'uit' : 'aan')) !== 'uit';
+  const sfeer = maakSfeer(kaart, landschap);
+  const basis = [1, 0, 0, 1, 0, 0];   // de cameratransformatie van dit beeld
+  // Zelfbewaking: blijft het beeld langer traag (onder ongeveer 30 beelden per
+  // seconde), dan gaan wind en wolken uit. Schaduwen, rook en water blijven.
+  let traagTijd = 0;
+  let sfeerLicht = false;
+  // Hoe sterk de wind elk soort object beweegt (scheefstand in radialen ongeveer).
+  const WIEG = new Float32Array(64);
+  WIEG[OBJECT.BOOM] = 0.035;
+  WIEG[OBJECT.BOOMGAARD] = 0.022;
+  WIEG[OBJECT.TARWEVELD] = 0.05;
+  WIEG[OBJECT.VLAGGEN] = 0.045;
   let pixelRatio = 1;
   let getekend = 0;
   let inPoort = 0;   // hoeveel eenheden er dit beeld in een poort zaten
@@ -280,7 +296,8 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         randBeelden[i] = randen;
 
         // Slagschaduw: de voet van het object, opgeschoven naar linksboven.
-        const hoog = objectOp(i) ? objectOp(i).hoogte : 0;
+        // (Met sfeer aan komt de schaduw uit het plaatje zelf, zie onder.)
+        const hoog = !sfeerAan && objectOp(i) ? objectOp(i).hoogte : 0;
         if (hoog > 0) {
           const wx = (x - y) * HALVE_BREEDTE;
           const wy = (x + y) * HALVE_HOOGTE;
@@ -301,9 +318,27 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     sctx.setTransform(SCHADUW_SCHAAL, 0, 0, SCHADUW_SCHAAL, -wereldLinks * SCHADUW_SCHAAL, 0);
     sctx.fillStyle = '#140e04';
     sctx.fill(schaduwen);
+    if (!sfeerAan) return;
+    // Echte slagschaduwen: het silhouet van elk plaatje, schuin over de grond
+    // gelegd. Alles in één doek, zodat overlappende schaduwen niet dubbel
+    // donker worden.
+    const sbasis = [SCHADUW_SCHAAL, 0, 0, SCHADUW_SCHAAL, -wereldLinks * SCHADUW_SCHAAL, 0];
+    for (let y = 0; y < kaart.hoogte; y++) {
+      for (let x = 0; x < kaart.breedte; x++) {
+        const o = objectBeeld[y * kaart.breedte + x];
+        if (!o || !o.beeld) continue;
+        const wx = (x - y) * HALVE_BREEDTE;
+        const wy = (x + y) * HALVE_HOOGTE;
+        const dx = o.spreiding ? (tegelToeval(x, y, 1) - 0.5) * 2 * o.spreiding : 0;
+        const dy = o.spreiding ? (tegelToeval(x, y, 2) - 0.5) * o.spreiding : 0;
+        tekenSchaduw(sctx, sbasis, o.beeld, o.b, o.h, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, wy + TEGEL_HOOGTE + dy);
+      }
+    }
+    sctx.setTransform(1, 0, 0, 1, 0, 0);
   }
   kiesPlaatjes();
   landschap.herbouw();
+  sfeer.herbouw();
 
   // Werkgeheugen voor de zichtbare eenheden, steeds hergebruikt.
   const zichtbaar = new Uint16Array(MAX_EENHEDEN);     // nummers van zichtbare eenheden
@@ -381,11 +416,18 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
 
     // Vanaf hier tekenen we in wereldpixels; de camera regelt de rest.
     const schaal = camera.zoom * pixelRatio;
-    ctx.setTransform(
-      schaal, 0, 0, schaal,
-      Math.round(canvas.width / 2 - camera.x * schaal),
-      Math.round(canvas.height / 2 - camera.y * schaal)
-    );
+    basis[0] = schaal;
+    basis[3] = schaal;
+    basis[4] = Math.round(canvas.width / 2 - camera.x * schaal);
+    basis[5] = Math.round(canvas.height / 2 - camera.y * schaal);
+    ctx.setTransform(basis[0], 0, 0, basis[3], basis[4], basis[5]);
+    const t = nu / 1000;   // seconden, voor wind, rook en water
+    const nachtNu = staat.nacht ? Math.min(1, staat.nacht()) : 0;
+    const zon = 1 - nachtNu;   // schaduwen en wolken verdwijnen in het donker
+    if (sfeerAan && !sfeerLicht && hekDt > 0) {
+      traagTijd = hekDt > 0.034 ? traagTijd + hekDt : Math.max(0, traagTijd - hekDt * 2);
+      if (traagTijd > 4) sfeerLicht = true;
+    }
     ctx.imageSmoothingEnabled = !CONFIG.beeld.pixelArt;
 
     // Welk stuk van de wereld is in beeld?
@@ -410,6 +452,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     // --- Ronde 1: grond -----------------------------------------------------
     getekend = 0;
     landschap.teken(ctx, zichtLinks, zichtBoven, zichtRechts, grondOnder);
+    if (sfeerAan) sfeer.tekenGlinster(ctx, zichtLinks, zichtBoven, zichtRechts, grondOnder, t);
     for (let y = minY; y <= maxY; y++) {
       for (let x = minX; x <= maxX; x++) {
         const wx = (x - y) * HALVE_BREEDTE;   // bovenste punt van de ruit
@@ -439,7 +482,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     const sb = Math.min(wereldLinks + wereldBreed, rechtsOnder.x) - sx;
     const sh = Math.min(wereldHoog, rechtsOnder.y) - sy;
     if (sb > 0 && sh > 0) {
-      ctx.globalAlpha = 0.3;
+      ctx.globalAlpha = sfeerAan ? 0.36 * zon : 0.3;
       ctx.drawImage(
         schaduwDoek,
         (sx - wereldLinks) * SCHADUW_SCHAAL, sy * SCHADUW_SCHAAL, sb * SCHADUW_SCHAAL, sh * SCHADUW_SCHAAL,
@@ -590,6 +633,34 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     const rij = zichtbaar.subarray(0, aantal);
     rij.sort(opDiepte);
 
+    // Welk plaatje een eenheid nu laat zien (lopen, hakken, slaan).
+    const kiesBeeld = (e, i, s) => {
+      // Een werker die hakt of iets draagt heeft daar eigen plaatjes voor,
+      // net als een soldaat die slaat of schiet.
+      const eigen = e.houding && s.houdingen ? s.houdingen[e.houding] : null;
+      const set = eigen || s;
+      const beelden = e.kijkt < 0 ? set.links : set.rechts;
+      let beeld = 0;
+      if (!eigen) beeld = e.loopt ? Math.floor(nu / 115 + i * 1.3) % beelden.length : 0;
+      else if (e.houding === 'hak') beeld = Math.floor(nu / 210 + i) % beelden.length;
+      else if (e.houding === 'sla' || e.houding === 'schiet') beeld = e.pose ? 1 : 0;
+      else if (e.loopt) beeld = Math.floor(nu / 115 + i * 1.3) % beelden.length;
+      return beelden[beeld];
+    };
+
+    // Schaduwen van de eenheden op de grond, onder alles wat rechtop staat.
+    if (sfeerAan && zon > 0) {
+      ctx.globalAlpha = 0.3 * zon;
+      for (let k = 0; k < aantal; k++) {
+        const i = rij[k];
+        const e = eenheden[i];
+        if (e.hoogte > 0) continue;
+        const s = soldaten[e.soort][e.team];
+        tekenSchaduw(ctx, basis, kiesBeeld(e, i, s), s.b, s.h, plekX[i] - s.ax, plekY[i] - s.ay, plekY[i]);
+      }
+      ctx.globalAlpha = 1;
+    }
+
     // --- Ronde 2: alles wat rechtop staat, van achter naar voren ---------------
     let volgende = 0;   // eerstvolgende eenheid in de rij
     const tekenEenhedenTot = (grens) => {
@@ -605,22 +676,13 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
           ctx.ellipse(plekX[i], plekY[i], 11, 5.5, 0, 0, Math.PI * 2);
           ctx.stroke();
         }
-        // Een werker die hakt of iets draagt heeft daar eigen plaatjes voor,
-        // net als een soldaat die slaat of schiet.
-        const eigen = e.houding && s.houdingen ? s.houdingen[e.houding] : null;
-        const set = eigen || s;
-        const beelden = e.kijkt < 0 ? set.links : set.rechts;
-        let beeld = 0;
-        if (!eigen) beeld = e.loopt ? Math.floor(nu / 115 + i * 1.3) % beelden.length : 0;
-        else if (e.houding === 'hak') beeld = Math.floor(nu / 210 + i) % beelden.length;
-        else if (e.houding === 'sla' || e.houding === 'schiet') beeld = e.pose ? 1 : 0;
-        else if (e.loopt) beeld = Math.floor(nu / 115 + i * 1.3) % beelden.length;
+        const plaatje = kiesBeeld(e, i, s);
         // Een verborgen sluipmoordenaar: van jou half doorzichtig, van rood
         // alleen van dichtbij te zien (dat bepaalt strijd.js; hier vaag).
         if (e.verborgen) ctx.globalAlpha = 0.5;
         // Een klap: de soldaat springt even naar voren (de vechtanimatie)
         const stoot = e.pose > 0 && e.houding === 'sla' ? e.kijkt * 3 : 0;
-        ctx.drawImage(beelden[beeld], plekX[i] - s.ax + stoot, plekY[i] - s.ay - (stoot ? 1 : 0), s.b, s.h);
+        ctx.drawImage(plaatje, plekX[i] - s.ax + stoot, plekY[i] - s.ay - (stoot ? 1 : 0), s.b, s.h);
         ctx.globalAlpha = 1;
         // Wie geraakt is, heeft een balkje boven zijn hoofd.
         if (e.levenMax && e.leven < e.levenMax) balk(plekX[i], plekY[i] - s.ay - 5, 14, e.leven / e.levenMax);
@@ -666,11 +728,28 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
           ctx.globalAlpha = soort === OBJECT.BOOM ? 0.18 : 0.26;
           ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
           ctx.globalAlpha = 1;
+        } else if (sfeerAan) {
+          // Wind: bomen, graan en vlaggen hellen mee, vanaf de voet.
+          const wieg = sfeerLicht ? 0 : WIEG[kaart.object[y * kaart.breedte + x]];
+          if (wieg) {
+            const k = wieg * sfeer.wind(wx, wy, t + tegelToeval(x, y, 6) * 0.6);
+            const voet = wy + TEGEL_HOOGTE + dy;
+            ctx.setTransform(basis[0], 0, basis[0] * k, basis[3], basis[4] - basis[0] * k * voet, basis[5]);
+            ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
+            ctx.setTransform(basis[0], 0, 0, basis[3], basis[4], basis[5]);
+          } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
+          if (o.rook) sfeer.tekenRook(ctx, wx + dx + o.rook[0], wy + TEGEL_HOOGTE + dy + o.rook[1], t, tegelToeval(x, y, 7));
         } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
         if (l && !(l.dx < 0 || l.dy < 0)) tekenLadder(l);
       }
     }
     tekenEenhedenTot(Infinity);
+
+    // Wolkenschaduwen die over het land trekken, en vogels erboven.
+    if (sfeerAan) {
+      if (!sfeerLicht) sfeer.tekenWolken(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t, zon);
+      sfeer.tekenVogels(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t, zon);
+    }
 
     // --- De schim, bovenop alles ------------------------------------------------
     // Groen: het bouwwerk, half doorzichtig. Rood: hier kan het niet, of
@@ -913,5 +992,5 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     return asset && asset.varianten ? asset.varianten.indexOf(objectBeeld[i]) : -1;
   };
 
-  return { zetHekDoel: (f) => { hekDoel = f; }, pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, zetDoorzicht: (aan) => { doorzicht = !!aan; }, doorzicht: () => doorzicht, aantalGetekend: () => getekend, aantalInPoort: () => inPoort };
+  return { zetHekDoel: (f) => { hekDoel = f; }, pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, zetDoorzicht: (aan) => { doorzicht = !!aan; }, doorzicht: () => doorzicht, aantalGetekend: () => getekend, aantalInPoort: () => inPoort, sfeerLicht: () => sfeerLicht };
 }

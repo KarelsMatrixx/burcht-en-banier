@@ -3,7 +3,7 @@
 // van de code hoeft te zijn.
 
 export const CONFIG = {
-  versie: '0.65.4',
+  versie: '0.66.0',
   stap: 41,
   verhaalbeeldSeconden: 20,   // zo lang staat het verhaalbeeld voor een level in beeld
 
@@ -19,6 +19,7 @@ export const CONFIG = {
   beeld: {
     maxPixelRatio: 2,        // lager = sneller, hoger = scherper
     achtergrond: '#14130f',
+    sfeer: true,             // schaduwen in de vorm van het plaatje, wind, rook, water, wolken, vogels
     nabewerking: 'uit',      // 'uit', 'laag' of 'hoog': kleurgrading, gloed, scherptediepte
     pixelArt: false,         // true = harde pixels, voor pixel art sprites
   },

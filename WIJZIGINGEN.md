@@ -581,3 +581,14 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 
 ## 0.65.4: nieuw ontwerp voor de storehouse
 - De storehouse is geen standaard huisje meer maar een pakhuis (kunst.js tekenPakhuis, vorm "pakhuis" in assets.json): stenen onderbouw, houten bovenbouw, steil dak, open deur met zakken, een luikje onder de nok. Buiten staan stammen (links), een hoop steen (rechts) en een mandje appels voor de deur: de drie dingen die je opslaat.
+
+## 0.66.0: licht, schaduw en een levende wereld (grafisch A en B)
+- Echte slagschaduwen: elk gebouw, elke boom, rots en soldaat werpt een schaduw in de vorm van zijn eigen plaatje (kantelen, daken, kruinen), lang en schuin naar linksvoor, zoals bij een lage avondzon (sfeer.js `tekenSchaduw`, tekenaar.js). Vaste objecten staan samen op één schaduwdoek, eenheden krijgen per beeld hun schaduw. 's Nachts (proloog) verdwijnen de schaduwen.
+- Wind: bomen, boomgaarden, graan en feestvlaggen wiegen in een golf die over de kaart rolt, met vlagen.
+- Rook uit de schoorstenen van huizen, woningen en de bakkerij (kunst.js geeft de plek van de schoorsteen mee als `rook`).
+- Glinsteringen op het water.
+- Wolkenschaduwen die langzaam over het land trekken, en twee vluchten vogels met hun schaduw op de grond.
+- Zelfbewaking: blijft het beeld langer dan 4 seconden onder ongeveer 30 beelden per seconde, dan gaan wind en wolken vanzelf uit.
+- Uit te zetten met `CONFIG.beeld.sfeer = false` of `?sfeer=uit` in de adresbalk (dan de oude schaduwen).
+- Proef, standaard uit: nabewerking.js (kleurgrading, gloed, scherptediepte), aan te zetten met `?nabewerking=laag` of `hoog`.
+- Te meten op de iPhone: framekosten (in de testbrowser zonder GPU circa 18 naar 27 ms per beeld) en of de zelfbewaking niet te vroeg ingrijpt.
