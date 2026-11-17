@@ -47,7 +47,7 @@ await p.evaluate(async (pl) => { window.__iso = await import('/js/iso.js'); cons
 const sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.zetZoom(1); return s.camera.wereldNaarScherm(w.x, w.y + 4); }, plek);
 await p.touchscreen.tap(sp.x, sp.y); await p.waitForTimeout(300);
 const kn = await p.$$eval('#leger-opleiden button', (k) => k.map((x) => x.dataset.soldaat));
-check('kazerne level 1: ridder, boog, ram, ladder', kn.sort().join() === 'boogschutter,ladder,ram,ridder', kn.join());
+check('kazerne level 1: ridder, boog, ladder (de ram staat in de siege-barak)', kn.sort().join() === 'boogschutter,ladder,ridder', kn.join());
 // level 2 na winst 1: kopermijn erbij (beloning Reinout), nog geen kruisboog
 const zet = async (klaar, missie) => { await p.evaluate(([k, m]) => { localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: k })); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: m })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); }, [klaar, missie]); await p.reload(); await wacht(); };
 const knoppen = () => p.$$eval('#bouw-knoppen button', (k) => k.map((x) => x.textContent));

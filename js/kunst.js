@@ -1869,66 +1869,44 @@ export function tekenSteengroeve(naam, def) {
 // De magiertoren (mystieke kazerne): een ronde stenen toren met een spits
 // paars dak, een gloeiend raam, lila rook en een banier met een ster.
 export function tekenMagiertoren(naam, def) {
-  const b = TB + 6;
-  const h = TH + 92;
+  // De mystieke kazerne: een ronde sjamaanhut van huid met gewei, tekens en een vuurplaats.
+  const b = 84;
+  const h = TH + 70;
   const { doek, ctx } = nieuwDoek(b, h);
   const cx = b / 2;
   const cy = h - 1 - HH;
-  const r = 15;
-  const hoog = 44;
-  ovaal(ctx, cx + 3, cy + 3, 26, 11, 'rgba(0,0,0,0.25)');
-  // Voet en ronde muur
-  ovaal(ctx, cx, cy, r + 3, (r + 3) / 2, tint(def.kleur, -0.2));
-  blok(ctx, cx - r, cy - hoog, r * 2, hoog, def.kleur);
-  ovaal(ctx, cx, cy, r, r / 2, def.kleur);
-  const grad = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
-  grad.addColorStop(0, 'rgba(0,0,0,0.35)');
-  grad.addColorStop(0.55, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(255,255,255,0.12)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(cx - r, cy - hoog, r * 2, hoog);
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, r, r / 2, 0, 0, Math.PI);
-  ctx.fill();
-  // Stenen voegen
-  for (let rij = 1; rij < 8; rij++) {
-    const y = cy - rij * 5.5;
-    ctx.strokeStyle = 'rgba(40,36,30,0.25)';
-    ctx.lineWidth = 0.6;
-    ctx.beginPath();
-    ctx.ellipse(cx, y, r, r / 2, 0, 0.15, Math.PI - 0.15);
-    ctx.stroke();
-  }
-  // Deur en gloeiende ramen
-  ctx.fillStyle = '#2a1d14';
-  ctx.beginPath();
-  ctx.ellipse(cx + 3, cy + 1, 3.6, 5.5, 0, Math.PI, Math.PI * 2);
-  ctx.fill();
-  blok(ctx, cx - 0.6, cy + 1, 7.2, 5, '#2a1d14');
-  for (const [x, y] of [[cx + 4, cy - 24], [cx - 6, cy - 34]]) {
-    ovaal(ctx, x, y, 3.6, 4.4, 'rgba(180,120,255,0.35)');
-    blok(ctx, x - 1.5, y - 2.6, 3, 5, '#e8c8ff');
-    blok(ctx, x - 0.2, y - 2.6, 0.4, 5, '#5a3a8a');
-  }
-  // Spits dak
-  const top = cy - hoog;
-  vlak(ctx, [[cx - r - 3, top + 2], [cx, top - 36], [cx + r + 3, top + 2]], def.dak);
-  vlak(ctx, [[cx, top - 36], [cx + r + 3, top + 2], [cx + 4, top + 4]], tint(def.dak, 0.18));
-  ovaal(ctx, cx, top + 2, r + 3, 4, tint(def.dak, -0.25));
-  // Banier met ster op de punt
-  lijn(ctx, cx, top - 36, cx, top - 48, '#2b2118', 1);
-  vlak(ctx, [[cx, top - 48], [cx + 10, top - 46], [cx, top - 42]], '#5a3aa8');
-  ctx.fillStyle = '#ffe28a';
-  ctx.beginPath();
-  for (let i = 0; i < 10; i++) {
-    const hoek = -Math.PI / 2 + (i * Math.PI) / 5;
-    const rr = i % 2 ? 0.9 : 2;
-    ctx.lineTo(cx + 4 + Math.cos(hoek) * rr, top - 45.4 + Math.sin(hoek) * rr);
-  }
-  ctx.fill();
-  // Lila rook uit een schoorsteentje
-  blok(ctx, cx + 7, top - 14, 2.6, 6, tint(def.kleur, -0.1));
-  for (const [dx, dy, rr] of [[8.5, -17, 2], [10, -21, 2.6], [9, -25.5, 3]]) ovaal(ctx, cx + dx, top + dy, rr, rr * 0.85, 'rgba(200,170,255,0.5)');
+  const r = 20;
+  const hh = 22;
+  const top = cy - hh;
+  const gloed = (x, y, rr) => {
+    ovaal(ctx, x, y, rr * 1.9, rr * 1.9, 'rgba(255,170,70,0.14)');
+    ovaal(ctx, x, y, rr * 1.25, rr * 1.25, 'rgba(255,170,70,0.26)');
+  };
+  ovaal(ctx, cx + 1, cy + 2, 34, 15, 'rgba(0,0,0,0.3)'); ovaal(ctx, cx, cy, 30, 13, '#6a5a3a');
+  blok(ctx, cx - r, top, r * 2, hh, '#a88a62'); ovaal(ctx, cx, cy, r, r / 2, '#a88a62');
+  const gr = ctx.createLinearGradient(cx - r, 0, cx + r, 0); gr.addColorStop(0, 'rgba(0,0,0,0.35)'); gr.addColorStop(0.55, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(255,255,255,0.12)'); ctx.fillStyle = gr; ctx.fillRect(cx - r, top, r * 2, hh); ctx.beginPath(); ctx.ellipse(cx, cy, r, r / 2, 0, 0, Math.PI); ctx.fill();
+  for (let k = -3; k <= 3; k++) lijn(ctx, cx + k * 5.6, top + 0.5, cx + k * 5.6, cy + Math.sqrt(1 - (k * 5.6 / r) ** 2) * r / 2 - 0.5, 'rgba(50,30,10,0.35)', 0.6);
+  // geschilderde tekens
+  ctx.strokeStyle = '#b8401a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cx - 15, cy - 4); for (let k = 1; k < 6; k++) ctx.lineTo(cx - 15 + k * 2.4, cy - 4 + (k % 2 ? -3.5 : 0)); ctx.stroke();
+  ctx.strokeStyle = '#e8e0cc'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(cx - 9, cy - 12, 3.2, 3.2, 0, 0, Math.PI * 2); ctx.stroke(); lijn(ctx, cx - 9, cy - 15.2, cx - 9, cy - 8.8, '#e8e0cc', 0.8);
+  // deurflap
+  vlak(ctx, [[cx + 3, cy + 9], [cx + 12, cy + 5.5], [cx + 10, cy - 14], [cx + 6, cy - 12.5]], '#1e130a'); vlak(ctx, [[cx + 12, cy + 5.5], [cx + 15.5, cy + 3.5], [cx + 13, cy - 14], [cx + 10, cy - 14]], '#8a6a48'); gloed(cx + 7, cy - 2, 3.4);
+  // kegeldak
+  vlak(ctx, [[cx - r - 2, top + 1], [cx, top - 15], [cx + r + 2, top + 1]], '#8a6a48'); vlak(ctx, [[cx, top - 15], [cx + r + 2, top + 1], [cx + 5, top + 4]], '#a68460'); ovaal(ctx, cx, top + 1.5, r + 2, 4.4, '#6a4e32');
+  for (let k = 1; k < 6; k++) lijn(ctx, cx, top - 15, cx - r - 2 + k * 7, top + 2.4, 'rgba(40,24,8,0.3)', 0.6);
+  // rookgat en rook
+  for (const [dx, dy, rr] of [[9, -20, 2.2], [11, -26, 2.8], [9, -33, 3.4]]) ovaal(ctx, cx + dx, top + dy, rr, rr * 0.85, 'rgba(150,150,150,0.4)');
+  // gewei met veren en botten op de top
+  const tp = [cx, top - 15]; lijn(ctx, ...tp, tp[0], tp[1] - 10, '#3a2614', 1.6);
+  for (const s of [-1, 1]) { lijn(ctx, tp[0], tp[1] - 8, tp[0] + s * 7, tp[1] - 14, '#d8d0b8', 1.3); lijn(ctx, tp[0] + s * 4, tp[1] - 11, tp[0] + s * 6, tp[1] - 17, '#d8d0b8', 1); lijn(ctx, tp[0] + s * 7, tp[1] - 14, tp[0] + s * 10, tp[1] - 16, '#d8d0b8', 0.9); }
+  for (const [x, l, kl] of [[-3, 7, '#b8401a'], [3, 5, '#3f8a52']]) { lijn(ctx, tp[0] + x, tp[1] - 5, tp[0] + x, tp[1] - 5 + l, '#c8b48a', 0.6); vlak(ctx, [[tp[0] + x - 1, tp[1] - 5 + l], [tp[0] + x + 1, tp[1] - 5 + l], [tp[0] + x, tp[1] - 5 + l + 4]], kl); }
+  lijn(ctx, tp[0] + 1, tp[1] - 17, tp[0] + 1, tp[1] - 25, '#1f1912', 1.1);
+  vlak(ctx, [[tp[0] + 1, tp[1] - 25], [tp[0] + 12, tp[1] - 22.6], [tp[0] + 7, tp[1] - 21.4], [tp[0] + 11, tp[1] - 20], [tp[0] + 4, tp[1] - 18.6], [tp[0] + 1, tp[1] - 19]], '#2f5fc4');
+  ovaal(ctx, tp[0] + 1, tp[1] - 25.6, 0.9, 0.9, '#c8c8cc');
+  // vuurplaats met stenen en totem
+  const f = [cx - 22, cy + 9]; for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; ovaal(ctx, f[0] + Math.cos(a) * 5, f[1] + Math.sin(a) * 2.4, 1.2, 0.8, '#7a746c'); }
+  gloed(f[0], f[1] - 3, 4); vlak(ctx, [[f[0] - 2.4, f[1]], [f[0] - 1.4, f[1] - 5], [f[0], f[1] - 3], [f[0] + 0.4, f[1] - 7], [f[0] + 1.6, f[1] - 3.4], [f[0] + 2.6, f[1]]], '#e8841a'); vlak(ctx, [[f[0] - 1, f[1]], [f[0], f[1] - 3.4], [f[0] + 1.2, f[1]]], '#ffcb5a');
+  const tt = [cx + 24, cy + 6]; lijn(ctx, tt[0], tt[1], tt[0], tt[1] - 24, '#4a3322', 3); for (const [y, kl] of [[-6, '#b8401a'], [-12, '#e8e0cc'], [-18, '#3f8a52']]) blok(ctx, tt[0] - 2.4, tt[1] + y, 4.8, 4, kl); ovaal(ctx, tt[0], tt[1] - 25, 2.4, 2.4, '#d8d0b8');
   return { beeld: doek, b, h, ax: cx, ay: h - 1 };
 }
 
@@ -1969,6 +1947,202 @@ export function tekenKazerne(naam, def) {
   vlak(ctx, [[voet[0] + 0.6, voet[1] - 17.6], [voet[0] + 6.8, voet[1] - 16.6], [voet[0] + 0.6, voet[1] - 15.6]], '#f1ead6');
   ovaal(ctx, voet[0], voet[1] - 21.6, 1.2, 1.2, '#d9b64a');
   return huis;
+}
+
+// De belegeringswerkplaats (de aparte kazerne voor ram, katapult en belegeringstoren). Anders dan de
+// stenen kazerne en de open zagerij: een erf met donkere balken en ijzer, een half afgebouwd
+// belegeringstoren-skelet dat boven alles uitsteekt, een ram aan kettingen onder een afdak,
+// een stapel balken, een los wiel en een ketel pek. Teamkleur zit in de wimpel boven op de toren.
+export function tekenBelegeringswerkplaats(naam, def) {
+  const b = TB + 8;
+  const h = TH + 76;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const L = [cx - 25, cy];
+  const R = [cx + 25, cy];
+  const B = [cx, cy + 12.5];
+  const T = [cx, cy - 12.5];
+  const op = ([x, y], hoog) => [x, y - hoog];
+  const toeval = toevalVoor(naam);
+  const donker = '#2f2013';
+  const eik = def.wand || '#5b4128';
+  const dakKleur = def.dak || '#7a3b2a';
+  const ijzer = '#5d6068';
+  const teamKleur = def.kleur || '#2f5fc4';
+
+  ovaal(ctx, cx + 1, cy + 2, 31, 14, 'rgba(0,0,0,0.28)');
+
+  // Erf: aangestampte aarde met sporen van wielen en houtkrullen
+  vlak(ctx, [L, B, R, T], '#76603f');
+  vlak(ctx, [L, B, R, T], 'rgba(40,25,10,0.12)');
+  for (const t of [0.3, 0.55, 0.8]) lijn(ctx, ...tussen(L, T, t * 0.9), ...tussen(B, R, t * 0.9), 'rgba(40,26,12,0.28)', 0.9);
+  for (let i = 0; i < 14; i++) {
+    const x = cx - 20 + toeval() * 40;
+    const y = cy - 6 + toeval() * 16;
+    if (Math.abs(x - cx) / 25 + Math.abs(y - cy) / 12.5 > 0.92) continue;
+    blok(ctx, x, y, 1.6 + toeval() * 1.4, 0.7, toeval() < 0.5 ? 'rgba(232,200,140,0.75)' : 'rgba(120,84,44,0.7)');
+  }
+
+  // Lage stenen voet met donkere planken erboven, langs de twee achterkanten
+  const wand = 11;
+  vlak(ctx, [L, T, op(T, wand), op(L, wand)], tint(eik, -0.3));
+  vlak(ctx, [T, R, op(R, wand), op(T, wand)], tint(eik, -0.02));
+  for (let k = 1; k < 9; k++) {
+    const a = tussen(L, T, k / 9);
+    const c = tussen(T, R, k / 9);
+    lijn(ctx, a[0], a[1], a[0], a[1] - wand, 'rgba(20,10,2,0.38)', 0.6);
+    lijn(ctx, c[0], c[1], c[0], c[1] - wand, 'rgba(20,10,2,0.3)', 0.6);
+  }
+  vlak(ctx, [L, T, op(T, 3), op(L, 3)], '#6c6a64');
+  vlak(ctx, [T, R, op(R, 3), op(T, 3)], '#8a877d');
+  for (const [P, Q] of [[L, T], [T, R]]) {
+    lijn(ctx, ...op(P, 7), ...op(Q, 7), ijzer, 1.1);   // ijzeren band over de planken
+    lijn(ctx, ...op(P, 3), ...op(Q, 3), donker, 0.8);
+  }
+  lijn(ctx, ...op(L, wand), ...op(T, wand), donker, 1.3);
+  lijn(ctx, ...op(T, wand), ...op(R, wand), donker, 1.3);
+
+  // Het skelet van een belegeringstoren, achter in het midden: vier palen, drie verdiepingen
+  const cT = [cx - 5, cy - 3];
+  const bw = 9.5;           // halve breedte van het grondvlak
+  const hoogte = 56;
+  const Lb = [cT[0] - bw, cT[1]];
+  const Rb = [cT[0] + bw, cT[1]];
+  const Bb = [cT[0], cT[1] + bw / 2];
+  const Tb = [cT[0], cT[1] - bw / 2];
+  const verd = [0, 17, 34, hoogte];
+  // Donkere binnenkant achter de open verdiepingen
+  vlak(ctx, [op(Lb, 17), op(Tb, 17), op(Tb, hoogte), op(Lb, hoogte)], 'rgba(22,12,4,0.78)');
+  vlak(ctx, [op(Tb, 17), op(Rb, 17), op(Rb, hoogte), op(Tb, hoogte)], 'rgba(22,12,4,0.62)');
+  // Een ladder in het skelet, tegen de achterwand
+  for (const dx of [-2, 2]) lijn(ctx, ...op([Tb[0] + dx - 3, Tb[1] + 2 - dx / 2], 17), ...op([Tb[0] + dx - 3, Tb[1] + 2 - dx / 2], 34), '#a07a48', 0.9);
+  for (let r = 0; r < 6; r++) {
+    const y = 18 + r * 2.8;
+    lijn(ctx, ...op([Tb[0] - 5, Tb[1] + 3], y), ...op([Tb[0] - 1, Tb[1] + 1], y), '#a07a48', 0.7);
+  }
+  // Vloeren tussen de verdiepingen (platen van planken, zichtbaar als rand)
+  for (const v of [17, 34]) {
+    vlak(ctx, [op(Lb, v), op(Bb, v), op(Rb, v), op(Tb, v)], tint(eik, -0.1));
+    lijn(ctx, ...op(Lb, v), ...op(Bb, v), tint(eik, 0.18), 1);
+    lijn(ctx, ...op(Bb, v), ...op(Rb, v), tint(eik, 0.3), 1);
+  }
+  // Onderste verdieping: dichtgetimmerd met planken
+  vlak(ctx, [Lb, Bb, op(Bb, 17), op(Lb, 17)], tint(eik, -0.28));
+  vlak(ctx, [Bb, Rb, op(Rb, 17), op(Bb, 17)], tint(eik, 0.02));
+  for (let k = 1; k < 9; k++) {
+    const a = tussen(Lb, Bb, k / 9);
+    const c = tussen(Bb, Rb, k / 9);
+    lijn(ctx, a[0], a[1], a[0], a[1] - 17, 'rgba(20,10,2,0.4)', 0.6);
+    lijn(ctx, c[0], c[1], c[0], c[1] - 17, 'rgba(20,10,2,0.3)', 0.6);
+  }
+  lijn(ctx, ...op(tussen(Lb, Bb, 0.5), 8), ...op(tussen(Lb, Bb, 1), 8), ijzer, 1);
+  lijn(ctx, ...op(tussen(Bb, Rb, 0), 8), ...op(tussen(Bb, Rb, 0.5), 8), ijzer, 1);
+  // Midden: kruisen op de rechterkant, bovenste verdieping nog helemaal open
+  lijn(ctx, ...op(Bb, 17), ...op(Rb, 34), '#8a6a40', 1.3);
+  lijn(ctx, ...op(Rb, 17), ...op(Bb, 34), '#8a6a40', 1.3);
+  lijn(ctx, ...op(Lb, 17), ...op(Bb, 34), tint('#8a6a40', -0.3), 1.3);
+  lijn(ctx, ...op(Bb, 17), ...op(Lb, 34), tint('#8a6a40', -0.3), 1.3);
+  // Een neergelaten valbrug, half opgehaald, aan kettingen op de bovenste verdieping
+  vlak(ctx, [op(tussen(Bb, Rb, 0.12), 36), op(tussen(Bb, Rb, 0.88), 36), op(tussen(Bb, Rb, 0.88), 51), op(tussen(Bb, Rb, 0.12), 51)], tint(eik, 0.12));
+  for (let k = 1; k < 5; k++) {
+    const a = tussen(Bb, Rb, 0.12 + 0.19 * k);
+    lijn(ctx, a[0], a[1] - 36, a[0], a[1] - 51, 'rgba(20,10,2,0.35)', 0.6);
+  }
+  lijn(ctx, ...op(tussen(Bb, Rb, 0.12), 51), ...op(tussen(Bb, Rb, 0.88), 51), ijzer, 1);
+  // Palen en balken
+  const paal = (P, kleur) => lijn(ctx, P[0], P[1], P[0], P[1] - hoogte, kleur, 2.4);
+  paal(Tb, tint(eik, -0.45));
+  paal(Lb, tint(eik, -0.2));
+  paal(Rb, tint(eik, 0.2));
+  paal(Bb, tint(eik, 0.05));
+  lijn(ctx, Bb[0] + 0.7, Bb[1], Bb[0] + 0.7, Bb[1] - hoogte, 'rgba(255,235,190,0.22)', 0.7);
+  for (const v of verd) {
+    lijn(ctx, ...op(Lb, v), ...op(Bb, v), tint(eik, -0.12), 1.8);
+    lijn(ctx, ...op(Bb, v), ...op(Rb, v), tint(eik, 0.22), 1.8);
+    if (v > 0) { ijzer && ctx; }
+  }
+  // Kantelen op de bovenste rand
+  for (const [P, Q, k] of [[Lb, Bb, -0.1], [Bb, Rb, 0.25]]) {
+    for (let i = 0; i < 4; i++) {
+      const m = tussen(P, Q, (i + 0.35) / 4);
+      blok(ctx, m[0] - 1.3, m[1] - hoogte - 3.4, 2.6, 3.4, tint(eik, k));
+    }
+  }
+  // Wimpel in teamkleur op de hoogste paal
+  const top = op(Bb, hoogte + 3);
+  lijn(ctx, top[0], top[1], top[0], top[1] - 12, '#2b2118', 1.1);
+  vlak(ctx, [[top[0], top[1] - 12], [top[0] + 11, top[1] - 9.6], [top[0] + 4, top[1] - 8.2], [top[0] + 11, top[1] - 5.6], [top[0], top[1] - 6]], teamKleur);
+  vlak(ctx, [[top[0], top[1] - 12], [top[0] + 11, top[1] - 9.6], [top[0], top[1] - 9.4]], 'rgba(255,255,255,0.2)');
+  ovaal(ctx, top[0], top[1] - 12.6, 0.9, 0.9, '#d8b24a');
+  // Wielen onderaan
+  const wiel = (x, y, rx, ry) => {
+    ovaal(ctx, x, y, rx + 0.7, ry + 0.7, '#241a10');
+    ovaal(ctx, x, y, rx, ry, '#7d5a34');
+    ovaal(ctx, x, y, rx * 0.35, ry * 0.35, ijzer);
+    lijn(ctx, x, y - ry, x, y + ry, 'rgba(30,18,6,0.5)', 0.6);
+  };
+  wiel(...tussen(Lb, Bb, 0.5).map((v, i) => (i ? v - 1.4 : v)), 1.7, 3.2);
+  wiel(...tussen(Bb, Rb, 0.5).map((v, i) => (i ? v - 1.4 : v)), 1.7, 3.2);
+
+  // Rechtsvoor: een ram aan kettingen onder een afdak
+  const rc = [cx + 12, cy + 3];
+  const dakB = 9.5;
+  // staanders van het afdak
+  for (const [dx, dy] of [[-dakB, 0], [dakB, 0], [0, dakB / 2]]) {
+    lijn(ctx, rc[0] + dx, rc[1] + dy, rc[0] + dx, rc[1] + dy - 22, tint(eik, dx < 0 ? -0.25 : dx > 0 ? 0.1 : -0.05), 1.7);
+  }
+  // de ram: een zware stam met ijzeren kop, hangend aan twee kettingen
+  const ramA = [rc[0] - 9, rc[1] - 6.5];
+  const ramB = [rc[0] + 5.5, rc[1] + 1.6];
+  for (const t of [0.28, 0.72]) {
+    const m = tussen(ramA, ramB, t);
+    for (let k = 0; k < 5; k++) ovaal(ctx, m[0], m[1] - 14 + k * 2.4, 0.7, 1.2, k % 2 ? '#8e929c' : '#3a3b42');
+  }
+  lijn(ctx, ramA[0], ramA[1], ramB[0], ramB[1], '#3a2614', 5.2);
+  lijn(ctx, ramA[0], ramA[1] - 1.5, ramB[0], ramB[1] - 1.5, '#8a6338', 2.2);
+  lijn(ctx, ramA[0], ramA[1] - 2.4, ramB[0], ramB[1] - 2.4, 'rgba(255,230,180,0.3)', 0.8);
+  for (const t of [0.12, 0.5, 0.88]) {
+    const m = tussen(ramA, ramB, t);
+    lijn(ctx, m[0], m[1] - 3, m[0], m[1] + 2.8, ijzer, 1.2);
+  }
+  vlak(ctx, [[ramB[0], ramB[1] - 3.1], [ramB[0] + 5.6, ramB[1] + 0.9], [ramB[0], ramB[1] + 3.1]], '#9aa0aa');
+  vlak(ctx, [[ramB[0], ramB[1] - 3.1], [ramB[0] + 5.6, ramB[1] + 0.9], [ramB[0] + 1, ramB[1] - 0.4]], 'rgba(255,255,255,0.35)');
+  // het afdak zelf: een schuin dak van donkerrode planken, met een dakrand
+  const d1 = op([rc[0] - dakB, rc[1]], 22);
+  const d2 = op([rc[0], rc[1] - dakB / 2], 26);
+  const d3 = op([rc[0] + dakB, rc[1]], 22);
+  const d4 = op([rc[0], rc[1] + dakB / 2], 18);
+  vlak(ctx, [d1, d2, d3, d4], dakKleur);
+  vlak(ctx, [d1, d4, d3, op([rc[0] + dakB, rc[1]], 20.5), op([rc[0], rc[1] + dakB / 2], 16.5), op([rc[0] - dakB, rc[1]], 20.5)], 'rgba(0,0,0,0.3)');
+  vlak(ctx, [d4, d3, d2, op([rc[0], rc[1] - dakB / 2], 24.6), op([rc[0] + dakB, rc[1]], 20.6)], 'rgba(255,230,190,0.14)');
+  for (let k = 1; k < 5; k++) {
+    lijn(ctx, ...tussen(d1, d4, k / 5), ...tussen(d2, d3, k / 5), 'rgba(30,10,4,0.4)', 0.7);
+  }
+  lijn(ctx, ...d1, ...d4, donker, 1.2);
+  lijn(ctx, ...d4, ...d3, donker, 1.2);
+
+  // Linksvoor: een stapel balken met een los wiel en een ketel pek
+  const sb = [cx - 15, cy + 4];
+  for (let i = 0; i < 5; i++) {
+    const y = sb[1] - i * 2.2;
+    const lang = 14 - (i > 2 ? 3 : 0);
+    lijn(ctx, sb[0] - lang / 2, y + 2.2, sb[0] + lang / 2, y - 0.2, '#3a2614', 2.4);
+    lijn(ctx, sb[0] - lang / 2, y + 1.7, sb[0] + lang / 2, y - 0.7, i % 2 ? '#a07a4a' : '#8f6a3c', 1.5);
+    ovaal(ctx, sb[0] + lang / 2, y - 0.2, 1.3, 1.2, '#d6b078');
+  }
+  wiel(cx - 5, cy + 7, 3.4, 4.6);
+  ovaal(ctx, cx + 1.5, cy + 9.5, 4.6, 1.8, 'rgba(0,0,0,0.3)');
+  ovaal(ctx, cx + 1.5, cy + 8, 3.6, 3.2, '#2a2a30');
+  ovaal(ctx, cx + 1.5, cy + 6.6, 3.1, 1.3, '#0e0d10');
+  lijn(ctx, cx - 1.6, cy + 7.5, cx + 4.6, cy + 7.5, ijzer, 0.8);
+
+  // Voorrand van het erf
+  lijn(ctx, L[0], L[1], B[0], B[1], donker, 1.6);
+  lijn(ctx, B[0], B[1], R[0], R[1], donker, 1.6);
+  lijn(ctx, L[0], L[1] + 1.2, B[0], B[1] + 1.2, 'rgba(0,0,0,0.3)', 1);
+  lijn(ctx, B[0], B[1] + 1.2, R[0], R[1] + 1.2, 'rgba(0,0,0,0.3)', 1);
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
 }
 
 // Een tarweveld: omgeploegde aarde met rijen gouden aren en een laag hek.

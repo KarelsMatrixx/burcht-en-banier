@@ -144,13 +144,13 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     return n;
   }
 
-  // Hoeveel kazernes (en magiertorens) heeft de speler? Elk geeft plek aan perKazerne soldaten.
+  // Hoeveel kazernes (en magiertorens en belegeringswerkplaatsen) heeft de speler? Elk geeft plek aan perKazerne soldaten.
   function aantalKazernes() {
     let n = 0;
     for (let i = 0; i < N; i++) {
       if (kaart.eigenaar[i] !== EIGENAAR_SPELER) continue;
       const o = kaart.object[i];
-      if (o === OBJECT.KAZERNE || o === OBJECT.MAGIERTOREN) n++;
+      if (o === OBJECT.KAZERNE || o === OBJECT.MAGIERTOREN || o === OBJECT.BELEGERINGSWERKPLAATS) n++;
     }
     return n;
   }

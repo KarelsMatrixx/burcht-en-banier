@@ -392,6 +392,29 @@ async function start() {
 
   // --- Het leger --------------------------------------------------------------------
   // De kazerne: tik hem aan en leid soldaten op.
+  // Siege gear krijgt een bevestiging zodra het zijn opdracht heeft: de ladders worden tegen de
+  // muur gezet, de ram gaat de muur doorbreken, de toren wordt geplaatst, de katapult gaat schieten.
+  // Gewone soldaten krijgen die melding niet. ontvangen = de eenheden die het bevel echt kregen;
+  // doel = wat het bevel aanwees ('wall', 'gate', ...).
+  function meldSiege(ontvangen, doel) {
+    const aantal = {};
+    for (const e of ontvangen) {
+      const def = leger.soorten[e.soldaat.sleutel];
+      const soort = def.vast ? 'toren' : def.ladder ? 'ladder' : def.sleutel === 'katapult' ? 'katapult' : def.alleenBouw ? 'ram' : null;
+      if (soort) aantal[soort] = (aantal[soort] || 0) + 1;
+    }
+    const rood = `the red ${doel || 'wall'}`;
+    const tekst = {
+      ladder: () => `A ladder is being set against ${rood}.`,
+      toren: (n) => `${n > 1 ? 'The siege towers are' : 'The siege tower is'} being placed against ${rood}. Then your soldiers can climb over ${n > 1 ? 'them' : 'it'}.`,
+      ram: (n) => `${n > 1 ? 'The battering rams are' : 'The battering ram is'} going to break through ${rood}.`,
+      katapult: (n) => `${n > 1 ? 'The catapults are' : 'The catapult is'} going to fire at ${rood}.`,
+    };
+    for (const soort of ['ladder', 'toren', 'ram', 'katapult']) {
+      if (aantal[soort]) ui.toonMelding(tekst[soort](aantal[soort]), { soort: 'leger', toon: true });
+    }
+  }
+
   let kazerneVak = -1;         // de kazerne waarvan het paneel openstaat
   let kazerneBericht = '';     // wat er het laatst gebeurde
   const toonKazerne = () => {
@@ -408,7 +431,7 @@ async function start() {
       open: true,
       regels: [
         `${gebouw.naam}. Army places: ${leger.plekken()} of ${leger.max}. Gold: ${economie.voorraad.goud}. Idle peasants: ${Math.max(0, volk.vrij)}.`,
-        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : 'A soldier costs gold and one idle peasant.'),
+        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : gebouw.leidtOp === 'belegering' ? 'Siege gear costs gold, planks and one idle peasant. Ladder bearers are trained at the barracks.' : 'A soldier costs gold and one idle peasant.'),
       ],
       knoppen: Object.values(leger.soorten).filter((def) => mag(def.sleutel) && (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
     });
@@ -421,7 +444,7 @@ async function start() {
   ui.opKazerneSluit(sluitKazerne);
   ui.opOpleiden((sleutel) => {
     const reden = leger.leidOp(sleutel, kazerneVak);
-    kazerneBericht = reden ? `Not possible: ${reden}.` : `${metLidwoord(leger.soorten[sleutel].naam.toLowerCase(), true)} is ready at the barracks.`;
+    kazerneBericht = reden ? `Not possible: ${reden}.` : `${metLidwoord(leger.soorten[sleutel].naam.toLowerCase(), true)} is ready at the ${leger.soorten[sleutel].kazerne === 'belegering' ? 'siege workshop' : 'barracks'}.`;
     toonKazerne();
   });
 
@@ -1000,9 +1023,10 @@ async function start() {
             ui.toonMelding('These walls are too high for ladders. Bring a siege tower.', { soort: 'leger' });
             return;
           }
-          if (strijd.zetLadderBevel(groep.filter(isDrager), muurVak)) {
+          const kregen = [];
+          if (strijd.zetLadderBevel(groep.filter(isDrager), muurVak, kregen)) {
             staat.doel = { x: muurVak % kaart.breedte, y: Math.floor(muurVak / kaart.breedte), duur: 900, tot: performance.now() + 900 };
-            ui.toonMelding(groep.some((e) => leger.soorten[e.soldaat.sleutel].vast) ? 'The siege tower rolls to the red wall. Then your soldiers climb over it.' : 'Your ladder bearer sets a ladder against the red wall.', { soort: 'leger' });
+            meldSiege(kregen, 'wall');
           } else {
             ui.toonMelding('Your ladder bearer cannot reach that wall.', { soort: 'leger' });
           }
@@ -1014,7 +1038,10 @@ async function start() {
         }
         if (leger.heeftTrap(vanRood.x, vanRood.y) && groep.some((e) => !isRam(e) && !isDrager(e))) {
           const rammen = groep.filter(isRam);
-          if (rammen.length) strijd.valBouwAan(rammen, vanRood.vak);
+          if (rammen.length) {
+            const kregen = [];
+            if (strijd.valBouwAan(rammen, vanRood.vak, kregen)) meldSiege(kregen, beschrijfTegel(kaart, vanRood.x, vanRood.y));
+          }
           leger.kies(groep.filter((e) => !isRam(e) && !isDrager(e)));
           const opWeg = leger.stuur(vanRood.x, vanRood.y, true);
           leger.kies(groep);
@@ -1026,8 +1053,10 @@ async function start() {
       }
       // Een bouwwerk van rood aangetikt: je gekozen soldaten vallen het aan.
       if (vanRood && leger.aantalGekozen()) {
-        if (strijd.valBouwAan(leger.gekozen(), vanRood.vak)) {
+        const kregen = [];
+        if (strijd.valBouwAan(leger.gekozen(), vanRood.vak, kregen)) {
           staat.doel = { x: vanRood.x, y: vanRood.y, duur: 900, tot: performance.now() + 900, aanval: true };
+          meldSiege(kregen, beschrijfTegel(kaart, vanRood.x, vanRood.y));
         } else {
           ui.toonMelding('Your soldiers cannot reach that. Break through the red gate or wall first.', { soort: 'leger' });
         }

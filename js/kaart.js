@@ -18,6 +18,7 @@ export const OBJECT = {
   CEL: 30,       // gevangenencel van Broeder Ludolf (level 5), decor
   CEL_OPEN: 31,  // dezelfde cel na de bevrijding
   KERK: 32,      // dorpskerk (proloog), decor
+  BELEGERINGSWERKPLAATS: 33,   // de aparte kazerne voor ram, katapult en belegeringstoren
 };
 
 // Namen waarmee de tekenlaag het juiste plaatje opzoekt in data/assets.json.
@@ -29,13 +30,13 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.belegering',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
 const OBJECT_TEKST = [
   '', 'forest', 'rock', 'copper ore', 'wall', 'watchtower', 'gate', 'keep', 'keep', 'keep', 'tower',
-  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mage tower', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church',
+  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mystic lodge', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church', 'siege workshop',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.

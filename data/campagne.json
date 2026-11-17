@@ -12,7 +12,8 @@
   "kasteel (stap 33): het ontwerp van het kasteel van rood, uit data/kastelen.json.",
   "proloog: true maakt van een level de proloog (js/proloog.js): taken van Bartholt, Reinout als gast, nacht, overmacht, scène, geen winst of verlies. De rode heer heeft dan geen koning in zijn burcht; koning.uiterlijk is het uiterlijk van de gast (Reinout).",
   "doel (doeltype B, js/doel.js): een bouwwerk houden tot de tijd om is. soort hut = de hut van Gesina midden op de kaart. duur in seconden, leven van de hut, golven = { eerste, tussen (seconden), begin, erbij, max (mannen), leger = aandelen }. Valt de hut, dan verlies je. Zet rood.eersteAanval hoog: de golven komen van het doel, niet van de economie van rood.",
-  "rood.aanval (stap 38, js/veldheer.js): hoe slim rood zijn aanvallen aanpakt. niveau 1 tot 5: 1 samen aankomen, 2 golven met rol (verkenners, tweede lijn, thuiswacht), 3 doelkeuze op jouw zwakste muur en flank, 4 tegenzetten tegen jouw leger, 5 terugtrekken. max = hoogste niveau in dit level (het niveau stijgt elke stijgElke aanvallen met een). flank = aandeel van de hoofdmacht dat een andere weg neemt. De standaardwaarden staan in economie.json onder heer.aanval."
+  "rood.aanval (stap 38, js/veldheer.js): hoe slim rood zijn aanvallen aanpakt. niveau 1 tot 5: 1 samen aankomen, 2 golven met rol (verkenners, tweede lijn, thuiswacht), 3 doelkeuze op jouw zwakste muur en flank, 4 tegenzetten tegen jouw leger, 5 terugtrekken. max = hoogste niveau in dit level (het niveau stijgt elke stijgElke aanvallen met een). flank = aandeel van de hoofdmacht dat een andere weg neemt. De standaardwaarden staan in economie.json onder heer.aanval.",
+  "Regel (17 november 2026): wat je als beloning van level N krijgt, gebruikt rood in level N tegen jou, in de loop van het level (niet in de eerste aanval). Zo ken je het al als je het zelf mag gebruiken. Soldaat of machine uit beloning: hij staat in rood.leger (met vanaf), rood.extra_soorten (machines), doel.golven.leger (hut, level 4; vanaf = vanaf welke golf, begint bij 0) of doel.druk.golven (loodsen, level 6). Gebouwen en mijnen in beloning tellen niet mee. Tests/beloning_tegen_jou.mjs bewaakt dit voor elk speelbaar level."
  ],
  "figuren": {
   "karel": {
@@ -86,7 +87,8 @@
    "wessel": "",
    "beloning": [
     "ram",
-    "ladder"
+    "ladder",
+    "belegeringswerkplaats"
    ],
    "proloog": true,
    "verteller": "bartholt",
@@ -177,7 +179,12 @@
       "baard": "geen"
      }
     },
-    "extra_soorten": {},
+    "extra_soorten": {
+     "toren": {
+      "vanaf": 1,
+      "max": 1
+     }
+    },
     "muur": 100,
     "wachters": 4,
     "aanval": {
@@ -270,7 +277,12 @@
       "thuisBereik": 7
      }
     },
-    "extra_soorten": {},
+    "extra_soorten": {
+     "katapult": {
+      "vanaf": 1,
+      "max": 1
+     }
+    },
     "muur": 115,
     "aanval": {
      "niveau": 2,
@@ -439,7 +451,11 @@
      "leger": {
       "sluipmoordenaar": 2,
       "boogschutter": 2,
-      "ridder": 1
+      "ridder": 1,
+      "vlammenwever": {
+       "aandeel": 1,
+       "vanaf": 2
+      }
      }
     }
    },
@@ -497,6 +513,10 @@
      },
      "ridder": {
       "aandeel": 1
+     },
+     "heler": {
+      "aandeel": 1,
+      "vanaf": 2
      }
     },
     "koning": {
@@ -605,6 +625,10 @@
      },
      "boogschutter": {
       "aandeel": 1
+     },
+     "steenwachter": {
+      "aandeel": 1,
+      "vanaf": 2
      }
     },
     "extra_soorten": {
@@ -697,7 +721,8 @@
         "bijlridder": 3,
         "ram": 2,
         "ladder": 2,
-        "katapult": 1
+        "katapult": 1,
+        "steenwachter": 1
        }
       },
       {
@@ -712,7 +737,8 @@
         "ram": 2,
         "ladder": 2,
         "katapult": 1,
-        "toren": 1
+        "toren": 1,
+        "steenwachter": 1
        }
       }
      ]

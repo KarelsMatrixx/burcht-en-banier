@@ -615,3 +615,51 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 ## 0.67.1: geen wolkenschaduwen meer, bomen vallen om en worden weggesleept
 - De wolkenschaduwen zijn weg (sfeer.js, tekenaar.js): Karel vond de grote donkere vlekken lelijk.
 - Een gevelde boom valt nu om, van de houthakker af: eerst langzaam, dan sneller, met een kleine stuit en een stofwolk (effect 'boomval', tekenaar.js `tekenBoomval`). De houthakker wacht ruim een seconde tot de boom ligt (economie.js `opGeveld`, `w.wacht`) en sleept hem daarna aan de stam achter zich aan naar de opslag, met de kruin over de grond (`tekenSleepboom`). Alleen beeld; wel komt het hout daardoor ruim een seconde later binnen.
+
+## 0.68.0: siege gear, unlocks tegen jou en de belegeringswerkplaats
+Naar aanleiding van Karels feedback (17 november 2026).
+
+**1. Bevestiging bij siege gear.** Zodra een siege-eenheid een bevel echt heeft ontvangen, krijg je een melding (main.js `meldSiege`, soort Army, ook in beeld). Gewone soldaten krijgen die niet.
+- Ladderdrager: "A ladder is being set against the red wall."
+- Belegeringstoren: "The siege tower is being placed against the red wall. Then your soldiers can climb over it."
+- Stormram: "The battering ram is going to break through the red {wall, gate, ...}."
+- Katapult: "The catapult is going to fire at the red {wall, ...}."
+- strijd.js: `zetLadderBevel` en `valBouwAan` hebben een extra parameter `uit`: daar komen de eenheden in die het bevel kregen. Een melding komt alleen voor wie het bevel echt kreeg (niet bij "cannot reach"). Alle teksten zijn door Claude geschreven: na te lezen.
+
+**2. Wat je unlockt, wordt in dat level tegen je gebruikt.** Regel: wat je als beloning van level N krijgt, zet rood in level N tegen jou in, in de loop van het level (niet in de eerste aanval of golf).
+- Level 1 (toren): rood koopt vanaf zijn eerste aanval een belegeringstoren (`extra_soorten.toren`, vanaf 1, max 1). Dus in zijn tweede aanval rolt er een toren tegen je muur (de bestaande melding "Red is rolling a siege tower against your wall!").
+- Level 2 (katapult): `extra_soorten.katapult` vanaf 1, max 1. (Kruisboog zat er al in.)
+- Level 4 (vlammenwever): de golven om de hut van Gesina krijgen vanaf de derde golf een vlammenwever (`doel.golven.leger.vlammenwever = { aandeel, vanaf }`). doel.js ondersteunt nu `{ aandeel, vanaf }` naast een getal; vanaf telt golven, begint bij 0.
+- Level 5 (heler): `rood.leger.heler` vanaf 2.
+- Level 6 (steenwachter): `rood.leger.steenwachter` vanaf 2, plus 1 steenwachter in de golven "siege train" en "whole host" van de loodsen.
+- Al in orde: level 3 bijlridder, level 4 sluipmoordenaar, level 5 zwaardvechter en banierdrager, de proloog (ram en ladder in het nachtleger).
+- rood.js: brood betaalt rood met goud (`heer.broodPrijs` 1), anders kon hij nooit een heler kopen. economie.json: gewicht van de steenwachter van 0 naar 3 (geschat, na te lezen), anders telde hij niet mee voor de sterkte en kocht rood er eindeloos.
+- Gebouwen en mijnen in een beloning (kopermijn, magiertoren) doen niet mee.
+- Voor volgende levels (7 tot 10): zet nieuwe beloningen meteen ook in het leger van rood. Uitleg staat onderaan `_uitleg` in data/campagne.json. Test siege52 bewaakt dit voor elk speelbaar level.
+
+**3. Aparte barak voor siege gear: de Siege Workshop.**
+- Nieuw gebouw `belegeringswerkplaats` (OBJECT 33, `leidtOp: "belegering"`). Hier leid je op: stormram, katapult, belegeringstoren, en alles wat later nog bij siege komt (zet `"kazerne": "belegering"` bij de soldaat in economie.json). De ladderdrager blijft bij de gewone kazerne.
+- Kosten 20 planken en 10 steen (geschat, na te lezen). Geeft net als een kazerne 40 legerplekken. Beloning van de proloog, samen met ram en ladder (dus niet in de proloog zelf te bouwen).
+- Ontwerp (kunst.js `tekenBelegeringswerkplaats`): niet de stenen kazerne en niet de open zagerij, maar een erf met donkere balken en ijzer, een half afgebouwd belegeringstorenskelet dat boven alles uitsteekt (met valbrug, kruisverbanden en een wimpel in teamkleur), een ram aan kettingen onder een rood afdak, een stapel balken, een los wiel en een ketel pek.
+- Het paneel toont bij dit gebouw alleen siege gear; bij de kazerne geen ram, katapult of toren meer. Bericht na opleiden: "... is ready at the siege workshop."
+- Ook in brand te steken (houtlijst in strijd.js).
+
+**Tests.** Nieuw: `tests/siege52.mjs` (data, regel per level, werkplaats, paneel, meldingen met echte tikken, rood koopt en gebruikt). Versie op 0.68.0 in config.js, sw.js, test_stap15 en test_stap17.
+
+**Bekend / open.**
+- Niet op de iPhone gezien: ontwerp van de werkplaats op het scherm, en of de melding niet over andere berichten heen komt (hooguit twee tegelijk in beeld).
+- Balans van de nieuwe aanvallen (toren in level 1 vanaf aanval 2, heler en steenwachter) is niet gespeeld. De steenwachter vanaf aanval 2 in level 6 komt in de praktijk later, omdat rood eerst zijn machines koopt.
+- Bestaande bewaarde spellen met een ram, katapult of toren blijven werken; wie er een wil bijmaken, heeft nu de werkplaats nodig.
+
+## 0.68.1: de mystieke kazerne wordt een sjamaanhut
+- De Mage Tower is vervangen door de "Mystic Lodge": een ronde hut van huid met kegeldak, gewei met veren en botten, geschilderde tekens, een vuurplaats en een totempaal. Lager en breder dan de torens, zodat hij niet op de Siege Workshop lijkt.
+- Alleen het plaatje (js/kunst.js, tekenMagiertoren), de naam en de tip zijn veranderd. Interne sleutels (magiertoren, MAGIERTOREN, leidtOp mystiek) blijven gelijk, dus bestaande opslag en tests werken door.
+- De Siege Workshop blijft zoals hij was (besluit na drie rondes ontwerpen).
+
+## 0.68.2: machines van rood slaan niet meer op het hoofdkasteel
+- Een stormram of katapult van rood gaat niet meer op jouw hoofdkasteel af. Hij gaat op weg naar de burcht en slaat het eerste wat in de weg staat kapot (muur, poort, toren). Is de weg vrij, dan kiest hij het dichtstbijzijnde andere bouwwerk van jou (kazerne, werken, huizen enz.); is er niets meer, dan wacht hij. Het hoofdkasteel zelf raken alleen soldaten en de koning (strijd.js `kiesBelegerDoel`, `breekDoor` met `doelB` null).
+- Nieuwe test: tests/siege53.mjs (machines kiezen het hoofdkasteel nooit, level 1 en 3).
+- Let op bij de balans: in een level waar jij nog niets gebouwd hebt, doen rammen en katapulten niets tot er een muur of gebouw staat.
+
+## 0.68.2 (vervolg): sjamaanhut hoger
+- De muren van de Mystic Lodge zijn hoger, het dak lager, de deur groter, de tekens hoger op de wand en de rook staat naast het gewei in plaats van erdoorheen.
