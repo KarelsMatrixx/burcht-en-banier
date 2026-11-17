@@ -590,3 +590,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Poortwacht (js/poortwacht.js): jouw poorten gaan vanzelf dicht als aanvallers binnen 6 tegels komen, en 4 seconden nadat ze weg zijn weer open. Een poort die je zelf dichtdoet, blijft dicht; doe je hem zelf open terwijl er vijanden bij zijn, dan laat de wacht hem 25 seconden met rust. In de proloog (de les) doet de wacht niets, zodat de speler daar zelf de poort sluit.
 - Aanvalsgolven: de tijd tussen twee aanvallen van rood is van 100 naar 170 seconden (data/economie.json heer.tussen), per level nog geschaald met tempo. Per level nu: Aldervale 170, Witherheath 170, Sevenwinds 243, Ironmarsh 212, The Fen 170 (tempo 140 naar 100), Stillwater 262, Giant's Spine 170, Greyford 212, White Dike 243, Mourngate 170, Mournkeep 155. De eerste aanval (eersteAanval) is niet veranderd.
 - Nieuwe tests: voedsel50, belegering_poort50, koning_vlucht50. Aangepast: stillwater40 (golftijd), ronde39 (zonder kazerne is het maximum 0).
+
+## 0.66.1
+- Boeren (ook wie werkt) eten weer 2 food per minuut per persoon. Soldaten blijven 0.5 per minuut eten (`eetPerSoldaat`).
+- Het eten gaat echt uit de voorraad: elke ronde (60 s) wordt het opgegeten voedsel van de voorraad afgetrokken. Boeren eten eerst, daarna de soldaten. Wie niet kan eten kost 2 populariteit.
+- De voorraadbalk en de uitleg tonen nu het echte verbruik (boeren en soldaten apart).

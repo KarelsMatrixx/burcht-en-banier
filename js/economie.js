@@ -216,6 +216,8 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   // (zie zetEters, vanuit main.js), want economie kent het leger niet.
   let soldatenTeller = () => 0;
   const eters = () => volk + soldatenTeller();
+  // Hoeveel voedsel iedereen samen per voedselElke seconden nodig heeft: boeren eten eetPerPersoon, soldaten eetPerSoldaat.
+  const voedselNodig = () => volk * volkRegels.eetPerPersoon + soldatenTeller() * volkRegels.eetPerSoldaat;
   let klokLoopt = true;             // de test kan de klok van de bevolking stilzetten
 
   const ruimte = () => volkRegels.plekBurcht + woonruimte;
@@ -611,7 +613,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   // Wat de populariteit de volgende ronde doet, per oorzaak. Wie brood én
   // fruit te eten heeft, is extra tevreden.
   function stemFactoren() {
-    const genoeg = eten() >= eters() * volkRegels.eetPerPersoon;
+    const genoeg = eten() >= voedselNodig();
     const soorten = eetSoorten.filter((n) => voorraad[n] > 0).length;
     return [
       { naam: 'food', waarde: genoeg ? stem.eten : stem.honger },
@@ -660,21 +662,24 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     opVerandering();
   }
 
-  // Elke voedselElke seconden eet iedereen (boeren en soldaten) eetPerPersoon. Wie niet kan eten,
+  // Elke voedselElke seconden eet iedereen: boeren eetPerPersoon, soldaten eetPerSoldaat. Wie niet kan eten,
   // kost hongerPerPersoon populariteit. Is er te weinig, dan eet je volk zoveel mogelijk mensen
   // vol en de rest blijft hongerig.
   function voedselRonde() {
-    const aantal = eters();
-    if (aantal <= 0) { honger = false; return; }
-    const per = volkRegels.eetPerPersoon;
-    const gevoed = Math.min(aantal, Math.floor(eten() / per + 1e-9));
-    let nodig = Math.ceil(gevoed * per - 1e-9);
+    const soldaten = soldatenTeller();
+    if (volk + soldaten <= 0) { honger = false; return; }
+    // Eerst eten de boeren, dan de soldaten. Wie geen eten meer krijgt, blijft hongerig.
+    const beschikbaar = eten();
+    const boerGevoed = Math.min(volk, Math.floor(beschikbaar / volkRegels.eetPerPersoon + 1e-9));
+    const rest = beschikbaar - boerGevoed * volkRegels.eetPerPersoon;
+    const soldaatGevoed = Math.min(soldaten, Math.floor(rest / volkRegels.eetPerSoldaat + 1e-9));
+    let nodig = Math.ceil(boerGevoed * volkRegels.eetPerPersoon + soldaatGevoed * volkRegels.eetPerSoldaat - 1e-9);
     while (nodig > 0) {
       for (const n of eetSoorten) {
         if (nodig > 0 && voorraad[n] > 0) { voorraad[n]--; nodig--; }
       }
     }
-    const hongerig = aantal - gevoed;
+    const hongerig = (volk - boerGevoed) + (soldaten - soldaatGevoed);
     if (hongerig > 0) {
       if (!honger) {
         const heeftBron = [...werkplaatsen.values()].some((e) => eetSoorten.includes(e.werk.beroep.haalt));
@@ -830,7 +835,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       woonruimte = Math.max(0, woonruimte + aantal);
       opVoorraad();
     },
-    bevolking: () => ({ volk, ruimte: ruimte(), vrij: vrij(), wachtend: wachtend.length, eters: eters() }),
+    bevolking: () => ({ volk, ruimte: ruimte(), vrij: vrij(), wachtend: wachtend.length, eters: eters(), nodig: voedselNodig() }),
     // Het leger meldt hier hoeveel soldaten er zijn: die eten ook.
     zetEters(telling) { soldatenTeller = telling; },
     // Voor het testen: het aantal boeren zetten, de klok van de bevolking

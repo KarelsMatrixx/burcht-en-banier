@@ -354,7 +354,7 @@ async function start() {
         const max = economie.opslagMax(naam);
         const vol = Number.isFinite(max) && economie.voorraad[naam] >= max;
         // Voedsel in het rood als er minder is dan voor één maaltijdronde.
-        const op = naam === 'voedsel' && volk.eters > 0 && eten < volk.eters * regels.bevolking.eetPerPersoon;
+        const op = naam === 'voedsel' && volk.eters > 0 && eten < volk.nodig;
         const verschil = oudste && oudste.t < Date.now() - 20000 ? Math.round(((economie.voorraad[naam] - oudste.v[naam]) * 60000) / (Date.now() - oudste.t)) : null;
         return { sleutel: naam, naam: def.naam, aantal: economie.voorraad[naam], slecht: vol || op, max: Number.isFinite(max) ? max : null, verschil };
       });
@@ -370,7 +370,7 @@ async function start() {
       regels: [
         `Peasants: ${volk.volk}, room for ${volk.ruimte}. ${stem.lopers} without work.${wacht}`,
         `Popularity ${stem.populariteit}. Every half minute ${plus(stem.totaal)}: ` + stem.factoren.filter((f) => f.waarde || f.naam !== 'variety').map((f) => `${f.naam} ${plus(f.waarde)}`).join(', ') + '.',
-        `Everyone eats: ${volk.volk} peasants and ${volk.eters - volk.volk} soldiers need ${Math.round(volk.eters * regels.bevolking.eetPerPersoon * 60 / regels.bevolking.voedselElke * 10) / 10} food a minute. Each person who cannot eat costs ${regels.bevolking.stemming.hongerPerPersoon} popularity.`,
+        `Everyone eats: ${volk.volk} peasants and ${volk.eters - volk.volk} soldiers need ${Math.round(volk.nodig * 60 / regels.bevolking.voedselElke * 10) / 10} food a minute (peasants eat ${regels.bevolking.eetPerPersoon * 60 / regels.bevolking.voedselElke} each, soldiers ${regels.bevolking.eetPerSoldaat * 60 / regels.bevolking.voedselElke}). Each person who cannot eat costs ${regels.bevolking.stemming.hongerPerPersoon} popularity.`,
         `From ${stem.grens} upwards new peasants arrive; below that they leave. From ${regels.bevolking.stemming.snelleGroei.vanaf} popularity ${regels.bevolking.stemming.snelleGroei.aantal} arrive at a time.`,
       ],
       tarieven: stem.tarieven.map((t) => ({ naam: t.naam, uitleg: `${volk.volk * t.goud} gold, ${plus(t.effect)}` })),

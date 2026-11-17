@@ -5,7 +5,7 @@
   "sloopTerug: welk deel van de bouwkosten je terugkrijgt als je iets sloopt (0.5 is de helft, naar beneden afgerond).",
   "bevolking: begin is met hoeveel boeren je start, plekBurcht is voor hoeveel boeren de burcht plek heeft.",
   "komtElke: om de zoveel seconden komt er een boer bij, als er plek en voedsel is.",
-  "maaltijdElke: om de zoveel seconden is er een ronde waarin je belasting int en de populariteit verandert. voedselElke: om de zoveel seconden eet iedereen (elke boer, ook wie werkt, en elke soldaat) eetPerPersoon van de grondstoffen in eet (0.5 per minuut). Wie niet kan eten, kost stemming.hongerPerPersoon populariteit. raadHonger is de tip als het voedsel op is.",
+  "maaltijdElke: om de zoveel seconden is er een ronde waarin je belasting int en de populariteit verandert. voedselElke: om de zoveel seconden eet iedereen van de grondstoffen in eet: elke boer (ook wie werkt) eetPerPersoon (2 per minuut) en elke soldaat eetPerSoldaat (0.5 per minuut). Wie niet kan eten, kost stemming.hongerPerPersoon populariteit. raadHonger is de tip als het voedsel op is.",
   "stemming: de populariteit (0 tot 100). begin is waar je start; onder grens vertrekken boeren, vanaf grens komen er nieuwe bij. snelleGroei: vanaf deze populariteit komen er aantal boeren per komtElke seconden bij in plaats van een.",
   "Per ronde telt erbij: eten als iedereen at, honger als er te weinig was, krap als er meer boeren zijn dan woonruimte.",
   "belasting: de standen die je kunt kiezen. goud is wat elke boer per ronde betaalt (in de grondstof munt), effect telt per ronde bij de populariteit.",
@@ -99,7 +99,8 @@
    "brood",
    "voedsel"
   ],
-  "eetPerPersoon": 0.5,
+  "eetPerPersoon": 2,
+  "eetPerSoldaat": 0.5,
   "raadHonger": "Build an orchard, or a wheat field with a bakery.",
   "munt": "goud",
   "stemming": {

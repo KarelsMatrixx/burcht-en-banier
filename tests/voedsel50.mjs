@@ -1,4 +1,4 @@
-// 0.66: soldaten en boeren eten 0.5 per minuut; wie niet kan eten kost 2 populariteit; bij 90 tot 100 komen er 2 boeren per 15 seconden.
+// 0.66.1: boeren eten 2 per minuut, soldaten 0.5; wie niet kan eten kost 2 populariteit; bij 90 tot 100 komen er 2 boeren per 15 seconden.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
 import { spawn } from 'child_process';
 const poort = 8300;
@@ -17,7 +17,7 @@ const r = await p.evaluate(() => {
   const s = window.spel, E = s.economie, uit = {};
   s.strijd.pauzeer(true);
   const zetEten = (n) => { E.voorraad.brood = 0; E.voorraad.voedsel = n; };
-  // 1. Genoeg eten: 10 boeren en 6 soldaten eten 16 maal 0.5 = 8 per minuut
+  // 1. Genoeg eten: 10 boeren eten 2 en soldaten 0.5 per minuut
   E.pauzeerVolk(true); E.pauzeerVolk(false);
   E.zetVolk(10);
   s.leger.zetStand(Array.from({ length: 6 }, (_, i) => ['ridder', 20 + i, 20, 60, 0]));
@@ -26,19 +26,19 @@ const r = await p.evaluate(() => {
   E.zetStemming(50, 0);
   zetEten(100);
   E.spoelVolk(61);
-  uit.etenNa = E.voorraad.voedsel; uit.verwacht = 100 - Math.ceil((10 + soldaten) * 0.5);
-  // 2. Te weinig: eten voor 10 personen, 16 mensen: 6 hongerig = 12 populariteit eraf
+  uit.etenNa = E.voorraad.voedsel; uit.verwacht = 100 - Math.ceil(10 * 2 + soldaten * 0.5);
+  // 2. Te weinig: 21 food = 10 boeren (20) + 2 soldaten (1); 4 soldaten hongerig = 8 populariteit eraf
   E.zetStemming(80, 0);
-  zetEten(5);
+  zetEten(21);
   E.spoelVolk(61);
   uit.popHonger = E.stemming().populariteit; uit.etenLeeg = E.voorraad.voedsel;
   return uit;
 });
 console.log(JSON.stringify(r));
 check('soldaten tellen mee als eters', r.eters === 10 + r.soldaten, JSON.stringify([r.eters, r.soldaten]));
-check('iedereen eet een halve per minuut', r.etenNa === r.verwacht, JSON.stringify([r.etenNa, r.verwacht]));
-check('te weinig eten: elk hongerig persoon kost 2 populariteit', r.popHonger === 80 - 2 * (r.eters - 10), JSON.stringify([r.popHonger, r.eters]));
-check('het eten is dan op', r.etenLeeg === 0, r.etenLeeg);
+check('boeren eten 2 en soldaten 0.5 per minuut', r.etenNa === r.verwacht, JSON.stringify([r.etenNa, r.verwacht]));
+check('te weinig eten: elk hongerig persoon kost 2 populariteit', r.popHonger === 80 - 2 * (r.soldaten - 2), JSON.stringify([r.popHonger, r.eters]));
+check('boeren eten eerst, daarna soldaten, en het eten is op', r.etenLeeg === 0, r.etenLeeg);
 // 3. Groei: 2 boeren per 15 seconden tussen 90 en 100, anders 1
 const g = await p.evaluate(() => {
   const s = window.spel, E = s.economie, uit = {};
