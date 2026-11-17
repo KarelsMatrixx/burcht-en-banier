@@ -13,7 +13,7 @@ await p.goto('http://localhost:8283/'); await wacht();
 await p.evaluate(() => { localStorage.clear(); localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [1, 2, 3, 4] })); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 5 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); });
 await p.reload(); await wacht();
 const r = await p.evaluate(() => { const h = window.spel.regels.heer; return { tussen: h.tussen, eerste: h.eersteAanval, begin: h.doelBegin, per: h.doelPerAanval, max: h.doelMax, piek: h.aanval.piekElke }; });
-check('tussen twee aanvallen ongeveer 154 s (dubbel van 77)', r.tussen >= 150 && r.tussen <= 158, JSON.stringify(r));
+check('tussen twee aanvallen ongeveer 262 s (170 bij tempo 65)', r.tussen >= 258 && r.tussen <= 266, JSON.stringify(r));
 const doel = (n) => Math.min(r.max, r.begin + r.per * (n - 1));
 check('aanval 1 is klein (4 tot 5)', doel(1) >= 4 && doel(1) <= 5, doel(1));
 check('aanval 10 bereikt 16', Math.round(doel(10)) === 16, doel(10));

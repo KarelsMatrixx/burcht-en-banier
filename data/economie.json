@@ -5,8 +5,8 @@
   "sloopTerug: welk deel van de bouwkosten je terugkrijgt als je iets sloopt (0.5 is de helft, naar beneden afgerond).",
   "bevolking: begin is met hoeveel boeren je start, plekBurcht is voor hoeveel boeren de burcht plek heeft.",
   "komtElke: om de zoveel seconden komt er een boer bij, als er plek en voedsel is.",
-  "maaltijdElke: om de zoveel seconden is er een ronde: elke boer eet eetPerPersoon van de grondstof eet, je int belasting en de populariteit verandert. raadHonger is de tip als het voedsel op is.",
-  "stemming: de populariteit (0 tot 100). begin is waar je start; onder grens vertrekken boeren, vanaf grens komen er nieuwe bij.",
+  "maaltijdElke: om de zoveel seconden is er een ronde waarin je belasting int en de populariteit verandert. voedselElke: om de zoveel seconden eet iedereen van de grondstoffen in eet: elke boer (ook wie werkt) eetPerPersoon (2 per minuut) en elke soldaat eetPerSoldaat (0.5 per minuut). Wie niet kan eten, kost stemming.hongerPerPersoon populariteit. raadHonger is de tip als het voedsel op is.",
+  "stemming: de populariteit (0 tot 100). begin is waar je start; onder grens vertrekken boeren, vanaf grens komen er nieuwe bij. snelleGroei: vanaf deze populariteit komen er aantal boeren per komtElke seconden bij in plaats van een.",
   "Per ronde telt erbij: eten als iedereen at, honger als er te weinig was, krap als er meer boeren zijn dan woonruimte.",
   "belasting: de standen die je kunt kiezen. goud is wat elke boer per ronde betaalt (in de grondstof munt), effect telt per ronde bij de populariteit.",
   "beginBelasting is de stand waarmee je start (0 is de eerste). loperSnelheid is hoe snel een boer zonder werk rondloopt.",
@@ -94,20 +94,24 @@
   "plekBurcht": 6,
   "komtElke": 15,
   "maaltijdElke": 30,
+  "voedselElke": 60,
   "eet": [
    "brood",
    "voedsel"
   ],
-  "eetPerPersoon": 1,
+  "eetPerPersoon": 2,
+  "eetPerSoldaat": 0.5,
   "raadHonger": "Build an orchard, or a wheat field with a bakery.",
   "munt": "goud",
   "stemming": {
    "begin": 60,
    "grens": 50,
    "eten": 3,
-   "honger": -6,
+   "honger": 0,
+   "hongerPerPersoon": 2,
    "krap": -3,
-   "afwisseling": 2
+   "afwisseling": 2,
+   "snelleGroei": { "vanaf": 90, "aantal": 2 }
   },
   "belasting": [
    {
@@ -636,7 +640,7 @@
   "_uitleg": [
    "De rode heer heeft zijn eigen economie (js/rood.js). Hij koopt soldaten en valt aan als zijn reserve sterk genoeg is.",
    "begin: zijn voorraad bij de start. burchtGoud: goud per seconde uit zijn burcht. werken: wat elk werk van rood per seconde oplevert.",
-   "eersteAanval en tussen: het minimum aantal seconden voor de eerste aanval en tussen twee aanvallen.",
+   "eersteAanval en tussen: het minimum aantal seconden voor de eerste aanval en tussen twee aanvallen (tussen is 170; een level kan met tempo korter of langer maken).",
    "doelBegin, doelPerAanval, doelMax: hoe sterk zijn reserve moet zijn om aan te vallen (ridder telt 1, zie gewicht).",
    "kooptElke en herbouwElke: om de zoveel seconden koopt hij iets of herstelt hij een stuk.",
    "herbouwVrij: hij herstelt niets als een soldaat van jou binnen zoveel tegels staat. uitvalAfstand en uitvalPauze: zie rood.js.",
@@ -663,7 +667,7 @@
   },
   "voorraadMax": 300,
   "eersteAanval": 200,
-  "tussen": 100,
+  "tussen": 170,
   "doelBegin": 2.5,
   "doelPerAanval": 1.5,
   "doelMax": 20,

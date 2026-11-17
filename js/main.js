@@ -23,6 +23,7 @@ import { metLidwoord } from './taal.js';
 import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
 import { maakHinderlaag } from './hinderlaag.js';
+import { maakPoortwacht } from './poortwacht.js';
 import { maakGids } from './gids.js';
 import { maakFiguranten } from './figuranten.js';
 import { maakSlachting } from './slachting.js';
@@ -142,6 +143,7 @@ async function start() {
   });
   let naLeger = () => {};      // wordt verderop ingevuld, als de knoppen er zijn
   const leger = maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVerandering: bewaar, opLeger: () => naLeger() });
+  economie.zetEters(() => leger.soldaten().length);   // soldaten eten ook
   // Het gevecht: de aanvallen van de rode heer, winnen en verliezen.
   let naStrijd = () => {};     // de cijfers in beeld bijwerken
   let naEinde = () => {};      // gewonnen of verloren
@@ -352,7 +354,7 @@ async function start() {
         const max = economie.opslagMax(naam);
         const vol = Number.isFinite(max) && economie.voorraad[naam] >= max;
         // Voedsel in het rood als er minder is dan voor één maaltijdronde.
-        const op = naam === 'voedsel' && volk.volk > 0 && eten < volk.volk;
+        const op = naam === 'voedsel' && volk.eters > 0 && eten < volk.nodig;
         const verschil = oudste && oudste.t < Date.now() - 20000 ? Math.round(((economie.voorraad[naam] - oudste.v[naam]) * 60000) / (Date.now() - oudste.t)) : null;
         return { sleutel: naam, naam: def.naam, aantal: economie.voorraad[naam], slecht: vol || op, max: Number.isFinite(max) ? max : null, verschil };
       });
@@ -368,7 +370,8 @@ async function start() {
       regels: [
         `Peasants: ${volk.volk}, room for ${volk.ruimte}. ${stem.lopers} without work.${wacht}`,
         `Popularity ${stem.populariteit}. Every half minute ${plus(stem.totaal)}: ` + stem.factoren.filter((f) => f.waarde || f.naam !== 'variety').map((f) => `${f.naam} ${plus(f.waarde)}`).join(', ') + '.',
-        `From ${stem.grens} upwards new peasants arrive; below that they leave.`,
+        `Everyone eats: ${volk.volk} peasants and ${volk.eters - volk.volk} soldiers need ${Math.round(volk.nodig * 60 / regels.bevolking.voedselElke * 10) / 10} food a minute (peasants eat ${regels.bevolking.eetPerPersoon * 60 / regels.bevolking.voedselElke} each, soldiers ${regels.bevolking.eetPerSoldaat * 60 / regels.bevolking.voedselElke}). Each person who cannot eat costs ${regels.bevolking.stemming.hongerPerPersoon} popularity.`,
+        `From ${stem.grens} upwards new peasants arrive; below that they leave. From ${regels.bevolking.stemming.snelleGroei.vanaf} popularity ${regels.bevolking.stemming.snelleGroei.aantal} arrive at a time.`,
       ],
       tarieven: stem.tarieven.map((t) => ({ naam: t.naam, uitleg: `${volk.volk * t.goud} gold, ${plus(t.effect)}` })),
       gekozen: stem.belasting,
@@ -468,11 +471,14 @@ async function start() {
       const groepen = Object.keys(namenGroep).filter((g) => t.groepen[g]);
       const soortKeys = Object.keys(t.perSoort);
       const vol = (x) => x.gekozen === x.n;
+      // Na een kader: de hele ingeboxte groep met het totaal, zodat je daar altijd naar terug kunt.
+      if (t.deel && (groepen.length > 1 || soortKeys.length > 1)) lijst.push({ sleutel: 'd:', tekst: `Group ${t.deel}`, actief: t.deelGekozen === t.deel });
       if (groepen.length > 1) for (const g of groepen) lijst.push({ sleutel: 'g:' + g, tekst: `${namenGroep[g]} ${t.groepen[g].n}`, actief: vol(t.groepen[g]) });
       if (soortKeys.length > 1) for (const sl of soortKeys) lijst.push({ sleutel: 's:' + sl, tekst: `${leger.soorten[sl].naam} ${t.perSoort[sl].n}`, actief: vol(t.perSoort[sl]), klein: true });
       ui.toonGroepen(lijst, (sl) => {
         kaderAan = false;
-        if (sl.startsWith('g:')) leger.kiesGroep(sl.slice(2));
+        if (sl === 'd:') leger.kiesDeel();
+        else if (sl.startsWith('g:')) leger.kiesGroep(sl.slice(2));
         else leger.kiesSoort(sl.slice(2));
       });
     }
@@ -840,6 +846,12 @@ async function start() {
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
     kaartGewijzigd,
   }) : null;
+  // Je poorten gaan vanzelf dicht als er vijandelijke soldaten dichtbij komen (js/poortwacht.js).
+  const poortwacht = maakPoortwacht({
+    kaart, wegvinder, vijanden: () => strijd.vijanden(), kaartGewijzigd: (v) => kaartGewijzigd(v),
+    melding: (t) => ui.toonMelding(t, { soort: 'leger' }), stappenPerSeconde: CONFIG.spel.stappenPerSeconde,
+    uit: () => !!proloog || wegvinder.poortenOpen(),
+  });
   // Level 2: boogschutters in de rotsen van de pas (js/hinderlaag.js)
   const hinderlaag = missie && missie.hinderlaag ? maakHinderlaag({
     instelling: missie.hinderlaag, kaart, leger, strijd, kaartGewijzigd,
@@ -1048,6 +1060,7 @@ async function start() {
         if (wegvinder.poortenOpen()) { ui.toonMelding('The gate is jammed open. It cannot be closed now.', { soort: 'leger' }); return; }
         const nuDicht = !wegvinder.isPoortDicht(poort[0]);
         wegvinder.zetPoortDicht(poort, nuDicht);
+        poortwacht.handmatig(poort, nuDicht);
         kaartGewijzigd(new Set(poort));
         ui.toonMelding(nuDicht ? 'Gate closed. Nobody can pass, not even your own men.' : 'Gate open. Your men can pass, the enemy cannot.', { soort: 'leger' });
         return;
@@ -1092,7 +1105,7 @@ async function start() {
       const rechts = Math.max(x1, x2);
       const boven = Math.min(y1, y2);
       const onder = Math.max(y1, y2);
-      leger.kies(leger.soldaten().filter((e) => {
+      leger.kiesKader(leger.soldaten().filter((e) => {
         const p = opScherm(e);
         return p.x >= links && p.x <= rechts && p.y >= boven && p.y <= onder;
       }));
@@ -1131,6 +1144,7 @@ async function start() {
       economie.stap();
       leger.stap();
       strijd.stap();
+      poortwacht.stap();
       verhaal.stap(dt, verhaalStand);
       if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); }
       if (doel) doel.stap(dt);
@@ -1183,7 +1197,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting };
+  window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

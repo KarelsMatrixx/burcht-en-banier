@@ -31,7 +31,8 @@ const vol = await p.evaluate(([x, y]) => {
   l.zetStand(lijst);
   return { plekken: l.plekken(), max };
 }, [st.x, st.y]);
-check('leger loopt nooit over het maximum', vol.plekken <= vol.max, JSON.stringify(vol));
+// Sinds 0.65 geeft elke kazerne 40 plekken: zonder kazerne is het maximum 0 en blijven de beginsoldaten gewoon bestaan.
+check('leger loopt nooit over het maximum', vol.max === 0 || vol.plekken <= vol.max, JSON.stringify(vol));
 // Kan niet klimmen
 await p.evaluate(([x, y]) => { window.spel.leger.zetStand([['steenwachter', x + 4, y + 4, 300, 0]]); }, [st.x, st.y]);
 const kl = await p.evaluate(() => window.spel.leger.soldaten().find((e) => e.soldaat.sleutel === 'steenwachter').lagen);
