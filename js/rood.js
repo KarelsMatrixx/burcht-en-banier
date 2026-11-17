@@ -96,8 +96,8 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
   // Rood maakt geen planken: wat planken kost, betaalt hij met hout.
   // Eén plank kost hem twee hout, net als de verhouding in de bouwkosten.
   // Koper heeft hij ook niet: dat betaalt hij met goud (koperPrijs per stuk).
-  const g = (k) => (k === 'planken' ? 'hout' : k === 'koper' ? 'goud' : k);
-  const keer = (k) => (k === 'planken' ? 2 : k === 'koper' ? H.koperPrijs || 2 : 1);
+  const g = (k) => (k === 'planken' ? 'hout' : k === 'koper' || k === 'brood' ? 'goud' : k);
+  const keer = (k) => (k === 'planken' ? 2 : k === 'koper' ? H.koperPrijs || 2 : k === 'brood' ? H.broodPrijs || 1 : 1);
   const omzet = (kosten) => {
     const u = {};
     for (const [k, n] of Object.entries(kosten || {})) u[g(k)] = (u[g(k)] || 0) + n * keer(k);

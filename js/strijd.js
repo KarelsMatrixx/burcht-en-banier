@@ -625,6 +625,14 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     // De eerste slag op een nieuw doelwit (de sluipmoordenaar).
     if (k.def.eersteSlag && k.laatsteDoel !== doel) schade *= k.def.eersteSlag;
     k.laatsteDoel = doel;
+    // Charge (de ruiter): na een loop van genoeg tegels doet de eerste klap veel meer schade.
+    if (k.def.charge) {
+      if ((k.afgelegd || 0) >= k.def.charge.tegels) {
+        schade *= k.def.charge.keer;
+        rook(doel.x, doel.y);
+      }
+      k.afgelegd = 0;
+    }
     schade = Math.max(1, Math.round(schade * sterkteVan(e, k)));
     // Sommige wapens doen extra schade tegen een bepaalde soort (bijl tegen steen).
     if (k.def.bonusTegen) {
@@ -706,7 +714,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // --- Vuur: de vlammenwever ---------------------------------------------------------
   // Wat van hout is: de poort en de werken. Dat gaat in brand.
-  const HOUT = new Set(['POORT', 'HOUTHAKKER', 'BOOMGAARD', 'ZAGERIJ', 'TARWEVELD', 'STEENGROEVE', 'VOORRAADKAMER', 'WONING', 'KAZERNE', 'BAKKERIJ', 'KOPERMIJN'].map((n) => OBJECT[n]));
+  const HOUT = new Set(['POORT', 'HOUTHAKKER', 'BOOMGAARD', 'ZAGERIJ', 'TARWEVELD', 'STEENGROEVE', 'VOORRAADKAMER', 'WONING', 'KAZERNE', 'STAL', 'BAKKERIJ', 'KOPERMIJN'].map((n) => OBJECT[n]));
   const branden = new Map();   // vak -> { b, tot, per }
   function vuurbal(e, x, y, h) {
     effect({ soort: 'pijl', vuur: true, x1: e.x, y1: e.y, h1: 22 + (e.hoogte || 0), x2: x, y2: y, h2: h, duur: 300 + 50 * Math.hypot(x - e.x, y - e.y) });
@@ -1538,6 +1546,13 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (k.pose > 0 && --k.pose === 0) e.pose = 0;
     if (!e.pad) k.schuif = false;
     k.rust++;
+    // Een ruiter telt hoeveel tegels hij loopt: na genoeg tegels doet zijn eerste klap veel meer schade (charge).
+    if (k.def.charge) {
+      const afstand = Math.hypot(e.x - (k.lx === undefined ? e.x : k.lx), e.y - (k.ly === undefined ? e.y : k.ly));
+      if (afstand < 2) k.afgelegd = (k.afgelegd || 0) + afstand;   // een sprong (neergezet) telt niet mee
+      k.lx = e.x;
+      k.ly = e.y;
+    }
     // Soldaten van de speler komen na een gevecht langzaam weer op krachten.
     if (k.def.koning) {
       // Een koning geneest alleen bij zijn eigen burcht, en alleen als die nog staat.

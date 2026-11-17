@@ -1971,6 +1971,55 @@ export function tekenKazerne(naam, def) {
   return huis;
 }
 
+// Een stal: een laag houten huis met een brede donkere stalopening, een paard dat
+// naar buiten kijkt, een hooibaal en een hoefijzer boven de opening. Teamkleur in het schild.
+export function tekenStal(naam, def) {
+  const huis = huisVariant(naam, def, 0);
+  const ctx = huis.beeld.getContext('2d');
+  const cx = huis.ax;
+  const cy = huis.ay - HH;
+  const L = [cx - 25, cy];
+  const B = [cx, cy + 12.5];
+  const R = [cx + 25, cy];
+  const wand = 15;
+  const bijRechts = (deel, hoog) => [tussen(B, R, deel)[0], tussen(B, R, deel)[1] - hoog];
+  const bijLinks = (deel, hoog) => [tussen(L, B, deel)[0], tussen(L, B, deel)[1] - hoog];
+  // Planken: staande naden over de linkerwand
+  for (const deel of [0.12, 0.26, 0.4, 0.54, 0.68, 0.82]) lijn(ctx, ...bijLinks(deel, 0), ...bijLinks(deel, wand), 'rgba(30,20,10,0.35)', 0.7);
+  // De brede stalopening in de lichte wand, met een bovenbalk
+  vlak(ctx, [bijRechts(0.06, 0), bijRechts(0.74, 0), bijRechts(0.74, 11.5), bijRechts(0.06, 11.5)], '#2a1c12');
+  lijn(ctx, ...bijRechts(0.06, 11.5), ...bijRechts(0.74, 11.5), '#4a3220', 1.6);
+  lijn(ctx, ...bijRechts(0.4, 0), ...bijRechts(0.4, 11.5), '#4a3220', 1.3);
+  // Het onderdeur: laag hek voor de opening
+  lijn(ctx, ...bijRechts(0.06, 4.2), ...bijRechts(0.74, 4.2), '#8a6a42', 1.4);
+  // Een paard dat naar buiten kijkt (in de linkerhelft van de opening)
+  const hk = bijRechts(0.22, 7.2);
+  ovaal(ctx, hk[0], hk[1] + 1, 2.6, 3.4, '#7a4e2c');
+  ovaal(ctx, hk[0] + 1.2, hk[1] + 3.2, 1.7, 1.5, '#9a6a3c');
+  vlak(ctx, [[hk[0] - 1.4, hk[1] - 2], [hk[0] - 0.4, hk[1] - 4.8], [hk[0] + 0.5, hk[1] - 2]], '#7a4e2c');
+  ovaal(ctx, hk[0] + 0.5, hk[1] - 0.4, 0.45, 0.45, '#150e08');
+  lijn(ctx, hk[0] - 1.8, hk[1] - 2, hk[0] - 2.6, hk[1] + 3, '#2a1a10', 1.2);
+  // Schild in jouw kleur naast de opening
+  const sch = bijRechts(0.88, 8.2);
+  ovaal(ctx, sch[0], sch[1], 2.8, 3.4, '#2a2a2a');
+  ovaal(ctx, sch[0], sch[1], 2.2, 2.8, def.kleur);
+  blok(ctx, sch[0] - 0.4, sch[1] - 2.4, 0.9, 4.8, '#f1ead6');
+  // Hoefijzer boven de opening
+  const hf = bijRechts(0.5, 13.2);
+  ctx.strokeStyle = '#c9ced6';
+  ctx.lineWidth = 0.9;
+  ctx.beginPath();
+  ctx.arc(hf[0], hf[1], 1.7, 0.15 * Math.PI, 0.85 * Math.PI, true);
+  ctx.stroke();
+  // Hooibaal voor de stal
+  const hb = [cx + 20, cy + 10];
+  blok(ctx, hb[0] - 5, hb[1] - 4.6, 10, 5, '#d6b85a');
+  blok(ctx, hb[0] - 5, hb[1] - 4.6, 10, 1.2, '#ecd27e');
+  for (const dx of [-3, 0, 3]) lijn(ctx, hb[0] + dx, hb[1] - 4.4, hb[0] + dx, hb[1] + 0.2, 'rgba(120,85,25,0.5)', 0.6);
+  lijn(ctx, hb[0] - 5, hb[1] - 2.2, hb[0] + 5, hb[1] - 2.2, '#8a6a2a', 0.8);
+  return huis;
+}
+
 // Een tarweveld: omgeploegde aarde met rijen gouden aren en een laag hek.
 export function tekenTarweveld(naam, def) {
   const b = TB + 4;

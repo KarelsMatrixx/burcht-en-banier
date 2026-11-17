@@ -13,7 +13,7 @@ import {
   tekenGrond, tekenBoom, tekenRots, tekenRidder, tekenBoogschutter, tekenRam, tekenLadderdrager, tekenKatapult, tekenBelegeringstoren,
   tekenMuur, tekenToren, tekenWachttoren, tekenPoort, tekenBurcht,
   tekenHuis, tekenTent, tekenVlaggen, tekenHooiberg, tekenPut, tekenVaten,
-  tekenWerker, tekenHouthakker, tekenSteengroeve, tekenBoomgaard, tekenTarweveld, tekenBakkerij, tekenKopermijn, tekenCel, tekenKerk, tekenBijlridder, tekenKruisboogschutter, tekenSluipmoordenaar, tekenVlammenwever, tekenMagiertoren, tekenKoning, tekenKazerne, tekenZagerij, tekenPakhuis,
+  tekenWerker, tekenHouthakker, tekenSteengroeve, tekenBoomgaard, tekenTarweveld, tekenBakkerij, tekenKopermijn, tekenCel, tekenKerk, tekenBijlridder, tekenKruisboogschutter, tekenSluipmoordenaar, tekenVlammenwever, tekenMagiertoren, tekenKoning, tekenKazerne, tekenStal, tekenZagerij, tekenPakhuis,
 } from './kunst.js';
 import { SOLDATEN, teken as tekenNieuw } from './soldaten.js';
 import { MACHINES } from './machines.js';
@@ -57,6 +57,7 @@ const VORMEN = {
   cel: tekenCel,
   kerk: tekenKerk,
   kazerne: tekenKazerne,
+  stal: tekenStal,
 };
 
 // Stap 33: soldaten en werkers in de nieuwe stijl (soldaten.js).

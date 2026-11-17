@@ -155,6 +155,13 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     return n;
   }
 
+  // Hoeveel stallen heeft de speler?
+  function aantalStallen() {
+    let n = 0;
+    for (let i = 0; i < N; i++) if (kaart.eigenaar[i] === EIGENAAR_SPELER && kaart.object[i] === OBJECT.STAL) n++;
+    return n;
+  }
+
   // Hoeveel plekken heeft je leger nu? Per kazerne perKazerne, nooit meer dan de grens van het level.
   function legerMax() {
     return perKazerne ? Math.min(maxLevel, perKazerne * aantalKazernes()) : maxLevel;
@@ -165,6 +172,15 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const def = soorten[sleutel];
     if (!def) return 'that soldier does not exist';
     if (def.koning) return 'there is only one king';
+    // Een ruiter heeft een stal met een paardenboer nodig: perStal paarden per stal.
+    if (def.perStal) {
+      const stallen = aantalStallen();
+      if (!stallen) return 'you need a stable first';
+      const boeren = economie.aantalMetBeroep('paardenboer');
+      if (!boeren) return 'your stable has no horse keeper yet; one comes as soon as a peasant is free';
+      const levend = soldaten.filter((e) => e.soldaat.sleutel === sleutel).length;
+      if (levend >= def.perStal * Math.min(stallen, boeren)) return `every stable place is taken (${def.perStal} horses per stable): build another stable`;
+    }
     const grens = legerMax();
     if (plekken() + (def.legerPlekken || 1) > grens) {
       // Staat de grens lager dan die van het level, dan helpt een kazerne erbij.
@@ -185,7 +201,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const reden = waaromNiet(sleutel);
     if (reden) return reden;
     const vak = plekBij(kazerneVak, 4);
-    if (vak < 0) return 'there is no room next to the barracks';
+    if (vak < 0) return 'there is no room next to this building';
     economie.betaal(soorten[sleutel].kosten);
     for (let i = soorten[sleutel].boeren || 1; i > 0; i--) economie.boerWeg();
     maak(sleutel, vak);
