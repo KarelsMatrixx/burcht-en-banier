@@ -127,25 +127,6 @@ export function maakSfeer(kaart, landschap) {
     }
   }
 
-  // --- Rouwlint -------------------------------------------------------------
-  // Een zwart lint dat onder de rode banier van een vazal hangt: het teken dat
-  // hij de Rouwbanier van Ottger heeft aanvaard. (x, y) is de bovenkant, links.
-  function tekenLint(ctx, x, y, t, lengte, breedte, zaad) {
-    const zwaai = wind(x, y, t + zaad) * (1 + lengte * 0.1);
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + breedte, y);
-    ctx.lineTo(x + breedte + zwaai * 0.5, y + lengte * 0.55);
-    ctx.lineTo(x + breedte / 2 + zwaai, y + lengte);
-    ctx.lineTo(x + zwaai * 0.5, y + lengte * 0.55);
-    ctx.closePath();
-    ctx.fillStyle = '#16121c';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(190, 180, 205, 0.35)';
-    ctx.lineWidth = 0.5;
-    ctx.stroke();
-  }
-
   // --- Vogels ---------------------------------------------------------------
   // Twee vluchten die in een lange lus over de kaart trekken, met hun
   // schaduw op de grond.
@@ -193,5 +174,5 @@ export function maakSfeer(kaart, landschap) {
     ctx.stroke();
   }
 
-  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenLint };
+  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels };
 }

@@ -196,25 +196,6 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
   // Uit te zetten met CONFIG.beeld.sfeer = false, of ?sfeer=uit in de adresbalk.
   const sfeerAan = (new URLSearchParams(location.search).get('sfeer') || (CONFIG.beeld.sfeer === false ? 'uit' : 'aan')) !== 'uit';
   const sfeer = maakSfeer(kaart, landschap);
-  // Rouwlint (kastelenontwerp, detailronde): hoe zwarter het lint onder de rode banier, hoe verder de Rouwbanier van Ottger reikt.
-  // 0 = geen (proloog, vrij spel), 1 tot 10 = het level. Zie zetRouwlint.
-  let rouwlint = 0;
-  function tekenRouwlint(px, py, t) {
-    const n = rouwlint;
-    const aantal = n >= 8 ? 3 : n >= 4 ? 2 : 1;
-    const lengte = 9 + 2.4 * n;
-    const breedte = 3.5 + 0.35 * n;
-    for (let k = 0; k < aantal; k++) {
-      const x = px + 1.5 + k * (breedte + 1);
-      if (sfeerAan && !sfeerLicht) sfeer.tekenLint(ctx, x, py, t, lengte, breedte, k * 0.7);
-      else {
-        ctx.fillStyle = '#16121c';
-        ctx.beginPath();
-        ctx.moveTo(x, py); ctx.lineTo(x + breedte, py); ctx.lineTo(x + breedte, py + lengte * 0.55); ctx.lineTo(x + breedte / 2, py + lengte); ctx.lineTo(x, py + lengte * 0.55);
-        ctx.closePath(); ctx.fill();
-      }
-    }
-  }
   const basis = [1, 0, 0, 1, 0, 0];   // de cameratransformatie van dit beeld
   // Zelfbewaking: blijft het beeld langer traag (onder ongeveer 30 beelden per
   // seconde), dan gaat de wind uit. Schaduwen, rook en water blijven.
@@ -836,7 +817,6 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
           } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
           if (o.rook) sfeer.tekenRook(ctx, wx + dx + o.rook[0], wy + TEGEL_HOOGTE + dy + o.rook[1], t, tegelToeval(x, y, 7));
         } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
-        if (rouwlint > 0 && !doorzicht && kaart.object[y * kaart.breedte + x] === OBJECT.BANIER_ROOD) tekenRouwlint(wx + dx, wy + TEGEL_HOOGTE + dy - (TEGEL_HOOGTE / 2 + (o.hoogte || 74) + 34 + 21), t);
         if (l && !(l.dx < 0 || l.dy < 0)) tekenLadder(l);
       }
     }
@@ -1086,5 +1066,5 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     return asset && asset.varianten ? asset.varianten.indexOf(objectBeeld[i]) : -1;
   };
 
-  return { zetRouwlint: (n) => { rouwlint = Math.max(0, Math.min(10, n | 0)); }, zetHekDoel: (f) => { hekDoel = f; }, pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, zetDoorzicht: (aan) => { doorzicht = !!aan; }, doorzicht: () => doorzicht, aantalGetekend: () => getekend, aantalInPoort: () => inPoort, sfeerLicht: () => sfeerLicht };
+  return { zetHekDoel: (f) => { hekDoel = f; }, pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, zetDoorzicht: (aan) => { doorzicht = !!aan; }, doorzicht: () => doorzicht, aantalGetekend: () => getekend, aantalInPoort: () => inPoort, sfeerLicht: () => sfeerLicht };
 }
