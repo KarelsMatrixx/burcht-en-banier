@@ -643,3 +643,11 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Nog niet gedaan: echte smederij met gloed (Gemini), ijzeren poort met valhek (Gemini), ertskarren en slakkenhopen, weegschaal boven de poort.
 
 Aanvulling 0.69.0: eigen plaatjes van Karel (Gemini) voor level 3. Twee smederijen met gloeiende vuurplaats (`assets/sprites/smederij.png`) en twee vrijstaande poortgebouwen met ijzeren valhek (`assets/sprites/poort_ijzer.png`), als decor in het kasteel van IJzerbroek. De poortgebouwen vervangen de echte poort van het kasteel niet: die kan openen en dicht en heeft twee richtingen, een plaatje niet. Het open-poortplaatje is nog ongebruikt.
+
+## 0.69.1: feedback op de tutorial (proloog)
+
+- De pijl aan de rand van het scherm wijst nu naar de bouwplek. Oorzaak: de pulsanimatie overschreef de draaiing (de pijl wees altijd naar rechts) en de positie sprong altijd naar een hoek. Nu draait hij via `--hoek` en staat hij op de lijn van het midden naar de plek (gids.js, stijl.css).
+- Bouwen in de proloog: alleen het bouwwerk van de les is te kiezen, pas na "Start lesson". Andere bouwknoppen, Slopen en de hamer (zonder bouwles) zijn dicht en grijs (`proloog.bouwSleutel`, `ui.beperkBouw`, guard in `kiesBouw`). In de vrije avond en de nacht kun je dus ook niet bouwen.
+- Economie in de proloog staat stil (`economie.bevries`): populariteit staat vast op 100, honger en belasting veranderen haar niet, niemand vertrekt, geen meldingen over ongelukkige boeren. Er komen wel boeren bij zolang er plek is (huis en soldaten opleiden hebben ze nodig). Belasting levert nog wel goud.
+- Bartholts uitleg over je volk noemt de echte getallen uit de balk (`{volk}/{ruimte}`) in plaats van vaste 4/6.
+- Test: tests/proloog69.mjs.

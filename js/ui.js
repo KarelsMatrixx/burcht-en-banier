@@ -206,6 +206,7 @@ export function maakUi() {
   let paneel = null;
   try { paneel = sessionStorage.getItem('burcht-banier.paneel') || null; } catch (fout) { /* geen opslag */ }
   let bouwtNu = false;
+  let beperktTot;   // proloog: undefined = geen beperking, anders de sleutel van het bouwwerk dat mag (of null)
   let legerStand = { zichtbaar: false };
   function zetPaneel(nieuw) {
     paneel = nieuw;
@@ -920,6 +921,26 @@ export function maakUi() {
       el('knop-bevestig').classList.toggle('gevaar', actief === 'sloop');
       // Tijdens het bouwen is de ruimte onderin nodig voor de uitleg.
       el('tip').classList.toggle('weg', !!actief);
+    },
+    // Proloog: alleen het bouwwerk van de les is te kiezen (sleutel), of niets (null).
+    // De rest van de bouwbalk, Slopen en zo nodig de hamer zijn dan dicht.
+    beperkBouw(sleutel) {
+      if (sleutel === beperktTot) return;
+      beperktTot = sleutel;
+      const balk = el('bouw-knoppen');
+      const doel = sleutel ? balk.querySelector(`[data-sleutel="${sleutel}"]`) : null;
+      const groep = doel ? doel.dataset.groep || null : null;
+      for (const knop of balk.children) {
+        if (knop.id === 'knop-terug') continue;
+        const dicht = knop.dataset.open ? knop.dataset.open !== groep : knop.dataset.sleutel !== sleutel;
+        knop.disabled = dicht;
+        knop.classList.toggle('tut-dicht', dicht);
+      }
+      const hamerDicht = !sleutel && !bouwtNu;
+      el('knop-hamer').disabled = hamerDicht;
+      el('knop-hamer').classList.toggle('tut-dicht', hamerDicht);
+      // Geen les om te bouwen: de bouwbalk gaat dicht
+      if (hamerDicht && paneel === 'bouw') { zetPaneel(null); toonGroep(null); }
     },
     opBevestig(functie) {
       el('knop-bevestig').addEventListener('click', functie);

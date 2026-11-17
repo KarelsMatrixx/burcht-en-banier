@@ -151,19 +151,32 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       plekTekstEl.textContent = sol ? 'Tap this soldier' : doel.plekTekst || 'Build here';
       plekPijl.hidden = false;
     } else {
-      // Een pijl aan de rand van het scherm, in de richting van de plek
+      // Een pijl aan de rand van het scherm, in de richting van de plek.
+      // De straal van het midden naar de plek wordt afgekapt op de rand van een
+      // veilig vak (onder de bovenbalk, boven de knoppen): zo staat de pijl op de
+      // lijn naar de plek en niet in een hoek.
       const mx = window.innerWidth / 2;
       const my = window.innerHeight / 2;
-      const hoek = Math.atan2(sc.y - my, sc.x - mx);
-      const rx = Math.max(-1, Math.min(1, Math.cos(hoek) * 1e3));
-      const ry = Math.max(-1, Math.min(1, Math.sin(hoek) * 1e3));
-      const x = Math.max(veilig, Math.min(window.innerWidth - veilig, mx + rx * (mx - veilig)));
-      const y = Math.max(veilig + 40, Math.min(window.innerHeight - veilig - 20, my + ry * (my - veilig - 20)));
+      const dx = sc.x - mx;
+      const dy = sc.y - my;
+      const hoek = Math.atan2(dy, dx);
+      const links = veilig;
+      const rechts = window.innerWidth - veilig;
+      const boven = veilig + 40;
+      const onder = window.innerHeight - veilig - 20;
+      const tx = dx > 0 ? (rechts - mx) / dx : dx < 0 ? (links - mx) / dx : Infinity;
+      const ty = dy > 0 ? (onder - my) / dy : dy < 0 ? (boven - my) / dy : Infinity;
+      const t = Math.min(tx, ty);
+      const x = mx + dx * t;
+      const y = my + dy * t;
       plek.style.width = '44px';
       plek.style.height = '44px';
       plek.style.left = `${x - 22}px`;
       plek.style.top = `${y - 22}px`;
-      plek.style.transform = `rotate(${hoek}rad)`;
+      // De draaiing gaat via een variabele: de pulsanimatie zet zelf een transform en
+      // overschreef de draaiing, waardoor de pijl altijd naar rechts wees.
+      plek.style.transform = '';
+      plek.style.setProperty('--hoek', `${hoek}rad`);
       plekPijl.hidden = true;
     }
   }

@@ -295,6 +295,8 @@ async function start() {
   // Een knop in de bouwbalk. Nog eens tikken op dezelfde knop begint opnieuw.
   function kiesBouw(sleutel) {
     if (meting.isBezig()) return;
+    // Proloog: alleen het bouwwerk van de les is te kiezen (de knoppen zijn dan ook dicht).
+    if (sleutel && proloog && proloog.bouwSleutel() !== sleutel) return;
     bouw.sleutel = sleutel;
     bouw.begin = null;
     bouw.eind = null;
@@ -823,7 +825,7 @@ async function start() {
   const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd }) : null;
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, bouwwerken, leger, strijd, wegvinder, eenheden,
-    koningSoort: 'koning', gids, figuranten,
+    koningSoort: 'koning', gids, figuranten, bevolking: () => economie.bevolking(),
     kiesGeen: () => { leger.kiesGeen(); if (naLeger) naLeger(); },
     sluitPanelen: () => { stopBouw(); sluitKazerne(); leger.kiesGeen(); if (naLeger) naLeger(); },
     stopBouw: () => stopBouw(),
@@ -845,6 +847,8 @@ async function start() {
       toonKaart();
     }); },
   }) : null;
+  // In de proloog staat je volk stil: populariteit en boeren dalen of stijgen niet door tijd of honger (economie.js bevries).
+  if (proloog) economie.bevries(true);
   // Een level met een eigen doel (level 4: de hut van Gesina houden).
   doel = missie && missie.doel ? (missie.doel.soort === 'loodsen' ? maakLoodsen : maakDoel)({
     missie, kaart, bouwer, strijd, wegvinder,
@@ -1153,7 +1157,7 @@ async function start() {
       strijd.stap();
       poortwacht.stap();
       verhaal.stap(dt, verhaalStand);
-      if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); }
+      if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); }
       if (doel) doel.stap(dt);
       if (hinderlaag && !strijd.uitslag()) hinderlaag.stap(dt);
       slachting.stap(dt);
