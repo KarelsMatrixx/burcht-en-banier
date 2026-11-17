@@ -611,3 +611,7 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Uit te zetten met `CONFIG.beeld.sfeer = false` of `?sfeer=uit` in de adresbalk (dan de oude schaduwen).
 - Proef, standaard uit: nabewerking.js (kleurgrading, gloed, scherptediepte), aan te zetten met `?nabewerking=laag` of `hoog`.
 - Te meten op de iPhone: framekosten (in de testbrowser zonder GPU circa 18 naar 27 ms per beeld) en of de zelfbewaking niet te vroeg ingrijpt.
+
+## 0.67.1: geen wolkenschaduwen meer, bomen vallen om en worden weggesleept
+- De wolkenschaduwen zijn weg (sfeer.js, tekenaar.js): Karel vond de grote donkere vlekken lelijk.
+- Een gevelde boom valt nu om, van de houthakker af: eerst langzaam, dan sneller, met een kleine stuit en een stofwolk (effect 'boomval', tekenaar.js `tekenBoomval`). De houthakker wacht ruim een seconde tot de boom ligt (economie.js `opGeveld`, `w.wacht`) en sleept hem daarna aan de stam achter zich aan naar de opslag, met de kruin over de grond (`tekenSleepboom`). Alleen beeld; wel komt het hout daardoor ruim een seconde later binnen.

@@ -1,6 +1,6 @@
 // Sfeer: alles wat de wereld laat leven zonder dat het spel er iets van merkt.
 // Lange schaduwen in de vorm van het echte plaatje, wind in bomen en graan,
-// rook uit schoorstenen, glinsterend water, wolkenschaduwen en vogels.
+// rook uit schoorstenen, glinsterend water en vogels.
 // Puur beeld: niets hiervan verandert de spelregels.
 
 import { HALVE_BREEDTE, HALVE_HOOGTE } from './iso.js';
@@ -127,51 +127,6 @@ export function maakSfeer(kaart, landschap) {
     }
   }
 
-  // --- Wolkenschaduwen ------------------------------------------------------
-  // Eén zacht, naadloos doek met donkere vlekken (wereldmaat 1024, op een
-  // kwart getekend). Het schuift langzaam over de wereld.
-  const WOLK = 1800;
-  const WS = 0.08;
-  const wolkDoek = document.createElement('canvas');
-  wolkDoek.width = WOLK * WS;
-  wolkDoek.height = WOLK * WS;
-  {
-    const c = wolkDoek.getContext('2d');
-    const n = WOLK * WS;
-    for (let k = 0; k < 5; k++) {
-      const cx = hash(k * 3.1) * n;
-      const cy = hash(k * 5.7 + 1) * n;
-      for (let j = 0; j < 6; j++) {
-        const px = cx + (hash(k * 11 + j) - 0.5) * n * 0.3;
-        const py = cy + (hash(k * 13 + j + 3) - 0.5) * n * 0.15;
-        const rr = n * (0.1 + hash(k * 17 + j) * 0.09);
-        // Naadloos: elke vlek ook aan de overkant van de randen.
-        for (const ox of [-n, 0, n]) {
-          for (const oy of [-n, 0, n]) {
-            const g = c.createRadialGradient(px + ox, py + oy, 0, px + ox, py + oy, rr);
-            g.addColorStop(0, 'rgba(20, 24, 48, 0.3)');
-            g.addColorStop(1, 'rgba(20, 24, 48, 0)');
-            c.fillStyle = g;
-            c.fillRect(px + ox - rr, py + oy - rr, rr * 2, rr * 2);
-          }
-        }
-      }
-    }
-  }
-
-  function tekenWolken(ctx, l, b, r, o, t, sterkte) {
-    if (sterkte <= 0) return;
-    const ox = (-t * 9) % WOLK;     // de wind blaast naar links
-    const oy = (-t * 3) % WOLK;
-    const x0 = Math.floor((l - ox) / WOLK) * WOLK + ox;
-    const y0 = Math.floor((b - oy) / WOLK) * WOLK + oy;
-    ctx.globalAlpha = 0.55 * sterkte;
-    for (let x = x0; x < r; x += WOLK) {
-      for (let y = y0; y < o; y += WOLK) ctx.drawImage(wolkDoek, x, y, WOLK, WOLK);
-    }
-    ctx.globalAlpha = 1;
-  }
-
   // --- Vogels ---------------------------------------------------------------
   // Twee vluchten die in een lange lus over de kaart trekken, met hun
   // schaduw op de grond.
@@ -219,5 +174,5 @@ export function maakSfeer(kaart, landschap) {
     ctx.stroke();
   }
 
-  return { herbouw, wind, tekenGlinster, tekenRook, tekenWolken, tekenVogels };
+  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels };
 }

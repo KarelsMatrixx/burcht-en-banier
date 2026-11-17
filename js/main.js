@@ -124,6 +124,7 @@ async function start() {
   };
 
   let naVoorraad = () => {};
+  let naGeveld = () => {};     // een gevelde boom valt om (beeld); ingevuld als het gevecht er is
   let verversHandel = () => {};   // het paneel van de voorraadkamer, als het openstaat   // wordt verderop ingevuld, als de bouwbalk er is
   const economie = maakEconomie({
     regels, kaart, wegvinder, eenheden,
@@ -132,6 +133,7 @@ async function start() {
     opVerandering: bewaar,
     // Economie: stil in het logboek, behalve als het echt dringend is.
     opMelding: (tekst) => ui.toonMelding(tekst, { soort: 'economie', toon: /food has run out|unhappy/.test(tekst) }),
+    opGeveld: (vak, kant) => naGeveld(vak, kant),
   });
   let naBouw = () => {};       // wordt hieronder ingevuld, als het gevecht er is
   const bouwer = maakBouwer({
@@ -158,6 +160,10 @@ async function start() {
     opKaart: (vakken) => kaartGewijzigd(vakken),
     opEinde: (wat) => naEinde(wat),
   });
+  naGeveld = (vak, kant) => {
+    if (strijd.effecten.length > 400) return;
+    strijd.effecten.push({ soort: 'boomval', x: vak % kaart.breedte, y: Math.floor(vak / kaart.breedte), kant: kant < 0 ? -1 : 1, van: performance.now(), duur: 1250 });
+  };
   // De veldheer: hoe rood zijn aanvallen aanpakt (timing, doelkeuze, tegenzetten, terugtrekken).
   const veld = missie && missie.proloog ? null : maakVeldheer({
     regels, kaart, leger, strijd,
