@@ -1,3 +1,7 @@
+## 0.70.1 (deel 5)
+- Stillwater (level 5): de banierdrager van rood komt nu echt in aanval 2, zodat Bartholts tip klopt (vanaf 1 en vast in extra_soorten).
+- Stillwater: vanaf aanval 4 zijn de aanvallen van rood ongeveer 2x zo groot (heer.doelVanaf in campagne.json, gelezen in rood.js en modus.js).
+
 ## 0.15.0 (stap 15): de rode heer met eigen economie
 - Nieuw: js/rood.js. Rood heeft voorraad (hout, steen, goud), werken buiten zijn muur (houthakkershut, steengroeve, boomgaard, door kaart.js geplaatst, eigenaar 2) en koopt soldaten in een reserve.
 - Geen klok meer voor de aanvallen: hij valt aan als zijn reserve sterk genoeg is (doel groeit per aanval) en er minstens 200 s (eerste) of 100 s (daarna) voorbij zijn. Rammen en ladders vanaf aanval 4, daarvoor spaart hij.

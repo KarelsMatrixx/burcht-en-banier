@@ -79,7 +79,9 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
   const staand = () => werken.filter((w) => kaart.eigenaar[w.vak] === 2 && kaart.object[w.vak] === w.soort);
   // Elke derde aanval is een piek (veldheer, niveau 3): dan is zijn doel hoger, en daarna rust hij langer.
   const piek = () => (veld ? veld.piek(aanvallen + 1) : 1);
-  const doel = () => Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen) * piek() + (groei ? groei.doelBonus() : 0);
+  // Per level kan een vaste verzwaring gelden (heer.doelVanaf): vanaf aanval X is zijn doel zoveel keer zo groot.
+  const zwaarder = () => (H.doelVanaf && aanvallen + 1 >= H.doelVanaf.aanval ? H.doelVanaf.factor : 1);
+  const doel = () => Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen) * piek() * zwaarder() + (groei ? groei.doelBonus() : 0);
   const wachtTijd = () => (aanvallen === 0 ? H.eersteAanval : H.tussen * (veld ? veld.rust(aanvallen) : 1));
   const sterkte = () => sterkteVan(reserve);
   const aantal = () => Object.values(reserve).reduce((a, b) => a + b, 0);
