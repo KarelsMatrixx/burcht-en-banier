@@ -615,3 +615,10 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 ## 0.67.1: geen wolkenschaduwen meer, bomen vallen om en worden weggesleept
 - De wolkenschaduwen zijn weg (sfeer.js, tekenaar.js): Karel vond de grote donkere vlekken lelijk.
 - Een gevelde boom valt nu om, van de houthakker af: eerst langzaam, dan sneller, met een kleine stuit en een stofwolk (effect 'boomval', tekenaar.js `tekenBoomval`). De houthakker wacht ruim een seconde tot de boom ligt (economie.js `opGeveld`, `w.wacht`) en sleept hem daarna aan de stam achter zich aan naar de opslag, met de kruin over de grond (`tekenSleepboom`). Alleen beeld; wel komt het hout daardoor ruim een seconde later binnen.
+
+## 0.68.0: Rouwlint onder de rode banier (kastelen, detailronde stap A)
+- Onder de rode banier op de burcht van rood hangt een zwart lint: het teken dat de heer de Rouwbanier van Ottger heeft aanvaard. Het lint wordt groter per level: level 1 één klein lint, vanaf level 4 twee, vanaf level 8 drie, en steeds langer (js/tekenaar.js `tekenRouwlint`, `zetRouwlint`; js/sfeer.js `tekenLint`, waait mee met de wind).
+- Alleen in campagnelevels 1 tot 10. Niet in de proloog, niet in vrij spel (main.js zet het per level). Met het oog aan (doorzicht) of zonder sfeer is het lint stil of weg.
+- Het lint is puur beeld: geen invloed op de spelregels. Rood blijft de teamkleur.
+- Nieuwe test: rouwlint52 (geen scriptfouten; beelden in /tmp/s). Te bekijken op de iPhone: of het lint op het kleine scherm opvalt zonder de rode banier te verdringen.
+- Onderdeel van de detailronde in `claude/kastelenontwerp.md`; volgende stappen per level.
