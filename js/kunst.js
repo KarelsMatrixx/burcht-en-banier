@@ -3132,7 +3132,8 @@ function kampBurchtTegel(naam, def, masker) {
 
   // De deur: een opgerolde tentflap met een donkere opening
   if (masker === 13) {
-    const op2 = (deel, hoog) => [B[0] + (R[0] - B[0]) * deel, B[1] + (R[1] - B[1]) * deel - hoog];
+    const dh = Math.min(1, H / 56);   // een lager paviljoen krijgt een lagere deur
+    const op2 = (deel, hoog) => [B[0] + (R[0] - B[0]) * deel, B[1] + (R[1] - B[1]) * deel - hoog * dh];
     ctx.beginPath();
     ctx.moveTo(...op2(0.28, 0));
     ctx.lineTo(...op2(0.36, 22));
@@ -3153,7 +3154,7 @@ function kampBurchtTegel(naam, def, masker) {
 
   if (metBanier) {
     // Het paviljoen: een tweede laag met een puntdak van doek, daarop de banier.
-    const hoog = 22;
+    const hoog = Math.round(H * 0.3);
     const kop = [cx, top];
     const bT = [cx, top - 10.5];
     const bR = [cx + 21, top];
@@ -3166,7 +3167,7 @@ function kampBurchtTegel(naam, def, masker) {
     vlak(ctx, [tussen(o(bB), bB, 0.7), tussen(o(bR), bR, 0.7), tussen(o(bR), bR, 0.4), tussen(o(bB), bB, 0.4)], band);
     blok(ctx, bB[0] - 1.1, bB[1] - hoog, 2.2, hoog + 1, palen);
     // Puntdak
-    const punt = [cx, top - hoog - 24];
+    const punt = [cx, top - hoog - Math.round(H * 0.32)];
     vlak(ctx, [o(bL), o(bB), punt], tint(doekKleur, -0.26));
     vlak(ctx, [o(bB), o(bR), punt], tint(doekKleur, 0.08));
     for (const deel of [0.33, 0.66]) {
@@ -3184,7 +3185,7 @@ function kampBurchtTegel(naam, def, masker) {
     }
     // Vlaggenstok met de banier van rood
     const dak = punt[1];
-    blok(ctx, cx - 1, dak - 30, 2, 31, palen);
+    blok(ctx, cx - 1, dak - 26, 2, 27, palen);
     const vlag = [[cx + 1, dak - 30], [cx + 23, dak - 27], [cx + 17, dak - 22.5], [cx + 23, dak - 18], [cx + 1, dak - 15]];
     vlak(ctx, vlag, def.banier);
     vlak(ctx, [[cx + 1, dak - 25], [cx + 19.4, dak - 23.7], [cx + 18.4, dak - 21.3], [cx + 1, dak - 20.4]], '#efe6c8');

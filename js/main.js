@@ -57,7 +57,7 @@ async function start() {
     const hoger = ontwerp.hoog ? 1.25 : 1;
     for (const deel of ['muur', 'toren', 'wachttoren', 'poort']) roodKasteel['rood.' + deel] = { basis: 'kasteel.' + deel, kleur: materiaal.kleur, hoogteFactor: hoger };
     // Een materiaal kan de burcht een andere vorm geven (tentenkamp: de commandotent) en een tweede kleur meegeven.
-    const burchtVelden = { kleur: materiaal.burcht || materiaal.kleur, ...(materiaal.vorm ? { vorm: materiaal.vorm } : {}), ...(materiaal.accent ? { accent: materiaal.accent } : {}) };
+    const burchtVelden = { kleur: materiaal.burcht || materiaal.kleur, ...(materiaal.vorm ? { vorm: materiaal.vorm } : {}), ...(materiaal.accent ? { accent: materiaal.accent } : {}), ...(materiaal.hoogte ? { hoogte: materiaal.hoogte } : {}) };
     roodKasteel['rood.burcht'] = { basis: 'kasteel.burcht', ...burchtVelden };
     roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', ...burchtVelden };
   }

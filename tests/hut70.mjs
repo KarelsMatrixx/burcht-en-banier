@@ -32,7 +32,7 @@ const kamp = await p.evaluate(() => {
 console.log('kamp', JSON.stringify(kamp));
 check('geen muren, torens of poorten', !kamp.tel[4] && !kamp.tel[5] && !kamp.tel[10] && !kamp.tel[6], JSON.stringify(kamp.tel));
 check('commandotent (burcht) staat er', kamp.tel[7] >= 8, kamp.tel[7]);
-check('minstens 8 jagertenten', kamp.tel[39] >= 8, kamp.tel[39]);
+check('minstens 20 jagertenten', kamp.tel[39] >= 20, kamp.tel[39]);
 check('minstens 2 kampvuren', kamp.tel[38] >= 2, kamp.tel[38]);
 check('veel bomen', kamp.tel[1] >= 250, kamp.tel[1]);
 check('moeras: veel water in de buurt', kamp.water >= 120, kamp.water);
