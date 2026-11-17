@@ -631,3 +631,5 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Veertien steenhouwers bij blokken steen; hun hamer slaat echt en bij elke klap springen stofjes weg. Alleen decor: ze doen niets in het gevecht.
 - Nieuwe decorsoorten `mijn` en `houwer` in `data/kastelen.json`; nieuwe tekenvormen `mijngang` en `steenhouwer`; `sfeer.tekenRook` kent nu zware rook en `sfeer.tekenHamer` is nieuw. Alles gaat uit als de sfeer uit staat of de snelheid zakt.
 - Nog niet gedaan: echte smederij met gloed (Gemini), ijzeren poort met valhek (Gemini), ertskarren en slakkenhopen, weegschaal boven de poort.
+
+Aanvulling 0.69.0: eigen plaatjes van Karel (Gemini) voor level 3. Twee smederijen met gloeiende vuurplaats (`assets/sprites/smederij.png`) en twee vrijstaande poortgebouwen met ijzeren valhek (`assets/sprites/poort_ijzer.png`), als decor in het kasteel van IJzerbroek. De poortgebouwen vervangen de echte poort van het kasteel niet: die kan openen en dicht en heeft twee richtingen, een plaatje niet. Het open-poortplaatje is nog ongebruikt.

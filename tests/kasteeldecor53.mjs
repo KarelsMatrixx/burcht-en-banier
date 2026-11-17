@@ -22,7 +22,7 @@ for (const level of levels) {
     return { tel, bereikbaar: s.wegvinder.verbonden ? true : null }; });
   console.log('level', level, JSON.stringify(info.tel));
   if (level === 1) { check('tent', info.tel[13] >= 1); check('hooiberg', info.tel[14] >= 2); check('vaten', info.tel[16] >= 1); check('put', info.tel[15] >= 1); }
-  await p.evaluate(([level, off]) => { const s = window.spel; const t = s.CONFIG.tegel; const st = s.kaart.start[1]; const x = st.x ?? st[0], y = st.y ?? st[1]; s.camera.kijkNaar((x - y) * t.breedte / 2, (x + y) * t.hoogte / 2 + (level === 3 ? off : -20)); }, [level, Number(process.env.OFF || 60)]);
+  await p.evaluate(([level, off, offx]) => { window.__offx = offx; const s = window.spel; const t = s.CONFIG.tegel; const st = s.kaart.start[1]; const x = st.x ?? st[0], y = st.y ?? st[1]; s.camera.kijkNaar((x - y) * t.breedte / 2 + Number(window.__offx || 0), (x + y) * t.hoogte / 2 + (level === 3 ? off : -20)); }, [level, Number(process.env.OFF || 60), Number(process.env.OFFX || 0)]);
   await p.waitForTimeout(600);
   await p.screenshot({ path: `/tmp/s/decor_${level}${process.env.NAAM || ''}.png` });
   check(`geen scriptfouten level ${level}`, fouten.length === 0, fouten.join('|'));
