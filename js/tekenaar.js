@@ -816,7 +816,8 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
             ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
             ctx.setTransform(basis[0], 0, 0, basis[3], basis[4], basis[5]);
           } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
-          if (o.rook) sfeer.tekenRook(ctx, wx + dx + o.rook[0], wy + TEGEL_HOOGTE + dy + o.rook[1], t, tegelToeval(x, y, 7));
+          if (o.rook) sfeer.tekenRook(ctx, wx + dx + o.rook[0], wy + TEGEL_HOOGTE + dy + o.rook[1], t, tegelToeval(x, y, 7), kaart.object[y * kaart.breedte + x] === OBJECT.MIJNGANG);
+          else if (kaart.object[y * kaart.breedte + x] === OBJECT.STEENHOUWER && !sfeerLicht) sfeer.tekenHamer(ctx, wx + dx, wy + TEGEL_HOOGTE / 2 + dy, t, tegelToeval(x, y, 5));
         } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
         if (wimpels && sfeerAan && !sfeerLicht && !doorzicht && kaart.object[y * kaart.breedte + x] === OBJECT.TOREN && kaart.eigenaar[y * kaart.breedte + x] === 2) sfeer.tekenWimpel(ctx, wx + dx, wy + TEGEL_HOOGTE / 2 + dy - (o.hoogte || 60) + 2, t, tegelToeval(x, y, 8));
         if (l && !(l.dx < 0 || l.dy < 0)) tekenLadder(l);

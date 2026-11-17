@@ -623,3 +623,11 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Alles is beeld; de spelregels veranderen niet. Het Rouwlint (zwart lint onder de rode banier) is op verzoek van Karel geschrapt.
 - Nieuwe test: kasteeldecor53 (decor aanwezig, geen scriptfouten; beelden in /tmp/s).
 - Eerlijk: het decor gebruikt bestaande plaatjes. De houten paardje van Wessel, de gescheurde blauwe gastvlag (level 1) en een echte smederij met gloed (level 3) hebben een eigen plaatje nodig: zie de Gemini-lijst in `claude/kastelenontwerp.md`.
+
+## 0.69.0: IJzerbroek wordt een donkere mijnstad (detailronde, level 3)
+
+- Het kasteel van Hademar heeft nu een eigen materiaal "Coal-black stone" (zwarte muren, donkerder dan het grijs van de andere levels).
+- Twaalf mijningangen rond het kasteel, elk met een gemetselde luchtschacht waar zware, donkere rook uit komt, een gloeiende lantaarn, rails en een kar met kolen.
+- Veertien steenhouwers bij blokken steen; hun hamer slaat echt en bij elke klap springen stofjes weg. Alleen decor: ze doen niets in het gevecht.
+- Nieuwe decorsoorten `mijn` en `houwer` in `data/kastelen.json`; nieuwe tekenvormen `mijngang` en `steenhouwer`; `sfeer.tekenRook` kent nu zware rook en `sfeer.tekenHamer` is nieuw. Alles gaat uit als de sfeer uit staat of de snelheid zakt.
+- Nog niet gedaan: echte smederij met gloed (Gemini), ijzeren poort met valhek (Gemini), ertskarren en slakkenhopen, weegschaal boven de poort.

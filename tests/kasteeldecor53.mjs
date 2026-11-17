@@ -1,7 +1,7 @@
 // Decor in het kasteel van rood (detailronde): level 1 heeft een tent, hooibergen, vaten en een put in de binnenplaats.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
 import { spawn } from 'child_process';
-const poort = 8253;
+const poort = 8254;
 const srv = spawn('python3', ['-m', 'http.server', String(poort)], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
@@ -18,13 +18,13 @@ for (const level of levels) {
   await p.tap('#missie-begin', { timeout: 30000 }).catch(() => {});
   await p.waitForTimeout(1500);
   const info = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[1]; const x0 = st.x ?? st[0], y0 = st.y ?? st[1];
-    const tel = {}; for (let dy = -9; dy <= 9; dy++) for (let dx = -9; dx <= 9; dx++) { const o = k.object[(y0 + dy) * k.breedte + x0 + dx]; tel[o] = (tel[o] || 0) + 1; }
+    const tel = {}; for (let dy = -12; dy <= 12; dy++) for (let dx = -12; dx <= 12; dx++) { const o = k.object[(y0 + dy) * k.breedte + x0 + dx]; tel[o] = (tel[o] || 0) + 1; }
     return { tel, bereikbaar: s.wegvinder.verbonden ? true : null }; });
   console.log('level', level, JSON.stringify(info.tel));
   if (level === 1) { check('tent', info.tel[13] >= 1); check('hooiberg', info.tel[14] >= 2); check('vaten', info.tel[16] >= 1); check('put', info.tel[15] >= 1); }
-  await p.evaluate((level) => { const s = window.spel; const t = s.CONFIG.tegel; const st = s.kaart.start[1]; const x = st.x ?? st[0], y = st.y ?? st[1]; s.camera.kijkNaar((x - y) * t.breedte / 2, (x + y) * t.hoogte / 2 + (level === 3 ? 60 : -20)); }, level);
+  await p.evaluate(([level, off]) => { const s = window.spel; const t = s.CONFIG.tegel; const st = s.kaart.start[1]; const x = st.x ?? st[0], y = st.y ?? st[1]; s.camera.kijkNaar((x - y) * t.breedte / 2, (x + y) * t.hoogte / 2 + (level === 3 ? off : -20)); }, [level, Number(process.env.OFF || 60)]);
   await p.waitForTimeout(600);
-  await p.screenshot({ path: `/tmp/s/decor_${level}.png` });
+  await p.screenshot({ path: `/tmp/s/decor_${level}${process.env.NAAM || ''}.png` });
   check(`geen scriptfouten level ${level}`, fouten.length === 0, fouten.join('|'));
   await p.close();
 }

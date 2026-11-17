@@ -113,17 +113,54 @@ export function maakSfeer(kaart, landschap) {
   // --- Rook uit een schoorsteen --------------------------------------------
   // (x, y) is de bovenkant van de schoorsteen. Vijf wolkjes die opstijgen,
   // groeien en met de wind mee naar links drijven.
-  function tekenRook(ctx, x, y, t, zaad) {
-    for (let k = 0; k < 5; k++) {
-      const leeftijd = (t / 3.2 + k / 5 + zaad) % 1;
-      const px = x - leeftijd * leeftijd * 16 + Math.sin(t * 1.5 + k + zaad * 9) * 1.2;
-      const py = y - leeftijd * 26;
-      const straal = 1.4 + leeftijd * 4.2;
-      const a = 0.5 * (1 - leeftijd) * Math.min(1, leeftijd * 6);
-      ctx.fillStyle = `rgba(232, 228, 220, ${a})`;
+  // zwaar: dikke donkere mijnrook (IJzerbroek): meer wolken, groter, langer zichtbaar en grijsbruin.
+  function tekenRook(ctx, x, y, t, zaad, zwaar) {
+    const n = zwaar ? 8 : 5;
+    for (let k = 0; k < n; k++) {
+      const leeftijd = (t / (zwaar ? 4.2 : 3.2) + k / n + zaad) % 1;
+      const px = x - leeftijd * leeftijd * (zwaar ? 24 : 16) + Math.sin(t * 1.5 + k + zaad * 9) * 1.2;
+      const py = y - leeftijd * (zwaar ? 38 : 26);
+      const straal = (zwaar ? 2.2 : 1.4) + leeftijd * (zwaar ? 7 : 4.2);
+      const a = (zwaar ? 0.85 : 0.5) * (1 - leeftijd) * Math.min(1, leeftijd * 6);
+      ctx.fillStyle = zwaar ? `rgba(44, 42, 48, ${a})` : `rgba(232, 228, 220, ${a})`;
       ctx.beginPath();
       ctx.arc(px, py, straal, 0, Math.PI * 2);
       ctx.fill();
+    }
+  }
+
+  // --- Steenhouwer ----------------------------------------------------------
+  // De arm en hamer van een steenhouwer die op een blok slaat. (x, y) is het midden van de tegel.
+  // Bij elke klap springt een paar stofjes weg.
+  function tekenHamer(ctx, x, y, t, zaad) {
+    const fase = (t * 1.6 + zaad * 7) % 1;                 // 0 tot 1, een klap per ronde
+    const slag = fase < 0.55 ? Math.sin((fase / 0.55) * Math.PI * 0.5) : 1 - (fase - 0.55) / 0.45;   // omhoog, dan snel terug
+    const hoek = -1.9 + (1 - slag) * 1.7;                  // omhoog gezwaaid naar de klap
+    const sx = x - 1.6;
+    const sy = y - 11;                                     // schouder
+    const hx = sx + 4 * Math.cos(hoek + 0.6);
+    const hy = sy + 4 * Math.sin(hoek + 0.6) + 2;          // hand
+    ctx.strokeStyle = '#8a7a62';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(hx, hy); ctx.stroke();
+    const kx = hx + 5.5 * Math.cos(hoek);
+    const ky = hy + 5.5 * Math.sin(hoek);
+    ctx.strokeStyle = '#5a3d22';
+    ctx.lineWidth = 1.1;
+    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(kx, ky); ctx.stroke();
+    ctx.save();
+    ctx.translate(kx, ky);
+    ctx.rotate(hoek);
+    ctx.fillStyle = '#3a3a42';
+    ctx.fillRect(-1.2, -2.2, 2.8, 4.4);
+    ctx.restore();
+    if (fase > 0.55 && fase < 0.8) {
+      const a = 0.6 * (1 - (fase - 0.55) / 0.25);
+      ctx.fillStyle = `rgba(200, 200, 205, ${a})`;
+      for (let i = 0; i < 3; i++) {
+        const u = (fase - 0.55) * 4;
+        ctx.fillRect(x + 4 + i * 2 + u * 3, y - 6 - i - u * 4, 1.2, 1.2);
+      }
     }
   }
 
@@ -197,5 +234,5 @@ export function maakSfeer(kaart, landschap) {
     ctx.stroke();
   }
 
-  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenWimpel };
+  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenWimpel, tekenHamer };
 }

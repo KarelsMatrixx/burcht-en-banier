@@ -2400,6 +2400,91 @@ export function tekenKopermijn(naam, def) {
   return { beeld: doek, b, h, ax: cx, ay: h - 1 };
 }
 
+// Een mijningang van IJzerbroek (level 3): een donkere heuvel van kolen en rots, een stollenmond
+// met zwarte balken en een gloeiende lantaarn, rails met een volle kar, en een hoge
+// luchtschacht van steen waar zware rook uit komt (sfeer.js tekent de rook).
+export function tekenMijngang(naam, def) {
+  const b = TB + 6;
+  const h = TH + 62;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const toeval = toevalVoor(naam);
+  const balk = '#2e2a26';
+  ovaal(ctx, cx, cy + 1, 28, 12.5, 'rgba(20,18,16,0.55)');
+  // De heuvel: donkere rots met kolenglans en roestige aderen
+  vlak(ctx, [[cx - 27, cy + 1], [cx - 20, cy - 16], [cx - 6, cy - 26], [cx + 9, cy - 23], [cx + 22, cy - 12], [cx + 27, cy + 1], [cx, cy + 10]], def.kleur);
+  vlak(ctx, [[cx - 20, cy - 16], [cx - 6, cy - 26], [cx + 9, cy - 23], [cx, cy - 15], [cx - 11, cy - 13]], 'rgba(210,215,230,0.14)');
+  vlak(ctx, [[cx - 27, cy + 1], [cx - 20, cy - 16], [cx - 11, cy - 13], [cx - 12, cy + 6]], 'rgba(0,0,0,0.3)');
+  for (let i = 0; i < 6; i++) {
+    const x = cx - 18 + toeval() * 36;
+    const y = cy - 20 + toeval() * 16;
+    lijn(ctx, x, y, x + 4, y + 1.5, '#7a4a2a', 1.4);
+  }
+  // Stollenmond
+  const mx = cx + 5;
+  const my = cy - 1;
+  vlak(ctx, [[mx - 7, my], [mx - 7, my - 11], [mx - 4, my - 14], [mx + 4, my - 14], [mx + 7, my - 11], [mx + 7, my]], '#0c0a09');
+  blok(ctx, mx - 8.5, my - 13, 2.4, 13, balk);
+  blok(ctx, mx + 6.1, my - 13, 2.4, 13, balk);
+  blok(ctx, mx - 10, my - 15.5, 20, 2.8, tint(balk, 0.2));
+  // Gloed diep in de gang
+  ovaal(ctx, mx, my - 4, 3.2, 4, 'rgba(240,130,40,0.35)');
+  ovaal(ctx, mx, my - 3, 1.6, 2.2, 'rgba(255,200,110,0.6)');
+  // Rails en een kar met kolen
+  lijn(ctx, mx - 3, my, mx - 9, my + 9, '#3a3430', 0.9);
+  lijn(ctx, mx + 3, my, mx + 0, my + 10.5, '#3a3430', 0.9);
+  for (let i = 1; i < 5; i++) lijn(ctx, mx - 3 - i * 1.5 - 1.2, my + i * 2.3, mx + 3 - i * 0.75 + 1.2, my + i * 2.6, balk, 0.8);
+  const kx = mx - 6;
+  const ky = my + 7;
+  vlak(ctx, [[kx - 5, ky - 4], [kx + 5, ky - 4], [kx + 4, ky + 1], [kx - 4, ky + 1]], '#4a423a');
+  blok(ctx, kx - 5, ky - 4.4, 10, 1, '#1c1814');
+  for (const dx of [-3, -0.5, 2.2]) ovaal(ctx, kx + dx, ky - 5, 1.8, 1.4, '#17151a');
+  ovaal(ctx, kx - 3, ky + 1.6, 1.3, 1.3, '#16130f');
+  ovaal(ctx, kx + 3, ky + 1.6, 1.3, 1.3, '#16130f');
+  // Lantaarn aan de stijl met warme gloed
+  lijn(ctx, mx + 8.6, my - 10, mx + 11, my - 10, '#16110d', 0.7);
+  blok(ctx, mx + 10.2, my - 10, 2, 3, '#16110d');
+  ovaal(ctx, mx + 11.2, my - 8.5, 2.6, 2.6, 'rgba(255,170,70,0.25)');
+  ovaal(ctx, mx + 11.2, my - 8.5, 0.8, 1, '#ffd36a');
+  // De luchtschacht: een gemetselde schoorsteen op de heuvel, rook komt eruit
+  const sx = cx - 10;
+  const sy = cy - 16;
+  blok(ctx, sx - 3.2, sy - 24, 6.4, 24, '#4a4a52');
+  blok(ctx, sx - 3.2, sy - 24, 2.2, 24, 'rgba(255,255,255,0.1)');
+  blok(ctx, sx - 4.2, sy - 26.5, 8.4, 3, '#33333a');
+  for (let i = 1; i < 6; i++) lijn(ctx, sx - 3.2, sy - 4 * i, sx + 3.2, sy - 4 * i, 'rgba(0,0,0,0.25)', 0.5);
+  ovaal(ctx, sx, sy - 26.5, 3.2, 1.3, '#0c0a09');
+  return { beeld: doek, b, h, ax: cx, ay: h - 1, rook: [sx - cx, sy - 27 - (h - 1)] };
+}
+
+// Een steenhouwer aan een blok steen (IJzerbroek). De hamer zelf wordt in de tekenlaag
+// getekend en beweegt (sfeer.tekenHamer); hier staan de man, het blok en de brokken.
+export function tekenSteenhouwer(naam, def) {
+  const b = 44;
+  const h = 46;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const toeval = toevalVoor(naam);
+  ovaal(ctx, cx + 1, cy + 3, 14, 6, 'rgba(0,0,0,0.3)');
+  // Een half bewerkt blok en brokken eromheen
+  blok(ctx, cx + 3, cy - 6, 11, 8, '#8d939b');
+  blok(ctx, cx + 3, cy - 8, 11, 2.4, '#b3b8be');
+  blok(ctx, cx + 11, cy - 6, 3, 8, 'rgba(0,0,0,0.22)');
+  for (let i = 0; i < 6; i++) ovaal(ctx, cx - 10 + toeval() * 22, cy + 1 + toeval() * 5, 1.2 + toeval(), 0.8, '#a2a7ad');
+  // De man: schoenen, broek, leren schort, tuniek, hoofd met muts
+  blok(ctx, cx - 5, cy + 1, 2.6, 3, '#2a2018');
+  blok(ctx, cx - 1.6, cy + 1, 2.6, 3, '#2a2018');
+  blok(ctx, cx - 5, cy - 5, 2.6, 6.4, '#5a4a3a');
+  blok(ctx, cx - 1.6, cy - 5, 2.6, 6.4, '#4a3c2e');
+  blok(ctx, cx - 6, cy - 14, 8.4, 9.6, '#8a7a62');
+  blok(ctx, cx - 5, cy - 13, 6.4, 8.6, '#5b3d26');
+  ovaal(ctx, cx - 1.8, cy - 17.2, 2.9, 3, '#d9b08c');
+  blok(ctx, cx - 4.8, cy - 21, 6, 2.2, '#4d4d55');
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
 export function tekenBoomgaard(naam, def) {
   const b = TB + 4;
   const h = TH + 30;
