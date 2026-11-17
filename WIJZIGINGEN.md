@@ -595,3 +595,8 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - Boeren (ook wie werkt) eten weer 2 food per minuut per persoon. Soldaten blijven 0.5 per minuut eten (`eetPerSoldaat`).
 - Het eten gaat echt uit de voorraad: elke ronde (60 s) wordt het opgegeten voedsel van de voorraad afgetrokken. Boeren eten eerst, daarna de soldaten. Wie niet kan eten kost 2 populariteit.
 - De voorraadbalk en de uitleg tonen nu het echte verbruik (boeren en soldaten apart).
+
+## 0.66.2: ingeboxte groep
+- Na een kader (knop Box) onthoudt het leger die groep. De knoppen links onderin (Melee, Ranged, Siege en de losse soorten) tonen dan alleen de aantallen binnen het kader en kiezen alleen daaruit. Een nieuwe knop "Group N" toont het totaal van het kader en kiest het hele kader opnieuw.
+- De groep wordt gewist met All, None, een nieuw kader of een nieuwe losse keuze. Gesneuvelde soldaten tellen niet meer mee.
+- leger.js: `kiesKader`, `kiesDeel`, `telling` geeft `deel` en `deelGekozen`. Nieuwe test: selectie_kader51.

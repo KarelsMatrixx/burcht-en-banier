@@ -197,8 +197,25 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // --- Kiezen -----------------------------------------------------------------------
   const gekozen = () => soldaten.filter((e) => e.gekozen);
 
+  // De ingeboxte groep: na een kader werken Melee, Ranged, Siege en de soorten
+  // alleen binnen deze soldaten. Wissen met Alle, Geen of een nieuwe keuze.
+  let deelset = null;
+  const deel = () => {
+    if (!deelset) return null;
+    const d = soldaten.filter((e) => deelset.has(e));
+    if (!d.length) deelset = null;
+    return d.length ? d : null;
+  };
+  // Kiest de soldaten uit een kader en onthoudt ze als groep (vanaf twee).
+  function kiesKader(lijst) {
+    deelset = lijst.length > 1 ? new Set(lijst) : null;   // eerst onthouden, dan pas kiezen (kies meldt de knoppen)
+    kies(lijst, false, true);
+  }
+
   // Kiest deze soldaten. erbij = wat al gekozen was blijft gekozen.
-  function kies(lijst, erbij = false) {
+  // bewaarDeel = de ingeboxte groep (deelset) blijft bestaan; anders wordt hij gewist.
+  function kies(lijst, erbij = false, bewaarDeel = false) {
+    if (!bewaarDeel) deelset = null;
     if (!erbij) for (const e of soldaten) e.gekozen = false;
     for (const e of lijst) e.gekozen = true;
     opLeger();
@@ -211,20 +228,23 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   const groepVan = (def) => (def.alleenBouw || def.ladder ? 'belegering' : def.bereik > 2 || def.steun ? 'afstand' : 'melee');
   // De koning valt buiten de groepen en buiten Alle: die stuur je bewust, met zijn eigen knop of een tik.
   const isKoning = (e) => !!soorten[e.soldaat.sleutel].koning;
-  const kiesGroep = (groep) => kies(soldaten.filter((e) => !isKoning(e) && groepVan(soorten[e.soldaat.sleutel]) === groep));
-  const kiesSoort = (sleutel) => kies(soldaten.filter((e) => e.soldaat.sleutel === sleutel));
+  const kiesGroep = (groep) => kies((deel() || soldaten).filter((e) => !isKoning(e) && groepVan(soorten[e.soldaat.sleutel]) === groep), false, true);
+  const kiesSoort = (sleutel) => kies((deel() || soldaten).filter((e) => e.soldaat.sleutel === sleutel), false, true);
+  // De hele ingeboxte groep opnieuw kiezen.
+  const kiesDeel = () => { const d = deel(); if (d) kies(d, false, true); };
   // Hoeveel soldaten er zijn (en gekozen zijn) per groep en per soort.
   function telling() {
     const groepen = {};
     const perSoort = {};
-    for (const e of soldaten) {
+    const d = deel();
+    for (const e of d || soldaten) {
       const g = groepVan(soorten[e.soldaat.sleutel]);
       const t = isKoning(e) ? { n: 0, gekozen: 0 } : (groepen[g] = groepen[g] || { n: 0, gekozen: 0 });
       const u = (perSoort[e.soldaat.sleutel] = perSoort[e.soldaat.sleutel] || { n: 0, gekozen: 0, groep: g });
       t.n++; u.n++;
       if (e.gekozen) { t.gekozen++; u.gekozen++; }
     }
-    return { groepen, perSoort };
+    return { groepen, perSoort, deel: d ? d.length : 0, deelGekozen: d ? d.filter((e) => e.gekozen).length : 0 };
   }
 
   // De soldaat onder een punt in de wereld (in pixels), of null. marge
@@ -470,7 +490,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     soorten, get max() { return legerMax(); }, waaromNiet, leidOp, vind, kies, stuur, stap,
     kiesAlles: () => kies(soldaten.filter((e) => !isKoning(e))),
     zetKoning,
-    groepVan, kiesGroep, kiesSoort, telling,
+    groepVan, kiesGroep, kiesSoort, kiesKader, kiesDeel, telling,
     kiesGeen: () => kies([]),
     // Een wandelingetje op de grond (voor de koning in de proloog); telt niet als bevel van de speler.
     wandel: (e, x, y) => x >= 0 && y >= 0 && x < B && y < H && isVrij(y * B + x) && !bezet(y * B + x, [e]) ? loopNaar(e, y * B + x) : false,

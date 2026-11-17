@@ -471,11 +471,14 @@ async function start() {
       const groepen = Object.keys(namenGroep).filter((g) => t.groepen[g]);
       const soortKeys = Object.keys(t.perSoort);
       const vol = (x) => x.gekozen === x.n;
+      // Na een kader: de hele ingeboxte groep met het totaal, zodat je daar altijd naar terug kunt.
+      if (t.deel && (groepen.length > 1 || soortKeys.length > 1)) lijst.push({ sleutel: 'd:', tekst: `Group ${t.deel}`, actief: t.deelGekozen === t.deel });
       if (groepen.length > 1) for (const g of groepen) lijst.push({ sleutel: 'g:' + g, tekst: `${namenGroep[g]} ${t.groepen[g].n}`, actief: vol(t.groepen[g]) });
       if (soortKeys.length > 1) for (const sl of soortKeys) lijst.push({ sleutel: 's:' + sl, tekst: `${leger.soorten[sl].naam} ${t.perSoort[sl].n}`, actief: vol(t.perSoort[sl]), klein: true });
       ui.toonGroepen(lijst, (sl) => {
         kaderAan = false;
-        if (sl.startsWith('g:')) leger.kiesGroep(sl.slice(2));
+        if (sl === 'd:') leger.kiesDeel();
+        else if (sl.startsWith('g:')) leger.kiesGroep(sl.slice(2));
         else leger.kiesSoort(sl.slice(2));
       });
     }
@@ -1102,7 +1105,7 @@ async function start() {
       const rechts = Math.max(x1, x2);
       const boven = Math.min(y1, y2);
       const onder = Math.max(y1, y2);
-      leger.kies(leger.soldaten().filter((e) => {
+      leger.kiesKader(leger.soldaten().filter((e) => {
         const p = opScherm(e);
         return p.x >= links && p.x <= rechts && p.y >= boven && p.y <= onder;
       }));
