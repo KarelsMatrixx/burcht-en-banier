@@ -616,7 +616,55 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - De wolkenschaduwen zijn weg (sfeer.js, tekenaar.js): Karel vond de grote donkere vlekken lelijk.
 - Een gevelde boom valt nu om, van de houthakker af: eerst langzaam, dan sneller, met een kleine stuit en een stofwolk (effect 'boomval', tekenaar.js `tekenBoomval`). De houthakker wacht ruim een seconde tot de boom ligt (economie.js `opGeveld`, `w.wacht`) en sleept hem daarna aan de stam achter zich aan naar de opslag, met de kruin over de grond (`tekenSleepboom`). Alleen beeld; wel komt het hout daardoor ruim een seconde later binnen.
 
-## 0.68.0: siege gear, unlocks tegen jou en de belegeringswerkplaats
+## 0.68.0: ruiters, stal en paardenboer
+- **Mounted Knight (ruiter):** leven 78 (130%), snelheid 3,6 (180%), schade 10, charge: na 5 tegels lopen doet de eerste klap 2,5 keer zoveel. 130% tegen boogschutters, 50% tegen rammen, katapulten, torens, ladders. Kan niet klimmen, 2 legerplekken, kost 30 goud, 4 koper, 6 tarwe en een boer. Kruisboog doet 200% en ridder (speer) 150% tegen ruiters. Alle getallen zijn schattingen, na te lezen en te testen.
+- **Stable (stal):** groep Leger, 30 hout, 20 planken (geen steen). Leidt ruiters op. Hooguit 5 levende ruiters per stal met een paardenboer (`perStal` in economie.json).
+- **Horse keeper (paardenboer):** nieuwe werker (beroep met `verzorgt`), loopt met een bos hooi rond bij de stal. Zonder hem geen opleiding.
+- **Level 5 Stillwater:** rood koopt vanaf de zesde aanval hooguit 2 ruiters (extra_soorten, gewicht 1,8, tarwe betaalt rood met goud, tarwePrijs). Bericht van Bartholt bij aanval 6. Beloning na level 5: stal en ruiter (open vanaf level 6 en in vrij spel). Regel van Ludolf in de uittekst.
+- **Paarden op het erf:** bij elke stal met een paardenboer staat een paard (kop omlaag) voor elke vrije stalplek; alleen decor, niet bewaard, verdwijnt als er een ruiter wordt opgeleid en komt terug als een ruiter sneuvelt.
+- **Tarwe voor de paarden:** de bakker laat minstens 20 tarwe in de voorraad liggen (`reserve`), anders bakt hij niet.
+- Test: tests/ruiter68.mjs (31 controles).
+- Nog niet: een speciale charge in het beeld naast een stofwolkje, balans.
+
+## 0.68.0: details in de kastelen van rood, levels 1 tot 3 (detailronde stap B1)
+- Het kasteelontwerp in `data/kastelen.json` kan nu `decor` hebben: [naam, dx, dy] in dezelfde maat als de ringen (kaart.js). Alleen op een lege tegel zonder water; het decor is van niemand (eigenaar 0) en kan niet gesloopt worden. Namen: tent, hooiberg, put, vaten, huis, hut, boom, steen, vlaggen.
+- Level 1 (Witherheath): een tent, twee hooibergen, vaten en een put binnen de muur. Level 3 (Ironmarsh): huizen, hut, vaten en een hooiberg buiten de muur.
+- Level 2 (Sevenwinds): op elke toren van rood staat een lichte windvaan die met de wind wappert (`wimpels: true` in het ontwerp, sfeer.js `tekenWimpel`, tekenaar.js `zetWimpels`). Alleen met sfeer aan en niet met het oog aan.
+- Alles is beeld; de spelregels veranderen niet. Het Rouwlint (zwart lint onder de rode banier) is op verzoek van Karel geschrapt.
+- Nieuwe test: kasteeldecor53 (decor aanwezig, geen scriptfouten; beelden in /tmp/s).
+- Eerlijk: het decor gebruikt bestaande plaatjes. De houten paardje van Wessel, de gescheurde blauwe gastvlag (level 1) en een echte smederij met gloed (level 3) hebben een eigen plaatje nodig: zie de Gemini-lijst in `claude/kastelenontwerp.md`.
+
+## 0.69.0: IJzerbroek wordt een donkere mijnstad (detailronde, level 3)
+
+- Het kasteel van Hademar heeft nu een eigen materiaal "Coal-black stone" (zwarte muren, donkerder dan het grijs van de andere levels).
+- Twaalf mijningangen rond het kasteel, elk met een gemetselde luchtschacht waar zware, donkere rook uit komt, een gloeiende lantaarn, rails en een kar met kolen.
+- Veertien steenhouwers bij blokken steen; hun hamer slaat echt en bij elke klap springen stofjes weg. Alleen decor: ze doen niets in het gevecht.
+- Nieuwe decorsoorten `mijn` en `houwer` in `data/kastelen.json`; nieuwe tekenvormen `mijngang` en `steenhouwer`; `sfeer.tekenRook` kent nu zware rook en `sfeer.tekenHamer` is nieuw. Alles gaat uit als de sfeer uit staat of de snelheid zakt.
+- Nog niet gedaan: echte smederij met gloed (Gemini), ijzeren poort met valhek (Gemini), ertskarren en slakkenhopen, weegschaal boven de poort.
+
+Aanvulling 0.69.0: eigen plaatjes van Karel (Gemini) voor level 3. Twee smederijen met gloeiende vuurplaats (`assets/sprites/smederij.png`) en twee vrijstaande poortgebouwen met ijzeren valhek (`assets/sprites/poort_ijzer.png`), als decor in het kasteel van IJzerbroek. De poortgebouwen vervangen de echte poort van het kasteel niet: die kan openen en dicht en heeft twee richtingen, een plaatje niet. Het open-poortplaatje is nog ongebruikt.
+
+## 0.69.1: feedback op de tutorial (proloog)
+
+- De pijl aan de rand van het scherm wijst nu naar de bouwplek. Oorzaak: de pulsanimatie overschreef de draaiing (de pijl wees altijd naar rechts) en de positie sprong altijd naar een hoek. Nu draait hij via `--hoek` en staat hij op de lijn van het midden naar de plek (gids.js, stijl.css).
+- Bouwen in de proloog: alleen het bouwwerk van de les is te kiezen, pas na "Start lesson". Andere bouwknoppen, Slopen en de hamer (zonder bouwles) zijn dicht en grijs (`proloog.bouwSleutel`, `ui.beperkBouw`, guard in `kiesBouw`). In de vrije avond en de nacht kun je dus ook niet bouwen.
+- Economie in de proloog staat stil (`economie.bevries`): populariteit staat vast op 100, honger en belasting veranderen haar niet, niemand vertrekt, geen meldingen over ongelukkige boeren. Er komen wel boeren bij zolang er plek is (huis en soldaten opleiden hebben ze nodig). Belasting levert nog wel goud.
+- Bartholts uitleg over je volk noemt de echte getallen uit de balk (`{volk}/{ruimte}`) in plaats van vaste 4/6.
+- Test: tests/proloog69.mjs.
+
+## 0.70.0: level 4 (The Fen): klok voor de volgende aanval en een tentenkamp (naar Karels wens van 17 november)
+
+- **Aanvalsklok linksboven.** Onder de adviseur staat nu een klein paneel "Next attack" met de tijd tot de volgende golf van Brandts jagers en "Wave 1 of 5". Vanaf 15 seconden voor de golf kleurt hij rood en pulseert hij. Na de laatste golf (er komt er geen meer in de laatste 15 s) verdwijnt hij; ook bij winst of verlies. De tijd die je de hut moet houden staat ongewijzigd rechtsboven ("Hold Gesina's hut: 7:57 left"). Code: `doel.js` (`volgende()`, `toonKlok`), `ui.toonAanvalKlok`, `#aanvalklok` in index.html en stijl.css. Hij is smal (64 px) zodat de meldingslinten rechts van de adviseur er niet overheen komen.
+- **Tentenkamp in plaats van een kasteel.** Het ontwerp "jachtkamp" (muren met vier poorten) is vervangen door "tentenkamp" (`kamp: true` in data/kastelen.json): geen muren, torens of poort. De burcht in het midden is nu Brandts commandotent (materiaal "kamp", vorm `kampburcht` in kunst.js): hoog paviljoen van gestreept doek op houten palen, franje van wimpels, een tentflap als deur en de rode banier op het puntdak. Soldaten klimmen er net zo op als op de burcht (zelfde maten en hoogte).
+- **Nieuwe decorsoorten** (kaart.js 38 en 39): `kampvuur` (stenenkring, driepoot met ketel, vlammen en rook) en `jagerstent` (olijfgroen doek, bruine huid, gewei boven de ingang, droogrek). Op het erf staan 23 jagerstenten op een rooster met loopstroken ertussen, 3 kampvuren, 2 gewone tenten, vaten en een put. De commandotent is nu één tegel groot (hoogte 34) op een laag houten podium van 3 bij 3 (hoogte 7, vorm kampvloer); binnen het kamp staan ook bomen en vijf moerasplasjes (`water` in het ontwerp).
+- **Bos en moeras rondom het kamp** (`omgeving` in het ontwerp, kaart.js 5b2): tussen 7 en 15 tegels van het kamp dicht bos en moerasplassen, behalve op een open laan van ongeveer 5 breed naar jouw kant en rond de werken van rood. Het gespiegelde dorp van jouw kant (huizen, akkers, weg) rond het kamp is weggehaald. Wat van het kamp af onbereikbaar zou zijn, wordt bos, en het pad tussen de kastelen kapt bij een kamp ook decor weg zodat de weg altijd blijft.
+- Het materiaal kan nu een eigen burchtvorm en tweede kleur meegeven (`vorm`, `accent` in `materialen`; main.js).
+- Spelregels onveranderd: dezelfde golven, dezelfde hut, dezelfde winregel (hut houden).
+- Nieuwe test: `tests/hut70.mjs` (29 controles: kamp zonder muren, bos en water, bereikbaarheid, klok zichtbaar linksboven onder de adviseur, loopt terug, rood vlak voor de golf, springt na de golf, weg in de laatste 15 s en na winst, terug na opnieuw). `kasteel33` kent het tentenkamp (geen poorten of wachterroutes, wel een weg).
+- Niet gezien op de iPhone: leesbaarheid van de klok in het spel zelf, snelheid met het dichte bos, en of de commandotent als "kasteel" prettig op de kaart staat. De getallen (15 s rood, 5 golven) volgen uit campagne.json (eerste 150 s, tussen 70 s, duur 480 s).
+
+
+## 0.70.1 (deel 1): siege gear, unlocks tegen jou en de belegeringswerkplaats
 Naar aanleiding van Karels feedback (17 november 2026).
 
 **1. Bevestiging bij siege gear.** Zodra een siege-eenheid een bevel echt heeft ontvangen, krijg je een melding (main.js `meldSiege`, soort Army, ook in beeld). Gewone soldaten krijgen die niet.
@@ -638,7 +686,7 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Voor volgende levels (7 tot 10): zet nieuwe beloningen meteen ook in het leger van rood. Uitleg staat onderaan `_uitleg` in data/campagne.json. Test siege52 bewaakt dit voor elk speelbaar level.
 
 **3. Aparte barak voor siege gear: de Siege Workshop.**
-- Nieuw gebouw `belegeringswerkplaats` (OBJECT 33, `leidtOp: "belegering"`). Hier leid je op: stormram, katapult, belegeringstoren, en alles wat later nog bij siege komt (zet `"kazerne": "belegering"` bij de soldaat in economie.json). De ladderdrager blijft bij de gewone kazerne.
+- Nieuw gebouw `belegeringswerkplaats` (OBJECT 40, `leidtOp: "belegering"`). Hier leid je op: stormram, katapult, belegeringstoren, en alles wat later nog bij siege komt (zet `"kazerne": "belegering"` bij de soldaat in economie.json). De ladderdrager blijft bij de gewone kazerne.
 - Kosten 20 planken en 10 steen (geschat, na te lezen). Geeft net als een kazerne 40 legerplekken. Beloning van de proloog, samen met ram en ladder (dus niet in de proloog zelf te bouwen).
 - Ontwerp (kunst.js `tekenBelegeringswerkplaats`): niet de stenen kazerne en niet de open zagerij, maar een erf met donkere balken en ijzer, een half afgebouwd belegeringstorenskelet dat boven alles uitsteekt (met valbrug, kruisverbanden en een wimpel in teamkleur), een ram aan kettingen onder een rood afdak, een stapel balken, een los wiel en een ketel pek.
 - Het paneel toont bij dit gebouw alleen siege gear; bij de kazerne geen ram, katapult of toren meer. Bericht na opleiden: "... is ready at the siege workshop."
@@ -651,15 +699,15 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Balans van de nieuwe aanvallen (toren in level 1 vanaf aanval 2, heler en steenwachter) is niet gespeeld. De steenwachter vanaf aanval 2 in level 6 komt in de praktijk later, omdat rood eerst zijn machines koopt.
 - Bestaande bewaarde spellen met een ram, katapult of toren blijven werken; wie er een wil bijmaken, heeft nu de werkplaats nodig.
 
-## 0.68.1: de mystieke kazerne wordt een sjamaanhut
+## 0.70.1 (deel 2): de mystieke kazerne wordt een sjamaanhut
 - De Mage Tower is vervangen door de "Mystic Lodge": een ronde hut van huid met kegeldak, gewei met veren en botten, geschilderde tekens, een vuurplaats en een totempaal. Lager en breder dan de torens, zodat hij niet op de Siege Workshop lijkt.
 - Alleen het plaatje (js/kunst.js, tekenMagiertoren), de naam en de tip zijn veranderd. Interne sleutels (magiertoren, MAGIERTOREN, leidtOp mystiek) blijven gelijk, dus bestaande opslag en tests werken door.
 - De Siege Workshop blijft zoals hij was (besluit na drie rondes ontwerpen).
 
-## 0.68.2: machines van rood slaan niet meer op het hoofdkasteel
+## 0.70.1 (deel 3): machines van rood slaan niet meer op het hoofdkasteel
 - Een stormram of katapult van rood gaat niet meer op jouw hoofdkasteel af. Hij gaat op weg naar de burcht en slaat het eerste wat in de weg staat kapot (muur, poort, toren). Is de weg vrij, dan kiest hij het dichtstbijzijnde andere bouwwerk van jou (kazerne, werken, huizen enz.); is er niets meer, dan wacht hij. Het hoofdkasteel zelf raken alleen soldaten en de koning (strijd.js `kiesBelegerDoel`, `breekDoor` met `doelB` null).
 - Nieuwe test: tests/siege53.mjs (machines kiezen het hoofdkasteel nooit, level 1 en 3).
 - Let op bij de balans: in een level waar jij nog niets gebouwd hebt, doen rammen en katapulten niets tot er een muur of gebouw staat.
 
-## 0.68.2 (vervolg): sjamaanhut hoger
+## 0.70.1 (deel 4): sjamaanhut hoger
 - De muren van de Mystic Lodge zijn hoger, het dak lager, de deur groter, de tekens hoger op de wand en de rook staat naast het gewei in plaats van erdoorheen.

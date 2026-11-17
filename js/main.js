@@ -56,8 +56,12 @@ async function start() {
   if (materiaal) {
     const hoger = ontwerp.hoog ? 1.25 : 1;
     for (const deel of ['muur', 'toren', 'wachttoren', 'poort']) roodKasteel['rood.' + deel] = { basis: 'kasteel.' + deel, kleur: materiaal.kleur, hoogteFactor: hoger };
-    roodKasteel['rood.burcht'] = { basis: 'kasteel.burcht', kleur: materiaal.burcht || materiaal.kleur };
-    roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', kleur: materiaal.burcht || materiaal.kleur };
+    // Een materiaal kan de burcht een andere vorm geven (tentenkamp: de commandotent) en een tweede kleur meegeven.
+    // Een materiaal kan de burcht een andere vorm geven. Tentenkamp: de 8 buitenste tegels zijn een laag
+    // houten podium (vorm, hoogte, vloer) en de middelste tegel is de commandotent (middenVorm, middenHoogte).
+    const burchtVelden = { kleur: materiaal.burcht || materiaal.kleur, ...(materiaal.vorm ? { vorm: materiaal.vorm } : {}), ...(materiaal.accent ? { accent: materiaal.accent } : {}), ...(materiaal.vloer ? { vloer: materiaal.vloer } : {}), ...(materiaal.hoogte ? { hoogte: materiaal.hoogte } : {}) };
+    roodKasteel['rood.burcht'] = { basis: 'kasteel.burcht', ...burchtVelden };
+    roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', ...burchtVelden, ...(materiaal.middenVorm ? { vorm: materiaal.middenVorm } : {}), ...(materiaal.middenHoogte ? { hoogte: materiaal.middenHoogte } : {}) };
   }
 
   // De rode koning is in de campagne de heer zelf: zijn kleding en wapen.
@@ -72,6 +76,7 @@ async function start() {
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
   const tekenaar = maakTekenaar(canvas, kaart, camera, assets);
+  tekenaar.zetWimpels(!!(ontwerp && ontwerp.wimpels));
   const gevangene = maakGevangene({ kaart, missie });   // level 5: Ludolf in zijn cel
   const wegvinder = maakWegvinder(kaart);
   // Hoe hoog je staat boven op een muur, een toren of een poort.
@@ -294,6 +299,8 @@ async function start() {
   // Een knop in de bouwbalk. Nog eens tikken op dezelfde knop begint opnieuw.
   function kiesBouw(sleutel) {
     if (meting.isBezig()) return;
+    // Proloog: alleen het bouwwerk van de les is te kiezen (de knoppen zijn dan ook dicht).
+    if (sleutel && proloog && proloog.bouwSleutel() !== sleutel) return;
     bouw.sleutel = sleutel;
     bouw.begin = null;
     bouw.eind = null;
@@ -431,7 +438,7 @@ async function start() {
       open: true,
       regels: [
         `${gebouw.naam}. Army places: ${leger.plekken()} of ${leger.max}. Gold: ${economie.voorraad.goud}. Idle peasants: ${Math.max(0, volk.vrij)}.`,
-        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : gebouw.leidtOp === 'belegering' ? 'Siege gear costs gold, planks and one idle peasant. Ladder bearers are trained at the barracks.' : 'A soldier costs gold and one idle peasant.'),
+        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : gebouw.leidtOp === 'belegering' ? 'Siege gear costs gold, planks and one idle peasant. Ladder bearers are trained at the barracks.' : gebouw.leidtOp === 'stal' ? 'A mounted knight costs gold, copper, wheat and one idle peasant. Each stable holds five horses and needs a horse keeper.' : 'A soldier costs gold and one idle peasant.'),
       ],
       knoppen: Object.values(leger.soorten).filter((def) => mag(def.sleutel) && (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
     });
@@ -444,7 +451,7 @@ async function start() {
   ui.opKazerneSluit(sluitKazerne);
   ui.opOpleiden((sleutel) => {
     const reden = leger.leidOp(sleutel, kazerneVak);
-    kazerneBericht = reden ? `Not possible: ${reden}.` : `${metLidwoord(leger.soorten[sleutel].naam.toLowerCase(), true)} is ready at the ${leger.soorten[sleutel].kazerne === 'belegering' ? 'siege workshop' : 'barracks'}.`;
+    kazerneBericht = reden ? `Not possible: ${reden}.` : `${metLidwoord(leger.soorten[sleutel].naam.toLowerCase(), true)} is ready at the ${leger.soorten[sleutel].kazerne === 'stal' ? 'stable' : leger.soorten[sleutel].kazerne === 'belegering' ? 'siege workshop' : 'barracks'}.`;
     toonKazerne();
   });
 
@@ -845,7 +852,7 @@ async function start() {
   const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd }) : null;
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, bouwwerken, leger, strijd, wegvinder, eenheden,
-    koningSoort: 'koning', gids, figuranten,
+    koningSoort: 'koning', gids, figuranten, bevolking: () => economie.bevolking(),
     kiesGeen: () => { leger.kiesGeen(); if (naLeger) naLeger(); },
     sluitPanelen: () => { stopBouw(); sluitKazerne(); leger.kiesGeen(); if (naLeger) naLeger(); },
     stopBouw: () => stopBouw(),
@@ -867,11 +874,14 @@ async function start() {
       toonKaart();
     }); },
   }) : null;
+  // In de proloog staat je volk stil: populariteit en boeren dalen of stijgen niet door tijd of honger (economie.js bevries).
+  if (proloog) economie.bevries(true);
   // Een level met een eigen doel (level 4: de hut van Gesina houden).
   doel = missie && missie.doel ? (missie.doel.soort === 'loodsen' ? maakLoodsen : maakDoel)({
     missie, kaart, bouwer, strijd, wegvinder,
     toonVerhaal: (b) => ui.toonVerhaal(b),
     toonTaak: (t) => ui.toonTaak(t),
+    toonAanvalKlok: (k) => ui.toonAanvalKlok(k),
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
     kaartGewijzigd,
   }) : null;
@@ -1181,7 +1191,7 @@ async function start() {
       strijd.stap();
       poortwacht.stap();
       verhaal.stap(dt, verhaalStand);
-      if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); }
+      if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); }
       if (doel) doel.stap(dt);
       if (hinderlaag && !strijd.uitslag()) hinderlaag.stap(dt);
       slachting.stap(dt);

@@ -53,6 +53,8 @@
     "kazerne":     { "naam": "Barracks",     "groep": "leger",   "object": "KAZERNE",     "kosten": { "planken": 10, "steen": 10 }, "leidtOp": "klassiek",
                      "tip": "Tap it afterwards to train soldiers." },
     "belegeringswerkplaats": { "naam": "Siege Workshop", "groep": "leger", "object": "BELEGERINGSWERKPLAATS", "kosten": { "planken": 20, "steen": 10 }, "leidtOp": "belegering",
-                     "tip": "Tap it to build siege gear: battering rams, catapults and siege towers. Ladder bearers are still trained at the barracks." }
+                     "tip": "Tap it to build siege gear: battering rams, catapults and siege towers. Ladder bearers are still trained at the barracks." },
+    "stal":        { "naam": "Stable",       "groep": "leger",   "object": "STAL",        "kosten": { "hout": 30, "planken": 20 }, "leidtOp": "stal", "werker": "paardenboer",
+                     "tip": "Holds five warhorses and needs a horse keeper. Tap it to train mounted knights." }
   }
 }

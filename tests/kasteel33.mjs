@@ -32,7 +32,7 @@ const uitslag = await p.evaluate(async () => {
       const vak = (x, y) => y * B + x;
       const tel = (s) => { let n = 0; for (let i = 0; i < k.object.length; i++) if (k.object[i] === s && k.eigenaar[i] === 2) n++; return n; };
       const poorten = tel(OBJECT.POORT);
-      const verwacht = ontwerp.ringen.reduce((s, r) => s + (r.poorten || ['voor']).length, 0);
+      const verwacht = ontwerp.kamp ? 0 : ontwerp.ringen.reduce((s, r) => s + (r.poorten || ['voor']).length, 0);   // een tentenkamp heeft geen poorten
       // een plek naast de burcht, en een plek ver buiten het kasteel aan jouw kant
       const binnen = vak(m.x - 2, m.y);
       const omvang = Math.max(...ontwerp.ringen.map((r) => r.maat)) + (ontwerp.gracht ? (ontwerp.gracht.afstand || 2) + (ontwerp.gracht.breedte || 1) - 1 : 0);
@@ -52,7 +52,11 @@ const uitslag = await p.evaluate(async () => {
 });
 for (const u of uitslag) {
   const n = `${u.kn}/${u.on}`;
-  const goed = u.poorten === u.verwacht && u.roodEruit && u.jijDicht && u.jijOpen && u.weg && u.werken === 3 && u.routes > 0;
+  // Een tentenkamp (level 4) heeft geen muren: niets om dicht te houden en geen wachterroutes.
+  const kamp = u.on === 'tentenkamp';
+  const goed = kamp
+    ? u.poorten === 0 && u.roodEruit && u.jijOpen && u.weg && u.werken === 3 && u.routes === 0
+    : u.poorten === u.verwacht && u.roodEruit && u.jijDicht && u.jijOpen && u.weg && u.werken === 3 && u.routes > 0;
   check(n, goed, JSON.stringify(u));
 }
 

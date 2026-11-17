@@ -436,7 +436,7 @@
      "flank": 0.5
     }
    },
-   "kasteel": "jachtkamp",
+   "kasteel": "tentenkamp",
    "verteller": "gesina",
    "doel": {
     "soort": "hut",
@@ -490,12 +490,14 @@
    "intro": "Commander Aleid holds the abbey of the Order of the White Banner, and keeps Brother Ludolf prisoner. A wide moat lies around her walls, with narrow dams to the gates. Her swordsmen fight in close ranks behind their banners.",
    "beeld": "beelden/verhaal/level05.webp",
    "verhaal": "Stillwater Abbey lies behind a wide moat and narrow dams. Commander Aleid has seized it and keeps Brother Ludolf prisoner. Her soldiers march in strict ranks. The Order of the White Banner could stand with Karel, if he frees its oldest brother.",
-   "uit": "Aleid lays down her sword. \"I had no orders about a child. But I heard the duke say he had his heir back.\" The word stays in the air. Brother Ludolf is free: \"The banner serves whoever serves the realm. Carry it well.\"",
+   "uit": "Aleid lays down her sword. \"I had no orders about a child. But I heard the duke say he had his heir back.\" The word stays in the air. Brother Ludolf is free: \"The banner serves whoever serves the realm. Carry it well. The abbey's stables are yours, Majesty. The horses know the road north.\"",
    "wessel": "His name in the abbey guestbook, in a child's handwriting.",
    "beloning": [
     "zwaardvechter",
     "banierdrager",
-    "heler"
+    "heler",
+    "stal",
+    "ruiter"
    ],
    "rood": {
     "legerMax": 150,
@@ -518,6 +520,11 @@
       "aandeel": 1,
       "vanaf": 2
      }
+    },
+    "extra_soorten": {
+     "katapult": { "vanaf": 5, "max": 1 },
+     "toren": { "vanaf": 6, "max": 1 },
+     "ruiter": { "vanaf": 5, "max": 2 }
     },
     "koning": {
      "leven": 120,
@@ -586,6 +593,12 @@
      "waarde": 2,
      "wie": "bartholt",
      "tekst": "See the banner bearer? While he lives, her men strike harder. Kill him first."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 6,
+     "wie": "bartholt",
+     "tekst": "Riders on the causeway, Majesty! Spears forward, crossbows behind them."
     },
     {
      "bij": "roodBurcht",

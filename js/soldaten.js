@@ -588,6 +588,13 @@ function werkerFiguur(def) {
     } else if (last && def.vracht === 'planken') {
       for (const [hoog, kleur] of [[0, '#c9a36a'], [1.6, '#dbb97f'], [3.2, '#c9a36a']]) { blok(ctx, mx - 9, 15.4 - hoog + wip, 17, 1.5, kleur); blok(ctx, mx - 9, 16.5 - hoog + wip, 17, 0.4, 'rgba(0,0,0,0.25)'); }
       arm(mx + 3, 18 + wip, mx + 4, 16.6 + wip);
+    } else if (last && def.vracht === 'hooi') {
+      // een bos hooi tegen de borst (de paardenboer)
+      ovaal(ctx, mx + 5.6, 18.6 + wip, 5.4, 3.6, '#d6b85a');
+      ovaal(ctx, mx + 5.6, 17.4 + wip, 4.6, 1.7, '#ecd27e');
+      for (let j = 0; j < 5; j++) lijn(ctx, mx + 2 + j * 1.8, 15.8 + wip, mx + 2.6 + j * 1.8, 21 + wip, 'rgba(150,110,30,0.55)', 0.5);
+      lijn(ctx, mx + 2, 18.8 + wip, mx + 9.4, 18.8 + wip, '#8a6a2a', 0.7);
+      arm(mx + 3, 18.6 + wip, mx + 5, 19.8 + wip);
     } else if (last) {
       for (const [hoog, kleur] of [[0, '#7a5632'], [2.7, '#8e6a42']]) { blok(ctx, mx - 8.5, 14.6 - hoog + wip, 15.5, 2.7, kleur); blok(ctx, mx - 8.5, 16.5 - hoog + wip, 15.5, 0.8, 'rgba(0,0,0,0.25)'); ovaal(ctx, mx + 7, 15.9 - hoog + wip, 1.2, 1.4, '#d9bb88'); ovaal(ctx, mx + 7, 15.9 - hoog + wip, 0.6, 0.7, '#a07a48'); }
       arm(mx + 3, 18 + wip, mx + 4, 16.6 + wip);
@@ -605,7 +612,7 @@ function werkerFiguur(def) {
   return teken;
 }
 
-const BEROEP = { houthakker: 'houthakker', steenhouwer: 'steenhouwer', fruitteler: 'fruitteler', zager: 'zager', tarweboer: 'tarweboer', bakker: 'bakker', mijnwerker: 'mijnwerker', boer: 'boer' };
+const BEROEP = { houthakker: 'houthakker', steenhouwer: 'steenhouwer', fruitteler: 'fruitteler', zager: 'zager', tarweboer: 'tarweboer', bakker: 'bakker', mijnwerker: 'mijnwerker', boer: 'boer', paardenboer: 'boer' };
 function werker(def, sleutel) {
   const beroep = BEROEP[(sleutel || '').replace('eenheid.', '').replace(/_(blauw|rood)$/, '')] || 'houthakker';
   const teken = werkerFiguur({ ...def, beroep });
@@ -787,10 +794,75 @@ function steenwachter(def) {
   return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
 }
 
+// ------------------------------------------------------------------ ruiter
+// Een ridder in staal op een bruin strijdpaard. Teamkleur in het dek van het paard,
+// de tabbaard, de pluim en het schild. Groter dan een gewone ridder: het canvas laat
+// ruimte voor het paard (tot x = 31 rechts en x = -1 links van het midden).
+function ruiter(def, zonder = false) {
+  const K = def.kleur;
+  const VACHT = '#7a4e2c', VD = '#4e3018', MAAN = '#2a1a10', HOEF = '#1c130b';
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const slag = houding === 'slag';
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht || zonder ? 0 : LOOP[beeld];
+    const duik = zonder ? 4.2 : slag ? 1.2 : 0;   // een paard op het erf eet met zijn kop omlaag
+    const mx = 12.5;
+    // staart
+    vlak(ctx, [[mx - 8.8, 21 + wip], [mx - 13.4, 23.6 + wip + pas * 0.4], [mx - 12.4, 30 + wip], [mx - 9.4, 25.4 + wip]], MAAN);
+    // verre benen (donkerder), dan het lijf
+    const been = (x0, x1, kleur) => { lijn(ctx, x0, 27 + wip, x1, 33.2, kleur, 2.1); ovaal(ctx, x1, 33.6, 1.5, 0.8, HOEF); };
+    been(mx + 6.4, mx + 6.4 + pas * 2.2, VD);
+    been(mx - 5.8, mx - 5.8 - pas * 2.2, VD);
+    ovaal(ctx, mx + 1, 24.6 + wip, 10.6, 5.5, VACHT);
+    ovaal(ctx, mx + 1.4, 22.2 + wip, 8.6, 2.2, tint(VACHT, 0.2));
+    ovaal(ctx, mx + 1, 28 + wip, 8.6, 1.5, tint(VACHT, -0.22));
+    // nabije benen
+    been(mx + 9, mx + 9 - pas * 2.2, VACHT);
+    been(mx - 3.6, mx - 3.6 + pas * 2.2, VACHT);
+    // hals met manen, hoofd
+    vlak(ctx, [[mx + 7.6, 20.6 + wip], [mx + 12.4, 11.6 + wip + duik], [mx + 15.8, 13.4 + wip + duik], [mx + 11.6, 24.4 + wip]], VACHT);
+    vlak(ctx, [[mx + 7.4, 20 + wip], [mx + 12.2, 11 + wip + duik], [mx + 10.8, 11.2 + wip + duik], [mx + 6.4, 19.6 + wip]], MAAN);
+    ovaal(ctx, mx + 16.4, 15.8 + wip + duik, 4.4, 2.3, VACHT);
+    ovaal(ctx, mx + 19.8, 17.4 + wip + duik, 1.9, 1.6, tint(VACHT, 0.22));
+    vlak(ctx, [[mx + 13.4, 13.6 + wip + duik], [mx + 13.9, 10.4 + wip + duik], [mx + 15.2, 13.2 + wip + duik]], VD);
+    ovaal(ctx, mx + 17, 14.9 + wip + duik, 0.5, 0.5, '#150e08');
+    lijn(ctx, mx + 13.2, 16.4 + wip + duik, mx + 17.6, 17.6 + wip + duik, K, 0.8);
+    // dek (teamkleur) met witte rand, zadel
+    vlak(ctx, [[mx - 5.8, 20.6 + wip], [mx + 5.8, 20.6 + wip], [mx + 5.2, 28.6 + wip], [mx - 5.4, 28.6 + wip]], K);
+    blok(ctx, mx - 5.4, 27.8 + wip, 10.6, 0.9, '#f1ead6');
+    ovaal(ctx, mx, 19.8 + wip, 4.4, 1.7, '#5a3a20');
+    if (zonder) return;
+    // ruiter: been, romp met tabbaard, schild, hoofd met helm en pluim
+    lijn(ctx, mx - 0.6, 19 + wip, mx + 2.4, 26 + wip, STAAL, 2.3);
+    ovaal(ctx, mx + 2.8, 26.6 + wip, 1.5, 0.9, '#5a4126');
+    lichtBlok(ctx, mx - 3.6, 10.4 + wip, 7.2, 9.8, STAAL, 0.25);
+    blok(ctx, mx - 3.6, 13.6 + wip, 7.2, 6.4, K);
+    blok(ctx, mx - 0.4, 13.6 + wip, 0.9, 6.4, '#f1ead6');
+    blok(ctx, mx - 3.6, 18.6 + wip, 7.2, 0.9, '#d8b24a');
+    ovaal(ctx, mx + 4.6, 15.4 + wip, 2.7, 3.6, '#2a2a2a');
+    ovaal(ctx, mx + 4.6, 15.4 + wip, 2.1, 3, K);
+    blok(ctx, mx + 4.2, 13.2 + wip, 0.9, 4.4, '#f1ead6');
+    ovaal(ctx, mx - 0.2, 7.6 + wip, 3.7, 3.7, STAAL);
+    blok(ctx, mx - 0.4, 7.2 + wip, 4, 1, '#2a2a2a');
+    vlak(ctx, [[mx - 1.2, 4.4 + wip], [mx - 5, 2.6 + wip], [mx - 6.6, 6.4 + wip], [mx - 2.6, 5.8 + wip]], K);
+    // zwaardarm en zwaard
+    let hx, hy, tx, ty;
+    if (!vecht) { hx = mx + 5; hy = 12.6 + wip; tx = mx + 6.4; ty = 3 + wip; }
+    else if (slag) { hx = mx + 8.6; hy = 14.6; tx = mx + 17.6; ty = 20.4; }
+    else { hx = mx + 5.6; hy = 7; tx = mx + 7.6; ty = -0.5; }
+    lijn(ctx, mx + 2.6, 12.6 + wip, hx, hy, STAAL, 2);
+    lijn(ctx, hx, hy, tx, ty, '#dfe3e8', 1.5);
+    lijn(ctx, hx - 1.6 * (ty - hy) / 12, hy + 1.6 * (tx - hx) / 12, hx + 1.6 * (ty - hy) / 12, hy - 1.6 * (tx - hx) / 12, '#d8b24a', 1.2);
+    hand(ctx, hx, hy, HUID, 1.3);
+  };
+  return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
+}
+
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
-  zwaardvechter, banierdrager, heler, steenwachter,
+  zwaardvechter, banierdrager, heler, steenwachter, ruiter, paard: (def) => ruiter(def, true),
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

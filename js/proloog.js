@@ -25,7 +25,7 @@ const TAKEN = [
   { taak: 'Build a Storehouse', bouw: { voorraadkamer: 1 }, gids: { soort: 'bouw', sleutel: 'voorraadkamer', plekTekst: 'Storehouse here' }, anker: [-21, -2],
     tekst: 'Wood, stone and apples must be kept somewhere. Your workers carry what they gather to the storehouse, and each one holds 150 of each. Later, tap it to sell what you do not need for gold.' },
   { taak: 'See your people', volk: true, gids: { soort: 'volk' },
-    tekst: 'Look at the top bar, Sire: Peasants 4/6 means four peasants and room for six. Each building needs a peasant to work in it, and so does every soldier you train. A peasant without work is a spare hand. Let me show you the panel.',
+    tekst: 'Look at the top bar, Sire: Peasants {volk}/{ruimte} means {volk} peasants and room for {ruimte}. Each building needs a peasant to work in it, and so does every soldier you train. A peasant without work is a spare hand. Let me show you the panel.',
     lof: 'Peasants without work are your reserve. If food runs out or taxes are too high, popularity falls, and below 50 your people leave.' },
   { taak: 'Set the taxes', belasting: true, gids: { soort: 'belasting' },
     tekst: 'Taxes, Sire. Every half minute each peasant pays gold. Higher taxes bring more gold but make your people unhappier; lower taxes make them happier. Try a different level.',
@@ -93,7 +93,7 @@ const GESPREKKEN = {
   ],
 };
 
-export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, sluitPanelen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids, logMelding }) {
+export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, sluitPanelen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids, logMelding, bevolking }) {
   let s = lees() || nieuw();
   let loopt = false;
   let reinout = null;
@@ -269,7 +269,10 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     introKaart();
   }
   function introKaart() {
-    gids.kaart({ naam: 'Bartholt', tekst: TAKEN[s.taak].tekst, knop: s.taak === 0 ? "Let's begin ›" : 'Start lesson ›' }, () => {
+    // {volk} en {ruimte} in de tekst zijn de getallen die nu in de bovenbalk staan
+    const bev = bevolking ? bevolking() : { volk: 0, ruimte: 0 };
+    const tekst = TAKEN[s.taak].tekst.replace(/\{volk\}/g, bev.volk).replace(/\{ruimte\}/g, bev.ruimte);
+    gids.kaart({ naam: 'Bartholt', tekst, knop: s.taak === 0 ? "Let's begin ›" : 'Start lesson ›' }, () => {
       s.basis = tel();
       s.basisSoldaten = soldaten().length;
       s.fasetijd = 0;
@@ -604,6 +607,13 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       return TAKEN.map((t, i) => ({ taak: t.taak, klaar: s.fase !== 'bouw' || i < s.taak || (i === s.taak && s.klaar), nu: s.fase === 'bouw' && i === s.taak }));
     },
     fase: () => s.fase,
+    // Welk bouwwerk mag de speler nu kiezen? Alleen dat van de les die bezig is (en pas na
+    // "Start lesson"); verder niets. null = niets bouwen of slopen.
+    bouwSleutel() {
+      if (s.fase !== 'bouw' || !s.basis || s.klaar) return null;
+      const t = TAKEN[s.taak];
+      return t.bouw ? t.gids.sleutel : null;
+    },
     // Na de scène: niets meer doen.
     stop() { loopt = false; },
     // Opnieuw beginnen.

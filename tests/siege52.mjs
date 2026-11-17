@@ -88,7 +88,7 @@ console.log(JSON.stringify(w));
 check('kazerne gebouwd', w.kazerne === 1);
 check('siege-barak gebouwd', w.werk === 1, w.werk);
 check('de siege-barak geeft 40 legerplekken erbij, net als een kazerne', w.max2 - w.max1 === 40 && w.max1 - w.max0 === 40, JSON.stringify([w.max0, w.max1, w.max2]));
-check('de kaart kent het object', w.objectOpKaart === 33 && /siege workshop/.test(w.beschrijving), JSON.stringify([w.objectOpKaart, w.beschrijving]));
+check('de kaart kent het object', w.objectOpKaart === 40 && /siege workshop/.test(w.beschrijving), JSON.stringify([w.objectOpKaart, w.beschrijving]));
 check('de siege-barak staat in de bouwbalk', w.knoppenInBouwbalk >= 1, w.knoppenInBouwbalk);
 
 // Tik op de gebouwen: het paneel toont per gebouw de juiste knoppen

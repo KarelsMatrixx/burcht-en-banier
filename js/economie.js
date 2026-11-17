@@ -29,10 +29,12 @@ export async function laadEconomie() {
   if (!antwoord.ok) throw new Error('Kan data/economie.json niet laden');
   const regels = await antwoord.json();
   for (const [sleutel, beroep] of Object.entries(regels.beroepen)) {
-    if (OBJECT[beroep.bij] === undefined) throw new Error(`economie.json: onbekend object "${beroep.bij}" bij ${sleutel}`);
     if (SOORT[beroep.soort] === undefined) throw new Error(`economie.json: onbekende soort "${beroep.soort}" bij ${sleutel}`);
-    if (!regels.grondstoffen[beroep.haalt]) throw new Error(`economie.json: onbekende grondstof "${beroep.haalt}" bij ${sleutel}`);
     beroep.sleutel = sleutel;
+    // Een beroep met verzorgt: true (de paardenboer) haalt niets: hij loopt rond bij zijn stal.
+    if (beroep.verzorgt) continue;
+    if (OBJECT[beroep.bij] === undefined) throw new Error(`economie.json: onbekend object "${beroep.bij}" bij ${sleutel}`);
+    if (!regels.grondstoffen[beroep.haalt]) throw new Error(`economie.json: onbekende grondstof "${beroep.haalt}" bij ${sleutel}`);
     beroep.bron = OBJECT[beroep.bij];
   }
   return regels;
@@ -227,6 +229,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   const stem = volkRegels.stemming;
   const tarieven = volkRegels.belasting;
   let populariteit = stem.begin;
+  let bevroren = false;   // proloog: populariteit staat vast, niemand vertrekt, honger kost niets (bevries)
   let belasting = volkRegels.beginBelasting;   // welke stand uit de lijst tarieven
 
   // Boeren zonder werk, als figuur op de kaart.
@@ -491,6 +494,40 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     e.kijkt = dx - dy >= 0 ? 1 : -1;
   }
 
+  // De paardenboer: hij loopt met een bos hooi rond bij zijn stal, blijft even staan en loopt weer.
+  function zorg(e) {
+    const w = e.werk;
+    if (e.pad) return;
+    const hier = Math.floor(e.y) * B + Math.floor(e.x);
+    e.houding = 'last';
+    if (w.staat === 'werk') {
+      if (--w.tel <= 0) w.staat = 'zoek';
+      return;
+    }
+    if (w.staat === 'heen') {
+      w.staat = 'werk';
+      w.tel = stappen(2 + gok() * 4);
+      return;
+    }
+    // zoek: een vrij vak vlak bij de stal kiezen
+    const ver = w.beroep.bereik || 2;
+    const sx = w.plaats % B;
+    const sy = Math.floor(w.plaats / B);
+    for (let poging = 0; poging < 8; poging++) {
+      const x = sx + Math.round((gok() * 2 - 1) * ver);
+      const y = sy + Math.round((gok() * 2 - 1) * ver);
+      if ((x === sx && y === sy) || !wegvinder.isVrij(x, y, TEAM)) continue;
+      if (x + y * B === hier || loopNaar(e, hier, y * B + x)) {
+        w.staat = 'heen';
+        return;
+      }
+    }
+    // Hij staat nog in het gebouw (ingebouwd) of kan nergens heen: even wachten.
+    const thuis = thuisVan(w.plaats);
+    if (thuis >= 0 && !wegvinder.isVrij(hier % B, Math.floor(hier / B), TEAM)) zetOp(e, thuis);
+    w.wacht = stappen(3);
+  }
+
   // Eén stap voor één werker.
   function werk(e) {
     const w = e.werk;
@@ -499,6 +536,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       w.wacht--;
       return;
     }
+    if (beroep.verzorgt) return zorg(e);
     let hier = Math.floor(e.y) * B + Math.floor(e.x);
 
     // Een verwerker (de zager): haalt grondstof uit de voorraad, verwerkt
@@ -587,7 +625,8 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   // Er komt een boer bij, als er plek en voedsel is en je populair genoeg
   // bent. Hij komt aan bij de burcht.
   function nieuweBoer() {
-    if (volk >= ruimte() || eten() <= 0 || populariteit < stem.grens) return;
+    // Bevroren (proloog): voedsel en populariteit spelen geen rol, alleen de plek
+    if (volk >= ruimte() || (!bevroren && (eten() <= 0 || populariteit < stem.grens))) return;
     volk++;
     nieuweLoper(pleinVak());
     deelIn();
@@ -657,10 +696,12 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   function maaltijd() {
     const factoren = stemFactoren();   // hoe het er nu voor staat
     voorraad[volkRegels.munt] += volk * tarieven[belasting].goud;
-    const was = populariteit;
-    populariteit = Math.max(0, Math.min(100, populariteit + factoren.reduce((som, f) => som + f.waarde, 0)));
-    if (was >= stem.grens && populariteit < stem.grens) {
-      opMelding('Your peasants are unhappy and will start to leave. Tap your stores at the top to see why.');
+    if (!bevroren) {
+      const was = populariteit;
+      populariteit = Math.max(0, Math.min(100, populariteit + factoren.reduce((som, f) => som + f.waarde, 0)));
+      if (was >= stem.grens && populariteit < stem.grens) {
+        opMelding('Your peasants are unhappy and will start to leave. Tap your stores at the top to see why.');
+      }
     }
     opVoorraad();
     opVerandering();
@@ -684,7 +725,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       }
     }
     const hongerig = (volk - boerGevoed) + (soldaten - soldaatGevoed);
-    if (hongerig > 0) {
+    if (hongerig > 0 && !bevroren) {
       if (!honger) {
         const heeftBron = [...werkplaatsen.values()].some((e) => eetSoorten.includes(e.werk.beroep.haalt));
         opMelding(`There is not enough food: ${hongerig} ${hongerig === 1 ? 'person goes' : 'people go'} hungry and popularity falls.${heeftBron ? '' : ` ${volkRegels.raadHonger}`}`);
@@ -704,13 +745,14 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
 
   // De klok van de bevolking: één rekenstap verder.
   function volkStap() {
+    if (bevroren) populariteit = 100;   // proloog: de populariteit staat vast op het maximum
     if (--totBoer <= 0) {
       totBoer = stappen(volkRegels.komtElke);
       if (populariteit < stem.grens) vertrekBoer();
       else {
         // Bij een heel hoge populariteit komen er meer boeren tegelijk.
         const snel = stem.snelleGroei;
-        const aantal = snel && populariteit >= snel.vanaf ? snel.aantal : 1;
+        const aantal = !bevroren && snel && populariteit >= snel.vanaf ? snel.aantal : 1;   // bevroren: één tegelijk
         for (let i = 0; i < aantal; i++) nieuweBoer();
       }
     }
@@ -743,6 +785,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     const e = werkplaatsen.get(werkVak);
     if (!e) return '';
     const w = e.werk;
+    if (w.beroep.verzorgt) return `the ${w.beroep.naam} ${w.beroep.bezig}`;
     const bezig = {
       zoek: 'is looking for work',
       heen: `is walking to ${w.beroep.plek}`,
@@ -865,6 +908,14 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       belasting = stand;
       opVoorraad();
       opVerandering();
+    },
+    // De proloog: populariteit staat vast op 100, honger en belasting veranderen haar niet
+    // en er vertrekt niemand. Er komen wel boeren bij zolang er plek is (de lessen over het huis
+    // en het opleiden van soldaten hebben ze nodig).
+    bevries(aan) {
+      bevroren = !!aan;
+      if (bevroren) populariteit = 100;
+      opVoorraad();
     },
     // Voor het testen: populariteit (en de stand van de belasting) zetten.
     zetStemming(waarde, stand) {
