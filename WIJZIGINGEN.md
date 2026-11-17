@@ -625,3 +625,21 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - **Tarwe voor de paarden:** de bakker laat minstens 20 tarwe in de voorraad liggen (`reserve`), anders bakt hij niet.
 - Test: tests/ruiter68.mjs (31 controles).
 - Nog niet: een speciale charge in het beeld naast een stofwolkje, balans.
+
+## 0.68.0: details in de kastelen van rood, levels 1 tot 3 (detailronde stap B1)
+- Het kasteelontwerp in `data/kastelen.json` kan nu `decor` hebben: [naam, dx, dy] in dezelfde maat als de ringen (kaart.js). Alleen op een lege tegel zonder water; het decor is van niemand (eigenaar 0) en kan niet gesloopt worden. Namen: tent, hooiberg, put, vaten, huis, hut, boom, steen, vlaggen.
+- Level 1 (Witherheath): een tent, twee hooibergen, vaten en een put binnen de muur. Level 3 (Ironmarsh): huizen, hut, vaten en een hooiberg buiten de muur.
+- Level 2 (Sevenwinds): op elke toren van rood staat een lichte windvaan die met de wind wappert (`wimpels: true` in het ontwerp, sfeer.js `tekenWimpel`, tekenaar.js `zetWimpels`). Alleen met sfeer aan en niet met het oog aan.
+- Alles is beeld; de spelregels veranderen niet. Het Rouwlint (zwart lint onder de rode banier) is op verzoek van Karel geschrapt.
+- Nieuwe test: kasteeldecor53 (decor aanwezig, geen scriptfouten; beelden in /tmp/s).
+- Eerlijk: het decor gebruikt bestaande plaatjes. De houten paardje van Wessel, de gescheurde blauwe gastvlag (level 1) en een echte smederij met gloed (level 3) hebben een eigen plaatje nodig: zie de Gemini-lijst in `claude/kastelenontwerp.md`.
+
+## 0.69.0: IJzerbroek wordt een donkere mijnstad (detailronde, level 3)
+
+- Het kasteel van Hademar heeft nu een eigen materiaal "Coal-black stone" (zwarte muren, donkerder dan het grijs van de andere levels).
+- Twaalf mijningangen rond het kasteel, elk met een gemetselde luchtschacht waar zware, donkere rook uit komt, een gloeiende lantaarn, rails en een kar met kolen.
+- Veertien steenhouwers bij blokken steen; hun hamer slaat echt en bij elke klap springen stofjes weg. Alleen decor: ze doen niets in het gevecht.
+- Nieuwe decorsoorten `mijn` en `houwer` in `data/kastelen.json`; nieuwe tekenvormen `mijngang` en `steenhouwer`; `sfeer.tekenRook` kent nu zware rook en `sfeer.tekenHamer` is nieuw. Alles gaat uit als de sfeer uit staat of de snelheid zakt.
+- Nog niet gedaan: echte smederij met gloed (Gemini), ijzeren poort met valhek (Gemini), ertskarren en slakkenhopen, weegschaal boven de poort.
+
+Aanvulling 0.69.0: eigen plaatjes van Karel (Gemini) voor level 3. Twee smederijen met gloeiende vuurplaats (`assets/sprites/smederij.png`) en twee vrijstaande poortgebouwen met ijzeren valhek (`assets/sprites/poort_ijzer.png`), als decor in het kasteel van IJzerbroek. De poortgebouwen vervangen de echte poort van het kasteel niet: die kan openen en dicht en heeft twee richtingen, een plaatje niet. Het open-poortplaatje is nog ongebruikt.

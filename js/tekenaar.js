@@ -199,6 +199,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
   // Uit te zetten met CONFIG.beeld.sfeer = false, of ?sfeer=uit in de adresbalk.
   const sfeerAan = (new URLSearchParams(location.search).get('sfeer') || (CONFIG.beeld.sfeer === false ? 'uit' : 'aan')) !== 'uit';
   const sfeer = maakSfeer(kaart, landschap);
+  let wimpels = false;   // windvaantjes op de torens van rood (Zevenwind, level 2)
   const basis = [1, 0, 0, 1, 0, 0];   // de cameratransformatie van dit beeld
   // Zelfbewaking: blijft het beeld langer traag (onder ongeveer 30 beelden per
   // seconde), dan gaat de wind uit. Schaduwen, rook en water blijven.
@@ -818,8 +819,10 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
             ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
             ctx.setTransform(basis[0], 0, 0, basis[3], basis[4], basis[5]);
           } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
-          if (o.rook) sfeer.tekenRook(ctx, wx + dx + o.rook[0], wy + TEGEL_HOOGTE + dy + o.rook[1], t, tegelToeval(x, y, 7));
+          if (o.rook) sfeer.tekenRook(ctx, wx + dx + o.rook[0], wy + TEGEL_HOOGTE + dy + o.rook[1], t, tegelToeval(x, y, 7), kaart.object[y * kaart.breedte + x] === OBJECT.MIJNGANG);
+          else if (kaart.object[y * kaart.breedte + x] === OBJECT.STEENHOUWER && !sfeerLicht) sfeer.tekenHamer(ctx, wx + dx, wy + TEGEL_HOOGTE / 2 + dy, t, tegelToeval(x, y, 5));
         } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
+        if (wimpels && sfeerAan && !sfeerLicht && !doorzicht && kaart.object[y * kaart.breedte + x] === OBJECT.TOREN && kaart.eigenaar[y * kaart.breedte + x] === 2) sfeer.tekenWimpel(ctx, wx + dx, wy + TEGEL_HOOGTE / 2 + dy - (o.hoogte || 60) + 2, t, tegelToeval(x, y, 8));
         if (l && !(l.dx < 0 || l.dy < 0)) tekenLadder(l);
       }
     }
@@ -1069,5 +1072,5 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     return asset && asset.varianten ? asset.varianten.indexOf(objectBeeld[i]) : -1;
   };
 
-  return { zetHekDoel: (f) => { hekDoel = f; }, pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, zetDoorzicht: (aan) => { doorzicht = !!aan; }, doorzicht: () => doorzicht, aantalGetekend: () => getekend, aantalInPoort: () => inPoort, sfeerLicht: () => sfeerLicht };
+  return { zetWimpels: (aan) => { wimpels = !!aan; }, zetHekDoel: (f) => { hekDoel = f; }, pasGrootteAan, teken, kiesPlaatjes, maakSchim, variantOp, zetDoorzicht: (aan) => { doorzicht = !!aan; }, doorzicht: () => doorzicht, aantalGetekend: () => getekend, aantalInPoort: () => inPoort, sfeerLicht: () => sfeerLicht };
 }

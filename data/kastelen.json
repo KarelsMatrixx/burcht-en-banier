@@ -30,7 +30,34 @@
      ]
     }
    ],
-   "materiaal": "dor"
+   "materiaal": "dor",
+   "decor": [
+    [
+     "tent",
+     3,
+     -3
+    ],
+    [
+     "hooiberg",
+     -3,
+     3
+    ],
+    [
+     "hooiberg",
+     -4,
+     2
+    ],
+    [
+     "vaten",
+     3,
+     3
+    ],
+    [
+     "put",
+     -3,
+     -3
+    ]
+   ]
   },
   "rotsvesting": {
    "naam": "Rock fortress",
@@ -44,7 +71,35 @@
     }
    ],
    "materiaal": "rots",
-   "hoog": true
+   "hoog": true,
+   "wimpels": true,
+   "decor": [
+    [
+     "steen",
+     -8,
+     -6
+    ],
+    [
+     "steen",
+     8,
+     -7
+    ],
+    [
+     "steen",
+     -8,
+     6
+    ],
+    [
+     "steen",
+     7,
+     8
+    ],
+    [
+     "vaten",
+     3,
+     -3
+    ]
+   ]
   },
   "dubbel": {
    "naam": "Mining keep",
@@ -62,7 +117,194 @@
      ]
     }
    ],
-   "materiaal": "grijs"
+   "materiaal": "kool",
+   "decor": [
+    [
+     "huis",
+     8,
+     -4
+    ],
+    [
+     "huis",
+     8,
+     4
+    ],
+    [
+     "vaten",
+     8,
+     -3
+    ],
+    [
+     "vaten",
+     9,
+     9
+    ],
+    [
+     "hut",
+     -8,
+     -4
+    ],
+    [
+     "mijn",
+     -9,
+     6
+    ],
+    [
+     "mijn",
+     -12,
+     2
+    ],
+    [
+     "mijn",
+     -9,
+     -1
+    ],
+    [
+     "mijn",
+     -11,
+     -4
+    ],
+    [
+     "mijn",
+     -9,
+     -6
+    ],
+    [
+     "mijn",
+     -3,
+     -9
+    ],
+    [
+     "mijn",
+     3,
+     -9
+    ],
+    [
+     "mijn",
+     9,
+     -5
+    ],
+    [
+     "mijn",
+     11,
+     -7
+    ],
+    [
+     "mijn",
+     10,
+     8
+    ],
+    [
+     "mijn",
+     6,
+     8
+    ],
+    [
+     "mijn",
+     2,
+     8
+    ],
+    [
+     "houwer",
+     -8,
+     6
+    ],
+    [
+     "houwer",
+     -10,
+     2
+    ],
+    [
+     "houwer",
+     -8,
+     -2
+    ],
+    [
+     "houwer",
+     -10,
+     -5
+    ],
+    [
+     "houwer",
+     -8,
+     -7
+    ],
+    [
+     "houwer",
+     -2,
+     -9
+    ],
+    [
+     "houwer",
+     4,
+     -9
+    ],
+    [
+     "houwer",
+     8,
+     -6
+    ],
+    [
+     "houwer",
+     10,
+     -8
+    ],
+    [
+     "houwer",
+     9,
+     8
+    ],
+    [
+     "houwer",
+     5,
+     8
+    ],
+    [
+     "houwer",
+     3,
+     8
+    ],
+    [
+     "houwer",
+     -11,
+     6
+    ],
+    [
+     "houwer",
+     -7,
+     8
+    ],
+    [
+     "steen",
+     -12,
+     6
+    ],
+    [
+     "steen",
+     12,
+     -3
+    ],
+    [
+     "smederij",
+     -11,
+     0
+    ],
+    [
+     "smederij",
+     12,
+     0
+    ],
+    [
+     "ijzerpoort",
+     -11,
+     -3
+    ],
+    [
+     "ijzerpoort",
+     12,
+     -3
+    ]
+   ]
   },
   "jachtkamp": {
    "naam": "Hunting camp",
@@ -239,6 +481,11 @@
    "naam": "Wood",
    "kleur": "#8f6d47",
    "burcht": "#9c7a52"
+  },
+  "kool": {
+   "naam": "Coal-black stone",
+   "kleur": "#3f3f47",
+   "burcht": "#4b4b54"
   }
  }
 }

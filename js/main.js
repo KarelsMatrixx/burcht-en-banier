@@ -72,6 +72,7 @@ async function start() {
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
   const tekenaar = maakTekenaar(canvas, kaart, camera, assets);
+  tekenaar.zetWimpels(!!(ontwerp && ontwerp.wimpels));
   const gevangene = maakGevangene({ kaart, missie });   // level 5: Ludolf in zijn cel
   const wegvinder = maakWegvinder(kaart);
   // Hoe hoog je staat boven op een muur, een toren of een poort.
