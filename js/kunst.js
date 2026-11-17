@@ -3199,3 +3199,49 @@ function kampBurchtTegel(naam, def, masker) {
 export function tekenKampBurcht(naam, def) {
   return { kies: 'masker', varianten: Array.from({ length: 16 }, (_, masker) => kampBurchtTegel(naam, def, masker)) };
 }
+
+// Eén tegel van het houten podium van Brandts commandotent: een laag plankenvloer van 3 bij 3 tegels,
+// waar soldaten op kunnen klimmen. De tent zelf staat op de middelste tegel (kampBurchtTegel).
+function kampVloerTegel(naam, def, masker) {
+  const H = def.hoogte;
+  const b = TB + 2;
+  const h = TH + H + 14;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const toeval = toevalVoor(naam + masker);
+  const hout = def.vloer || '#8f6d47';
+  const hb = HB + 1;
+  const hh = HH + 0.5;
+  const L = [cx - hb, cy];
+  const R = [cx + hb, cy];
+  const B = [cx, cy + hh];
+  const T = [cx, cy - hh];
+  const op = ([x, y]) => [x, y - H];
+  vlak(ctx, [op(L), op(B), B, L], tint(hout, -0.32));
+  vlak(ctx, [op(B), op(R), R, B], tint(hout, -0.08));
+  const boven = [op(T), op(R), op(B), op(L)];
+  vlak(ctx, boven, tint(hout, 0.1));
+  ctx.save();
+  omtrek(ctx, boven);
+  ctx.clip();
+  for (let deel = 0.125; deel < 1; deel += 0.125) {
+    const a = tussen(op(T), op(R), deel);
+    const z = tussen(op(L), op(B), deel);
+    lijn(ctx, a[0], a[1], z[0], z[1], 'rgba(40,25,10,0.28)', 0.6);
+  }
+  for (let i = 0; i < 5; i++) ovaal(ctx, cx + (toeval() - 0.5) * hb * 1.4, cy - H + (toeval() - 0.5) * hh * 1.2, 3 + toeval() * 4, 1.4 + toeval() * 2, 'rgba(255,240,200,0.08)');
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(255,240,200,0.35)';
+  ctx.lineWidth = 0.7;
+  ctx.beginPath();
+  ctx.moveTo(L[0], L[1] - H);
+  ctx.lineTo(B[0], B[1] - H);
+  ctx.lineTo(R[0], R[1] - H);
+  ctx.stroke();
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
+export function tekenKampVloer(naam, def) {
+  return { kies: 'masker', varianten: Array.from({ length: 16 }, (_, masker) => kampVloerTegel(naam, def, masker)) };
+}

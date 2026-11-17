@@ -450,6 +450,12 @@ export function maakKaart(recept) {
       // Decor binnen en buiten de muren (detailronde): [naam, dx, dy] in dezelfde maat als de ringen.
       // Alleen op een lege tegel zonder water; het pad naar de poort blijft vrij omdat het ontwerp dat bewaakt.
       const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR };
+      // Moerasplekjes midden in het kamp ([dx, dy]): water op een lege tegel buiten de burcht.
+      for (const [dx, dy] of ontwerp.water || []) {
+        const i = plek(dx, dy);
+        if (i < 0 || Math.max(Math.abs(dx), Math.abs(dy)) <= 1 || object[i] !== OBJECT.GEEN) continue;
+        grond[i] = GROND.WATER;
+      }
       for (const [naam, dx, dy] of ontwerp.decor || []) {
         const i = plek(dx, dy);
         if (i < 0 || !DECOR[naam] || object[i] !== OBJECT.GEEN || grond[i] === GROND.WATER) continue;
@@ -605,9 +611,8 @@ export function maakKaart(recept) {
     const gezien = new Uint8Array(aantal);
     const rij = [];
     let gestart = false;
-    for (let dy = -(van - 1); dy <= van - 1 && !rij.length; dy++) {
-      for (let dx = -(van - 1); dx <= van - 1; dx++) if (vrij(m.x + dx, m.y + dy)) { rij.push((m.y + dy) * breedte + m.x + dx); gezien[rij[0]] = 1; gestart = true; break; }
-    }
+    // Begin bij de deur van de commandotent: die tegel is altijd vrij.
+    if (vrij(m.x + 2, m.y)) { rij.push(m.y * breedte + m.x + 2); gezien[rij[0]] = 1; gestart = true; }
     while (rij.length) {
       const i = rij.pop();
       const x = i % breedte;
@@ -623,7 +628,7 @@ export function maakKaart(recept) {
       for (let x = m.x - tot; x <= m.x + tot; x++) {
         if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1) continue;
         const i = y * breedte + x;
-        if (gestart && vrij(x, y) && !gezien[i] && Math.max(Math.abs(x - m.x), Math.abs(y - m.y)) <= tot) object[i] = OBJECT.BOOM;
+        if (gestart && vrij(x, y) && !gezien[i] && Math.max(Math.abs(x - m.x), Math.abs(y - m.y)) >= van) object[i] = OBJECT.BOOM;
       }
     }
   }

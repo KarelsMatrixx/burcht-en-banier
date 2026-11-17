@@ -57,9 +57,11 @@ async function start() {
     const hoger = ontwerp.hoog ? 1.25 : 1;
     for (const deel of ['muur', 'toren', 'wachttoren', 'poort']) roodKasteel['rood.' + deel] = { basis: 'kasteel.' + deel, kleur: materiaal.kleur, hoogteFactor: hoger };
     // Een materiaal kan de burcht een andere vorm geven (tentenkamp: de commandotent) en een tweede kleur meegeven.
-    const burchtVelden = { kleur: materiaal.burcht || materiaal.kleur, ...(materiaal.vorm ? { vorm: materiaal.vorm } : {}), ...(materiaal.accent ? { accent: materiaal.accent } : {}), ...(materiaal.hoogte ? { hoogte: materiaal.hoogte } : {}) };
+    // Een materiaal kan de burcht een andere vorm geven. Tentenkamp: de 8 buitenste tegels zijn een laag
+    // houten podium (vorm, hoogte, vloer) en de middelste tegel is de commandotent (middenVorm, middenHoogte).
+    const burchtVelden = { kleur: materiaal.burcht || materiaal.kleur, ...(materiaal.vorm ? { vorm: materiaal.vorm } : {}), ...(materiaal.accent ? { accent: materiaal.accent } : {}), ...(materiaal.vloer ? { vloer: materiaal.vloer } : {}), ...(materiaal.hoogte ? { hoogte: materiaal.hoogte } : {}) };
     roodKasteel['rood.burcht'] = { basis: 'kasteel.burcht', ...burchtVelden };
-    roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', ...burchtVelden };
+    roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', ...burchtVelden, ...(materiaal.middenVorm ? { vorm: materiaal.middenVorm } : {}), ...(materiaal.middenHoogte ? { hoogte: materiaal.middenHoogte } : {}) };
   }
 
   // De rode koning is in de campagne de heer zelf: zijn kleding en wapen.
