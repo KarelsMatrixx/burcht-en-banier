@@ -1087,6 +1087,28 @@ body:has(#handelpaneel:not([hidden])) #legerhint { display: none !important; }
   z-index: 20;
 }
 #taak[hidden] { display: none; }
+
+/* De aanvalsklok: linksboven, direct onder de adviseur (58 breed, 68 hoog). Smal gehouden zodat de
+   meldingslinten rechts van de adviseur er niet overheen komen. */
+#aanvalklok {
+  position: absolute;
+  top: calc(max(8px, env(safe-area-inset-top)) + 72px);
+  left: max(12px, env(safe-area-inset-left));
+  width: 64px;
+  padding: 3px 4px 4px;
+  box-sizing: border-box;
+  text-align: center;
+  line-height: 1.1;
+  border-color: #f3d37a;
+  pointer-events: none;
+  z-index: 20;
+}
+#aanvalklok[hidden] { display: none; }
+#aanvalklok small { display: block; font-size: 10px; opacity: 0.9; white-space: nowrap; }
+#aanvalklok b { display: block; font-size: 20px; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; }
+#aanvalklok.dichtbij { border-color: #e2503c; }
+#aanvalklok.dichtbij b { color: #ff8a73; animation: aanvalklok-puls 1s ease-in-out infinite; }
+@keyframes aanvalklok-puls { 50% { opacity: 0.45; } }
 #doel-taak { white-space: pre-line; }
 #scene {
   position: fixed;

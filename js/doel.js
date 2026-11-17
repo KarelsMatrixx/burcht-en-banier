@@ -18,7 +18,7 @@ import { OBJECT } from './kaart.js';
 
 const SLEUTEL = 'burcht-banier.doel.';
 
-export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd }) {
+export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal, toonTaak, toonMelding, toonAanvalKlok, kaartGewijzigd }) {
   const d = missie.doel;
   const g = d.golven || {};
   const geheugen = SLEUTEL + missie.id;
@@ -111,11 +111,30 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal
     bewaar();
   }
 
+  // Wanneer de volgende golf komt (seconden), of -1 als er geen golf meer komt voor de tijd om is.
+  // Een golf komt zodra s.tijd het moment bereikt, maar niet meer in de laatste 15 seconden (zie stap).
+  const eersteGolf = g.eerste || 45;
+  const tussenGolf = g.tussen || 55;
+  const laatsteMoment = (d.duur || 480) - 15;
+  const volgendeGolf = () => {
+    const moment = eersteGolf + s.golven * tussenGolf;
+    return moment < laatsteMoment ? moment - s.tijd : -1;
+  };
+  // Hoeveel golven komen er in totaal in dit level.
+  const aantalGolven = Math.max(1, Math.ceil((laatsteMoment - eersteGolf) / tussenGolf));
+  const toonKlok = () => {
+    if (!toonAanvalKlok) return;
+    const nog = volgendeGolf();
+    if (nog < 0) { toonAanvalKlok(null); return; }
+    toonAanvalKlok({ seconden: Math.max(0, Math.ceil(nog)), golf: Math.min(aantalGolven, s.golven + 1), totaal: aantalGolven });
+  };
+
   zetHut();
 
   return {
     start() {
       loopt = true;
+      toonKlok();
       if (!s.gemeld.begin) {
         s.gemeld.begin = true;
         gesina(`Keep them away from my door, Karel. I need ${Math.round((d.duur || 480) / 60)} minutes to call the Silent Folk. Brandt's hunters are fast and they hide in the reeds.`);
@@ -123,14 +142,16 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal
       }
     },
     stap(dt) {
-      if (!loopt || strijd.uitslag()) return;
+      if (!loopt) return;
+      if (strijd.uitslag()) { if (toonAanvalKlok) toonAanvalKlok(null); return; }
       s.tijd += dt;
       kijk += dt;
       if (kijk < 0.5) return;
       kijk = 0;
       const over = Math.max(0, (d.duur || 480) - s.tijd);
       toonTaak(`Hold Gesina's hut: ${klok(over)} left`);
-      if (s.tijd >= (g.eerste || 45) + s.golven * (g.tussen || 55) && over > 15) stuurGolf();
+      if (s.tijd >= eersteGolf + s.golven * tussenGolf && over > 15) stuurGolf();
+      toonKlok();
       const h = strijd.hut();
       if (h && h.staat && h.leven < h.max / 2 && !s.gemeld.half) {
         s.gemeld.half = true;
@@ -142,6 +163,7 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal
       }
       if (over <= 0) {
         toonTaak('');
+        if (toonAanvalKlok) toonAanvalKlok(null);
         strijd.beslis('gewonnen');
         try { localStorage.removeItem(geheugen); } catch (e) { /* niet erg */ }
         return;
@@ -156,9 +178,11 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal
       if (loopt) {
         s.gemeld.begin = false;
         this.start();
+        toonKlok();
       }
     },
     over: () => Math.max(0, (d.duur || 480) - s.tijd),
+    volgende: volgendeGolf,
     // Voor de tests.
     stand: () => ({ ...s }),
     zetTijd(t) { s.tijd = t; },

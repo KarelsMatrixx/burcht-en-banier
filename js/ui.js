@@ -580,6 +580,18 @@ export function maakUi() {
         klapDoel(true);
       });
     },
+    // De klok linksboven onder de adviseur: wanneer de volgende aanval komt (level met een hut om te houden).
+    // klok = { seconden, golf, totaal }; null haalt hem weg.
+    toonAanvalKlok(klok) {
+      const vak = el('aanvalklok');
+      if (!klok) { vak.hidden = true; return; }
+      const m = Math.floor(klok.seconden / 60);
+      const sec = String(klok.seconden % 60).padStart(2, '0');
+      el('aanvalklok-tijd').textContent = `${m}:${sec}`;
+      el('aanvalklok-golf').textContent = `Wave ${klok.golf} of ${klok.totaal}`;
+      vak.classList.toggle('dichtbij', klok.seconden <= 15);
+      vak.hidden = false;
+    },
     // Proloog: de taak van nu (leeg = weg).
     toonTaak(tekst) {
       el('taak').textContent = tekst || '';

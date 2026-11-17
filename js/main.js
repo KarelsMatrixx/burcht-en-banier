@@ -56,8 +56,10 @@ async function start() {
   if (materiaal) {
     const hoger = ontwerp.hoog ? 1.25 : 1;
     for (const deel of ['muur', 'toren', 'wachttoren', 'poort']) roodKasteel['rood.' + deel] = { basis: 'kasteel.' + deel, kleur: materiaal.kleur, hoogteFactor: hoger };
-    roodKasteel['rood.burcht'] = { basis: 'kasteel.burcht', kleur: materiaal.burcht || materiaal.kleur };
-    roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', kleur: materiaal.burcht || materiaal.kleur };
+    // Een materiaal kan de burcht een andere vorm geven (tentenkamp: de commandotent) en een tweede kleur meegeven.
+    const burchtVelden = { kleur: materiaal.burcht || materiaal.kleur, ...(materiaal.vorm ? { vorm: materiaal.vorm } : {}), ...(materiaal.accent ? { accent: materiaal.accent } : {}) };
+    roodKasteel['rood.burcht'] = { basis: 'kasteel.burcht', ...burchtVelden };
+    roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', ...burchtVelden };
   }
 
   // De rode koning is in de campagne de heer zelf: zijn kleding en wapen.
@@ -854,6 +856,7 @@ async function start() {
     missie, kaart, bouwer, strijd, wegvinder,
     toonVerhaal: (b) => ui.toonVerhaal(b),
     toonTaak: (t) => ui.toonTaak(t),
+    toonAanvalKlok: (k) => ui.toonAanvalKlok(k),
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
     kaartGewijzigd,
   }) : null;

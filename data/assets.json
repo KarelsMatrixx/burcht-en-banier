@@ -48,6 +48,8 @@
     "dorp.steenhouwer": { "vorm": "steenhouwer", "hoogte": 24, "sprite": "" },
     "dorp.smederij":  { "vorm": "kopermijn", "kleur": "#3b3b43", "hoogte": 52, "sprite": "smederij.png", "schaal": 2.4, "anker": [40, 69] },
     "dorp.ijzerpoort": { "vorm": "kopermijn", "kleur": "#3b3b43", "hoogte": 60, "sprite": "poort_ijzer.png", "schaal": 2, "anker": [40, 84] },
+    "dorp.jagerstent": { "vorm": "jagerstent", "kleur": "#6f7a4a", "accent": "#7a5636", "hoogte": 36, "sprite": "" },
+    "dorp.kampvuur":  { "vorm": "kampvuur", "hoogte": 14, "sprite": "" },
     "dorp.kerk":      { "vorm": "kerk", "hoogte": 80, "sprite": "" },
     "dorp.cel":       { "vorm": "cel", "hoogte": 28, "sprite": "" },
     "dorp.cel_open":  { "vorm": "cel", "open": true, "hoogte": 28, "sprite": "" },

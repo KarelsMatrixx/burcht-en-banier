@@ -5,7 +5,8 @@
   "gracht: water rondom de buitenste muur. afstand = tegels van de muur tot het water, breedte = hoe breed het water is. Voor elke poort van de buitenste ring loopt een dam van aarde.",
   "materiaal: de kleur van muur, torens, poort en burcht van rood, uit materialen. hoog: true = muren te hoog voor ladders (alleen de belegeringstoren), en iets hoger getekend.",
   "Het kasteel moet op de kaart passen: maat plus gracht tot ongeveer 10 tegels.",
-  "Nog niet: palissade van palen (jachtkamp, level 4), loodsen (level 6), sluis en kades (level 8), terrassen (level 9), Raaftoren (level 10). Die horen bij de levels zelf."
+  "Nog niet: palissade van palen (jachtkamp, level 4), loodsen (level 6), sluis en kades (level 8), terrassen (level 9), Raaftoren (level 10). Die horen bij de levels zelf.",
+  "kamp: true = een tentenkamp (level 4): geen muren, torens of poort; de ring bepaalt alleen hoe groot het vrije erf is. De burcht in het midden is dan de commandotent (materiaal met vorm kampburcht). omgeving: bomen en moerasplassen rondom het kamp met een open laan naar jouw kant (zie js/kaart.js 5b2)."
  ],
  "kastelen": {
   "ring": {
@@ -306,21 +307,6 @@
     ]
    ]
   },
-  "jachtkamp": {
-   "naam": "Hunting camp",
-   "ringen": [
-    {
-     "maat": 4,
-     "poorten": [
-      "voor",
-      "achter",
-      "links",
-      "rechts"
-     ]
-    }
-   ],
-   "materiaal": "hout"
-  },
   "abdij": {
    "naam": "Abbey",
    "ringen": [
@@ -444,6 +430,138 @@
     }
    ],
    "materiaal": "zwart"
+  },
+  "tentenkamp": {
+   "naam": "Tent camp",
+   "kamp": true,
+   "ringen": [
+    {
+     "maat": 5,
+     "poorten": [
+      "voor"
+     ]
+    }
+   ],
+   "materiaal": "kamp",
+   "omgeving": {
+    "van": 7,
+    "tot": 15,
+    "bomen": 0.62,
+    "plassen": 0.52,
+    "laan": 2.5
+   },
+   "decor": [
+    [
+     "jagerstent",
+     3,
+     3
+    ],
+    [
+     "jagerstent",
+     3,
+     -3
+    ],
+    [
+     "jagerstent",
+     -3,
+     3
+    ],
+    [
+     "jagerstent",
+     5,
+     2
+    ],
+    [
+     "jagerstent",
+     5,
+     -2
+    ],
+    [
+     "jagerstent",
+     -5,
+     2
+    ],
+    [
+     "jagerstent",
+     -2,
+     5
+    ],
+    [
+     "jagerstent",
+     2,
+     -5
+    ],
+    [
+     "jagerstent",
+     -2,
+     -5
+    ],
+    [
+     "jagerstent",
+     5,
+     5
+    ],
+    [
+     "jagerstent",
+     -5,
+     5
+    ],
+    [
+     "jagerstent",
+     -5,
+     -5
+    ],
+    [
+     "kampvuur",
+     -4,
+     4
+    ],
+    [
+     "kampvuur",
+     -3,
+     -3
+    ],
+    [
+     "kampvuur",
+     3,
+     -5
+    ],
+    [
+     "tent",
+     4,
+     4
+    ],
+    [
+     "tent",
+     -4,
+     -4
+    ],
+    [
+     "vaten",
+     4,
+     -1
+    ],
+    [
+     "vaten",
+     -4,
+     2
+    ],
+    [
+     "vaten",
+     1,
+     4
+    ],
+    [
+     "vaten",
+     -1,
+     -4
+    ],
+    [
+     "put",
+     2,
+     -4
+    ]
+   ]
   }
  },
  "materialen": {
@@ -486,6 +604,13 @@
    "naam": "Coal-black stone",
    "kleur": "#3f3f47",
    "burcht": "#4b4b54"
+  },
+  "kamp": {
+   "naam": "Hunter's canvas",
+   "kleur": "#c9bd94",
+   "burcht": "#cdc19a",
+   "accent": "#3f5a35",
+   "vorm": "kampburcht"
   }
  }
 }
