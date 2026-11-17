@@ -450,7 +450,7 @@ export function maakKaart(recept) {
       }
       // Decor binnen en buiten de muren (detailronde): [naam, dx, dy] in dezelfde maat als de ringen.
       // Alleen op een lege tegel zonder water; het pad naar de poort blijft vrij omdat het ontwerp dat bewaakt.
-      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR };
+      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR, stal: OBJECT.STAL };
       // Moerasplekjes midden in het kamp ([dx, dy]): water op een lege tegel buiten de burcht.
       for (const [dx, dy] of ontwerp.water || []) {
         const i = plek(dx, dy);

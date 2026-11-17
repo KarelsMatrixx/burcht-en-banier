@@ -327,7 +327,59 @@
     "afstand": 2,
     "breedte": 2
    },
-   "materiaal": "wit"
+   "materiaal": "wit",
+   "decor": [
+    [
+     "stal",
+     -11,
+     -8
+    ],
+    [
+     "stal",
+     -11,
+     -3
+    ],
+    [
+     "stal",
+     -11,
+     3
+    ],
+    [
+     "stal",
+     -11,
+     8
+    ],
+    [
+     "stal",
+     -4,
+     -11
+    ],
+    [
+     "stal",
+     4,
+     -11
+    ],
+    [
+     "stal",
+     -4,
+     11
+    ],
+    [
+     "stal",
+     4,
+     11
+    ],
+    [
+     "stal",
+     11,
+     -6
+    ],
+    [
+     "stal",
+     11,
+     6
+    ]
+   ]
   },
   "werkplaats": {
    "naam": "Siege yard",

@@ -1,3 +1,6 @@
+## 0.70.3
+- Stillwater (level 5): rond het kasteel van de rode koning staan nu paardenstallen als decor (kastelen.json, abdij.decor; nieuw decorsoort 'stal' in kaart.js).
+
 ## 0.70.2
 - Fout opgelost: na 'Keep playing' bleef het volgende level dicht in het menu en op de levelkaart, omdat de lijst met gewonnen levels maar één keer bij het laden werd gelezen. Nu wordt hij elke keer opnieuw gelezen (tests/menu70.mjs).
 - Stillwater: rode ruiters komen al vanaf aanval 2 (max 2) in plaats van vanaf aanval 5.
