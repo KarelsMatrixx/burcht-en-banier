@@ -19,6 +19,7 @@ export const CONFIG = {
   beeld: {
     maxPixelRatio: 2,        // lager = sneller, hoger = scherper
     achtergrond: '#14130f',
+    nabewerking: 'uit',      // 'uit', 'laag' of 'hoog': kleurgrading, gloed, scherptediepte
     pixelArt: false,         // true = harde pixels, voor pixel art sprites
   },
 

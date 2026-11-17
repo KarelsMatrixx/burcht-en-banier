@@ -13,6 +13,7 @@
 
 import { CONFIG } from './config.js';
 import { GROND_ASSET, OBJECT_ASSET, OBJECT, GROND, aansluiting } from './kaart.js';
+import { maakNabewerking } from './nabewerking.js';
 import { maakLandschap } from './landschap.js';
 import { wereldNaarRaster, HALVE_BREEDTE, HALVE_HOOGTE, TEGEL_HOOGTE } from './iso.js';
 import { tekenLadderOp } from './kunst.js';
@@ -145,6 +146,8 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     return nu;
   };
   const ctx = canvas.getContext('2d', { alpha: false });
+  // Nabewerking: standaard uit; proef met ?nabewerking=laag of ?nabewerking=hoog in de adresbalk.
+  const nabewerking = maakNabewerking(new URLSearchParams(location.search).get('nabewerking') || CONFIG.beeld.nabewerking || 'uit');
   const grond = GROND_ASSET.map((naam) => assets.haal(naam));
   const objecten = OBJECT_ASSET.map((naam) => (naam ? assets.haal(naam) : null));
   // Het kasteel van rood kan in de campagne een eigen materiaal hebben (stap 33):
@@ -880,6 +883,8 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         }
       }
     }
+
+    nabewerking.toepassen(ctx, canvas);
 
     // De nacht (proloog): een donkerblauwe waas over de wereld, 0 tot 1.
     const nacht = staat.nacht ? staat.nacht() : 0;
