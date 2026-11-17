@@ -203,7 +203,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // Een ridder kan alleen iemand raken die op dezelfde hoogte staat.
   const kanRaken = (e, k, a) => isSchutter(k) || !!a.opMuur === !!e.opMuur;
   // Een soldaat van de speler op de grond mag een vijand op het dak van zijn hoofdkasteel als doel houden: hij klimt erheen.
-  const klimtNaar = (e, k, a) => !isSchutter(k) && !!a.opMuur && !e.opMuur && a.team !== e.team && kaart.object[vakVan(a)] === OBJECT.BURCHT;
+  const klimtNaar = (e, k, a) => !isSchutter(k) && !k.def.alleenBouw && !k.def.ladder && !!a.opMuur && !e.opMuur && a.team !== e.team && kaart.object[vakVan(a)] === OBJECT.BURCHT;
   const klem = (getal, laag, hoog) => Math.max(laag, Math.min(hoog, getal));
   const verVan = (e, vak) => Math.hypot((vak % B) + 0.5 - e.x, Math.floor(vak / B) + 0.5 - e.y);
   // Het vak waar iemand staat, of waar hij naar op weg is.
@@ -576,7 +576,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const doel = k.doelwit;
     const dv = vakVan(doel);
     if (e.pad && k.doelVak === dv) return;   // hij is al op weg naar waar het doelwit staat
-    if (doel.opMuur && !isSchutter(k)) {
+    if (doel.opMuur && !isSchutter(k) && !k.def.alleenBouw && !k.def.ladder) {
       const padOmhoog = padNaarDoelOpMuur(e, doel);
       if (padOmhoog) {
         zetPad(e, padOmhoog);
@@ -834,7 +834,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     // Over de grond kan het niet: misschien wel via een ladder over de muur.
     // Een stormram kan geen ladder op.
-    if (!pad && e.team === SPELER && !k.def.alleenBouw && wegvinder.aantalOpgangen(SPELER) > 0) {
+    if (!pad && e.team === SPELER && !k.def.alleenBouw && !k.def.ladder && wegvinder.aantalOpgangen(SPELER) > 0) {
       const kandidaten = [];
       const vakken = doel.burcht ? burchten[doel.team].plekken : ringVakken(doel.vak, 1);
       for (const vak of vakken) {
@@ -1450,6 +1450,42 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (pad) zetPad(e, pad);
   }
 
+  // Jouw koning gaat bij gevaar altijd naar het dak van je hoofdkasteel (net als de koning van rood):
+  // zodra er een aanvaller dichtbij je kasteel of dichtbij hemzelf is. Daar slaat hij alleen wat binnen
+  // zijn bereik komt. Is het gevaar weg, dan blijft hij nog even binnen.
+  function spelerKoningDenk(e, k, anderen) {
+    if (R.proloog) return false;
+    const thuis = burchten[SPELER];
+    const alarm = k.def.alarmAfstand || 9;
+    const bedreigd = anderen.some((a) => !a.dood && (Math.hypot(a.x - thuis.x, a.y - thuis.y) <= alarm || Math.hypot(a.x - e.x, a.y - e.y) <= alarm));
+    if (bedreigd) k.schuilTot = stapNr + stappen(15);
+    if (!bedreigd && stapNr >= (k.schuilTot || 0)) return false;
+    const opDak = e.opMuur && kaart.object[vakVan(e)] === OBJECT.BURCHT;
+    if (opDak) {
+      k.vlucht = false;
+      const binnen = anderen.filter((a) => !a.dood && Math.hypot(a.x - e.x, a.y - e.y) <= bereikVan(e, k) && kanRaken(e, k, a));
+      k.doelwit = binnen.length ? kiesDoelwit(e, k, binnen) : null;
+      if (!e.klimt) e.pad = null;
+      return true;
+    }
+    if (!k.vlucht || !e.pad) {
+      k.vlucht = true;
+      const st = kaart.start[SPELER];
+      const tegels = [];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) tegels.push((st.y + dy) * B + st.x + dx);
+      tegels.sort((a, b) => Math.hypot((a % B) - e.x, Math.floor(a / B) - e.y) - Math.hypot((b % B) - e.x, Math.floor(b / B) - e.y));
+      const van = vakVan(e) + (e.opMuur ? N : 0);
+      for (const vak of tegels) {
+        if (kaart.object[vak] !== OBJECT.BURCHT || bezetDoorVriend(N + vak, e)) continue;
+        const pad = wegvinder.zoekPadLagen(van, N + vak, SPELER);
+        if (pad && pad.length) { zetPad(e, pad); break; }
+      }
+    }
+    // Onderweg slaat hij alleen terug als iemand hem al raakt.
+    k.doelwit = null;
+    return true;
+  }
+
   // --- Eén krijger, één rekenstap -----------------------------------------------------------
   function denk(e, k, anderen) {
     if (e.lijfwacht && e.team === VIJAND) {
@@ -1459,6 +1495,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     if (e.koning && e.team === VIJAND) {
       koningDenk(e, k, anderen);
+      schuifOp(e, k);
+      return;
+    }
+    if (e.team === SPELER && koningSleutel && k.def.koning && spelerKoningDenk(e, k, anderen)) {
       schuifOp(e, k);
       return;
     }

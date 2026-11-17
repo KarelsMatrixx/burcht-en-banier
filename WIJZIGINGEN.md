@@ -581,3 +581,12 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 
 ## 0.65.4: nieuw ontwerp voor de storehouse
 - De storehouse is geen standaard huisje meer maar een pakhuis (kunst.js tekenPakhuis, vorm "pakhuis" in assets.json): stenen onderbouw, houten bovenbouw, steil dak, open deur met zakken, een luikje onder de nok. Buiten staan stammen (links), een hoop steen (rechts) en een mandje appels voor de deur: de drie dingen die je opslaat.
+
+## 0.66.0: eten, groei, belegering, koning, poorten en aanvalsgolven
+- Eten: elke boer (ook wie werkt) en elke soldaat eet een halve voedseleenheid per minuut (economie.json bevolking.voedselElke 60, eetPerPersoon 0.5). Wie niet kan eten, kost 2 populariteit per persoon (stemming.hongerPerPersoon). De oude aparte straf voor honger per halve minuut (honger: -6) is 0, zodat je niet dubbel gestraft wordt. Het paneel van je volk laat zien hoeveel voedsel per minuut nodig is. Let op: de boeren aten eerst 2 per minuut per persoon, nu 0.5: eten is dus veel makkelijker voor boeren, maar nu eten soldaten mee.
+- Snelle groei: bij een populariteit van 90 tot 100 komen er 2 boeren per 15 seconden bij (stemming.snelleGroei), anders 1.
+- Belegeringstroepen (ram, katapult, ladder, toren) kunnen nooit een muur, toren of kasteel op (leger.js isBelegering, strijd.js).
+- Jouw koning gaat bij gevaar altijd naar het dak van je hoofdkasteel (aanvallers binnen 9 tegels van hem of je kasteel), blijft daar 15 seconden na het gevaar en slaat alleen wat binnen zijn bereik komt (strijd.js spelerKoningDenk). De koning van rood deed dit al.
+- Poortwacht (js/poortwacht.js): jouw poorten gaan vanzelf dicht als aanvallers binnen 6 tegels komen, en 4 seconden nadat ze weg zijn weer open. Een poort die je zelf dichtdoet, blijft dicht; doe je hem zelf open terwijl er vijanden bij zijn, dan laat de wacht hem 25 seconden met rust. In de proloog (de les) doet de wacht niets, zodat de speler daar zelf de poort sluit.
+- Aanvalsgolven: de tijd tussen twee aanvallen van rood is van 100 naar 170 seconden (data/economie.json heer.tussen), per level nog geschaald met tempo. Per level nu: Aldervale 170, Witherheath 170, Sevenwinds 243, Ironmarsh 212, The Fen 170 (tempo 140 naar 100), Stillwater 262, Giant's Spine 170, Greyford 212, White Dike 243, Mourngate 170, Mournkeep 155. De eerste aanval (eersteAanval) is niet veranderd.
+- Nieuwe tests: voedsel50, belegering_poort50, koning_vlucht50. Aangepast: stillwater40 (golftijd), ronde39 (zonder kazerne is het maximum 0).

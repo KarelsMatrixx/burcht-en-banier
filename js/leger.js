@@ -207,6 +207,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // Soldaten in drie groepen: wie van dichtbij vecht, wie van verre schiet
   // en de belegeringsmachines (ram, katapult, toren, ladderdrager).
   // Steun (banierdrager, heler) staat bij Afstand: die blijven achter de linie.
+  const isBelegering = (sleutel) => !!(soorten[sleutel] && (soorten[sleutel].alleenBouw || soorten[sleutel].ladder));
   const groepVan = (def) => (def.alleenBouw || def.ladder ? 'belegering' : def.bereik > 2 || def.steun ? 'afstand' : 'melee');
   // De koning valt buiten de groepen en buiten Alle: die stuur je bewust, met zijn eigen knop of een tik.
   const isKoning = (e) => !!soorten[e.soldaat.sleutel].koning;
@@ -257,7 +258,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     // zoeken we ook over de muur (een toren of een ladder is ook een
     // doorgang). Een stormram blijft altijd op de grond.
     const grond = van < N && naar < N && wegvinder.verbonden(van, naar, TEAM);
-    if (!grond && soorten[e.soldaat.sleutel].alleenBouw) return false;
+    // Belegeringstroepen (ram, katapult, ladder, toren) blijven op de grond: nooit een muur, toren of kasteel op.
+    if (!grond && isBelegering(e.soldaat.sleutel)) return false;
     const pad = grond
       ? wegvinder.zoekPad(van % B, Math.floor(van / B), naar % B, Math.floor(naar / B), TEAM)
       : wegvinder.zoekPadLagen(van, naar, TEAM);
@@ -295,7 +297,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // waar die tegel bij hoort. Geeft terug hoeveel er op weg zijn gegaan.
   function stuur(x, y, opMuur = false) {
     // Een stormram kan de muur niet op.
-    let groep = opMuur ? gekozen().filter((e) => !soorten[e.soldaat.sleutel].alleenBouw) : gekozen();
+    let groep = opMuur ? gekozen().filter((e) => !isBelegering(e.soldaat.sleutel)) : gekozen();
     if (!groep.length || x < 0 || y < 0 || x >= B || y >= H) return 0;
     const doel = y * B + x;
     const plekken = [];
