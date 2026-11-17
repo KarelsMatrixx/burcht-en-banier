@@ -155,6 +155,13 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     return n;
   }
 
+  // Hoeveel stallen heeft de speler?
+  function aantalStallen() {
+    let n = 0;
+    for (let i = 0; i < N; i++) if (kaart.eigenaar[i] === EIGENAAR_SPELER && kaart.object[i] === OBJECT.STAL) n++;
+    return n;
+  }
+
   // Hoeveel plekken heeft je leger nu? Per kazerne perKazerne, nooit meer dan de grens van het level.
   function legerMax() {
     return perKazerne ? Math.min(maxLevel, perKazerne * aantalKazernes()) : maxLevel;
@@ -165,6 +172,15 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const def = soorten[sleutel];
     if (!def) return 'that soldier does not exist';
     if (def.koning) return 'there is only one king';
+    // Een ruiter heeft een stal met een paardenboer nodig: perStal paarden per stal.
+    if (def.perStal) {
+      const stallen = aantalStallen();
+      if (!stallen) return 'you need a stable first';
+      const boeren = economie.aantalMetBeroep('paardenboer');
+      if (!boeren) return 'your stable has no horse keeper yet; one comes as soon as a peasant is free';
+      const levend = soldaten.filter((e) => e.soldaat.sleutel === sleutel).length;
+      if (levend >= def.perStal * Math.min(stallen, boeren)) return `every stable place is taken (${def.perStal} horses per stable): build another stable`;
+    }
     const grens = legerMax();
     if (plekken() + (def.legerPlekken || 1) > grens) {
       // Staat de grens lager dan die van het level, dan helpt een kazerne erbij.
@@ -185,7 +201,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const reden = waaromNiet(sleutel);
     if (reden) return reden;
     const vak = plekBij(kazerneVak, 4);
-    if (vak < 0) return 'there is no room next to the barracks';
+    if (vak < 0) return 'there is no room next to this building';
     economie.betaal(soorten[sleutel].kosten);
     for (let i = soorten[sleutel].boeren || 1; i > 0; i--) economie.boerWeg();
     maak(sleutel, vak);
@@ -392,8 +408,53 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     }
   }
 
+  // Paarden op het erf: bij elke stal met een paardenboer staat een paard voor elke
+  // vrije stalplek (perStal per stal, min de ruiters die er al zijn). Ze zijn alleen
+  // decor, worden niet bewaard en komen vanzelf terug als een ruiter sneuvelt.
+  const erf = [];
+  function paardenOpErf() {
+    const def = Object.values(soorten).find((d) => d.perStal);
+    if (!def) return;
+    const keepers = economie.werkers().filter((e) => e.werk.beroep.sleutel === 'paardenboer');
+    const stallen = keepers.length ? aantalStallen() : 0;
+    const levend = soldaten.filter((e) => e.soldaat.sleutel === def.sleutel).length;
+    const doel = Math.max(0, def.perStal * Math.min(stallen, keepers.length) - levend);
+    // Wie niet meer past of waar nu iets staat, gaat weg.
+    for (let k = erf.length - 1; k >= 0; k--) {
+      const p = erf[k];
+      const vak = Math.floor(p.y) * B + Math.floor(p.x);
+      if (k >= doel || !keepers.some((e) => Math.abs(e.werk.plaats % B - Math.floor(p.x)) <= 4 && Math.abs(Math.floor(e.werk.plaats / B) - Math.floor(p.y)) <= 4) || !wegvinder.isVrij(vak % B, Math.floor(vak / B), 0)) {
+        eenheden.verwijder(p);
+        erf.splice(k, 1);
+      }
+    }
+    if (erf.length >= doel) return;
+    // Eén paard erbij per stap: een vrij vak vlak bij een stal.
+    const st = keepers[erf.length % keepers.length].werk.plaats;
+    const sx = st % B;
+    const sy = Math.floor(st / B);
+    for (let r = 1; r <= 3; r++) {
+      for (let dy = r; dy >= -r; dy--) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = sx + dx;
+          const y = sy + dy;
+          if (x < 0 || y < 0 || x >= B || y >= H || !wegvinder.isVrij(x, y, 0)) continue;
+          if (erf.some((p) => Math.floor(p.x) === x && Math.floor(p.y) === y)) continue;
+          if (eenheden.lijst.some((o) => o !== null && o.zelf && !o.paard && Math.floor(o.x) === x && Math.floor(o.y) === y)) continue;
+          const p = eenheden.maakWerker(y * B + x, 0, SOORT.PAARD, 0);
+          p.paard = true;
+          p.kijkt = (x + y) % 2 ? 1 : -1;
+          erf.push(p);
+          return;
+        }
+      }
+    }
+  }
+
   // Eén rekenstap: wie zijn route kwijt is (er is gebouwd), zoekt een nieuwe.
   function stap() {
+    paardenOpErf();
     schikOpTorens();
     for (const e of soldaten) {
       const s = e.soldaat;

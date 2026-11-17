@@ -27,6 +27,7 @@
   "zwaai: deze soldaat raakt ook één vijand naast zijn doelwit, met dit deel van zijn schade (1 = volle schade). bouwBonus: keer zoveel schade aan de genoemde bouwwerken. doorboort: pijlDekking van het doelwit telt niet (de bolt gaat door een schild).",
   "kazerne: klassiek of mystiek, bij welke kazerne je hem opleidt. boeren: zoveel boeren zonder werk kost hij (anders 1). eersteSlag: zijn eerste slag op een nieuw doelwit doet zoveel keer schade. klimMuur: hij klimt in zoveel seconden een gewone muur op zonder ladder. verborgen: vijanden zien hem pas binnen zoveel tegels, tot hij slaat. gebied: dit deel van zijn schade raakt ook wie naast het doelwit staat. brand: hout dat hij raakt brandt duur seconden en verliest perSeconde leven per seconde.",
   "koning: er is er één voor jou en één voor rood, niet op te leiden. Valt jouw koning, dan heb je verloren; valt de koning van rood, dan heb je gewonnen. zwaaiAantal: zoveel vijanden naast het doelwit raakt zijn slag. vaandel: eigen soldaten binnen bereik doen extra meer schade. zwak: zijn schade als zijn burcht kapot is. thuisBereik: de koning van rood verdedigt alleen binnen zoveel tegels van zijn burcht. zwerfStraal: hij loopt tot zoveel tegels van zijn burcht rond. alarmAfstand: zijn je soldaten zoveel tegels bij zijn burcht of bij hem, dan gaat hij terug naar zijn hoofdkasteel. Een koning geneest alleen bij zijn eigen burcht.",
+  "ruiter (stap 44): kazerne stal. perStal: zoveel levende ruiters per stal die een paardenboer heeft. charge: heeft hij minstens tegels gelopen sinds zijn laatste klap, dan doet zijn eerste klap keer zoveel schade. bonusTegen: keer zoveel schade tegen de genoemde soorten (0.5 is de helft). beroep met verzorgt: true (de paardenboer) werkt niet aan een bron maar loopt rond bij zijn stal; zonder hem traint de stal niet. rood betaalt tarwe met tarwePrijs goud per stuk. De paarden eten tarwe: de bakker laat minstens 20 tarwe in de voorraad liggen (reserve) zodat de paarden niet leeg komen te staan.",
   "legerMax: zoveel soldaten kun je hoogstens hebben (een level kan dit hoger zetten).",
   "legerPerKazerne: elke kazerne en elke magiertoren van jou geeft plek aan zoveel soldaten. Je leger is hoogstens legerPerKazerne maal het aantal van die gebouwen, en nooit meer dan legerMax. 0 zet deze regel uit (de proloog doet dat: daar staat het garnizoen van Aldervale al).",
   "torenPlekken: hoeveel soldaten er boven op een toren (de Watchtower) en een wachttoren (de Tower) kunnen staan.",
@@ -243,6 +244,11 @@
    "bereik": 0,
    "plek": "the bakery",
    "bezig": "is baking bread",
+   "reserve": {
+    "tarwe": 20
+   },
+   "spaart": "is keeping 20 wheat back for the horses",
+   "spaarRaad": "The baker only bakes once there are more than 20 wheat in the stores. Build another wheat field.",
    "mist": "is waiting for wheat in the stores",
    "raad": "Build a wheat field."
   },
@@ -261,6 +267,15 @@
    "bezig": "is digging copper from the rock",
    "mist": "finds no copper ore nearby",
    "raad": "Build the mine closer to the rocks with orange veins."
+  },
+  "paardenboer": {
+   "naam": "horse keeper",
+   "soort": "PAARDENBOER",
+   "verzorgt": true,
+   "snelheid": 1.4,
+   "bereik": 2,
+   "plek": "the stable",
+   "bezig": "is tending the horses"
   }
  },
  "soldaten": {
@@ -274,6 +289,7 @@
    "snelheid": 2.0,
    "leven": 60,
    "schade": 10,
+   "bonusTegen": { "ruiter": 1.5 },
    "schadeBouw": 5,
    "slagTijd": 1.0,
    "bereik": 1.5,
@@ -342,6 +358,7 @@
    "snelheid": 1.8,
    "leven": 42,
    "schade": 18,
+   "bonusTegen": { "ruiter": 2 },
    "schadeBouw": 2,
    "slagTijd": 1.9,
    "bereik": 6,
@@ -561,6 +578,31 @@
    "pijlDekking": 0.25,
    "tip": "A mystic giant of living stone. Slow and very tough, arrows barely scratch him. Takes two army places and cannot climb ladders. Axe knights hurt him most."
   },
+  "ruiter": {
+   "naam": "Mounted Knight",
+   "meervoud": "Mounted Knights",
+   "soort": "RUITER",
+   "kazerne": "stal",
+   "boeren": 1,
+   "legerPlekken": 2,
+   "perStal": 5,
+   "nietKlimmen": true,
+   "kosten": {
+    "goud": 30,
+    "koper": 4,
+    "tarwe": 6
+   },
+   "snelheid": 3.6,
+   "leven": 78,
+   "schade": 10,
+   "schadeBouw": 3,
+   "slagTijd": 1.0,
+   "bereik": 1.5,
+   "zicht": 6,
+   "charge": { "tegels": 5, "keer": 2.5 },
+   "bonusTegen": { "boogschutter": 1.3, "ram": 0.5, "katapult": 0.5, "toren": 0.5, "ladder": 0.5 },
+   "tip": "A knight on a warhorse. Fast, and his first blow after a run of five tiles hits two and a half times as hard. Strong against archers, weak against crossbows and spears, and he does little to siege machines. Takes two army places, cannot climb walls and needs a stable."
+  },
   "koning": {
    "naam": "King",
    "meervoud": "Kings",
@@ -685,7 +727,8 @@
    "zwaardvechter": 1.2,
    "banierdrager": 1,
    "heler": 1,
-   "steenwachter": 0
+   "steenwachter": 0,
+   "ruiter": 1.8
   },
   "ridderPerSchutter": 2,
   "rammenVanaf": 3,
@@ -707,6 +750,7 @@
    }
   },
   "koperPrijs": 2,
+  "tarwePrijs": 1,
   "aanval": {
    "niveau": 2,
    "stijgElke": 4,

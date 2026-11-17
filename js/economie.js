@@ -29,10 +29,12 @@ export async function laadEconomie() {
   if (!antwoord.ok) throw new Error('Kan data/economie.json niet laden');
   const regels = await antwoord.json();
   for (const [sleutel, beroep] of Object.entries(regels.beroepen)) {
-    if (OBJECT[beroep.bij] === undefined) throw new Error(`economie.json: onbekend object "${beroep.bij}" bij ${sleutel}`);
     if (SOORT[beroep.soort] === undefined) throw new Error(`economie.json: onbekende soort "${beroep.soort}" bij ${sleutel}`);
-    if (!regels.grondstoffen[beroep.haalt]) throw new Error(`economie.json: onbekende grondstof "${beroep.haalt}" bij ${sleutel}`);
     beroep.sleutel = sleutel;
+    // Een beroep met verzorgt: true (de paardenboer) haalt niets: hij loopt rond bij zijn stal.
+    if (beroep.verzorgt) continue;
+    if (OBJECT[beroep.bij] === undefined) throw new Error(`economie.json: onbekend object "${beroep.bij}" bij ${sleutel}`);
+    if (!regels.grondstoffen[beroep.haalt]) throw new Error(`economie.json: onbekende grondstof "${beroep.haalt}" bij ${sleutel}`);
     beroep.bron = OBJECT[beroep.bij];
   }
   return regels;
@@ -491,6 +493,40 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     e.kijkt = dx - dy >= 0 ? 1 : -1;
   }
 
+  // De paardenboer: hij loopt met een bos hooi rond bij zijn stal, blijft even staan en loopt weer.
+  function zorg(e) {
+    const w = e.werk;
+    if (e.pad) return;
+    const hier = Math.floor(e.y) * B + Math.floor(e.x);
+    e.houding = 'last';
+    if (w.staat === 'werk') {
+      if (--w.tel <= 0) w.staat = 'zoek';
+      return;
+    }
+    if (w.staat === 'heen') {
+      w.staat = 'werk';
+      w.tel = stappen(2 + gok() * 4);
+      return;
+    }
+    // zoek: een vrij vak vlak bij de stal kiezen
+    const ver = w.beroep.bereik || 2;
+    const sx = w.plaats % B;
+    const sy = Math.floor(w.plaats / B);
+    for (let poging = 0; poging < 8; poging++) {
+      const x = sx + Math.round((gok() * 2 - 1) * ver);
+      const y = sy + Math.round((gok() * 2 - 1) * ver);
+      if ((x === sx && y === sy) || !wegvinder.isVrij(x, y, TEAM)) continue;
+      if (x + y * B === hier || loopNaar(e, hier, y * B + x)) {
+        w.staat = 'heen';
+        return;
+      }
+    }
+    // Hij staat nog in het gebouw (ingebouwd) of kan nergens heen: even wachten.
+    const thuis = thuisVan(w.plaats);
+    if (thuis >= 0 && !wegvinder.isVrij(hier % B, Math.floor(hier / B), TEAM)) zetOp(e, thuis);
+    w.wacht = stappen(3);
+  }
+
   // Eén stap voor één werker.
   function werk(e) {
     const w = e.werk;
@@ -499,6 +535,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       w.wacht--;
       return;
     }
+    if (beroep.verzorgt) return zorg(e);
     let hier = Math.floor(e.y) * B + Math.floor(e.x);
 
     // Een verwerker (de zager): haalt grondstof uit de voorraad, verwerkt
@@ -743,6 +780,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     const e = werkplaatsen.get(werkVak);
     if (!e) return '';
     const w = e.werk;
+    if (w.beroep.verzorgt) return `the ${w.beroep.naam} ${w.beroep.bezig}`;
     const bezig = {
       zoek: 'is looking for work',
       heen: `is walking to ${w.beroep.plek}`,

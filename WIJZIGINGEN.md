@@ -616,6 +616,16 @@ Op Karels feedback (tutorial): bouwen kon bijna nergens, het grasveld linksboven
 - De wolkenschaduwen zijn weg (sfeer.js, tekenaar.js): Karel vond de grote donkere vlekken lelijk.
 - Een gevelde boom valt nu om, van de houthakker af: eerst langzaam, dan sneller, met een kleine stuit en een stofwolk (effect 'boomval', tekenaar.js `tekenBoomval`). De houthakker wacht ruim een seconde tot de boom ligt (economie.js `opGeveld`, `w.wacht`) en sleept hem daarna aan de stam achter zich aan naar de opslag, met de kruin over de grond (`tekenSleepboom`). Alleen beeld; wel komt het hout daardoor ruim een seconde later binnen.
 
+## 0.68.0: ruiters, stal en paardenboer
+- **Mounted Knight (ruiter):** leven 78 (130%), snelheid 3,6 (180%), schade 10, charge: na 5 tegels lopen doet de eerste klap 2,5 keer zoveel. 130% tegen boogschutters, 50% tegen rammen, katapulten, torens, ladders. Kan niet klimmen, 2 legerplekken, kost 30 goud, 4 koper, 6 tarwe en een boer. Kruisboog doet 200% en ridder (speer) 150% tegen ruiters. Alle getallen zijn schattingen, na te lezen en te testen.
+- **Stable (stal):** groep Leger, 30 hout, 20 planken (geen steen). Leidt ruiters op. Hooguit 5 levende ruiters per stal met een paardenboer (`perStal` in economie.json).
+- **Horse keeper (paardenboer):** nieuwe werker (beroep met `verzorgt`), loopt met een bos hooi rond bij de stal. Zonder hem geen opleiding.
+- **Level 5 Stillwater:** rood koopt vanaf de zesde aanval hooguit 2 ruiters (extra_soorten, gewicht 1,8, tarwe betaalt rood met goud, tarwePrijs). Bericht van Bartholt bij aanval 6. Beloning na level 5: stal en ruiter (open vanaf level 6 en in vrij spel). Regel van Ludolf in de uittekst.
+- **Paarden op het erf:** bij elke stal met een paardenboer staat een paard (kop omlaag) voor elke vrije stalplek; alleen decor, niet bewaard, verdwijnt als er een ruiter wordt opgeleid en komt terug als een ruiter sneuvelt.
+- **Tarwe voor de paarden:** de bakker laat minstens 20 tarwe in de voorraad liggen (`reserve`), anders bakt hij niet.
+- Test: tests/ruiter68.mjs (31 controles).
+- Nog niet: een speciale charge in het beeld naast een stofwolkje, balans.
+
 ## 0.68.0: details in de kastelen van rood, levels 1 tot 3 (detailronde stap B1)
 - Het kasteelontwerp in `data/kastelen.json` kan nu `decor` hebben: [naam, dx, dy] in dezelfde maat als de ringen (kaart.js). Alleen op een lege tegel zonder water; het decor is van niemand (eigenaar 0) en kan niet gesloopt worden. Namen: tent, hooiberg, put, vaten, huis, hut, boom, steen, vlaggen.
 - Level 1 (Witherheath): een tent, twee hooibergen, vaten en een put binnen de muur. Level 3 (Ironmarsh): huizen, hut, vaten en een hooiberg buiten de muur.
