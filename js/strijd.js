@@ -610,8 +610,13 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // --- Kiezen wie je aanvalt ------------------------------------------------------------
+  // Een vijand in de opmars (proloog) die buiten de muren wacht: hij vecht niet en niemand vecht met hem,
+  // tot de opmars wordt losgelaten (laatOpmarsLos).
+  const wachtBuiten = (a) => !!(a.krijg && a.krijg.tak && a.krijg.tak.houd);
   function kiesDoelwit(e, k, anderen) {
     if (vreedzaam(k)) return null;
+    if (k.tak && k.tak.houd) { k.wraak = null; return null; }
+    if (k.bevel && wachtBuiten(k.bevel)) k.bevel = null;
     const schutter = isSchutter(k);
     const bereik = bereikVan(e, k);
     // Een schutter van de speler blijft staan waar je hem neerzet: hij
@@ -628,7 +633,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     let min = ver + 0.001;
     for (let i = 0; i < anderen.length; i++) {
       const a = anderen[i];
-      if (a.dood || a.klimt || (a === k.negeer && stapNr < k.negeerTot)) continue;
+      if (a.dood || a.klimt || (a === k.negeer && stapNr < k.negeerTot) || wachtBuiten(a)) continue;
       if (!kanRaken(e, k, a) && !klimtNaar(e, k, a)) continue;
       const d = Math.hypot(a.x - e.x, a.y - e.y);
       // De windzanger kiest het liefst iemand boven op een muur of toren (die blaast ze eraf).
@@ -1851,7 +1856,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       let min = R.burchtBereik + 1.5;
       for (let i = 0; i < doelen.length; i++) {
         const a = doelen[i];
-        if (a.dood || a.klimt) continue;
+        if (a.dood || a.klimt || wachtBuiten(a)) continue;
         const d = Math.hypot(a.x - b.x, a.y - b.y);
         if (d < min && !verborgenVoor(a, d)) {
           min = d;

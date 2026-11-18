@@ -70,9 +70,12 @@ check('na 20 s: ring klopt harder', await p.evaluate(() => document.getElementBy
 // Avond: ze lopen nog rond; aanval: ze rennen het kasteel in
 await p.evaluate(() => window.spel.proloog.zetFase('avond'));
 await p.waitForTimeout(800);
-check('avond: gids weg', !(await p.isVisible('#gids-ring')) && !(await p.isVisible('#gids-kaart')));
+check('avond: geen ring, wel het avondkaartje', !(await p.isVisible('#gids-ring')) && /feast is over/.test(await p.textContent('#gids-kaart')));
+await p.tap('#gids-kaart button'); await p.waitForTimeout(300);
 check('avond: figuranten er nog', (await p.evaluate(() => window.spel.figuranten.aantal())) >= 100);
 await p.evaluate(() => window.spel.proloog.zetFase('nacht'));
+await p.waitForTimeout(500);
+await p.tap('#gids-kaart button');   // 0.73: zolang het nachtkaartje open is, staat alles stil
 await p.waitForTimeout(6000);
 const dicht = await p.evaluate(() => { const st = window.spel.kaart.start[0]; const l = window.spel.figuranten.lijst(); return l.filter((e) => e.pad && e.snelheid > 1.5).length; });
 const rest = await p.evaluate(() => window.spel.figuranten.aantal());

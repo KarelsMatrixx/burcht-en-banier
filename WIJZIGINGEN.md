@@ -829,3 +829,17 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Rood: alles wat hij heeft, beste startgoud, lijfwacht van 4 zwaardvechters, 16 wachters, eerste aanval na 90 s, saboteurs en zieners vanaf aanval 1, ruiters vanaf 2, plus een verborgen reserve van 24 man (js/reserve.js). Geen beloning na level 10.
 - Engelse teksten (intro, Reinout, slot, epiloog) en alle getallen: door Claude, na te lezen.
 - Test: `tests/level10_76.mjs` (11 controles: toren, gat, bereikbaarheid, kerkhof, bescherming, reserve, 15 s, staken, winst, epiloog).
+
+## 0.76.1: tutorial na een speelsessie van Karel
+
+- Geen klok meer in de nachtlessen: het leger van Ottger valt pas aan na "Hold" (de oude grens van 150 s, die ook tijdens het lezen doorliep, is weg).
+- Wachtende vijanden in de opmars vechten niet en worden niet beschoten (ook niet door boogschutters op de poortmuur of door de burcht); pas na laatOpmarsLos (strijd.js `wachtBuiten`).
+- Zolang een kaartje van de gids openstaat, lopen de klokken van de tutorial niet. Bij avond en nacht staat dan alles stil, ook het leger; overdag leeft het dorp door (main.js).
+- Volgorde: de voorraadkamer is les 2. Gesprek met Wessel nu na het huis (les 5), Reinouts opmerking bij de boomgaard.
+- 60 hout extra bij het begin van de proloog (120 in totaal; de bouwlessen kosten 95), zodat niemand op hout hoeft te wachten.
+- Teksten van boomgaard, huis, volk en belasting kloppen met de vaste populariteit ("in battle ..."). Na te lezen.
+- Avond: geen 20 s vrije tijd meer; meteen een kaartje van Bartholt ("To the walls"), dan 8 s schemer en de nacht.
+- Kiesles in de nacht telt alleen als je precies die soort gekozen hebt.
+- Gevonden met de nieuwe test: (a) de gouden plek "Wall here" lag op de grond en stuurde de soldaat naast de muur; nu op de bovenkant (main.js plekNaarScherm met `boven`). (b) Het oog uit les 10 bleef aan in de muurles, waardoor een tik op de muur als grond telde; het oog gaat nu uit bij elke muurles. (c) In de logboekles verdween de gids zodra het logboek open was; nu wijst hij het portret om te sluiten. (d) Bij bevel-lessen kijkt de camera eerst naar je nieuwe soldaat en na het kiezen naar de doelplek (die lag soms onder de knoppen).
+- Bartholts raad over de eerste gebouwen staat niet meer in de proloog, maar is het eerste bericht in elk ander level (campagne.json `eersteBericht`, verhaal.js, modus.js).
+- Test: tests/proloog70.mjs speelt de hele tutorial met een trage lezer (4 s per kaartje) en alleen tikken waar de gids wijst, plus level 1. proloog35, proloog40 en verhaal31 bijgewerkt (verhaal31 houdt zijn 5 oude fouten).

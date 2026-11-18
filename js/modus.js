@@ -24,6 +24,7 @@ export async function laadMissies() {
   m.campagne = cj.levels;
   m.figuren = cj.figuren || {};
   m.berichtenAltijd = cj.berichtenAltijd || [];
+  m.eersteBericht = cj.eersteBericht || null;   // Bartholts raad over de eerste gebouwen, als eerste bericht in elk level (niet de proloog)
   for (const c of m.campagne) if (!m.profielen[c.profiel]) throw new Error(`campagne.json: level ${c.id} verwijst naar onbekend profiel ${c.profiel}`);
   // De weg en de brug op het schilderij van de levelkaart.
   const lk = await fetch('data/levelkaart.json');

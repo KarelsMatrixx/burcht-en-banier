@@ -66,6 +66,10 @@
    "tekst": "Not yet. Not before I have my son back."
   }
  ],
+ "eersteBericht": {
+  "wie": "bartholt",
+  "tekst": "Build these first, Sire, as soon as you can. Woodcutter's Hut: wood for everything you build. Storehouse: room to keep your wood, stone and food. House: room for more peasants. Orchard: food for your people."
+ },
  "levels": [
   {
    "id": 0,

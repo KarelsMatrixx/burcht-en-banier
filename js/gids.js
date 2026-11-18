@@ -134,7 +134,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     const p = sol ? { x: Math.floor(sol.x), y: Math.floor(sol.y) } : doel && doel.plek;
     if (!p || !plekNaarScherm) { plek.hidden = true; return; }
     if (doel.soort === 'opleiden' && zichtbaar(el('legerpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open
-    const sc = plekNaarScherm(p.x, p.y);
+    // Een plek op de muur: de ruit op de bovenkant, waar de tik de soldaat de muur op stuurt
+    const sc = plekNaarScherm(p.x, p.y, !sol && !!doel && (doel.soort === 'muur' || !!doel.opMuur));
     const z = sc.zoom;
     const breed = tegelMaat.breedte * z * 1.1;
     const hoog = tegelMaat.hoogte * z * 1.1;
@@ -241,7 +242,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
   // Ligt er een beeldvullend scherm over het spel (titel, menu, verhaal, uitslag), dan verdwijnt de gids helemaal.
   // Een eigen klokje, want de spellus staat dan stil.
   const BEDEKKERS = ['titelscherm', 'menu', 'verhaalbeeld', 'missie', 'uitslag', 'einde', 'scene', 'logboek', 'verhaal', 'instellingen'];
-  const bedektNu = () => BEDEKKERS.some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
+  // In de logboekles hoort het open logboek bij de les: de gids blijft dan staan en wijst het portret om het te sluiten.
+  const bedektNu = () => BEDEKKERS.some((id) => { if (id === 'logboek' && doel && doel.soort === 'logboek') return false; const e = document.getElementById(id); return e && !e.hidden; });
   setInterval(() => {
     const bedekt = bedektNu();
     document.body.classList.toggle('gids-bedekt', bedekt);

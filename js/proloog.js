@@ -7,7 +7,8 @@
 // Na vier minuten nacht, of als je burcht onder 40% komt, volgt de scène:
 // een ruiter draagt Wessel weg. Daarna de levelkaart.
 //
-// Fasen: 'bouw' (taak 0 tot en met 7), 'avond', 'nacht', 'scene'.
+// Fasen: 'bouw' (de dagtaken), 'avond' (één kaartje, dan schemer), 'nacht', 'ontvoering', 'scene'.
+// Zolang er een kaartje van de gids openstaat, staat het spel stil (main.js).
 // De stand staat in localStorage, zodat herladen verder gaat waar je was.
 
 const SLEUTEL = 'burcht-banier.proloog';
@@ -16,19 +17,19 @@ const SLEUTEL = 'burcht-banier.proloog';
 const TAKEN = [
   { taak: "Build a Woodcutter's Hut", bouw: { houthakker: 1 }, gids: { soort: 'bouw', sleutel: 'houthakker', plekTekst: 'Woodcutter here' }, anker: [-21, 4],
     tekst: "Happy birthday to Wessel, Sire! While the cooks work, let us put the land to work. First lesson: wood. A woodcutter's hut sends one peasant to chop the trees nearby. Every building starts with wood. I will show you each button and the spot on the map." },
+  { taak: 'Build a Storehouse', bouw: { voorraadkamer: 1 }, gids: { soort: 'bouw', sleutel: 'voorraadkamer', plekTekst: 'Storehouse here' }, anker: [-21, -2],
+    tekst: 'Next, a storehouse. Everything your workers gather, wood, stone and food, has to be kept somewhere. The keep holds 150 of each, and every storehouse adds 150 more. Later, tap it to sell what you do not need for gold.' },
   { taak: 'Build a Stone Mine', bouw: { steengroeve: 1 }, gids: { soort: 'bouw', sleutel: 'steengroeve', plekTekst: 'Stone mine here' }, anker: [-21, -5],
     tekst: 'Wood we have, now stone. A stone mine must stand right against the grey rocks. Its worker brings stone for barracks and walls.' },
   { taak: 'Build an Orchard', bouw: { boomgaard: 1 }, gids: { soort: 'bouw', sleutel: 'boomgaard', plekTekst: 'Orchard here' }, anker: [-22, 2],
-    tekst: 'A feast needs food. Your peasants eat every half minute. When the food runs out they grow unhappy and leave. An orchard grows apples, on open grass.' },
+    tekst: 'A feast needs food. Your peasants eat every half minute. An orchard grows apples, on open grass. Today the feast keeps everyone fed, but in battle, when the food runs out, your people grow unhappy and leave.' },
   { taak: 'Build a House', bouw: { woning: 1 }, gids: { soort: 'bouw', sleutel: 'woning', plekTekst: 'House here' }, anker: [-19, -3],
-    tekst: 'Peasants live in houses. A house gives room for four more, and a new peasant arrives every so often as long as there is room, food and a happy people.' },
-  { taak: 'Build a Storehouse', bouw: { voorraadkamer: 1 }, gids: { soort: 'bouw', sleutel: 'voorraadkamer', plekTekst: 'Storehouse here' }, anker: [-21, -2],
-    tekst: 'Wood, stone and apples must be kept somewhere. Your workers carry what they gather to the storehouse, and each one holds 150 of each. Later, tap it to sell what you do not need for gold.' },
+    tekst: 'Peasants live in houses. A house gives room for four more, and a new peasant arrives every so often as long as there is room. In battle they also need food and a happy people.' },
   { taak: 'See your people', volk: true, gids: { soort: 'volk' },
     tekst: 'Look at the top bar, Sire: Peasants {volk}/{ruimte} means {volk} peasants and room for {ruimte}. Each building needs a peasant to work in it, and so does every soldier you train. A peasant without work is a spare hand. Let me show you the panel.',
-    lof: 'Peasants without work are your reserve. If food runs out or taxes are too high, popularity falls, and below 50 your people leave.' },
+    lof: 'Peasants without work are your reserve. In battle, if food runs out or taxes are too high, popularity falls, and below 50 your people leave. Today, on the feast day, everyone is happy.' },
   { taak: 'Set the taxes', belasting: true, gids: { soort: 'belasting' },
-    tekst: 'Taxes, Sire. Every half minute each peasant pays gold. Higher taxes bring more gold but make your people unhappier; lower taxes make them happier. Try a different level.',
+    tekst: 'Taxes, Sire. Every half minute each peasant pays gold. In battle, higher taxes bring more gold but make your people unhappier, and lower taxes make them happier. Today the feast keeps everyone cheerful, so try a different level and watch your gold.',
     lof: 'Low is the safe level. Choose High only for a short while, when you need gold fast.' },
   { taak: 'Build Barracks', bouw: { kazerne: 1 }, gids: { soort: 'bouw', sleutel: 'kazerne', plekTekst: 'Barracks here' }, anker: [-19, 3],
     tekst: 'A king needs soldiers, even on a feast day. Barracks train soldiers from your peasants and your gold. Wood and stone were for this.' },
@@ -39,14 +40,13 @@ const TAKEN = [
 ];
 
 const LOF = ['Well done, Sire.', 'Good work.', 'Splendid. The people see their king at work.', 'That will do nicely.', 'Very good.'];
-const VRIJ = 20;               // seconden vrij spelen bij daglicht na de laatste dagles
-const AVOND = 20;              // daarna seconden schemering voor de nacht
+const EXTRA_HOUT = 60;         // extra hout bij het begin van de proloog
+const AVOND = 8;               // seconden schemering na het avondkaartje, dan de nacht
 const NACHT_DUUR = 300;        // vijf minuten nacht, dan de ontvoering
 const OVERMACHT = 150;         // zoveel vijanden komen er: je hebt geen kans (naar Karel)
 const OPMARS_TEMPO = 0.55;     // zo langzaam lopen ze aan (deel van hun gewone snelheid)
 const GARNIZOEN = 80;          // zoveel soldaten heeft Aldervale bij het begin (wachters en wie rondloopt)
 const BELEG = 20;              // zo lang houdt de poort het tijdens de aanval, dan gaat hij van binnenuit open
-const WACHT_MAX = 150;         // zo lang wacht het leger buiten de poort, ook als de speler de les niet afmaakt (seconden)
 // Het leger van Ottger: veel soorten, ook belegeringsmachines
 const LEGER_OTTGER = { ridder: 40, boogschutter: 27, bijlridder: 16, kruisboog: 12, zwaardvechter: 12, banierdrager: 4, heler: 5, sluipmoordenaar: 5, vlammenwever: 4, steenwachter: 3, ladder: 9, ram: 6, katapult: 4, toren: 3 };   // 150
 
@@ -73,7 +73,7 @@ const KAREL = { naam: 'King Karel', portret: 'karel' };
 const WESSEL = { naam: 'Wessel', portret: 'wessel_blij' };
 const REINOUT = { naam: 'Lord Reinout of Witherheath', portret: 'reinout' };
 const GESPREKKEN = {
-  3: [
+  4: [
     [WESSEL, 'Father! Father! Bartholt says I am nine today. Nine! Is it true there is honey cake?'],
     [KAREL, 'Honey cake, minstrels, and a wooden sword with your name cut into the hilt. Do not tell Bartholt I told you.'],
     [WESSEL, 'A real sword? Then I can guard the gate with you tonight!'],
@@ -93,11 +93,12 @@ const GESPREKKEN = {
   ],
 };
 
-export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, sluitPanelen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids, logMelding, bevolking }) {
+export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, sluitPanelen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids, logMelding, bevolking, geefVoorraad, oogUit }) {
   let s = lees() || nieuw();
   let loopt = false;
   let reinout = null;
   let kijk = 0;
+  let keuzeWas = false;   // bevel-les: was er de vorige keer al een soldaat gekozen?
 
   function nieuw() {
     return { fase: 'bouw', taak: 0, tijd: 0, fasetijd: 0, basis: null, golven: 0, gemeld: {}, klaar: false, gestuurd: false, deel: '', nTaak: 0, nKlaar: false, nBegonnen: false };
@@ -245,10 +246,14 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       plek = k.length === 2 ? { x: k[0], y: k[1] } : null;
     }
     const bevel = t.sturen || t.opMuur;
+    if (t.opMuur && kijk && oogUit) oogUit();   // muurles: het oog uit, anders gaat een tik naar de grond
     gids.richt(plek ? { ...t.gids, plek, ...(bevel ? { heeftKeuze: () => leger.aantalGekozen() > 0, soldaat: nieuweSoldaat } : {}) } : t.gids);
     // Bartholt gaat mee naar de plek van de les (of staat bij de burcht als er geen plek is)
     if (kijk && figuranten) figuranten.leid(plek);
-    if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
+    // Bij een bevel-les staat de gouden plek eerst op je nieuwe soldaat: daar kijkt de camera dan naar
+    const sol = bevel && leger.aantalGekozen() === 0 ? nieuweSoldaat() : null;
+    if (sol && kijk && kijkNaar) kijkNaar(Math.floor(sol.x), Math.floor(sol.y));
+    else if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
   }
 
   // De soldaat die de speler het laatst trainde (geen wachter, niet de koning), liefst niet op de muur
@@ -311,21 +316,22 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     return true;
   }
 
+  // Na de laatste dagles: meteen het avondkaartje van Bartholt, daarna wordt het donker en komt de nacht.
   function naarAvond() {
     s.fase = 'avond';
     s.fasetijd = 0;
     gids.stop();
-    gids.verbergKaart();
-    toonTaak('The feast goes on');
-    bewaar();
-  }
-  // Na de vrije tijd: het wordt avond
-  function begintSchemer() {
-    s.gemeld.avond = true;
     toonTaak('Evening: the feast is over');
-    bartholt('The feast is over and Wessel is asleep. Lord Reinout has gone out for some air. Sire, I count more torches on the road than I like. If they come tonight, they come in force. Hold the keep as long as you can.');
-    zetReinout(false);
     bewaar();
+    avondKaart();
+  }
+  function avondKaart() {
+    gids.kaart({ naam: 'Bartholt', tekst: 'The feast is over and Wessel is asleep. Lord Reinout has gone out for some air. Sire, I count more torches on the road than I like. If they come tonight, they come in force. Hold the keep as long as you can.', knop: 'To the walls ›' }, () => {
+      s.gemeld.avond = true;
+      s.fasetijd = 0;
+      zetReinout(false);
+      bewaar();
+    });
   }
 
   // De eerste poort uit de les die nog open is (null als ze allemaal dicht zijn)
@@ -343,7 +349,13 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     if (t.poort) return !openPoortVan(t);
     const sleutel = t.keuze || t.stuurSoort;
     // Kiezen: de groep telt ook de wachters mee (zo staat het in het paneel)
-    if (t.keuze) return leger.gekozen().some((e) => e.soldaat.sleutel === sleutel || !soldaten().some((x) => x.soldaat.sleutel === sleutel));
+    // Kiezen: precies die soort, niets anders (de koning telt niet mee). Heeft de speler die soort niet meer, dan telt elke keuze.
+    if (t.keuze) {
+      const groep = leger.gekozen().filter((e) => e.soldaat && e.soldaat.sleutel !== koningSoort);
+      if (!groep.length) return false;
+      if (!soldaten().some((x) => x.soldaat.sleutel === sleutel)) return true;
+      return groep.every((e) => e.soldaat.sleutel === sleutel);
+    }
     // Sturen: alleen een bevel in deze les naar (de buurt van) de gouden plek telt
     return s.nBevel === s.nTaak + 1;
   };
@@ -407,7 +419,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     let plek = null;
     if (t.doelPlek) plek = nachtPlek(t);
     if (t.poort) { plek = openPoortVan(t); if (kiesGeen) kiesGeen(); }
-    gids.richt(plek ? { ...t.gids, plek, heeftKeuze: () => leger.aantalGekozen() > 0 } : t.gids);
+    if (t.opMuur && kijk && oogUit) oogUit();
+    gids.richt(plek ? { ...t.gids, plek, opMuur: !!t.opMuur, heeftKeuze: () => leger.aantalGekozen() > 0 } : t.gids);
     if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
   }
   function nachtIntro() {
@@ -512,10 +525,10 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     start() {
       loopt = true;
       if (s.fase === 'bouw') {
-        // In het logboek: welke gebouwen het eerst moeten (naar Karel)
-        if (logMelding && !s.gemeld.advies) {
-          s.gemeld.advies = true;
-          logMelding('Build these first, Sire, as soon as you can. Woodcutter\'s Hut: wood for everything you build. Storehouse: without it your people have nowhere to keep wood, stone and apples. House: room for more peasants. Orchard: apples to feed your people.');
+        // Genoeg hout voor alle bouwlessen (60 + 60 = 120; de lessen kosten samen 95), zodat niemand hoeft te wachten
+        if (geefVoorraad && !s.gemeld.hout) {
+          s.gemeld.hout = true;
+          geefVoorraad('hout', EXTRA_HOUT);
           bewaar();
         }
         zetReinout(true);
@@ -524,7 +537,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         if (s.klaar) { toonTaak(`Done: ${TAKEN[s.taak].taak}`); klaarKaart(); }
         else if (!s.basis) introKaart();
         else richtGids(false);
-      } else if (s.fase === 'avond') toonTaak(s.gemeld.avond ? 'Evening: the feast is over' : 'The feast goes on');
+      } else if (s.fase === 'avond') { toonTaak('Evening: the feast is over'); if (!s.gemeld.avond) avondKaart(); }
       else if (s.fase === 'nacht') {
         if (s.deel === 'opmars') {
           // Na het herladen is het leger er niet meer: opnieuw laten marcheren, de les gaat verder
@@ -554,12 +567,18 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       kijk = 0;
       if (s.fase === 'bouw') {
         if (!s.basis) return;   // het kaartje wacht op de speler
-        if (s.taak === 2 && s.fasetijd > 25 && !s.gemeld.reinout) {
+        if (s.taak === 3 && s.fasetijd > 25 && !s.gemeld.reinout) {
           s.gemeld.reinout = true;
           toonVerhaal({ naam: 'Lord Reinout of Witherheath', portret: 'reinout', tekst: 'A fine feast, King Karel. Your boy has grown. Nine already... time runs fast in Aldervale.' });
         }
         const huidig = TAKEN[s.taak];
         const g = gids.doel();
+        // Bevel-les: zodra de soldaat gekozen is, gaat de camera naar de doelplek (die lag soms buiten beeld of onder de knoppen)
+        if ((huidig.sturen || huidig.opMuur) && !s.klaar) {
+          const gekozen = leger.aantalGekozen() > 0;
+          if (gekozen && !keuzeWas && g && g.plek && kijkNaar) kijkNaar(g.plek.x, g.plek.y);
+          keuzeWas = gekozen;
+        }
         if (huidig.bouw && g && g.plek && !s.klaar && bouwer.waaromNiet(g.plek.x, g.plek.y, bouwwerken && bouwwerken[huidig.gids.sleutel]) !== '') gids.zetPlek(zoekPlek(huidig));
         if (!s.klaar && taakKlaar()) {
           s.klaar = true;
@@ -571,14 +590,13 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
           klaarKaart();
         } else if (Math.round(s.tijd) % 10 === 0) bewaar();
       } else if (s.fase === 'avond') {
-        if (s.fasetijd >= VRIJ && !s.gemeld.avond) begintSchemer();
-        if (s.fasetijd >= VRIJ + AVOND) naarNacht();
+        if (s.gemeld.avond && s.fasetijd >= AVOND) naarNacht();
       } else if (s.fase === 'ontvoering') {
         if (s.fasetijd >= RIT) naarScene();
       } else if (s.fase === 'nacht' && s.deel === 'beleg') {
         if (s.fasetijd >= BELEG) poortGaatOpen();
       } else if (s.fase === 'nacht' && s.deel === 'opmars') {
-        // De les over je leger; de poort gaat ook open als de speler te lang wacht
+        // De les over je leger. Het leger wacht tot de speler na de laatste les op 'Hold' tikt.
         const t = NACHT_TAKEN[s.nTaak];
         if (t.poort && s.nBegonnen && !s.nKlaar) { const op = openPoortVan(t); if (op) gids.zetPlek(op); }
         if (s.nBegonnen && !s.nKlaar && nachtKlaar(t)) {
@@ -589,7 +607,6 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
           bewaar();
           nachtKlaarKaart();
         }
-        if (s.fasetijd >= WACHT_MAX) openPoort();
       } else if (s.fase === 'nacht') {
         const st = strijd.stand();
         if (s.fasetijd >= NACHT_DUUR || (st.burchtMax > 0 && st.burcht / st.burchtMax < 0.4)) naarOntvoering();
@@ -598,7 +615,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     },
     // Hoe donker het is: 0 overdag, 1 in de nacht.
     nacht() {
-      if (s.fase === 'avond') return Math.max(0, Math.min(1, (s.fasetijd - VRIJ) / AVOND));
+      if (s.fase === 'avond') return s.gemeld.avond ? Math.max(0.2, Math.min(1, s.fasetijd / AVOND)) : 0.2;
       if (s.fase === 'nacht' || s.fase === 'scene' || s.fase === 'ontvoering') return 1;
       return 0;
     },

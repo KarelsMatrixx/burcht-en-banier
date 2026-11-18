@@ -77,7 +77,7 @@ const bouwTaak = async ([sleutel, n]) => {
   await totTaak(n);
   check(`${sleutel} gebouwd: taak ${n + 1}`, (await st()).taak === n, JSON.stringify(await st()));
 };
-for (const t of [['houthakker', 1], ['steengroeve', 2], ['boomgaard', 3], ['woning', 4], ['voorraadkamer', 5]]) await bouwTaak(t);
+for (const t of [['houthakker', 1], ['voorraadkamer', 2], ['steengroeve', 3], ['boomgaard', 4], ['woning', 5]]) await bouwTaak(t);
 // Taak 5 en 6: je volk en de belasting, met echte tikken
 check('taak 6: je volk', (await st()).taak === 5 && /purse/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 await p.tap('#knop-buidel'); await p.waitForTimeout(500);
@@ -171,13 +171,12 @@ await kaartTik();   // Continue
 await p.waitForFunction(() => window.spel.proloog.stand().fase === 'avond', null, { timeout: 8000 }).catch(() => {});
 s = await st();
 check('lijst af: avond', s.fase === 'avond', JSON.stringify(s));
-// Eerst 20 seconden vrij bij daglicht
-await p.waitForTimeout(5000);
-check('vrije tijd: nog licht, Reinout er nog', (await p.evaluate(() => window.spel.proloog.nacht())) === 0 && (await st()).reinout);
-await p.waitForTimeout(16000);
+// 0.73: meteen een avondkaartje van Bartholt; Reinout gaat pas als je verder tikt, dan schemer
+check('avondkaartje meteen', await p.isVisible('#gids-kaart') && /feast is over/.test(await p.textContent('#gids-kaart')), await p.textContent('#gids-kaart'));
+check('Reinout er nog zolang het kaartje open is', (await st()).reinout);
+await p.tap('#gids-kaart button'); await p.waitForTimeout(400);
 check('Reinout is weg', !(await st()).reinout && !(await p.evaluate(() => window.spel.eenheden.lijst.some((e) => e.gast))));
-// Het wordt donker
-await p.waitForTimeout(6000);
+await p.waitForTimeout(3000);
 const n1 = await p.evaluate(() => window.spel.proloog.nacht());
 check('schemering', n1 > 0.1 && n1 < 1, n1);
 await p.waitForFunction(() => window.spel.proloog.stand().fase === 'nacht', null, { timeout: 25000 }).catch(() => {});

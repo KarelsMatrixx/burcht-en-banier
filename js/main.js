@@ -879,7 +879,8 @@ async function start() {
   // De proloog: taken van Bartholt, de nacht en de scène.
   const gids = missie && missie.proloog ? maakGids({
     // Waar staat een tegel op het scherm, en hoe groot is hij? Voor de gouden ruit op de bouwplek.
-    plekNaarScherm: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); const sc = camera.wereldNaarScherm(w.x, w.y); return { x: sc.x, y: sc.y, zoom: camera.zoom }; },
+    // boven: de bovenkant van het bouwwerk op die plek (een muur), daar tikt de speler om er een soldaat op te zetten
+    plekNaarScherm: (x, y, boven = false) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); const h = boven ? hoogteOp(y * kaart.breedte + x) : 0; const sc = camera.wereldNaarScherm(w.x, w.y - h); return { x: sc.x, y: sc.y, zoom: camera.zoom }; },
     tegelMaat: { breedte: CONFIG.tegel.breedte, hoogte: CONFIG.tegel.hoogte },
   }) : null;
   const slachting = maakSlachting({ strijd, economie, wegvinder, kaart, eenheden, leger, rood });
@@ -887,6 +888,9 @@ async function start() {
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, bouwwerken, leger, strijd, wegvinder, eenheden,
     koningSoort: 'koning', gids, figuranten, bevolking: () => economie.bevolking(),
+    // Het oog uit: met het oog aan telt een tik als een tik op de grond, dan kom je de muur niet op
+    oogUit: () => { tekenaar.zetDoorzicht(false); oog.classList.remove('actief'); oog.setAttribute('aria-pressed', 'false'); },
+    geefVoorraad: (naam, n) => { economie.voorraad[naam] = (economie.voorraad[naam] || 0) + n; if (naVoorraad) naVoorraad(); },
     kiesGeen: () => { leger.kiesGeen(); if (naLeger) naLeger(); },
     sluitPanelen: () => { stopBouw(); sluitKazerne(); leger.kiesGeen(); if (naLeger) naLeger(); },
     stopBouw: () => stopBouw(),
@@ -1227,13 +1231,17 @@ async function start() {
     stappenPerSeconde: CONFIG.spel.stappenPerSeconde,
     stap: (dt) => {
       if (strijd.uitslag() || titelOpen || beeldOpen || !menuPaneel.hidden) return;   // gewonnen of verloren, beginscherm of menu open: alles staat stil
+      // Proloog: zolang er een kaartje openstaat (Bartholt of een gesprek) lopen de klokken van de tutorial niet.
+      // Overdag leeft het dorp gewoon door; bij avond en nacht staat alles stil, ook het leger van Ottger.
+      const leest = proloog && gids.kaartOpen();
+      if (leest && proloog.fase() !== 'bouw') return;
       eenheden.stap(dt);
       economie.stap();
       leger.stap();
       strijd.stap();
       poortwacht.stap();
       verhaal.stap(dt, verhaalStand);
-      if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); }
+      if (proloog) { if (!leest) proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); }
       if (doel) doel.stap(dt);
       if (hinderlaag && !strijd.uitslag()) hinderlaag.stap(dt);
       if (reserve) reserve.stap(dt);
