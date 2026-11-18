@@ -101,9 +101,12 @@ await p.waitForFunction(() => window.spel.proloog.stand().deel === 'storm', null
 check('Bartholt: verraad', await p.evaluate(() => /betrayed/.test(document.getElementById('verhaal').textContent + window.spel.ui.logboek().map((r) => r.tekst).join(' '))));
 check('storm begonnen na ongeveer 10 s', (await nS()).deel === 'storm', JSON.stringify(await nS()));
 check('poorten open', await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; return s.wegvinder.verbonden(st.y * s.kaart.breedte + st.x + 40, st.y * s.kaart.breedte + st.x + 3, 1); }));
-await p.waitForTimeout(30000);
-const na = await kijk();
-check('het leger stroomt naar binnen', na.binnen >= 8, JSON.stringify(na));
+// 0.76.2: staat Karel op de helft, dan begint de ontvoering en trekt het leger zich terug. Dus: meten op het
+// hoogste punt binnen, of tot de ontvoering begint.
+let na = await kijk(), hoogst = na.binnen, fase = 'nacht';
+for (let i = 0; i < 30; i++) { await p.waitForTimeout(1000); na = await kijk(); hoogst = Math.max(hoogst, na.binnen); fase = (await nS()).fase; if (fase !== 'nacht') break; }
+console.log('ontvoering na storm (s):', fase, 'hoogst binnen:', hoogst);
+check('het leger stroomt naar binnen', hoogst >= 8, JSON.stringify(na));
 await p.screenshot({ path: '/tmp/s/p43.png' });
 check('geen scriptfouten', fouten.length === 0, fouten.join('|'));
 console.log('ok', ok, 'fout', fout);

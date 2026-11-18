@@ -253,7 +253,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     // Richt de gids op een taak: soort 'bouw' (met sleutel), 'opleiden', 'sturen', 'muur'.
     // Logboekles: open geweest en weer dicht
     logboekGelezen: () => { if (!el('logboek').hidden) logboekOpen = true; return logboekOpen && el('logboek').hidden; },
-    richt(taak) { doel = taak; laatsteTik = nu; vorigeTekst = ''; belastingTik = false; paneelGezien = false; },
+    // Een nieuwe grondles vraagt altijd naar het oog, ook als het eerder al eens aan is geweest
+    richt(taak) { if (taak && taak.soort === 'sturen' && (!doel || doel.soort !== 'sturen')) oogGezien = false; doel = taak; laatsteTik = nu; vorigeTekst = ''; belastingTik = false; paneelGezien = false; },
     belastingGekozen: () => belastingTik,
     // Is het volkspaneel in deze les geopend geweest?
     volkGezien: () => paneelGezien,

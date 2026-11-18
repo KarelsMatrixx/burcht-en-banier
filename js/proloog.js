@@ -246,7 +246,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       plek = k.length === 2 ? { x: k[0], y: k[1] } : null;
     }
     const bevel = t.sturen || t.opMuur;
-    if (t.opMuur && kijk && oogUit) oogUit();   // muurles: het oog uit, anders gaat een tik naar de grond
+    if ((t.opMuur || t.sturen) && kijk && oogUit) oogUit();   // muurles: het oog uit (anders gaat een tik naar de grond); grondles: uit, zodat de les erom vraagt
     gids.richt(plek ? { ...t.gids, plek, ...(bevel ? { heeftKeuze: () => leger.aantalGekozen() > 0, soldaat: nieuweSoldaat } : {}) } : t.gids);
     // Bartholt gaat mee naar de plek van de les (of staat bij de burcht als er geen plek is)
     if (kijk && figuranten) figuranten.leid(plek);
@@ -483,19 +483,48 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     bewaar();
   }
 
-  // De ontvoering: een ruiter in het zwart rijdt met Wessel van de burcht door de oostpoorten naar buiten.
-  const RIT = 8;   // seconden
+  // De ontvoering (naar Karel): zodra Karel op de helft van zijn leven staat, rijdt een ruiter met Wessel
+  // van de burcht weg, over de weg en door de open oostpoorten (niet over de muren). Tegelijk trekt het
+  // hele leger van Ottger zich terug naar buiten. Daarna de scène.
+  const RIT_MIN = 8;            // seconden, minstens
+  const RIT_TEMPO = 4.5;        // tegels per seconde
+  function vrijVakBij(x, y, rMax) {
+    for (let r = 0; r <= rMax; r++) {
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        if (wegvinder.isVrij(x + dx, y + dy, 1)) return [x + dx, y + dy];
+      }
+    }
+    return null;
+  }
+  function ritRoute() {
+    const st = kaart.start[0];
+    const van = vrijVakBij(st.x + 2, st.y + 2, 4);
+    const naar = vrijVakBij(st.x + 34, st.y, 4);
+    const pad = van && naar ? wegvinder.zoekPad(van[0], van[1], naar[0], naar[1], 1) : null;
+    if (!pad || pad.length < 3) return null;
+    const N = kaart.breedte * kaart.hoogte;
+    const route = [[van[0] + 0.5, van[1] + 0.5]];
+    for (const knoop of pad) { const v = knoop % N; route.push([v % kaart.breedte + 0.5, Math.floor(v / kaart.breedte) + 0.5]); }
+    return { route, naar: naar[1] * kaart.breedte + naar[0] };
+  }
   function naarOntvoering() {
     if (s.fase === 'ontvoering' || s.fase === 'scene') return;
     s.fase = 'ontvoering';
     s.fasetijd = 0;
     const st = kaart.start[0];
-    const route = [[st.x + 1, st.y + 3], [st.x + 4, st.y], [st.x + 12, st.y], [st.x + 20, st.y], [st.x + 32, st.y + 1]];
-    strijd.ruiter(route, RIT * 1000);
+    // De poorten staan open (verraad); de ruiter volgt de weg naar buiten
+    wegvinder.zetPoortenOpen(true);
+    const rit = ritRoute();
+    const route = rit ? rit.route : [[st.x + 1, st.y + 3], [st.x + 4, st.y], [st.x + 12, st.y], [st.x + 20, st.y], [st.x + 32, st.y + 1]];
+    s.rit = Math.max(RIT_MIN, route.length / RIT_TEMPO);
+    strijd.ruiter(route, s.rit * 1000);
+    // Het leger gaat met hem mee terug
+    if (strijd.trekTerug) strijd.trekTerug(rit ? rit.naar : (st.y * kaart.breedte + st.x + 32));
     if (sluitPanelen) sluitPanelen();
     if (kijkNaar) kijkNaar(st.x + 8, st.y);
     toonTaak('');
-    toonMelding('A rider in black breaks out of the keep... he has Wessel!');
+    toonMelding('A rider breaks out of the keep... he has Wessel! The Mourning Banner is falling back with him.');
     bewaar();
   }
 
@@ -592,7 +621,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       } else if (s.fase === 'avond') {
         if (s.gemeld.avond && s.fasetijd >= AVOND) naarNacht();
       } else if (s.fase === 'ontvoering') {
-        if (s.fasetijd >= RIT) naarScene();
+        if (s.fasetijd >= (s.rit || RIT_MIN)) naarScene();
       } else if (s.fase === 'nacht' && s.deel === 'beleg') {
         if (s.fasetijd >= BELEG) poortGaatOpen();
       } else if (s.fase === 'nacht' && s.deel === 'opmars') {
@@ -609,7 +638,10 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         }
       } else if (s.fase === 'nacht') {
         const st = strijd.stand();
-        if (s.fasetijd >= NACHT_DUUR || (st.burchtMax > 0 && st.burcht / st.burchtMax < 0.4)) naarOntvoering();
+        // Karel op de helft van zijn leven (lager kan niet): de ontvoering. Vangnet: tijd of de burcht.
+        const kon = strijd.koning(0);
+        const karelHalf = s.deel === 'storm' && kon && kon.levenMax && kon.leven <= Math.ceil(kon.levenMax / 2);
+        if (karelHalf || s.fasetijd >= NACHT_DUUR || (st.burchtMax > 0 && st.burcht / st.burchtMax < 0.4)) naarOntvoering();
         else if (Math.round(s.fasetijd) % 10 === 0) bewaar();
       }
     },

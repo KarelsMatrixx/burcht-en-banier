@@ -843,3 +843,13 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Gevonden met de nieuwe test: (a) de gouden plek "Wall here" lag op de grond en stuurde de soldaat naast de muur; nu op de bovenkant (main.js plekNaarScherm met `boven`). (b) Het oog uit les 10 bleef aan in de muurles, waardoor een tik op de muur als grond telde; het oog gaat nu uit bij elke muurles. (c) In de logboekles verdween de gids zodra het logboek open was; nu wijst hij het portret om te sluiten. (d) Bij bevel-lessen kijkt de camera eerst naar je nieuwe soldaat en na het kiezen naar de doelplek (die lag soms onder de knoppen).
 - Bartholts raad over de eerste gebouwen staat niet meer in de proloog, maar is het eerste bericht in elk ander level (campagne.json `eersteBericht`, verhaal.js, modus.js).
 - Test: tests/proloog70.mjs speelt de hele tutorial met een trage lezer (4 s per kaartje) en alleen tikken waar de gids wijst, plus level 1. proloog35, proloog40 en verhaal31 bijgewerkt (verhaal31 houdt zijn 5 oude fouten).
+
+## 0.76.2: einde van de tutorial en de oogles (Karels feedback van 18 november)
+
+- Ontvoering zodra Karel in de storm op de helft van zijn leven staat (lager kan niet). Vangnet blijft: 5 minuten nacht of burcht onder 40%.
+- De ruiter rijdt over een echte route (wegvinden, team rood, poorten open) van de burcht door de vier oostpoorten naar buiten, niet meer over de muren. In en net achter een poortdoorgang is hij even onzichtbaar, zoals gewone eenheden (effecten worden boven alles getekend). Ritduur volgt de lengte van de route (4,5 tegels per seconde, minstens 8 s).
+- Tegelijk trekt het hele leger van Ottger zich terug naar buiten (strijd.js `trekTerug`, `tak.aftocht`): ze vechten niet meer en worden niet meer aangevallen. Wie geen weg heeft (bijvoorbeeld op een muur) blijft staan.
+- De ruiter in kleur: bruin paard met witte bles, rood dekkleed met gouden zoom, stalen harnas en helm, rode mantel en pluim. De banier blijft zwart (de Rouwbanier) met een zilveren rand. Na te bekijken op de iPhone.
+- Oogles: aan het begin van les 10 (soldaat sturen) gaat het oog uit en vraagt de gids altijd naar het oog, ook als de speler het eerder al eens aantikte (toen sloeg de gids de stap over).
+- Melding: "A rider breaks out of the keep... he has Wessel! The Mourning Banner is falling back with him." Na te lezen.
+- Test: tests/proloog77.mjs (oog, ontvoering, route, aftocht, scène). proloog43 meet nu het hoogste aantal binnen tot de ontvoering.

@@ -612,10 +612,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // --- Kiezen wie je aanvalt ------------------------------------------------------------
   // Een vijand in de opmars (proloog) die buiten de muren wacht: hij vecht niet en niemand vecht met hem,
   // tot de opmars wordt losgelaten (laatOpmarsLos).
-  const wachtBuiten = (a) => !!(a.krijg && a.krijg.tak && a.krijg.tak.houd);
+  // Ook een vijand op de aftocht (proloog, na de ontvoering) vecht niet meer en wordt niet meer aangevallen.
+  const wachtBuiten = (a) => !!(a.krijg && a.krijg.tak && (a.krijg.tak.houd || a.krijg.tak.aftocht >= 0));
   function kiesDoelwit(e, k, anderen) {
     if (vreedzaam(k)) return null;
-    if (k.tak && k.tak.houd) { k.wraak = null; return null; }
+    if (k.tak && (k.tak.houd || k.tak.aftocht >= 0)) { k.wraak = null; return null; }
     if (k.bevel && wachtBuiten(k.bevel)) k.bevel = null;
     const schutter = isSchutter(k);
     const bereik = bereikVan(e, k);
@@ -1216,7 +1217,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // een omweg (via), een bouwwerk van jou aanvallen (doel) of terug naar huis.
   function tak(e) {
     const k = krijgVan(e);
-    if (!k.tak) k.tak = { houdTot: 0, doel: null, via: -1, terug: false, groep: 0, ladderPoging: 0 };
+    if (!k.tak) k.tak = { houdTot: 0, doel: null, via: -1, terug: false, groep: 0, ladderPoging: 0, aftocht: -1 };
     return k.tak;
   }
 
@@ -1286,6 +1287,18 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function tactiek(e, k) {
     const t = k.tak;
     if (!t) return false;
+    // Aftocht (proloog): rennen naar het verzamelvak buiten de poort en daar blijven; niet meer vechten.
+    if (t.aftocht >= 0) {
+      k.doelwit = null; k.bouw = null; k.bevel = null; k.ladder = -1;
+      zetHouding(e, null);
+      if (verVan(e, t.aftocht) <= 2.5) { if (e.pad) e.pad = null; return true; }
+      if (!e.pad && !t.geenWeg) {
+        const pad = zoekPad(e, t.aftocht, VIJAND);
+        if (pad) zetPad(e, pad);
+        else t.geenWeg = true;   // geen weg (bijvoorbeeld op een muur): hij blijft staan en vecht niet meer
+      }
+      return true;
+    }
     // Opmars (proloog): eerst naar zijn plek buiten de muren, dan wachten tot de poort opengaat.
     if (t.houd) {
       if (t.via >= 0) {
@@ -2448,6 +2461,18 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   return {
     beschermKoning: (aan) => { koningBeschermd = !!aan; },
     // Level 10: het gevecht staken. Iedereen blijft staan waar hij staat, niemand vecht nog.
+    // Proloog: het hele leger van rood trekt zich terug naar een vak buiten de poort (de ruiter heeft Wessel).
+    trekTerug(vak) {
+      for (const e of eenheden.lijst) {
+        if (e.dood || e.team !== VIJAND || e.wachter !== undefined || !e.krijg) continue;   // alleen krijgers (geen werktuigen)
+        const t = tak(e);
+        t.houd = false; t.terug = false; t.doel = null; t.via = -1;
+        t.aftocht = vak;
+        e.pad = null;
+        const k = krijgVan(e);
+        k.doelwit = null; k.wraak = null; k.bevel = null;
+      }
+    },
     staak() {
       gestaakt = true;
       for (const e of [...vijanden, ...leger.lijst]) {
