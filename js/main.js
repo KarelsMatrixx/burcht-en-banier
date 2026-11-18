@@ -644,6 +644,7 @@ async function start() {
     const bomenTerug = economie.herstel();
     if (bomenTerug.size) kaartGewijzigd(bomenTerug);
     leger.herstel();
+    leger.zetKoning(koningVak);   // altijd: wat de bewaarde stand ook was, na Start over staat je koning er weer (anders meteen weer Defeat)
     strijd.herstel();
     if (hinderlaag) hinderlaag.wis();   // level 2: de nissen in de rotsen dicht, de hinderlaag komt weer
     sluitKazerne();

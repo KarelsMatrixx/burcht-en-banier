@@ -764,3 +764,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - **Level 10: kerk met begraafplaats** op een open plek in het dode bos rechts van Mournkeep: nieuw decorobject GRAF (41, `dorp.graf`, vier varianten met grafstenen, kruisen, grafheuvels, kaarsjes). Decor `kerk` en `graf` mogen bomen wegkappen (kaart.js).
 - Nieuwe test `tests/landschap71.mjs` (32 controles; zet levels 7 tot 10 voor de proef open). Groen gebleven: kasteel33, kasteeldecor53, hut70, kaartvorm34, siege52, kaarten24, stillwater40, proloog35, test_stap17.
 - Niet gezien op de iPhone: snelheid met sneeuw (110 vlokjes) en regen (120 strepen), en of de bliksemflits prettig is. Levels 7 tot 10 zijn nog niet speelbaar; hun landschap staat klaar.
+
+## 0.72.1: opnieuw spelen werkt in de hele game (geen defeat-lus meer)
+- **Aanleiding (Karel, 18 november):** niet alleen level 4: ook in andere levels kwam je na opnieuw spelen op "Defeat" terecht en kwam je er niet uit.
+- **Gemeten:** met de fix van 0.71.1 tijdelijk uit ging het in alle zes speelbare levels en in vrij spel (rustig, normaal, zwaar) fout na een winst en herladen: "Start over" gaf meteen weer "Your king fell during attack 0". Het was dus één oorzaak in gedeelde code, niet per level.
+- **Extra beveiliging in `opnieuw()` (main.js):** na `leger.herstel()` wordt de koning altijd neergezet (`leger.zetKoning`), wat de bewaarde stand ook was. Samen met `leger.zetKoningThuis` (0.71.1) kan "Start over" niet meer in een defeat-lus eindigen.
+- **Test:** `tests/opnieuw_alle_levels71.mjs` (167 punten): level 1 tot 6 en vrij spel (rustig, normaal, zwaar, vrede), elk met winst en verlies, direct en na herladen. Daarna "Start over", koning terug, geen uitslag, 3,5 s later nog steeds geen defeat. Het verhaalbeeld van 20 s wordt in de test ingekort.
+- **Niet gedekt:** de proloog (level 0) heeft een eigen herstart (herladen met schone kaart) en is niet meegenomen. Niet op de iPhone gezien.
