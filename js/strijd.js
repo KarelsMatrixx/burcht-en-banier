@@ -1662,6 +1662,22 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Een lijfwacht blijft vlak bij de heer en slaat toe wie dichtbij komt; is de heer gevallen,
   // dan verdedigt hij de burcht zoals de heer dat deed.
+  // De lijfwacht van Karel (proloog): elke man heeft een vaste post rond de koning. Hij vecht alleen
+  // met wie binnen 2,5 tegels van zijn post komt en loopt daarna terug naar zijn post.
+  function karelWachtDenk(e, k, anderen) {
+    const post = e.karelWacht;
+    const px = (post % B) + 0.5;
+    const py = Math.floor(post / B) + 0.5;
+    const dichtbij = anderen.filter((a) => Math.hypot(a.x - px, a.y - py) <= 2.5);
+    k.doelwit = dichtbij.length ? kiesDoelwit(e, k, dichtbij) : null;
+    if (k.doelwit) {
+      if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) jaag(e, k);
+      return;
+    }
+    if (Math.hypot(px - e.x, py - e.y) <= 0.7) { if (e.pad) e.pad = null; zetHouding(e, null); return; }
+    if (!e.pad) { const pad = zoekPad(e, post); if (pad) zetPad(e, pad); }
+  }
+
   function lijfwachtDenk(e, k, anderen) {
     const heer = roodKoning && !roodKoning.dood ? roodKoning : null;
     const thuis = burchten[e.team];
@@ -1745,6 +1761,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     if (e.koning && e.team === VIJAND) {
       koningDenk(e, k, anderen);
+      schuifOp(e, k);
+      return;
+    }
+    if (e.team === SPELER && e.karelWacht !== undefined) {
+      karelWachtDenk(e, k, anderen);
       schuifOp(e, k);
       return;
     }

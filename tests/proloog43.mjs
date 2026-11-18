@@ -104,8 +104,9 @@ check('poorten open', await p.evaluate(() => { const s = window.spel; const st =
 // 0.76.2: staat Karel op de helft, dan begint de ontvoering en trekt het leger zich terug. Dus: meten op het
 // hoogste punt binnen, of tot de ontvoering begint.
 let na = await kijk(), hoogst = na.binnen, fase = 'nacht';
-for (let i = 0; i < 30; i++) { await p.waitForTimeout(1000); na = await kijk(); hoogst = Math.max(hoogst, na.binnen); fase = (await nS()).fase; if (fase !== 'nacht') break; }
-console.log('ontvoering na storm (s):', fase, 'hoogst binnen:', hoogst);
+let sec = 0;
+for (let i = 0; i < 150; i++) { await p.waitForTimeout(1000); sec = i + 1; na = await kijk(); hoogst = Math.max(hoogst, na.binnen); fase = (await nS()).fase; if (fase !== 'nacht') break; if (i % 10 === 9) console.log('na', sec, 's: lijfwacht', await p.evaluate(() => window.spel.leger.lijst.filter((e) => !e.dood && e.karelWacht !== undefined && e.soldaat.sleutel !== 'koning').length), 'Karel', await p.evaluate(() => Math.round(window.spel.strijd.koning(0).leven))); }
+console.log('ontvoering na storm (s):', sec, fase, 'reden:', (await nS()).reden, 'burcht:', await p.evaluate(() => { const s = window.spel.strijd.stand(); return Math.round(100 * s.burcht / s.burchtMax); }), 'hoogst binnen:', hoogst);
 check('het leger stroomt naar binnen', hoogst >= 8, JSON.stringify(na));
 await p.screenshot({ path: '/tmp/s/p43.png' });
 check('geen scriptfouten', fouten.length === 0, fouten.join('|'));

@@ -35,27 +35,66 @@ const s9 = await st();
 check('in de grondles', s9.taak === 9, JSON.stringify({ taak: s9.taak, fase: s9.fase }));
 await p.waitForSelector('#gids-kaart:not([hidden]) button', { timeout: 25000 }); await p.tap('#gids-kaart button'); await p.waitForTimeout(600);
 check('oog uit aan het begin van de grondles', await p.evaluate(() => document.getElementById('knop-oog').getAttribute('aria-pressed') !== 'true'));
-// Soldaat kiezen: dan moet de gids naar het oog wijzen
+await p.waitForTimeout(800);
+let zin = await p.textContent('#gids-zin');
+check('stap 1: de gids vraagt eerst naar het oog', /eye/i.test(zin) && await p.isVisible('#gids-ring'), zin);
+check('stap 1: nog geen gouden plek', await p.isHidden('#gids-plek'));
+// Een bevel zonder oog telt niet
+await p.tap('#knop-oog'); await p.waitForTimeout(800);
+zin = await p.textContent('#gids-zin');
+check('stap 2: na het oog de soldaat kiezen', /soldier/i.test(zin), zin);
 for (let k = 0; k < 6 && (await p.evaluate(() => window.spel.leger.aantalGekozen())) === 0; k++) {
   const r = await p.evaluate(() => { const e = document.getElementById('gids-plek'); const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, buiten: e.classList.contains('buiten'), hid: e.hidden }; });
   if (r.hid) { await p.waitForTimeout(500); continue; }
   if (r.buiten) { await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().filter((x) => !x.wachter && x.soldaat.sleutel !== 'koning').pop(); const t = s.CONFIG.tegel; s.camera.kijkNaar((e.x - e.y) * t.breedte / 2, (e.x + e.y) * t.hoogte / 2); }); await p.waitForTimeout(500); continue; }
   await p.touchscreen.tap(r.x, r.y); await p.waitForTimeout(500);
 }
+check('soldaat gekozen', (await p.evaluate(() => window.spel.leger.aantalGekozen())) > 0);
+await p.evaluate(() => { window._mijn = window.spel.leger.gekozen(); });
+await p.waitForTimeout(700);
+zin = await p.textContent('#gids-zin');
+check('stap 3: de gouden plek op de grond', /golden spot on the ground/i.test(zin), zin);
+// Niemand staat op of vlak bij de plek (behalve Bartholt naast de plek)
+const vrij = await p.evaluate(() => { const s = window.spel; const g = s.gids.doel().plek; return s.eenheden.lijst.filter((e) => !e.dood && Math.hypot(e.x - g.x - 0.5, e.y - g.y - 0.5) < 1).length; });
+check('niemand op de gouden plek', vrij === 0, vrij);
+// Een bevel 4 tegels ernaast telt niet
+await p.evaluate(() => { const s = window.spel; const g = s.gids.doel().plek; for (const [dx, dy] of [[4, 0], [-4, 0], [0, 4], [0, -4]]) if (s.wegvinder.isVrij(g.x + dx, g.y + dy, 0)) { s.leger.stuur(g.x + dx, g.y + dy, false); break; } });
+await p.waitForTimeout(800);
+check('bevel naast de plek telt niet', !(await st()).klaar, JSON.stringify((await st()).klaar));
+// Op de plek: wel (opnieuw kiezen als de keuze weg is)
+console.log('gekozen na fout bevel:', await p.evaluate(() => window.spel.leger.aantalGekozen()));
+await p.evaluate(() => { const s = window.spel; const g = s.gids.doel().plek; s.leger.stuur(g.x, g.y, false); });
 await p.waitForTimeout(1200);
-const zin = await p.textContent('#gids-zin');
-check('na het kiezen: de gids vraagt naar het oog', /eye/i.test(zin), zin);
+check('bevel op de plek, na het oog: les klaar', (await st()).klaar, JSON.stringify((await st()).klaar));
 
+// --- Pauze: niemand trilt (menu open, dan staan de getekende plekken stil)
+await p.evaluate(() => { document.getElementById('instellingen').hidden = false; });
+await p.waitForTimeout(400);
+const tril = await p.evaluate(() => window.spel.eenheden.lijst.filter((e) => !e.dood && (e.vorigeX !== e.x || e.vorigeY !== e.y)).length);
+check('pauze: niemand tussen twee plekken (geen trillen)', tril === 0, tril);
+await p.evaluate(() => { document.getElementById('instellingen').hidden = true; });
+await p.waitForTimeout(300);
 // --- Het einde: storm, Karel op de helft
 await p.evaluate(() => window.spel.proloog.zetFase('storm'));
 await p.waitForTimeout(400);
 while (await p.isVisible('#gids-kaart')) { await p.tap('#gids-kaart button'); await p.waitForTimeout(300); }
 check('storm', (await st()).deel === 'storm', JSON.stringify(await st()));
+// Lijfwacht van Karel: 20 zwaardvechters, niet te kiezen, Karel blijft staan
+const lw = await p.evaluate(() => { const s = window.spel; const w = s.leger.lijst.filter((e) => !e.dood && e.karelWacht !== undefined && e.soldaat.sleutel !== 'koning'); const k = s.leger.lijst.find((e) => e.soldaat && e.soldaat.sleutel === 'koning');
+  s.leger.kiesAlles(); const gek = w.filter((e) => e.soldaat.sleutel !== 'koning').filter((e) => e.gekozen).length; s.leger.kiesGeen();
+  return { n: w.length, soort: [...new Set(w.map((e) => e.soldaat.sleutel))], gek, blijf: !!k.blijf, bij: w.filter((e) => Math.hypot(e.x - k.x, e.y - k.y) < 5).length }; });
+check('lijfwacht: 20 zwaardvechters', lw.n === 20 && lw.soort.join() === 'zwaardvechter', JSON.stringify(lw));
+check('lijfwacht: niet te kiezen', lw.gek === 0, JSON.stringify(lw));
+check('lijfwacht: rond Karel, Karel blijft staan', lw.bij >= 18 && lw.blijf, JSON.stringify(lw));
 // Zoals in het echte spel: het leger staat binnen, bij de burcht
 await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; const vrij = [];
   for (let dy = -7; dy <= 7; dy++) for (let dx = 2; dx <= 8; dx++) if (s.wegvinder.isVrij(st.x + dx, st.y + dy, 1)) vrij.push([st.x + dx, st.y + dy]);
   let i = 0; for (const e of s.eenheden.lijst) { if (e.team !== 1 || e.dood || e.wachter !== undefined || !e.krijg) continue; const [x, y] = vrij[i++ % vrij.length]; e.x = x + 0.5; e.y = y + 0.5; e.pad = null; if (e.krijg.tak) e.krijg.tak.houd = false; } });
-await p.waitForTimeout(500);
+await p.waitForTimeout(6000);
+const lw2 = await p.evaluate(() => { const s = window.spel; const B = s.kaart.breedte; const w = s.leger.lijst.filter((e) => !e.dood && e.karelWacht !== undefined);
+  const af = w.map((e) => Math.hypot(e.x - (e.karelWacht % B) - 0.5, e.y - Math.floor(e.karelWacht / B) - 0.5)); return { n: w.length, ver: af.filter((d) => d > 3).length, vecht: w.filter((e) => e.krijg && e.krijg.doelwit).length, fase: s.proloog.stand().fase }; });
+console.log('lijfwacht na 6 s storm:', JSON.stringify(lw2));
+check('lijfwacht: blijft bij de posten (hooguit 3 man ver weg)', lw2.ver <= 3, JSON.stringify(lw2));
 await p.evaluate(() => { const k = window.spel.strijd.koning(0); k.leven = Math.ceil(k.levenMax / 2); });
 await p.waitForTimeout(1500);
 check('Karel op de helft: de ontvoering begint', (await st()).fase === 'ontvoering', JSON.stringify({ fase: (await st()).fase }));

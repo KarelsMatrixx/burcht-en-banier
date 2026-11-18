@@ -115,18 +115,17 @@ await p.waitForTimeout(2000);
 check('sturen nog niet klaar zonder bevel', !(await st()).klaar);
 // Sturen
 await p.evaluate(() => window.spel.leger.kiesGeen()); await p.waitForTimeout(500);
-check('sturen: eerst de nieuwe soldaat aanwijzen', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && (/Tap this soldier/.test(e.textContent) || e.classList.contains('buiten')) && /new soldier/i.test(document.getElementById('gids-zin').textContent); }), await p.textContent('#gids-zin'));
-await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().filter((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning').pop(); s.leger.kies([e]); });
-await p.waitForTimeout(500);
-check('gekozen: nu het oog', /eye/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
-check('zolang het oog niet is uitgelegd: geen doelplek', await p.evaluate(() => document.getElementById('gids-plek').hidden));
+// 0.76.3: eerst het oog, dan de soldaat, dan de plek
+check('sturen: eerst het oog', /eye/i.test(await p.textContent('#gids-zin')) && await p.evaluate(() => document.getElementById('gids-plek').hidden), await p.textContent('#gids-zin'));
+await p.tap('#knop-oog'); await p.waitForTimeout(500);
+check('oog aan: nu de nieuwe soldaat aanwijzen', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && (/Tap this soldier/.test(e.textContent) || e.classList.contains('buiten')) && /new soldier/i.test(document.getElementById('gids-zin').textContent); }), await p.textContent('#gids-zin'));
 // Een bevel naar de muur telt niet voor de grondles
-await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; s.leger.stuur(st.x - 5, st.y - 2, true); });
+await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().filter((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning').pop(); s.leger.kies([e]); const st = s.kaart.start[0]; s.leger.stuur(st.x - 5, st.y - 2, true); });
 await p.waitForTimeout(1200);
 check('grondles: soldaat op de muur telt niet', !(await st()).klaar);
 await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().filter((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning').pop() || s.leger.soldaten().filter((e) => !e.wachter && e.soldaat.sleutel !== 'koning').pop(); s.leger.kies([e]); });
-await p.tap('#knop-oog'); await p.waitForTimeout(400);
-check('oog aan: nu de gouden plek', /golden spot/i.test(await p.textContent('#gids-zin')) && /Send him here/.test(await p.textContent('#gids-plek')), await p.textContent('#gids-zin'));
+await p.waitForTimeout(500);
+check('soldaat gekozen: nu de gouden plek', /golden spot/i.test(await p.textContent('#gids-zin')) && /Send him here/.test(await p.textContent('#gids-plek')), await p.textContent('#gids-zin'));
 await p.tap('#knop-oog'); await p.waitForTimeout(400);
 check('oog weer uit: gids vraagt er niet opnieuw om', !/eye/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 check('zin niet over de legerhint', await p.evaluate(() => { const h = document.getElementById('legerhint'); if (h.hidden) return true; const a = h.getBoundingClientRect(), z = document.getElementById('gids-zin').getBoundingClientRect(); return !(z.left < a.right && z.right > a.left && z.top < a.bottom && z.bottom > a.top); }));

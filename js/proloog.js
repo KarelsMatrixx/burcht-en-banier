@@ -34,12 +34,14 @@ const TAKEN = [
   { taak: 'Build Barracks', bouw: { kazerne: 1 }, gids: { soort: 'bouw', sleutel: 'kazerne', plekTekst: 'Barracks here' }, anker: [-19, 3],
     tekst: 'A king needs soldiers, even on a feast day. Barracks train soldiers from your peasants and your gold. Wood and stone were for this.' },
   { taak: 'Train two soldiers', soldaten: 2, gids: { soort: 'opleiden', plekTekst: 'Barracks' }, kazernePlek: true, tekst: 'Now train two soldiers. Each costs gold and one idle peasant. Knights hold the line, archers shoot from behind it.' },
-  { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen', plekTekst: 'Send him here' }, doelPlek: [4, 3], tekst: 'Now give an order on the ground. First tap your new soldier to choose him. The spot lies behind a wall, so then tap the eye in the top right corner: walls and buildings turn see-through. Then show him where to go.' },
+  { taak: 'Send a soldier somewhere', sturen: true, gids: { soort: 'sturen', plekTekst: 'Send him here' }, doelPlek: [4, 3], tekst: 'Now give an order on the ground. The spot lies behind a wall, so first tap the eye in the top right corner: walls and buildings turn see-through. Then tap your new soldier to choose him, and show him where to go.' },
   { taak: 'Put a soldier on the wall', opMuur: true, gids: { soort: 'muur', plekTekst: 'Wall here' }, doelPlek: [-5, -2], tekst: "Last lesson, Sire. Ottger's messengers at the border are restless. Put a soldier on the wall to keep watch." },
   { taak: 'Read your messages', logboek: true, gids: { soort: 'logboek' }, tekst: 'One more thing, Sire. My portrait in the top left corner keeps every message that comes in: reports, warnings and words from other lords. A red number means there is something new. Tap my portrait to read them, and tap it again to close the list.' },
 ];
 
 const LOF = ['Well done, Sire.', 'Good work.', 'Splendid. The people see their king at work.', 'That will do nicely.', 'Very good.'];
+const LIJFWACHT = 20;          // zwaardvechters rond Karel in de nacht
+const LIJFWACHT_SCHILD = 5;     // zolang er zoveel van leven, raakt Karel geen leven kwijt
 const EXTRA_HOUT = 60;         // extra hout bij het begin van de proloog
 const AVOND = 8;               // seconden schemering na het avondkaartje, dan de nacht
 const NACHT_DUUR = 300;        // vijf minuten nacht, dan de ontvoering
@@ -120,7 +122,9 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       const g = gids.doel();
       const st = kaart.start[0];
       const p = (g && g.plek) || { x: st.x + TAKEN[s.taak].doelPlek[0], y: st.y + TAKEN[s.taak].doelPlek[1] };
-      if (Math.hypot(a[0] - p.x, a[1] - p.y) <= 4) s.gestuurd = true;
+      if (!gids.oogGezien()) toonMelding('First tap the eye in the top right corner.');
+      // Eerst het oog, dan een bevel op (of vlak naast) de gouden plek
+      if (gids.oogGezien() && Math.hypot(a[0] - p.x, a[1] - p.y) <= 1.5) s.gestuurd = true;
     }
     // Muurles: elk bevel naar een stuk muur telt
     if (gelukt && s.fase === 'bouw' && s.basis && TAKEN[s.taak].opMuur && (a[2] || leger.isMuur(a[0], a[1]))) s.gestuurd = true;
@@ -188,6 +192,47 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     bewaar();
   }
 
+  // De lijfwacht van Karel (naar Karel): 's nachts staat de koning aan de oostkant van de burcht met
+  // LIJFWACHT zwaardvechters om zich heen. Die bestuur je niet; ze blijven op hun post en vechten pas als
+  // de vijand bij Karel komt (strijd.js karelWachtDenk). Zo duurt het langer voor de ruiter komt.
+  function zetLijfwacht() {
+    const kon = leger.lijst.find((e) => e.soldaat && e.soldaat.sleutel === koningSoort && !e.dood);
+    if (!kon) return;
+    const st = kaart.start[0];
+    const B = kaart.breedte;
+    const vrij = (x, y) => wegvinder.isVrij(x, y, 0);
+    // Karels plek: een vrij vak vlak bij de burcht, aan de oostkant (daar komt de vijand vandaan)
+    let kp = null;
+    for (let r = 0; r <= 4 && !kp; r++) for (let dy = -r; dy <= r && !kp; dy++) for (let dx = -r; dx <= r && !kp; dx++) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) === r && vrij(st.x + 3 + dx, st.y + 1 + dy)) kp = [st.x + 3 + dx, st.y + 1 + dy];
+    }
+    if (!kp) return;
+    if (!s.lijfwacht) {
+      kon.x = kon.vorigeX = kp[0] + 0.5; kon.y = kon.vorigeY = kp[1] + 0.5; kon.pad = null;
+      // Posten: de vrije vakken rond Karel, de dichtstbijzijnde eerst
+      const posten = [];
+      for (let r = 1; r <= 4 && posten.length < LIJFWACHT; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        if (posten.length >= LIJFWACHT || Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const x = kp[0] + dx, y = kp[1] + dy;
+        if (vrij(x, y) && !eenheden.staatOp(x, y)) posten.push([x, y]);
+      }
+      const voor = new Set(leger.lijst);
+      leger.zetStand(posten.map(([x, y]) => ['zwaardvechter', x, y, 100, 0]));
+      const nieuw = leger.lijst.filter((e) => !voor.has(e));
+      s.lijfwacht = nieuw.map((e) => [Math.floor(e.x), Math.floor(e.y)]);
+      bewaar();
+    }
+    kon.blijf = true;
+    kon.karelWacht = Math.floor(kon.y) * B + Math.floor(kon.x);   // Karel houdt zelf ook zijn plek (rent niet de kring uit)
+    // Markeren (ook na herladen): de zwaardvechter die het dichtst bij elke post staat
+    const vrijeMannen = leger.lijst.filter((e) => !e.dood && e.soldaat && e.soldaat.sleutel === 'zwaardvechter');
+    for (const [x, y] of s.lijfwacht) {
+      let best = null, bestD = 3;
+      for (const e of vrijeMannen) { if (e.karelWacht !== undefined) continue; const d = Math.hypot(e.x - x - 0.5, e.y - y - 0.5); if (d < bestD) { bestD = d; best = e; } }
+      if (best) { best.karelWacht = y * B + x; best.wachter = true; best.gekozen = false; }
+    }
+  }
+
   // Reinout staat als gast bij de burcht (alleen om te zien, hij doet niets).
   function zetReinout(aan) {
     if (aan && !reinout) {
@@ -232,8 +277,20 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     const x = st.x + t.doelPlek[0];
     const y = st.y + t.doelPlek[1];
     if (t.gids.soort === 'muur') return leger.isMuur(x, y) ? { x, y } : null;
-    for (let r = 0; r <= 4; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
-      if (Math.max(Math.abs(dx), Math.abs(dy)) === r && wegvinder.isVrij(x + dx, y + dy, 0) && !eenheden.staatOp(x + dx, y + dy)) return { x: x + dx, y: y + dy };
+    return vrijeGrondplek(x, y) || (wegvinder.isVrij(x, y, 0) ? { x, y } : null);
+  }
+  // Grondles: een open stuk grond (minstens 7 van de 8 buren vrij) waar niemand binnen 2,5 tegels staat,
+  // zo dicht mogelijk bij (x, y). Anders staat er al iemand op de plek waar de soldaat heen moet.
+  function plekIsVrij(x, y, zonder) {
+    if (!wegvinder.isVrij(x, y, 0)) return false;
+    let buren = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && wegvinder.isVrij(x + dx, y + dy, 0)) buren++;
+    if (buren < 7) return false;
+    return !eenheden.lijst.some((e) => e !== zonder && !e.dood && Math.hypot(e.x - x - 0.5, e.y - y - 0.5) < 2.5);
+  }
+  function vrijeGrondplek(x, y, zonder = null) {
+    for (let r = 0; r <= 7; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) === r && plekIsVrij(x + dx, y + dy, zonder)) return { x: x + dx, y: y + dy };
     }
     return null;
   }
@@ -476,6 +533,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     gids.verbergKaart();
     if (kiesGeen) kiesGeen();
     stuurOvermacht();
+    zetLijfwacht();
     toonMelding('Torches on the eastern road! A great army is marching on Aldervale.');
     // De camera kijkt naar de poort in het oosten, waar ze aankomen
     if (kijkNaar) kijkNaar(kaart.start[0].x + 22, kaart.start[0].y);
@@ -568,6 +626,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         else richtGids(false);
       } else if (s.fase === 'avond') { toonTaak('Evening: the feast is over'); if (!s.gemeld.avond) avondKaart(); }
       else if (s.fase === 'nacht') {
+        zetLijfwacht();
         if (s.deel === 'opmars') {
           // Na het herladen is het leger er niet meer: opnieuw laten marcheren, de les gaat verder
           if (strijd.opmarsStand().totaal < 10) stuurOvermacht();
@@ -589,6 +648,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       // Karel zakt nooit onder de helft van zijn leven (naar Karel)
       const kon = strijd.koning(0);
       if (kon && kon.levenMax && kon.leven < Math.ceil(kon.levenMax / 2)) kon.leven = Math.ceil(kon.levenMax / 2);
+      // Zolang zijn lijfwacht nog staat (minstens LIJFWACHT_SCHILD man), raakt niemand Karel
+      if (kon && kon.levenMax && s.lijfwacht && leger.lijst.filter((e) => !e.dood && e.karelWacht !== undefined && e !== kon).length >= LIJFWACHT_SCHILD) kon.leven = kon.levenMax;
       s.tijd += dt;
       s.fasetijd += dt;
       kijk += dt;
@@ -603,6 +664,11 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         const huidig = TAKEN[s.taak];
         const g = gids.doel();
         // Bevel-les: zodra de soldaat gekozen is, gaat de camera naar de doelplek (die lag soms buiten beeld of onder de knoppen)
+        if (huidig.sturen && !s.klaar && g && g.plek) {
+          const mijn = nieuweSoldaat();
+          const bezet = eenheden.lijst.some((e) => e !== mijn && !e.dood && Math.hypot(e.x - g.plek.x - 0.5, e.y - g.plek.y - 0.5) < 1);
+          if (bezet) { const nieuw = vrijeGrondplek(g.plek.x, g.plek.y, mijn); if (nieuw) gids.zetPlek(nieuw); }
+        }
         if ((huidig.sturen || huidig.opMuur) && !s.klaar) {
           const gekozen = leger.aantalGekozen() > 0;
           if (gekozen && !keuzeWas && g && g.plek && kijkNaar) kijkNaar(g.plek.x, g.plek.y);
@@ -641,7 +707,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         // Karel op de helft van zijn leven (lager kan niet): de ontvoering. Vangnet: tijd of de burcht.
         const kon = strijd.koning(0);
         const karelHalf = s.deel === 'storm' && kon && kon.levenMax && kon.leven <= Math.ceil(kon.levenMax / 2);
-        if (karelHalf || s.fasetijd >= NACHT_DUUR || (st.burchtMax > 0 && st.burcht / st.burchtMax < 0.4)) naarOntvoering();
+        const burchtLaag = st.burchtMax > 0 && st.burcht / st.burchtMax < 0.4;
+        if (karelHalf || s.fasetijd >= NACHT_DUUR || burchtLaag) { s.reden = karelHalf ? 'karel' : burchtLaag ? 'burcht' : 'tijd'; naarOntvoering(); }
         else if (Math.round(s.fasetijd) % 10 === 0) bewaar();
       }
     },

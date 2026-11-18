@@ -853,3 +853,12 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Oogles: aan het begin van les 10 (soldaat sturen) gaat het oog uit en vraagt de gids altijd naar het oog, ook als de speler het eerder al eens aantikte (toen sloeg de gids de stap over).
 - Melding: "A rider breaks out of the keep... he has Wessel! The Mourning Banner is falling back with him." Na te lezen.
 - Test: tests/proloog77.mjs (oog, ontvoering, route, aftocht, scène). proloog43 meet nu het hoogste aantal binnen tot de ontvoering.
+
+## 0.76.3: oogles, pauze, ruiter en lijfwacht van Karel (Karels feedback van 18 november)
+
+- Grondles (les 10) in vaste volgorde: 1. het oog (ring om het oog, nog geen gouden plek), 2. de nieuwe soldaat kiezen, 3. de gouden plek. Het bevel telt alleen na het oog en op of vlak naast de plek (1,5 tegel; was 4). Zonder oog: melding "First tap the eye...".
+- De gouden plek van de grondles ligt op open grond waar niemand binnen 2,5 tegels staat; loopt er toch iemand op, dan schuift de plek op (proloog.js `vrijeGrondplek`). Eerst lag hij klem tussen twee muurstukken, midden tussen Karel, Reinout en het garnizoen.
+- Pauze zonder trillen: als het spel stilstaat (menu, titel, kaartje 's nachts) wordt de vorige plek van elke eenheid gelijk aan de huidige, zodat het tekenen tussen twee rekenstappen niet blijft heen en weer springen (main.js `stilzetten`).
+- Ruiter: zit in het zadel (bovenbeen naar voren, onderbeen langs de flank, heup op het zadel), 20% kleiner; bij een poort vervaagt hij geleidelijk (ook de fakkelgloed) in plaats van ineens weg te springen.
+- Lijfwacht van Karel: bij het begin van de nacht staat Karel aan de oostkant van de burcht met 20 zwaardvechters op vaste posten om zich heen (proloog.js `zetLijfwacht`, strijd.js `karelWachtDenk`). Niet te kiezen of te besturen (leger.js `kies`); ze vechten alleen met wie binnen 2,5 tegels van hun post komt en lopen daarna terug. Karel houdt zelf ook zijn plek. Zolang er nog 5 of meer leven, raakt Karel geen leven kwijt. Gemeten in proloog43: van de storm tot de ruiter ongeveer 50 s (was 16 tot 21 s). Na herladen worden de wachten opnieuw gemarkeerd via `s.lijfwacht`.
+- Tests: proloog77 (volgorde oogles, vrije plek, pauze, lijfwacht), proloog35 en proloog43 bijgewerkt.

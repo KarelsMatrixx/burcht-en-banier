@@ -1230,11 +1230,14 @@ async function start() {
   maakSpellus({
     stappenPerSeconde: CONFIG.spel.stappenPerSeconde,
     stap: (dt) => {
-      if (strijd.uitslag() || titelOpen || beeldOpen || !menuPaneel.hidden) return;   // gewonnen of verloren, beginscherm of menu open: alles staat stil
+      // Stilstaan zonder trillen: de tekenaar tekent tussen de vorige en de huidige plek in; zonder rekenstap
+      // zou hij blijven heen en weer springen. Dus de vorige plek gelijk aan de huidige.
+      const stilzetten = () => { for (const e of eenheden.lijst) { e.vorigeX = e.x; e.vorigeY = e.y; } };
+      if (strijd.uitslag() || titelOpen || beeldOpen || !menuPaneel.hidden) { stilzetten(); return; }   // gewonnen of verloren, beginscherm of menu open: alles staat stil
       // Proloog: zolang er een kaartje openstaat (Bartholt of een gesprek) lopen de klokken van de tutorial niet.
       // Overdag leeft het dorp gewoon door; bij avond en nacht staat alles stil, ook het leger van Ottger.
       const leest = proloog && gids.kaartOpen();
-      if (leest && proloog.fase() !== 'bouw') return;
+      if (leest && proloog.fase() !== 'bouw') { stilzetten(); return; }
       eenheden.stap(dt);
       economie.stap();
       leger.stap();
