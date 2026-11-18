@@ -1136,6 +1136,24 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       }
       return true;
     }
+    // Verzamelen (veldheer): naar zijn plek op het verzamelpunt en daar wachten.
+    if (t.verzamel >= 0) {
+      if (verVan(e, t.verzamel) > 1.2) {
+        if (!e.pad || e.pad !== k.marsPad) {
+          const pad = zoekPad(e, t.verzamel);
+          if (pad) {
+            zetPad(e, pad);
+            k.marsPad = e.pad;
+          } else t.verzamel = -1;
+        }
+      } else if (e.pad) zetPad(e, null);
+      return true;
+    }
+    // Opmars (veldheer): even stilstaan om in de pas te blijven.
+    if (t.rem) {
+      if (e.pad) zetPad(e, null);
+      return true;
+    }
     if (t.houdTot > stapNr) return true;   // wacht op de rest van zijn groep
     if (t.via >= 0) {
       if (verVan(e, t.via) <= 1.6) t.via = -1;
@@ -1558,6 +1576,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       return;
     }
     k.doelwit = kiesDoelwit(e, k, anderen);
+    // Tijdens verzamelen en opmars jaagt rood niemand ver na: hij blijft bij zijn leger.
+    if (k.doelwit && e.team === VIJAND && k.tak && (k.tak.mars || k.tak.verzamel >= 0) && Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > Math.max(bereikVan(e, k), 1.5) + 1.5) k.doelwit = null;
     if (k.doelwit) {
       k.bouw = null;
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k) || !kanRaken(e, k, k.doelwit)) {
@@ -1615,6 +1635,12 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     if (k.def.verborgen) e.verborgen = stapNr >= (k.gezienTot || 0);
     if (k.ladder >= 0) {
+      // In de opmars (veldheer) wacht ook een ladderdrager op de rest; hij is zijn plek niet kwijt.
+      if (e.team === VIJAND && k.tak && (k.tak.rem || k.tak.verzamel >= 0) && !e.klimt) {
+        if (e.pad) zetPad(e, null);
+        if (k.tak.verzamel >= 0) k.ladder = -1;
+        return;
+      }
       ladderStap(e, k);
       return;
     }
