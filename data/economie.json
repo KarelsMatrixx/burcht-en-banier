@@ -596,7 +596,30 @@
    "zicht": 8,
    "windstoot": { "val": 18, "verdoofd": 2.5 },
    "tip": "Blows a gust from her horn. A soldier on a wall or tower is blown off and falls down, hurt and dazed. Weak against soldiers on the ground."
+  },  "saboteur": {
+   "naam": "Saboteur",
+   "meervoud": "Saboteurs",
+   "soort": "SABOTEUR",
+   "kazerne": "mystiek",
+   "boeren": 2,
+   "kosten": {
+    "goud": 26,
+    "koper": 4
+   },
+   "snelheid": 2.4,
+   "leven": 44,
+   "schade": 0,
+   "schadeBouw": 30,
+   "slagTijd": 3.0,
+   "bereik": 1.5,
+   "zicht": 6,
+   "alleenBouw": true,
+   "sabotage": true,
+   "verborgen": 3,
+   "bouwBonus": { "objecten": ["SLUIS", "LOODS", "POORT", "TOREN", "WACHTTOREN"], "keer": 2 },
+   "tip": "A man of the Silent Folk with a powder keg. Enemies only spot him up close. Blows up walls and buildings, twice as hard on gates, towers and the sluice. Does not fight soldiers."
   },
+
 
   "ruiter": {
    "naam": "Mounted Knight",
@@ -749,7 +772,8 @@
    "heler": 1,
    "steenwachter": 3,
    "ruiter": 1.8,
-   "windzanger": 1.3
+   "windzanger": 1.3,
+   "saboteur": 1.2
   },
   "ridderPerSchutter": 2,
   "rammenVanaf": 3,

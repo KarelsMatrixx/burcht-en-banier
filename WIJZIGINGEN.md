@@ -799,3 +799,12 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - De mist had een harde rechte rand: het mistplaatje werd aan de bovenkant afgesneden. Een mistbank is nu een onregelmatige wolk van 18 zachte bollen die elk geleidelijk uitlopen naar doorzichtig.
 - Ook de rest zachter: stofkorrels zijn ronde stipjes, windstrepen zijn dunner, doorzichtiger en golven, regen is dunner en lichter, en de stofvlaag over de grond loopt geleidelijk in plaats van met een rechte rand.
 - Alles blijft in de wereld hangen (sinds 0.72.1): schuiven met de kaart beweegt het weer niet mee.
+
+## 0.74.0: level 8 The White Dike is speelbaar, met de saboteur als beloning
+- Level 8 (Dike Reeve Rutger) staat open na level 7. Kaart witte_dijk (polder), kasteel met gracht, landschap polder.
+- **Doel in twee fasen** (doeltype C uit loodsen.js, nu algemener): eerst de stenen sluis slopen (object SLUIS 42, 700 leven, aan het water vlak voor zijn kasteel), daarna Rutger zelf verslaan. Zolang de sluis staat kan de rode koning niet sneuvelen (strijd.js `beschermKoning`). loodsen.js kent nu `object`, `bijWater`, `daarna: 'koning'` en `teksten` per level; level 6 werkt ongewijzigd.
+- Rood: veel boog- en kruisboogschutters, lijfwacht van 2 kruisboogschutters, eerste aanval na 120 s. Vanaf zijn derde aanval zet hij saboteurs in (max 2), katapult vanaf aanval 3, toren vanaf aanval 4.
+- **Saboteur** (soort SABOTEUR 35, Mystic Lodge, 26 goud en 4 koper): sluipt (pas op 3 tegels te zien), vecht niet met soldaten, blaast muren en gebouwen op (30 per 3 s), twee keer zo hard tegen poorten, torens, de sluis en loodsen. Melding bij een bevel: "The saboteur sneaks toward the red ... with a powder keg."
+- Windzanger: staat er geen vrije grond naast de muur (gracht), dan blijft het doelwit staan maar krijgt het wel de 18 schade van de vlaag.
+- Alle Engelse teksten en getallen: door Claude, na te lezen.
+- Tests: nieuw `tests/level8_74.mjs` (10 controles); `level7_72` test de windvlaag nu in vrij spel. Bekend rood en niet van deze reeks: ronde39 ("zes golven oplopend tot 25", ook rood zonder deze wijziging), mystiek27.

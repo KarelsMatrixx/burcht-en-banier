@@ -192,6 +192,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     [assets.haal('eenheid.paardenboer_blauw'), assets.haal('eenheid.paardenboer_rood')],
     [assets.haal('eenheid.paard_blauw'), assets.haal('eenheid.paard_rood')],
     [assets.haal('eenheid.wind_blauw'), assets.haal('eenheid.wind_rood')],
+    [assets.haal('eenheid.sabo_blauw'), assets.haal('eenheid.sabo_rood')],
   ];
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).

@@ -471,7 +471,10 @@
     "versterking": {
      "soort": "vlammenwever",
      "aantal": 80,
-     "hoek": { "x": 0.06, "y": 0.3 },
+     "hoek": {
+      "x": 0.06,
+      "y": 0.3
+     },
      "perBatch": 10,
      "tussen": 0.6
     }
@@ -935,14 +938,15 @@
     "x": 76.1,
     "y": 56.2
    },
-   "speelbaar": false,
-   "intro": "Behind the dike lies low land. A stone sluice keeps the red keep dry and within reach.",
+   "speelbaar": true,
+   "intro": "Behind the White Dike lies low land. Dike Reeve Rutger's stone sluice keeps his keep dry and his men supplied. Break the sluice first, then take the keep. Spare the polder.",
    "beeld": "beelden/verhaal/level08.webp",
    "verhaal": "Behind the White Dike lies low land, green and full of farms. Dike Reeve Rutger serves the duke out of debt, not love. The sluice must fall, but the fields must be spared. Karel will not drown a land to win.",
-   "uit": "",
+   "uit": "Rutger lays his boathook on the dike. \"I held back the water. That is all I can do.\" The sluice gates hang open, but the polder stays dry: the Silent Folk closed the old dam behind it. The road to the Mourngate is open.",
    "wessel": "A little sailing boat made of bark, found in the reeds.",
-   "beloning": [],
-   "beloningLater": "saboteur (idee)",
+   "beloning": [
+    "saboteur"
+   ],
    "rood": {
     "legerMax": 180,
     "sterkte": 110,
@@ -973,9 +977,75 @@
     "muur": 180,
     "aanval": {
      "niveau": 5
+    },
+    "extra_soorten": {
+     "saboteur": {
+      "vanaf": 2,
+      "max": 2
+     },
+     "katapult": {
+      "vanaf": 3,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 4,
+      "max": 1
+     }
+    },
+    "eersteAanval": 120,
+    "begin": {
+     "goud": 160,
+     "hout": 20,
+     "steen": 20
+    },
+    "lijfwacht": {
+     "soort": "kruisboog",
+     "aantal": 2
     }
    },
-   "kasteel": "gracht"
+   "kasteel": "gracht",
+   "doel": {
+    "soort": "loodsen",
+    "object": "SLUIS",
+    "aantal": 1,
+    "leven": 700,
+    "afstand": 9,
+    "bijWater": true,
+    "daarna": "koning",
+    "teksten": {
+     "naam": "Dike Reeve Rutger",
+     "portret": "rutger",
+     "wie": "Rutger's",
+     "begin": "The sluice holds back the sea and keeps my keep standing, Karel. Touch it, and my crossbows will be waiting.",
+     "eerste": "",
+     "alles": "The sluice is broken! Rutger's keep lies open.",
+     "taak": "Destroy Rutger's sluice by the water",
+     "daarna": "My sluice... Then come, king. I will not run from my own walls.",
+     "daarnaTaak": "Now defeat Rutger in his keep",
+     "omschrijving": "Your goal: first destroy Rutger's stone sluice by the water. While it stands, his men pull him to safety and he cannot fall. Then defeat Rutger in his keep. If your king falls, you lose.",
+     "daarnaOmschrijving": "The sluice is broken. Your goal now: defeat Rutger in his keep. If your king falls, you lose."
+    }
+   },
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 8,
+     "wie": "bartholt",
+     "tekst": "Spare the polder, Sire. Break the sluice, not the dike. Without it, Rutger cannot hold out."
+    },
+    {
+     "bij": "tijd",
+     "waarde": 25,
+     "wie": "bartholt",
+     "tekst": "His crossbowmen stand on every wall, Sire. Lady Mechteld's wind singers can blow them down."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "I owe the duke more than I can pay. So I fight. Do not take it personally, Karel."
+    }
+   ]
   },
   {
    "id": 9,

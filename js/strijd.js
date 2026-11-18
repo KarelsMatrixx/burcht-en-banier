@@ -78,6 +78,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   let klok = stappen(R.eersteGolf);   // rekenstappen tot de volgende golf
   let vrede = golven.length === 0;    // gewonnen en verder gespeeld: er komt niemand meer
   let uitslag = null;           // 'gewonnen' of 'verloren': het spel staat stil
+  let koningBeschermd = false;   // level 8: de rode koning kan nog niet vallen
   let stil = false;             // de test kan de klok van de golven stilzetten
   let burchtGemeld = false;
   let heer = null;              // de rode heer met eigen economie (js/rood.js); die bepaalt dan wanneer er wordt aangevallen
@@ -522,6 +523,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     // In de proloog sneuvelt geen koning: het verhaal gaat door.
     if (R.proloog && krijgVan(doel).def.koning && doel.team === SPELER) doel.leven = Math.max(doel.leven, Math.ceil(doel.levenMax / 2));   // naar Karel: niet onder de helft
+    // Level 8: zolang de sluis staat, kan de rode koning niet sneuvelen (js/loodsen.js, daarna: 'koning').
+    if (koningBeschermd && doel.team === VIJAND && krijgVan(doel).def.koning) doel.leven = Math.max(doel.leven, 1);
     const kd = krijgVan(doel);
     kd.rust = 0;
     if (doel.leven <= 0) {
@@ -720,7 +723,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       // De windzanger: een windvlaag. Wie op een muur of toren staat, waait eraf.
       const ver = Math.hypot(doel.x - e.x, doel.y - e.y);
       effect({ soort: 'pijl', wind: true, x1: e.x, y1: e.y, h1: 22 + (e.hoogte || 0), x2: doel.x, y2: doel.y, h2: 16 + (doel.hoogte || 0), duur: 250 + 40 * ver });
-      if (doel.opMuur && !doel.klimt && blaasVanMuur(doel, e, k.def.windstoot)) {
+      // Geen vrije grond naast de muur (een gracht): hij blijft staan, maar de vlaag smijt hem tegen de kantelen.
+      if (doel.opMuur && !doel.klimt) {
+        blaasVanMuur(doel, e, k.def.windstoot);
         raak(doel, Math.max(1, Math.round(k.def.windstoot.val * sterkteVan(e, k))), e);
         return;
       }
@@ -2357,6 +2362,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   zetWachters(null);   // rood begint met een wachter op elk stuk muur
 
   return {
+    beschermKoning: (aan) => { koningBeschermd = !!aan; },
+    koningBeschermd: () => koningBeschermd,
     stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, ruiter, laatOpmarsLos, opmarsDirect, opmarsStand, hinderlaag,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).

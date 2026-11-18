@@ -433,7 +433,7 @@ async function start() {
     const aantal = {};
     for (const e of ontvangen) {
       const def = leger.soorten[e.soldaat.sleutel];
-      const soort = def.vast ? 'toren' : def.ladder ? 'ladder' : def.sleutel === 'katapult' ? 'katapult' : def.alleenBouw ? 'ram' : null;
+      const soort = def.vast ? 'toren' : def.ladder ? 'ladder' : def.sleutel === 'katapult' ? 'katapult' : def.sabotage ? 'saboteur' : def.alleenBouw ? 'ram' : null;
       if (soort) aantal[soort] = (aantal[soort] || 0) + 1;
     }
     const rood = `the red ${doel || 'wall'}`;
@@ -442,6 +442,7 @@ async function start() {
       toren: (n) => `${n > 1 ? 'The siege towers are' : 'The siege tower is'} being placed against ${rood}. Then your soldiers can climb over ${n > 1 ? 'them' : 'it'}.`,
       ram: (n) => `${n > 1 ? 'The battering rams are' : 'The battering ram is'} going to break through ${rood}.`,
       katapult: (n) => `${n > 1 ? 'The catapults are' : 'The catapult is'} going to fire at ${rood}.`,
+      saboteur: (n) => `${n > 1 ? 'The saboteurs sneak' : 'The saboteur sneaks'} toward ${rood} with a powder keg.`,
     };
     for (const soort of ['ladder', 'toren', 'ram', 'katapult']) {
       if (aantal[soort]) ui.toonMelding(tekst[soort](aantal[soort]), { soort: 'leger', toon: true });
@@ -853,7 +854,7 @@ async function start() {
     taak: doel.omschrijving ? doel.omschrijving() : doel.fase && doel.fase() === 1
       ? "Your goal: defeat Huntmaster Brandt in his tent camp. The Flameweavers of the Silent Folk are yours: tap them and send them in. If your king falls, you lose."
       : `Your goal: hold Mother Gesina's hut until her ritual is done (${Math.ceil(doel.over() / 60)} min left). If the hut falls, or your king, you lose. Then the Silent Folk come, and you go after Brandt.`,
-    portret: doel.omschrijving ? 'lambrecht' : 'gesina',
+    portret: doel.omschrijving ? (missie.portret || 'lambrecht') : 'gesina',
   } : missie ? {
     titel: missie.titel,
     tegen: missie.heer ? `Against ${missie.heer}` : '',

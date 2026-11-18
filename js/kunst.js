@@ -3778,3 +3778,57 @@ export function tekenGraf(naam, def) {
     }),
   };
 }
+
+// De sluis van de Witte Dijk (level 8): een stenen sluishoofd met twee zware houten
+// deuren, een windas met een rad erop, een smal stroompje water dat eronderdoor loopt
+// en een rood wimpeltje van Rutger. Eén tegel, hoger dan een huis.
+export function tekenSluis(naam, def) {
+  const b = TB + 24;
+  const h = TH + 46;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const steen = def.kleur || '#9a968c';
+  const hout = '#5d4430';
+  // Een gemetseld kanaal schuin over de tegel, met water erin
+  vlak(ctx, [[cx - 34, cy - 6], [cx - 20, cy - 13], [cx + 34, cy + 14], [cx + 20, cy + 21]], tint(steen, -0.3));
+  vlak(ctx, [[cx - 28, cy - 6], [cx - 20, cy - 10], [cx + 28, cy + 13], [cx + 20, cy + 17]], '#3f6d86');
+  vlak(ctx, [[cx - 24, cy - 6], [cx - 20, cy - 8], [cx + 24, cy + 13], [cx + 20, cy + 15]], '#5a8ea8');
+  for (const t of [0.15, 0.4, 0.65, 0.88]) lijn(ctx, cx - 24 + t * 46, cy - 7 + t * 21, cx - 20 + t * 46, cy - 5 + t * 21, 'rgba(255,255,255,0.45)', 0.8);
+  // Twee lage stenen sluishoofden
+  const kolom = (x, y) => {
+    const w = 12;
+    const hoog = 16;
+    vlak(ctx, [[x - w, y], [x, y + w / 2], [x, y + w / 2 - hoog], [x - w, y - hoog]], tint(steen, -0.22));
+    vlak(ctx, [[x, y + w / 2], [x + w, y], [x + w, y - hoog], [x, y + w / 2 - hoog]], steen);
+    vlak(ctx, [[x - w, y - hoog], [x, y + w / 2 - hoog], [x + w, y - hoog], [x, y - w / 2 - hoog]], tint(steen, 0.18));
+    for (let r = 1; r < 3; r++) {
+      lijn(ctx, x - w, y - r * 5.5, x, y + w / 2 - r * 5.5, 'rgba(0,0,0,0.18)', 0.6);
+      lijn(ctx, x, y + w / 2 - r * 5.5, x + w, y - r * 5.5, 'rgba(0,0,0,0.14)', 0.6);
+    }
+  };
+  kolom(cx - 13, cy - 8);
+  // De twee houten deuren in het kanaal, met ijzeren banden
+  vlak(ctx, [[cx - 4, cy - 2], [cx + 6, cy + 3], [cx + 6, cy - 11], [cx - 4, cy - 16]], hout);
+  vlak(ctx, [[cx - 4, cy - 2], [cx + 1, cy + 0.5], [cx + 1, cy - 13.5], [cx - 4, cy - 16]], tint(hout, -0.2));
+  for (const y of [-5, -10]) lijn(ctx, cx - 4, cy + y, cx + 6, cy + y + 5, '#2c2a28', 1);
+  kolom(cx + 15, cy + 6);
+  // Loopbrug over de deuren, tussen de hoofden
+  vlak(ctx, [[cx - 13, cy - 26], [cx + 15, cy - 12], [cx + 15, cy - 9], [cx - 13, cy - 23]], '#7a5a3c');
+  lijn(ctx, cx - 13, cy - 31, cx + 15, cy - 17, '#4a3624', 1);
+  for (let i = 0; i <= 4; i++) lijn(ctx, cx - 13 + i * 7, cy - 26 + i * 3.5, cx - 13 + i * 7, cy - 31 + i * 3.5, '#4a3624', 0.9);
+  // Het rad van het windas op de brug
+  ctx.strokeStyle = '#3e2c1c';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.ellipse(cx + 1, cy - 26, 4, 5.5, 0.4, 0, Math.PI * 2);
+  ctx.stroke();
+  for (let i = 0; i < 4; i++) {
+    const a = i * Math.PI / 4;
+    lijn(ctx, cx + 1 - Math.cos(a) * 3.6, cy - 26 - Math.sin(a) * 5, cx + 1 + Math.cos(a) * 3.6, cy - 26 + Math.sin(a) * 5, '#3e2c1c', 0.8);
+  }
+  // Wimpel van Rutger op het linker hoofd
+  lijn(ctx, cx - 21, cy - 22, cx - 21, cy - 44, '#3a2a1a', 1.2);
+  vlak(ctx, [[cx - 21, cy - 44], [cx - 9, cy - 41], [cx - 21, cy - 37]], def.accent || '#c23a2e');
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}

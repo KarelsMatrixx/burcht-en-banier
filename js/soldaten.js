@@ -909,10 +909,59 @@ function windzanger(def) {
   return pakket(teken, { schiet: [['aan', 0], ['los', 0]] });
 }
 
+// ------------------------------------------------------------------ saboteur
+// Een man van het Stille Volk (level 8): donkere kap en mantel met een band in teamkleur,
+// een kruitvaatje op de rug en een smeulende lont in de hand. Hij sluipt en blaast bouwwerken op.
+function saboteur(def) {
+  const K = def.kleur;
+  const MANTEL = '#3b3a34';
+  const MANTEL2 = '#2a2925';
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const slag = houding === 'slag';
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 1.4 : LOOP[beeld];
+    const mx = 13;
+    // benen
+    lijn(ctx, mx - 1.6, 26 + wip, mx - 1.6 - pas, 33.6, '#2c2a26', 2.4);
+    lijn(ctx, mx + 1.6, 26 + wip, mx + 1.6 + pas, 33.6, '#2c2a26', 2.4);
+    // vaatje op de rug
+    ovaal(ctx, mx - 5.4, 19 + wip, 3.6, 4.6, '#7a5634');
+    lijn(ctx, mx - 8.6, 17 + wip, mx - 2.2, 17 + wip, '#3a3a3a', 0.8);
+    lijn(ctx, mx - 8.8, 21 + wip, mx - 2, 21 + wip, '#3a3a3a', 0.8);
+    // gebogen romp in mantel
+    vlak(ctx, [[mx - 4, 15.6 + wip], [mx + 4.4, 16 + wip], [mx + 5, 27 + wip], [mx - 4.4, 27 + wip]], MANTEL);
+    vlak(ctx, [[mx - 4, 15.6 + wip], [mx - 0.6, 15.8 + wip], [mx - 1, 27 + wip], [mx - 4.4, 27 + wip]], MANTEL2);
+    vlak(ctx, [[mx - 4, 17 + wip], [mx - 2, 16.4 + wip], [mx + 4.6, 22.6 + wip], [mx + 3, 24 + wip]], K);
+    blok(ctx, mx - 4.4, 23.4 + wip, 9.4, 1.1, '#1e1a14');
+    // kap met gezicht in de schaduw
+    gezichtje(ctx, mx + 1, 11.6 + wip, { rx: 2.6, ry: 2.9 });
+    vlak(ctx, [[mx - 3.8, 13.4 + wip], [mx - 3.2, 7.6 + wip], [mx + 1, 6.2 + wip], [mx + 4.4, 8.4 + wip], [mx + 4.6, 10 + wip], [mx + 1.6, 9.4 + wip], [mx - 1, 14 + wip]], MANTEL2);
+    lijn(ctx, mx - 1, 10.6 + wip, mx + 3.6, 10.6 + wip, 'rgba(0,0,0,0.35)', 1.2);
+    // armen en lont
+    const lont = (x, y) => {
+      lijn(ctx, x, y, x + 2.6, y - 2.8, '#6b4a2a', 0.9);
+      ovaal(ctx, x + 2.8, y - 3, 1.3, 1.3, 'rgba(255,170,60,0.9)');
+      ovaal(ctx, x + 2.8, y - 3, 0.6, 0.6, '#fff0b0');
+    };
+    if (!vecht) {
+      lijn(ctx, mx + 3, 18 + wip, mx + 5.6, 23 + wip, MANTEL, 2.2); hand(ctx, mx + 5.8, 23.4 + wip, HUID, 1.2); lont(mx + 5.8, 23.4 + wip);
+    } else if (!slag) {
+      lijn(ctx, mx + 3, 18, mx + 7.6, 16, MANTEL, 2.2); hand(ctx, mx + 7.8, 16, HUID, 1.2); lont(mx + 7.8, 16);
+    } else {
+      // gooit het lont naar voren; een vonkenregen
+      lijn(ctx, mx + 3, 18, mx + 9, 20, MANTEL, 2.2); hand(ctx, mx + 9.2, 20.2, HUID, 1.2);
+      for (const [dx, dy] of [[12, 18], [14, 21], [11, 23], [15, 17]]) ovaal(ctx, mx + dx, dy, 0.8, 0.8, '#ffc04a');
+    }
+    lijn(ctx, mx - 3, 18 + wip, mx - 5, 23 + wip, MANTEL2, 2.2);
+  };
+  return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
+}
+
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
-  zwaardvechter, banierdrager, heler, steenwachter, windzanger, ruiter, paard: (def) => ruiter(def, true),
+  zwaardvechter, banierdrager, heler, steenwachter, windzanger, saboteur, ruiter, paard: (def) => ruiter(def, true),
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

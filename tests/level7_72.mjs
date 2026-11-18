@@ -28,8 +28,12 @@ check('drie poorten van rood (en jouw poort)', a.poorten >= 3, a.poorten);
 check('landschap kloof', a.landschap === 'kloof', a.landschap);
 check('windzanger nog niet op te leiden in level 7', !!a.wind, a.wind);
 check('rood heeft wachters op de muren', a.wachters >= 6, a.wachters);
-// ---- Level 8: windzanger is vrijgegeven; leid er een op en zet hem bij een rode wachter
-await start(8, [1, 2, 3, 4, 5, 6, 7]);
+// ---- Vrij spel (alles vrij, gewone ringmuur zonder gracht): leid een windzanger op en zet hem bij een rode wachter
+await p.goto('http://localhost:8297/?x=' + Date.now()); await wacht();
+await p.evaluate(() => { localStorage.clear(); localStorage.setItem('tipGesloten', '1'); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'vrij', profiel: 'normaal' })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); });
+await p.reload(); await wacht();
+if (await p.isVisible('#missie-begin')) await p.click('#missie-begin');
+await p.waitForTimeout(500);
 const plek = await p.evaluate(() => { const s = window.spel; const k = s.kaart; const st = k.start[0];
   for (let r = 4; r < 20; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = st.x + dx, y = st.y + dy; let goed = true;
     for (let a = -1; a <= 2; a++) for (let c = -1; c <= 2; c++) { const i = (y + c) * k.breedte + x + a; if (k.object[i] !== 0 || k.grond[i] === 3) goed = false; } if (goed) return [x, y]; } return null; });
@@ -40,7 +44,7 @@ const r = await p.evaluate(([x, y]) => { const s = window.spel; const v = s.econ
   const uit = s.leger.leidOp('windzanger', y * s.kaart.breedte + x);
   const w = s.leger.soldaten().find((e) => e.soldaat.sleutel === 'windzanger');
   return { uit, er: !!w }; }, plek);
-check('windzanger op te leiden in level 8', r.uit === '' && r.er, JSON.stringify(r));
+check('windzanger op te leiden (vrij spel)', r.uit === '' && r.er, JSON.stringify(r));
 const duw = await p.evaluate(async () => { const s = window.spel; const w = s.leger.soldaten().find((e) => e.soldaat.sleutel === 'windzanger');
   const doel = s.strijd.wachters().find((e) => e.opMuur && !e.dood);
   if (!doel) return { geen: true };

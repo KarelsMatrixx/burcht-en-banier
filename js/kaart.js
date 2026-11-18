@@ -26,6 +26,7 @@ export const OBJECT = {
   KAMPVUUR: 38,  // kampvuur met driepoot en rook (tentenkamp van Brandt, level 4), decor
   JAGERSTENT: 39,   // olijfgroene jagerstent met gewei (tentenkamp van Brandt, level 4), decor
   BELEGERINGSWERKPLAATS: 40,   // de aparte kazerne voor ram, katapult en belegeringstoren
+  SLUIS: 42,     // de sluis van de Witte Dijk (level 8): een doel dat je moet slopen
   GRAF: 41,      // grafstenen en kruisen van een begraafplaats (level 10, bij de kerk), decor
 };
 
@@ -38,13 +39,13 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf', 'werk.sluis',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
 const OBJECT_TEKST = [
   '', 'forest', 'rock', 'copper ore', 'wall', 'watchtower', 'gate', 'keep', 'keep', 'keep', 'tower',
-  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mystic lodge', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church', 'stable', 'coal mine', 'stonemason', 'smithy', 'iron gatehouse', 'campfire', "hunter's tent", 'siege workshop', 'graveyard',
+  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mystic lodge', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church', 'stable', 'coal mine', 'stonemason', 'smithy', 'iron gatehouse', 'campfire', "hunter's tent", 'siege workshop', 'graveyard', 'sluice',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.
