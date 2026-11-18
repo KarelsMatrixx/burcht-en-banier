@@ -769,3 +769,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Mist, sneeuw, regen, as, stof en windstrepen bewogen mee met de camera (ze stonden in schermmaat). Nu staan ze in de wereld, in tegels van 1100 bij 640 wereldpixels die zich over de kaart herhalen: schuif je de kaart, dan blijft de mist hangen waar hij hangt (sfeer.js `tekenWeer`). Alleen de kleurwaas, de stofvlaag en de bliksemflits liggen nog over het hele scherm (`tekenWaas`).
 - Alvast in de code, nog niet vrijgegeven: de windzanger (soort WIND 34, mystieke kazerne). Een windvlaag blaast een soldaat van een muur of toren naar de grond ernaast (18 schade, 2,5 s verdoofd), niet van het dak van een hoofdkasteel. Wordt de beloning van level 7.
 - Bekend rood, los van deze wijziging: mystiek27 (vindt de knop van de sluipmoordenaar niet; ook rood zonder deze wijziging).
+
+## 0.73.0: level 7 Greyford is speelbaar, met de windzanger als beloning
+- Level 7 (Greyford, Governor Everhard) staat open na level 6. Kaart grauwvoort (kloof), tolburcht met drie poorten achter elkaar (drie_poorten), landschap kloof (mist, sparren). Winst: de rode koning doden.
+- Rood: vooral zwaardvechters met banierdragers, boog- en kruisboogschutters, wat ridders; lijfwacht van 3 zwaardvechters; 12 wachters; eerste aanval na 130 s (startwaarden, na te lezen). Vanaf zijn derde aanval neemt hij ook windzangers mee (regel: wat je in een level wint, gebruikt rood daar al tegen je). Katapult vanaf aanval 3, belegeringstoren vanaf aanval 4.
+- Beloning: de windzanger (Mystic Lodge, 24 goud en 6 brood). Haar windvlaag blaast een soldaat van een muur of toren naar de grond (18 schade, 2,5 s verdoofd); op de grond doet ze maar 4 schade. Ze kiest bij voorkeur iemand op een muur. Niet van het dak van een hoofdkasteel.
+- Nieuwe Engelse teksten (intro, uitkomst, vier berichten): door Claude geschreven, na te lezen.
+- Test: `tests/level7_72.mjs` (9 controles). test_stap17 telt het aantal levels in het menu niet meer vast.

@@ -527,10 +527,22 @@
      }
     },
     "extra_soorten": {
-     "banierdrager": { "vanaf": 1, "max": 1 },
-     "katapult": { "vanaf": 5, "max": 1 },
-     "toren": { "vanaf": 6, "max": 1 },
-     "ruiter": { "vanaf": 2, "max": 2 }
+     "banierdrager": {
+      "vanaf": 1,
+      "max": 1
+     },
+     "katapult": {
+      "vanaf": 5,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 6,
+      "max": 1
+     },
+     "ruiter": {
+      "vanaf": 2,
+      "max": 2
+     }
     },
     "koning": {
      "leven": 120,
@@ -560,7 +572,10 @@
     "doelBegin": 4,
     "doelPerAanval": 1.35,
     "doelMax": 16,
-    "doelVanaf": { "aanval": 4, "factor": 2 },
+    "doelVanaf": {
+     "aanval": 4,
+     "factor": 2
+    },
     "groei": {
      "doelPerStap": 0.15,
      "max": 8
@@ -793,26 +808,39 @@
     "x": 69.9,
     "y": 44.6
    },
-   "speelbaar": false,
-   "intro": "The tollhouse closes the only road with three gates, one behind the other.",
+   "speelbaar": true,
+   "intro": "The tollhouse of Greyford closes the only road with three gates, one behind the other. Governor Everhard's swordsmen hold every gate. Lady Mechteld has sent you her wind singers.",
    "beeld": "beelden/verhaal/level07.webp",
    "verhaal": "The tollhouse of Greyford closes the only road with three gates in a row. Governor Everhard keeps every seal and every rule. Lady Mechteld has sent her wind singers, for she will not serve a duke who sends soldiers for a child. Karel must break gate after gate.",
-   "uit": "",
+   "uit": "In the archive lies a letter from Ottger, sent three times and never answered: \"My daughter is nine winters dead and I have one blood left. Send the boy, Karel, before I die too.\" Gesina says: \"You knew.\" Karel: \"He could have asked without an army.\"",
    "wessel": "A letter to his father: \"Grandpa is old. He cries when he thinks I am asleep.\"",
-   "beloning": [],
+   "beloning": [
+    "windzanger"
+   ],
    "rood": {
     "legerMax": 150,
     "sterkte": 120,
     "tempo": 80,
     "leger": {
-     "ridder": {
-      "aandeel": 2
+     "zwaardvechter": {
+      "aandeel": 3
+     },
+     "banierdrager": {
+      "aandeel": 1,
+      "vanaf": 1
      },
      "boogschutter": {
       "aandeel": 2
      },
      "kruisboog": {
       "aandeel": 1
+     },
+     "ridder": {
+      "aandeel": 1
+     },
+     "windzanger": {
+      "aandeel": 1,
+      "vanaf": 2
      }
     },
     "koning": {
@@ -830,9 +858,56 @@
     "aanval": {
      "niveau": 4,
      "max": 5
-    }
+    },
+    "extra_soorten": {
+     "katapult": {
+      "vanaf": 3,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 4,
+      "max": 1
+     }
+    },
+    "lijfwacht": {
+     "soort": "zwaardvechter",
+     "aantal": 3
+    },
+    "eersteAanval": 130,
+    "begin": {
+     "goud": 150,
+     "hout": 20,
+     "steen": 20
+    },
+    "wachters": 12
    },
-   "kasteel": "drie_poorten"
+   "kasteel": "drie_poorten",
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 8,
+     "wie": "bartholt",
+     "tekst": "Three gates in a row, Sire. Behind every gate stands another wall full of swordsmen. Bring rams, and patience."
+    },
+    {
+     "bij": "tijd",
+     "waarde": 25,
+     "wie": "bartholt",
+     "tekst": "Lady Mechteld's wind singers wait at your Mystic Lodge. Their horns blow soldiers right off the walls."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "The road is closed by order of the duke. Turn back, or pay the toll in blood."
+    },
+    {
+     "bij": "roodBurcht",
+     "waarde": 50,
+     "wie": "heer",
+     "tekst": "Every gate is sealed and stamped! This is not how a siege is done!"
+    }
+   ]
   },
   {
    "id": 8,
