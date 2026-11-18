@@ -868,7 +868,7 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Lijfwacht van Karel: bij het begin van de nacht staat Karel aan de oostkant van de burcht met 20 zwaardvechters op vaste posten om zich heen (proloog.js `zetLijfwacht`, strijd.js `karelWachtDenk`). Niet te kiezen of te besturen (leger.js `kies`); ze vechten alleen met wie binnen 2,5 tegels van hun post komt en lopen daarna terug. Karel houdt zelf ook zijn plek. Zolang er nog 5 of meer leven, raakt Karel geen leven kwijt. Gemeten in proloog43: van de storm tot de ruiter ongeveer 50 s (was 16 tot 21 s). Na herladen worden de wachten opnieuw gemarkeerd via `s.lijfwacht`.
 - Tests: proloog77 (volgorde oogles, vrije plek, pauze, lijfwacht), proloog35 en proloog43 bijgewerkt.
 
-## 0.76.4: nachtlessen pas klaar als het leger er staat, lijfwacht blijft op zijn post (Karels feedback van 18 november)
+## 0.76.5: nachtlessen pas klaar als het leger er staat, lijfwacht blijft op zijn post (Karels feedback van 18 november)
 
 - Nachtles 2 (boogschutters naar de poortmuur) en 4 (ridders achter de poort) zijn pas klaar als de gestuurde groep stilstaat en er minstens één op de plek staat (boogschutters: op de muur). Onderweg staat in de taakregel "...: on their way...". Pas daarna komt de poortles, en pas na "Hold" valt het leger aan.
 - Lijfwacht van Karel: geen wraak en geen bevelen meer; een wacht vecht alleen binnen 3 tegels van zijn post, breekt een achtervolging af en loopt terug. Gemeten: verst 3,5 tegel van de post.
