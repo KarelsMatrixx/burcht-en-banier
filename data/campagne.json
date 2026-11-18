@@ -1189,17 +1189,17 @@
    "heer": "Duke Ottger of Blackmark",
    "portret": "ottger",
    "profiel": "zwaar",
-   "kaart": "standaard",
+   "kaart": "rouwburcht",
    "landschap": "rouw",
    "punt": {
     "x": 88.1,
     "y": 30.3
    },
-   "speelbaar": false,
-   "intro": "Three rings, and the Raven Tower on the east side, where Wessel is kept.",
+   "speelbaar": true,
+   "intro": "Three rings of black stone, and the Raven Tower at the back, where Wessel is kept. Reinout has opened a gap in the outer ring. Duke Ottger does not fight himself: reach the tower and bring your son home.",
    "beeld": "beelden/verhaal/level10.webp",
    "verhaal": "Three rings of stone, and the Raven Tower in the east. One window is lit, and a boy sits behind it. A gate in the outer ring stands open, because someone kept a promise. Tonight Karel goes to bring his son home.",
-   "uit": "",
+   "uit": "Wessel walks onto the wall and orders the fighting to stop. \"I want to go home, but I want Grandpa to stay too.\" Ottger lowers the Mourning Banner, and two banners hang side by side. Reinout goes back to his land, Mechteld and Hademar swear the new peace, Gesina stays with Wessel. Karel and Ottger become his guardians together, and the black band leaves Karel's arm.",
    "wessel": "",
    "beloning": [],
    "rood": {
@@ -1219,11 +1219,20 @@
      "kruisboog": {
       "aandeel": 2
      },
+     "zwaardvechter": {
+      "aandeel": 1
+     },
      "sluipmoordenaar": {
       "aandeel": 1
      },
      "vlammenwever": {
       "aandeel": 1
+     },
+     "windzanger": {
+      "aandeel": 0.5
+     },
+     "heler": {
+      "aandeel": 0.5
      }
     },
     "koning": {
@@ -1240,9 +1249,103 @@
     "muur": 240,
     "aanval": {
      "niveau": 5
+    },
+    "extra_soorten": {
+     "saboteur": {
+      "vanaf": 1,
+      "max": 2
+     },
+     "ziener": {
+      "vanaf": 1,
+      "max": 2
+     },
+     "katapult": {
+      "vanaf": 2,
+      "max": 2
+     },
+     "toren": {
+      "vanaf": 3,
+      "max": 1
+     },
+     "ruiter": {
+      "vanaf": 2,
+      "max": 3
+     }
+    },
+    "eersteAanval": 90,
+    "begin": {
+     "goud": 220,
+     "hout": 30,
+     "steen": 30
+    },
+    "lijfwacht": {
+     "soort": "zwaardvechter",
+     "aantal": 4
+    },
+    "wachters": 16
+   },
+   "kasteel": "drie_ringen",
+   "reserve": {
+    "leger": {
+     "ridder": 6,
+     "bijlridder": 6,
+     "kruisboog": 6,
+     "zwaardvechter": 4,
+     "vlammenwever": 2
+    },
+    "afstand": 14,
+    "kant": -1.4,
+    "los": {
+     "naderen": 10,
+     "tijd": 480
+    },
+    "teksten": {
+     "ontdekt": "Your seer sees Ottger's last reserve hidden beside Mournkeep!",
+     "aanval": "Black Guard! Out, and keep them from the tower!"
     }
    },
-   "kasteel": "drie_ringen"
+   "doel": {
+    "soort": "bevrijden",
+    "seconden": 15,
+    "straal": 1.7,
+    "slotSeconden": 6,
+    "teksten": {
+     "begin": "The gap in the outer ring is open, Karel, as I promised. The Raven Tower stands at the back, between the outer and the middle ring. Go.",
+     "taak": "Bring a soldier to the door of the Raven Tower",
+     "houd": "Hold at the door of the Raven Tower: {s} s"
+    },
+    "slot": [
+     {
+      "naam": "Wessel",
+      "portret": "wessel_blij",
+      "tekst": "Stop! Everybody stop fighting! Father, I am here. I am not hurt."
+     },
+     {
+      "naam": "Wessel",
+      "portret": "wessel",
+      "tekst": "I want to go home. But I want Grandpa to stay too. He is old, and he is alone."
+     },
+     {
+      "naam": "Duke Ottger",
+      "portret": "ottger_verdriet",
+      "tekst": "Lower the Mourning Banner. Let the blue one hang beside it. The boy has decided."
+     }
+    ]
+   },
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 10,
+     "wie": "bartholt",
+     "tekst": "Sire, take the tower, not the keep. Find Reinout's gap in the outer ring and go around to the back. Ottger will not fight."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "You came for him at last, Karel. Nine winters too late, and with an army."
+    }
+   ]
   }
  ]
 }

@@ -7,7 +7,8 @@
   "Het kasteel moet op de kaart passen: maat plus gracht tot ongeveer 10 tegels.",
   "Nog niet: palissade van palen (jachtkamp, level 4), loodsen (level 6), sluis en kades (level 8), terrassen (level 9), Raaftoren (level 10). Die horen bij de levels zelf.",
   "kamp: true = een tentenkamp (level 4): geen muren, torens of poort; de ring bepaalt alleen hoe groot het vrije erf is. De burcht in het midden is dan de commandotent (materiaal met vorm kampburcht). omgeving: bomen en moerasplassen rondom het kamp met een open laan naar jouw kant (zie js/kaart.js 5b2).",
-  "Level 10 (Mournkeep): een kerk met een begraafplaats op een open plek in het dode bos naast de buitenste ring (decor kerk en graf, versie 0.71.0). Kerk en graf mogen bomen wegkappen. Let op: dx en dy van decor staan gespiegeld ten opzichte van de kaart."
+  "Level 10 (Mournkeep): een kerk met een begraafplaats op een open plek in het dode bos naast de buitenste ring (decor kerk en graf, versie 0.71.0). Kerk en graf mogen bomen wegkappen. Let op: dx en dy van decor staan gespiegeld ten opzichte van de kaart.",
+  "open: zijden van een ring met een gat van 3 tegels zonder muur (level 10: de achterpoort die Reinout opende). Decor raaftoren: de Raaftoren van level 10 (onkwetsbaar, van niemand)."
  ],
  "kastelen": {
   "ring": {
@@ -479,11 +480,19 @@
      "maat": 8,
      "poorten": [
       "voor"
+     ],
+     "open": [
+      "rechts"
      ]
     }
    ],
    "materiaal": "zwart",
    "decor": [
+    [
+     "raaftoren",
+     -7,
+     0
+    ],
     [
      "kerk",
      -11,

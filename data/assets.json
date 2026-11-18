@@ -51,6 +51,7 @@
     "dorp.jagerstent": { "vorm": "jagerstent", "kleur": "#6f7a4a", "accent": "#7a5636", "hoogte": 36, "sprite": "" },
     "dorp.kampvuur":  { "vorm": "kampvuur", "hoogte": 14, "sprite": "" },
     "werk.sluis":     { "vorm": "sluis", "kleur": "#9a968c", "accent": "#c23a2e", "hoogte": 30, "sprite": "" },
+    "dorp.raaftoren": { "vorm": "raaftoren", "kleur": "#4a4850", "hoogte": 146, "sprite": "" },
     "dorp.graf":      { "vorm": "graf", "kleur": "#8d8a86", "hoogte": 10, "sprite": "" },
     "dorp.kerk":      { "vorm": "kerk", "hoogte": 80, "sprite": "" },
     "dorp.cel":       { "vorm": "cel", "hoogte": 28, "sprite": "" },

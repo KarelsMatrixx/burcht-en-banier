@@ -820,3 +820,12 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - tekenaar.js tekent onzichtbare eenheden niet (`e.onzichtbaar`).
 - Engelse teksten en alle getallen: door Claude, na te lezen.
 - Test: `tests/level9_75.mjs` (10 controles).
+
+## 0.76.0: level 10 Mournkeep is speelbaar: Wessel bevrijden en het slot
+- Level 10 (Duke Ottger) staat open na level 9. Nieuwe kaart `rouwburcht`, kasteel met drie ringen, landschap rouw (regen, dode bomen, raven), kerk met begraafplaats achter het kasteel.
+- **Doeltype D** (js/bevrijding.js): Wessel zit in de **Raaftoren** (object RAAFTOREN 43, decor van niemand, dus onkwetsbaar) tussen de buitenste en de middelste ring, aan de achterkant. Breng een soldaat naar de deur (binnen 1,7 tegel) en houd 15 seconden achter elkaar stand; de taakbalk telt af. Ottger vecht niet: zijn koningsfiguur kan niet sneuvelen (`beschermKoning`).
+- **Reinouts gat**: de buitenste ring heeft een open stuk van 3 tegels zonder muur (kastelen.json `open: ['rechts']`, kaart.js). Rood herbouwt dat niet, want het hoorde nooit bij zijn muur.
+- **Het slot**: is het doel gehaald, dan staakt het gevecht (strijd.js `staak`: niemand beweegt of vecht nog), de camera gaat naar de toren en er volgen drie kaartjes (Wessel, Wessel, Ottger, elk 6 s). Daarna het winstscherm met de epiloog in `uit`. `beslis('gewonnen', { staak: true })` laat de vijanden in leven (Ottger blijft).
+- Rood: alles wat hij heeft, beste startgoud, lijfwacht van 4 zwaardvechters, 16 wachters, eerste aanval na 90 s, saboteurs en zieners vanaf aanval 1, ruiters vanaf 2, plus een verborgen reserve van 24 man (js/reserve.js). Geen beloning na level 10.
+- Engelse teksten (intro, Reinout, slot, epiloog) en alle getallen: door Claude, na te lezen.
+- Test: `tests/level10_76.mjs` (11 controles: toren, gat, bereikbaarheid, kerkhof, bescherming, reserve, 15 s, staken, winst, epiloog).

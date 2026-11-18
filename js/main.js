@@ -30,6 +30,7 @@ import { maakFiguranten } from './figuranten.js';
 import { maakSlachting } from './slachting.js';
 import { maakDoel } from './doel.js';
 import { maakLoodsen } from './loodsen.js';
+import { maakBevrijding } from './bevrijding.js';
 import { maakGevangene } from './gevangene.js';
 import { SOORT } from './eenheden.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, eerstWinnen, ontgrendeld } from './modus.js';
@@ -856,7 +857,7 @@ async function start() {
     taak: doel.omschrijving ? doel.omschrijving() : doel.fase && doel.fase() === 1
       ? "Your goal: defeat Huntmaster Brandt in his tent camp. The Flameweavers of the Silent Folk are yours: tap them and send them in. If your king falls, you lose."
       : `Your goal: hold Mother Gesina's hut until her ritual is done (${Math.ceil(doel.over() / 60)} min left). If the hut falls, or your king, you lose. Then the Silent Folk come, and you go after Brandt.`,
-    portret: doel.omschrijving ? (missie.portret || 'lambrecht') : 'gesina',
+    portret: doel.omschrijving ? (missie.doel.soort === 'bevrijden' ? 'bartholt' : missie.portret || 'lambrecht') : 'gesina',
   } : missie ? {
     titel: missie.titel,
     tegen: missie.heer ? `Against ${missie.heer}` : '',
@@ -910,7 +911,7 @@ async function start() {
   // In de proloog staat je volk stil: populariteit en boeren dalen of stijgen niet door tijd of honger (economie.js bevries).
   if (proloog) economie.bevries(true);
   // Een level met een eigen doel (level 4: de hut van Gesina houden).
-  doel = missie && missie.doel ? (missie.doel.soort === 'loodsen' ? maakLoodsen : maakDoel)({
+  doel = missie && missie.doel ? (missie.doel.soort === 'loodsen' ? maakLoodsen : missie.doel.soort === 'bevrijden' ? maakBevrijding : maakDoel)({
     missie, kaart, bouwer, strijd, wegvinder,
     toonVerhaal: (b) => ui.toonVerhaal(b),
     toonTaak: (t) => ui.toonTaak(t),

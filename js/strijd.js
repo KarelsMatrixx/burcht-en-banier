@@ -79,6 +79,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   let vrede = golven.length === 0;    // gewonnen en verder gespeeld: er komt niemand meer
   let uitslag = null;           // 'gewonnen' of 'verloren': het spel staat stil
   let koningBeschermd = false;   // level 8: de rode koning kan nog niet vallen
+  let gestaakt = false;          // level 10: het gevecht is gestaakt (Wessel op de muur); niemand beweegt nog
   let stil = false;             // de test kan de klok van de golven stilzetten
   let burchtGemeld = false;
   let heer = null;              // de rode heer met eigen economie (js/rood.js); die bepaalt dan wanneer er wordt aangevallen
@@ -2127,6 +2128,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function stap() {
     if (uitslag) return;
     stapNr++;
+    if (gestaakt) return;
     if (!stil && !vrede && golven.length && !R.proloog) {
       if (heer) {
         if (rood.leven > 0) heer.stap();
@@ -2393,6 +2395,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Opnieuw beginnen: geen vijanden, de burcht heel, de eerste golf moet nog komen.
   function herstel() {
+    gestaakt = false;
+    koningBeschermd = false;
     for (const e of vijanden) eenheden.verwijder(e);
     vijanden.length = 0;
     roodKoning = null;
@@ -2438,6 +2442,19 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   return {
     beschermKoning: (aan) => { koningBeschermd = !!aan; },
+    // Level 10: het gevecht staken. Iedereen blijft staan waar hij staat, niemand vecht nog.
+    staak() {
+      gestaakt = true;
+      for (const e of [...vijanden, ...leger.lijst]) {
+        e.pad = null;
+        const k = krijgVan(e);
+        k.doelwit = null;
+        k.bouw = null;
+        k.bevel = null;
+        zetHouding(e, null);
+      }
+    },
+    gestaakt: () => gestaakt,
     reserveSoldaat, laatReserveLos, reserveZicht,
     reserve: () => vijanden.filter((e) => e.reserveWacht && !e.dood),
     koningBeschermd: () => koningBeschermd,
@@ -2577,9 +2594,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     },
     hut: () => (hutVak < 0 ? null : { vak: hutVak, staat: hutStaat(), gevallen: hutGevallen, leven: hutStaat() ? Math.max(0, Math.round((schade.get(hutVak) || {}).leven || 0)) : 0, max: (schade.get(hutVak) || {}).max || 0 }),
     // Het doel van het level is gehaald (de hut gehouden): gewonnen.
-    beslis(wat) {
+    beslis(wat, opties = {}) {
       if (uitslag) return;
-      if (wat === 'gewonnen') for (const e of vijanden) e.dood = true;
+      if (wat === 'gewonnen' && !opties.staak) for (const e of vijanden) e.dood = true;
       ruimOp();
       einde(wat);
     },

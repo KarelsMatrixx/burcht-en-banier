@@ -3832,3 +3832,68 @@ export function tekenSluis(naam, def) {
   vlak(ctx, [[cx - 21, cy - 44], [cx - 9, cy - 41], [cx - 21, cy - 37]], def.accent || '#c23a2e');
   return { beeld: doek, b, h, ax: b / 2, ay: h };
 }
+
+// De Raaftoren van Mournkeep (level 10): een slanke, hoge ronde toren van donkere steen
+// met een spits leien dak, een zwarte rouwbanier, raven op de kantelen en hoog één
+// verlicht raam: daar zit Wessel. Onderaan een zware deur met ijzeren banden.
+export function tekenRaaftoren(naam, def) {
+  const b = TB + 8;
+  const h = TH + 184;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - 1 - HH;
+  const steen = def.kleur || '#4a4850';
+  const r = 17;
+  const hoog = 146;
+  ovaal(ctx, cx + 4, voet + 2, r + 8, 9, 'rgba(0,0,0,0.3)');
+  // De ronde schacht: links donker, rechts licht
+  ctx.fillStyle = steen;
+  ctx.fillRect(cx - r, voet - hoog, r * 2, hoog);
+  ovaal(ctx, cx, voet, r, r * 0.5, steen);
+  const g = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
+  g.addColorStop(0, 'rgba(0,0,0,0.38)'); g.addColorStop(0.55, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(255,255,255,0.12)');
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - r, voet - hoog, r * 2, hoog + r * 0.5);
+  // Voegen
+  for (let y = 8; y < hoog; y += 7) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.ellipse(cx, voet - y, r, r * 0.5, 0, 0.15, Math.PI - 0.15);
+    ctx.stroke();
+  }
+  // Kantelen bovenaan
+  ovaal(ctx, cx, voet - hoog, r + 2, (r + 2) * 0.5, tint(steen, 0.12));
+  for (let i = 0; i < 7; i++) {
+    const x = cx - r + 1 + i * ((r * 2 - 2) / 6);
+    blok(ctx, x - 2, voet - hoog - 6 + Math.abs(i - 3) * 0.7, 4, 6, i < 3 ? tint(steen, -0.15) : tint(steen, 0.1));
+  }
+  // Spits leien dak
+  vlak(ctx, [[cx - r + 1, voet - hoog - 4], [cx, voet - hoog - 44], [cx + r - 1, voet - hoog - 4]], '#2b2b33');
+  vlak(ctx, [[cx, voet - hoog - 44], [cx + r - 1, voet - hoog - 4], [cx + 3, voet - hoog - 2]], '#3b3b45');
+  // Rouwbanier op de punt
+  lijn(ctx, cx, voet - hoog - 44, cx, voet - hoog - 60, '#222', 1.2);
+  vlak(ctx, [[cx, voet - hoog - 60], [cx + 13, voet - hoog - 57], [cx + 10, voet - hoog - 54], [cx + 13, voet - hoog - 51], [cx, voet - hoog - 50]], '#141418');
+  // Het verlichte raam van Wessel, met een gloed
+  const gl = ctx.createRadialGradient(cx + 5, voet - 118, 0.5, cx + 5, voet - 118, 12);
+  gl.addColorStop(0, 'rgba(255,214,120,0.55)'); gl.addColorStop(1, 'rgba(255,214,120,0)');
+  ctx.fillStyle = gl;
+  ctx.beginPath(); ctx.arc(cx + 5, voet - 118, 12, 0, Math.PI * 2); ctx.fill();
+  vlak(ctx, [[cx + 2.5, voet - 114], [cx + 2.5, voet - 122], [cx + 5, voet - 125], [cx + 7.5, voet - 122], [cx + 7.5, voet - 114]], '#ffd27a');
+  lijn(ctx, cx + 5, voet - 124, cx + 5, voet - 114, '#5a4020', 0.7);
+  // Een donker raam lager
+  vlak(ctx, [[cx - 7, voet - 70], [cx - 7, voet - 76], [cx - 5, voet - 78], [cx - 3, voet - 76], [cx - 3, voet - 70]], '#151518');
+  // Zware deur met ijzeren banden
+  vlak(ctx, [[cx - 1, voet + 7], [cx - 1, voet - 10], [cx + 4, voet - 14], [cx + 9, voet - 10], [cx + 9, voet + 5]], '#3e2c1c');
+  for (const y of [-6, -1, 3]) lijn(ctx, cx - 1, voet + y, cx + 9, voet + y - 1.6, '#1c1c1e', 1);
+  // Raven op de kantelen
+  const raaf = (x, y, s) => {
+    ovaal(ctx, x, y, 2.2 * s, 1.4 * s, '#0e0c0e');
+    ovaal(ctx, x + 2 * s, y - 1 * s, 1.1 * s, 1 * s, '#0e0c0e');
+    vlak(ctx, [[x + 2.8 * s, y - 1.2 * s], [x + 4.2 * s, y - 0.8 * s], [x + 2.8 * s, y - 0.4 * s]], '#3a3a3a');
+    vlak(ctx, [[x - 2 * s, y], [x - 4 * s, y + 0.8 * s], [x - 1.5 * s, y + 0.8 * s]], '#0e0c0e');
+  };
+  raaf(cx - 11, voet - hoog - 7, 1);
+  raaf(cx + 9, voet - hoog - 8, 0.9);
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
