@@ -166,7 +166,7 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd, koni
       if (garnizoenWacht <= 0) {
         garnizoenWacht = 0.6;
         const gekozen = leger.gekozen();
-        const vrij = leger.lijst.filter((e) => e.garnizoen && !e.dood && !e.pad && !e.opMuur && !gekozen.includes(e) && !(e.soldaat && e.soldaat.doel >= 0));
+        const vrij = leger.lijst.filter((e) => e.garnizoen && !e.dood && !e.pad && !e.opMuur && e.post === undefined && !gekozen.includes(e) && !(e.soldaat && e.soldaat.doel >= 0));
         for (let n = 0; n < 2 && vrij.length; n++) {
           const e = vrij.splice(Math.floor(toeval() * vrij.length), 1)[0];
           if (!e.thuis) e.thuis = { x: Math.floor(e.x), y: Math.floor(e.y) };

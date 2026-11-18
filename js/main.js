@@ -888,11 +888,12 @@ async function start() {
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, bouwwerken, leger, strijd, wegvinder, eenheden,
     koningSoort: 'koning', gids, figuranten, bevolking: () => economie.bevolking(),
+    glijNaar: (x, y, duur) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); camera.glijNaar(w.x, w.y, duur); },
     // Het oog uit: met het oog aan telt een tik als een tik op de grond, dan kom je de muur niet op
     oogUit: () => { tekenaar.zetDoorzicht(false); oog.classList.remove('actief'); oog.setAttribute('aria-pressed', 'false'); },
     geefVoorraad: (naam, n) => { economie.voorraad[naam] = (economie.voorraad[naam] || 0) + n; if (naVoorraad) naVoorraad(); },
     kiesGeen: () => { leger.kiesGeen(); if (naLeger) naLeger(); },
-    sluitPanelen: () => { stopBouw(); sluitKazerne(); leger.kiesGeen(); if (naLeger) naLeger(); },
+    sluitPanelen: () => { stopBouw(); sluitKazerne(); leger.kiesGeen(); ui.verbergVerhaal(); if (naLeger) naLeger(); },   // ook een open bericht weg: dat verbergt anders de kaartjes van de gids
     stopBouw: () => stopBouw(),
     kijkNaar: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); camera.kijkNaar(w.x, w.y); },
     toonVerhaal: (b) => ui.toonVerhaal(b),

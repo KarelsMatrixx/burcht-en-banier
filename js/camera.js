@@ -52,10 +52,29 @@ export function maakCamera(grenzen) {
     cam.zoom = klem(zoom, CONFIG.camera.zoomMin, CONFIG.camera.zoomMax);
   };
 
+  let glij = 0;   // het nummer van een lopende glijbeweging (glijNaar)
   cam.kijkNaar = (wx, wy) => {
+    glij++;   // een lopende glijbeweging stopt
     cam.x = wx;
     cam.y = wy;
     cam.begrens();
+  };
+  // Rustig naar een punt bewegen (naar Karel: niet in één keer), met een zachte start en landing.
+  cam.glijNaar = (wx, wy, duur = 2500) => {
+    const nr = ++glij;
+    const vanX = cam.x;
+    const vanY = cam.y;
+    const begin = performance.now();
+    const stap = (nu) => {
+      if (nr !== glij) return;
+      const t = Math.min(1, (nu - begin) / duur);
+      const z = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      cam.x = vanX + (wx - vanX) * z;
+      cam.y = vanY + (wy - vanY) * z;
+      cam.begrens();
+      if (t < 1) requestAnimationFrame(stap);
+    };
+    requestAnimationFrame(stap);
   };
 
   return cam;

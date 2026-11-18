@@ -41,8 +41,13 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
   // Heeft de speler een stand van de belasting gekozen, of het volkspaneel geopend?
   let belastingTik = false;
   let paneelGezien = false;
+  let belastingDoel = null;   // belastingles: de stand die de speler moet aantikken
+  // Na de belastingles: de belastingknoppen weer open
+  const belastingOpen = () => { for (const k of document.querySelectorAll('#volk-belasting button')) k.classList.remove('tut-dicht'); };
   document.addEventListener('click', (ev) => {
-    if (ev.target.closest && ev.target.closest('#volk-belasting button')) belastingTik = true;
+    // Alleen de omcirkelde stand telt (naar Karel: een andere knop liet de les toch doorgaan)
+    const knop = ev.target.closest && ev.target.closest('#volk-belasting button');
+    if (knop && doel && doel.soort === 'belasting' && belastingDoel !== null && knop.dataset.stand === belastingDoel) belastingTik = true;
   }, true);
 
   // Wat is nu de eerstvolgende knop? Per soort taak.
@@ -85,18 +90,31 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     }
     if (doel.soort === 'belasting') {
       if (!zichtbaar(el('volkpaneel'))) return { e: el('knop-buidel'), tekst: 'Tap the purse to open your people.' };
+      const balk = el('volk-belasting');
+      // Eén vaste stand om te kiezen: de eerste die nog niet aanstaat. De andere knoppen zijn dicht.
+      if (belastingDoel === null) { const k = balk.querySelector('button:not(.actief)'); belastingDoel = k ? k.dataset.stand : null; }
+      for (const k of balk.querySelectorAll('button')) k.classList.toggle('tut-dicht', belastingTik || k.dataset.stand !== belastingDoel);
       if (belastingTik) return { e: el('volk-sluit'), tekst: 'Good. Now close the panel.' };
-      const knop = el('volk-belasting').querySelector('button:not(.actief)');
-      return { e: knop, tekst: 'Tap a tax level. Low is safe, High brings gold but angers your people.' };
+      const knop = balk.querySelector(`button[data-stand="${belastingDoel}"]`);
+      const naam = knop && knop.firstChild ? knop.firstChild.textContent : 'the golden one';
+      return { e: knop, tekst: `Tap ${naam}, the tax level in the golden ring.` };
     }
     if (doel.soort === 'kies') {
       const groepen = el('leger-groepen');
       if (!zichtbaar(groepen)) return { e: el('knop-zwaard'), tekst: 'Tap the sword to open your army.' };
       const knop = [...groepen.querySelectorAll('button')].find((b) => b.textContent.startsWith(doel.groep));
-      if (knop && zichtbaar(knop)) return { e: knop, tekst: `Tap ${doel.groep}.` };
+      if (knop && zichtbaar(knop)) {
+        // Valt de knop (deels) buiten de rij, dan eerst de rij verschuiven (naar Karel: Knight stond buiten beeld)
+        const r = knop.getBoundingClientRect();
+        const rij = groepen.getBoundingClientRect();
+        if (r.left < rij.left - 1 || r.right > rij.right + 1) return { e: groepen, tekst: `Swipe the row of groups sideways to find ${doel.groep}, then tap it.` };
+        return { e: knop, tekst: `Tap ${doel.groep}.` };
+      }
       return { e: el('knop-alle'), tekst: 'Tap All to choose your soldiers.' };
     }
     if (doel.soort === 'stuur') {
+      // Na het bevel: ze zijn onderweg (naar Karel: duidelijk melden, en niet meer om een tik vragen)
+      if (doel.onderweg && doel.onderweg()) return { e: null, tekst: doel.onderwegTekst || 'Your soldiers are on their way. Wait until they reach the golden spot.' };
       if (doel.heeftKeuze && !doel.heeftKeuze()) return { e: el('knop-zwaard'), tekst: 'Your soldiers are no longer chosen. Open the army and choose them again.' };
       return { e: null, tekst: 'Tap the golden spot on the map.' };
     }
@@ -255,7 +273,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     // Logboekles: open geweest en weer dicht
     logboekGelezen: () => { if (!el('logboek').hidden) logboekOpen = true; return logboekOpen && el('logboek').hidden; },
     // Een nieuwe grondles vraagt altijd naar het oog, ook als het eerder al eens aan is geweest
-    richt(taak) { if (taak && taak.soort === 'sturen' && (!doel || doel.soort !== 'sturen')) oogGezien = false; doel = taak; laatsteTik = nu; vorigeTekst = ''; belastingTik = false; paneelGezien = false; },
+    richt(taak) { if (taak && taak.soort === 'sturen' && (!doel || doel.soort !== 'sturen')) oogGezien = false; doel = taak; laatsteTik = nu; vorigeTekst = ''; belastingTik = false; paneelGezien = false; belastingDoel = null; belastingOpen(); },
     belastingGekozen: () => belastingTik,
     // Grondles: is het oog in deze les aangezet?
     oogGezien: () => oogGezien,
@@ -264,7 +282,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     volkGesloten: () => paneelGezien && !zichtbaar(el('volkpaneel')),
     // De ruit op de kaart verplaatsen (als de plek bezet raakt)
     zetPlek(p) { if (doel) doel.plek = p; },
-    stop() { doel = null; plek.hidden = true; zet(null); },
+    stop() { doel = null; plek.hidden = true; zet(null); belastingOpen(); },
     // Elke halve seconde of sneller.
     stap(dt) {
       nu += dt;

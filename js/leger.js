@@ -361,6 +361,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     // Een stormram kan de muur niet op.
     let groep = opMuur ? gekozen().filter((e) => !isBelegering(e.soldaat.sleutel)) : gekozen();
     if (!groep.length || x < 0 || y < 0 || x >= B || y >= H) return 0;
+    for (const e of groep) delete e.post;   // een nieuw bevel: de vaste post (proloog, na Hold) vervalt
     const doel = y * B + x;
     const plekken = [];
     if (opMuur) {

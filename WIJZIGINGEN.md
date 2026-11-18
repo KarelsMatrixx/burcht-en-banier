@@ -885,3 +885,15 @@ Naar aanleiding van Karels feedback (17 november 2026).
   - Het kazernepaneel gaat vanzelf dicht zodra de opleidles klaar is (stond na twee soldaten nog open).
 - 's Nachts is het leger vrij te besturen, behalve de lijfwacht. In de poortles kiest een tik bij de poort geen soldaat meer (de boogschutters op de muur ernaast werden gekozen in plaats van dat de poort dichtging; dan bleef de gids om "None" vragen).
 - Tests: proloog70 (knoppen en kiezen in de huisles), proloog35, proloog77 bijgewerkt.
+
+## 0.76.7: belastingles, nachtlessen, posten en het einde (Karels feedback van 18 november)
+
+- Belastingles: alleen de omcirkelde stand telt; de andere belastingknoppen zijn dicht tijdens de les (gids.js `belastingDoel`). De zin noemt de stand bij naam. Eerst liet elke knop de les doorgaan.
+- Bovenbalk (voorraad) niet meer doorzichtig: de tik wordt geblokkeerd met `tut-klik` (alleen pointer-events), zonder hem grijs te maken.
+- Bij het begin van de nacht glijdt de camera in 3 s naar het aanvallende leger (camera.js `glijNaar`, met zachte start en landing).
+- Nachtlessen: na een goed bevel zegt de gids "Your archers/knights are on their way..." (geen "Tap the golden spot" meer), er komt een melding, en de keuze vervalt (de hint "31 soldiers selected" weg). Klaar zodra er minstens één op de plek staat en een derde van de groep stilstaat (eerst moest iedereen stilstaan).
+- Kiesles: valt de groepsknop (bijvoorbeeld Knight) buiten de rij, dan zegt de gids "Swipe the row of groups sideways to find Knight, then tap it."
+- Bij "Hold" krijgt elke soldaat van de speler op de grond een vaste post (zijn plek, of zijn bestemming als hij nog loopt). Hij vecht alleen binnen 3 tegels en loopt terug (strijd.js `karelWachtDenk` met `e.post`); een nieuw bevel heft de post op (leger.js `stuur`). Eerst liepen de ridders achter de poort om, om te gaan vechten.
+- Einde: eerst een gesprek van vier kaartjes (Bartholt ziet de ruiter, Wessel, Karel, Bartholt houdt hem tegen), daarna rijdt de ruiter weg, dan de scène (nu negen kaarten). De camera glijdt mee. Open berichten worden eerst weggehaald, anders verbergen ze de kaartjes.
+- Gemeten in proloog43: storm tot ruiter 27 tot 83 s (wisselt per keer).
+- Tests: proloog35 (82), proloog43 (33), proloog70 (43), proloog77 (31), proloog40 (22).

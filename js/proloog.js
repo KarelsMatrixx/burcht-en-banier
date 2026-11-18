@@ -95,12 +95,13 @@ const GESPREKKEN = {
   ],
 };
 
-export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, sluitPanelen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids, logMelding, bevolking, geefVoorraad, oogUit }) {
+export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, stopBouw, kiesGeen, sluitPanelen, figuranten, leger, strijd, wegvinder, eenheden, koningSoort, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd, toonScene, gids, logMelding, bevolking, geefVoorraad, oogUit, glijNaar }) {
   let s = lees() || nieuw();
   let loopt = false;
   let reinout = null;
   let kijk = 0;
   let keuzeWas = false;
+  let stilKiezen = false;
   let nGroep = [];        // nachtles: de soldaten die het laatste goede bevel kregen   // bevel-les: was er de vorige keer al een soldaat gekozen?
 
   function nieuw() {
@@ -141,8 +142,11 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
         // Wie dit bevel kreeg: de les is pas klaar als zij er staan (nachtKlaar)
         nGroep = groep.filter((e) => !t.stuurSoort || e.soldaat.sleutel === t.stuurSoort || !heeftSoort(t.stuurSoort));
         toonTaak(`${t.taak}: on their way...`);
+        toonMelding(`Your ${t.stuurSoort === 'ridder' ? 'knights' : 'archers'} are on their way. Wait until they stand on the golden spot.`);
+        stilKiezen = true;   // de keuze na dit bevel opheffen (de hint 'soldiers selected' weg)
       }
     }
+    if (stilKiezen) { stilKiezen = false; if (kiesGeen) kiesGeen(); }
     return gelukt;
   };
   const bartholt = (tekst) => toonVerhaal({ naam: 'Bartholt', portret: 'bartholt', tekst });
@@ -446,8 +450,12 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     let groep = nGroep.filter((e) => !e.dood);
     if (!groep.length) groep = soldaten().filter((e) => e.soldaat.sleutel === sleutel && e.soldaat.doel >= 0);   // na herladen
     if (!groep.length) return true;
-    if (groep.some((e) => e.pad || e.klimt)) return false;
-    return groep.some((e) => Math.hypot(e.x - p.x - 0.5, e.y - p.y - 0.5) <= 4 && (!t.opMuur || e.opMuur));
+    // Klaar zodra een derde van de groep er staat (naar Karel: op iedereen wachten duurde te lang)
+    // Minstens één staat op de plek, en een derde van de groep is gestopt (op de muur is maar plek voor een paar)
+    const nodig = Math.max(1, Math.ceil(groep.length / 3));
+    const gestopt = groep.filter((e) => !e.pad && !e.klimt).length;
+    const erop = groep.some((e) => !e.pad && !e.klimt && Math.hypot(e.x - p.x - 0.5, e.y - p.y - 0.5) <= 4 && (!t.opMuur || e.opMuur));
+    return erop && gestopt >= nodig;
   };
   // Staat of loopt er een soldaat van de speler naar deze plek? (muur: de bovenkant van het stuk muur)
   function bijPlek(t, past) {
@@ -510,7 +518,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     if (t.doelPlek) plek = nachtPlek(t);
     if (t.poort) { plek = openPoortVan(t); if (kiesGeen) kiesGeen(); }
     if (t.opMuur && kijk && oogUit) oogUit();
-    gids.richt(plek ? { ...t.gids, plek, opMuur: !!t.opMuur, heeftKeuze: () => leger.aantalGekozen() > 0 } : t.gids);
+    const wie = t.stuurSoort === 'boogschutter' ? 'archers' : t.stuurSoort === 'ridder' ? 'knights' : 'soldiers';
+    gids.richt(plek ? { ...t.gids, plek, opMuur: !!t.opMuur, heeftKeuze: () => leger.aantalGekozen() > 0, onderweg: () => s.nBevel === s.nTaak + 1 && !s.nKlaar, onderwegTekst: `Your ${wie} are on their way. Wait until they reach the golden spot.` } : t.gids);
     if (plek && kijk && kijkNaar) kijkNaar(plek.x, plek.y);
   }
   function nachtIntro() {
@@ -538,6 +547,16 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     gids.verbergKaart();
     toonTaak('Night: hold the walls');
     strijd.laatOpmarsLos();
+    // Iedereen op de grond houdt zijn plek (naar Karel: de ridders liepen om om te gaan vechten).
+    // Een nieuw bevel van de speler heft de post op (leger.js stuur).
+    const B = kaart.breedte;
+    const N = B * kaart.hoogte;
+    for (const e of soldaten()) {
+      if (e.opMuur || e.klimt || e.karelWacht !== undefined || e.dood) continue;
+      const doel = e.soldaat && e.soldaat.doel >= 0 ? e.soldaat.doel : -1;
+      if (doel >= N) continue;   // onderweg naar de muur: die gaat de muur op
+      e.post = doel >= 0 && e.pad ? doel : Math.floor(e.y) * B + Math.floor(e.x);   // nog onderweg naar een bevel: daar is zijn post; anders waar hij staat
+    }
     toonMelding('They are coming! Hold the walls!');
     bewaar();
   }
@@ -568,8 +587,12 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     stuurOvermacht();
     zetLijfwacht();
     toonMelding('Torches on the eastern road! A great army is marching on Aldervale.');
-    // De camera kijkt naar de poort in het oosten, waar ze aankomen
-    if (kijkNaar) kijkNaar(kaart.start[0].x + 22, kaart.start[0].y);
+    // De camera glijdt rustig naar het aanvallende leger (naar Karel: niet in één keer)
+    const v = strijd.vijanden ? strijd.vijanden().filter((e) => !e.dood) : [];
+    const mx = v.length ? Math.round(v.reduce((a, e) => a + e.x, 0) / v.length) : kaart.start[0].x + 22;
+    const my = v.length ? Math.round(v.reduce((a, e) => a + e.y, 0) / v.length) : kaart.start[0].y;
+    if (glijNaar) glijNaar(mx, my, 3000);
+    else if (kijkNaar) kijkNaar(mx, my);
     nachtIntro();
     bewaar();
   }
@@ -599,9 +622,28 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     for (const knoop of pad) { const v = knoop % N; route.push([v % kaart.breedte + 0.5, Math.floor(v / kaart.breedte) + 0.5]); }
     return { route, naar: naar[1] * kaart.breedte + naar[0] };
   }
+  // Eerst het gesprek (naar Karel), dan rijdt de ruiter weg
+  const VOOR_RIT = [
+    [{ naam: 'Bartholt', portret: 'bartholt' }, 'Sire! A rider, there, by the keep. He has the boy!'],
+    [{ naam: 'Wessel', portret: 'wessel_bang' }, 'Father! Father, help me!'],
+    [{ naam: 'King Karel', portret: 'karel_boos' }, 'WESSEL! Open the gate! Bring me a horse, now!'],
+    [{ naam: 'Bartholt', portret: 'bartholt' }, 'Sire, no! There are a hundred of them on that road. You would be dead before the first bend, and then who would come for him?'],
+  ];
   function naarOntvoering() {
     if (s.fase === 'ontvoering' || s.fase === 'scene') return;
     s.fase = 'ontvoering';
+    s.fasetijd = 0;
+    s.rit = 0;
+    const st = kaart.start[0];
+    gids.stop();
+    if (sluitPanelen) sluitPanelen();
+    toonTaak('');
+    if (glijNaar) glijNaar(st.x + 4, st.y, 1500); else if (kijkNaar) kijkNaar(st.x + 4, st.y);
+    bewaar();
+    toonGesprek(VOOR_RIT, startRit);
+  }
+  function startRit() {
+    if (s.fase !== 'ontvoering' || s.rit) return;
     s.fasetijd = 0;
     const st = kaart.start[0];
     // De poorten staan open (verraad); de ruiter volgt de weg naar buiten
@@ -612,8 +654,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     strijd.ruiter(route, s.rit * 1000);
     // Het leger gaat met hem mee terug
     if (strijd.trekTerug) strijd.trekTerug(rit ? rit.naar : (st.y * kaart.breedte + st.x + 32));
-    if (sluitPanelen) sluitPanelen();
-    if (kijkNaar) kijkNaar(st.x + 8, st.y);
+    if (glijNaar) glijNaar(st.x + 8, st.y, 1500); else if (kijkNaar) kijkNaar(st.x + 8, st.y);
     toonTaak('');
     toonMelding('A rider breaks out of the keep... he has Wessel! The Mourning Banner is falling back with him.');
     bewaar();
@@ -624,10 +665,6 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     bewaar();
     toonTaak('');
     toonScene([
-      { naam: 'Bartholt', portret: 'bartholt', tekst: 'Sire! A rider, there, at the gate. He has the boy!' },
-      { naam: 'Wessel', portret: 'wessel_bang', tekst: 'Father! Father, help me!' },
-      { naam: 'King Karel', portret: 'karel_boos', tekst: 'WESSEL! Open the gate! Bring me a horse, now!' },
-      { naam: 'Bartholt', portret: 'bartholt', tekst: 'Sire, no! There are a hundred of them on that road. You would be dead before the first bend, and then who would come for him?' },
       { naam: 'Bartholt', portret: 'bartholt', tekst: 'They are gone, all of them, as fast as they came. They left this, nailed to the door of the hall. Five words: "Come and get him."' },
       { naam: 'King Karel', portret: 'karel_boos', tekst: 'Then I will. Every man who rode here tonight will answer for it.' },
       { naam: 'King Karel', portret: 'karel_rouw', tekst: 'Whose banner was that? Black, without a sign.' },
@@ -720,7 +757,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       } else if (s.fase === 'avond') {
         if (s.gemeld.avond && s.fasetijd >= AVOND) naarNacht();
       } else if (s.fase === 'ontvoering') {
-        if (s.fasetijd >= (s.rit || RIT_MIN)) naarScene();
+        if (s.rit && s.fasetijd >= s.rit) naarScene();
       } else if (s.fase === 'nacht' && s.deel === 'beleg') {
         if (s.fasetijd >= BELEG) poortGaatOpen();
       } else if (s.fase === 'nacht' && s.deel === 'opmars') {

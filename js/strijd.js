@@ -1667,7 +1667,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // De lijfwacht van Karel (proloog): elke man heeft een vaste post rond de koning. Hij vecht alleen
   // met wie binnen 2,5 tegels van zijn post komt en loopt daarna terug naar zijn post.
   function karelWachtDenk(e, k, anderen) {
-    const post = e.karelWacht;
+    const post = e.karelWacht !== undefined ? e.karelWacht : e.post;   // lijfwacht van Karel, of een soldaat met een vaste post (proloog)
     const px = (post % B) + 0.5;
     const py = Math.floor(post / B) + 0.5;
     // Geen wraak en geen bevelen: hij laat zich niet weglokken van zijn post (naar Karel)
@@ -1774,7 +1774,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       schuifOp(e, k);
       return;
     }
-    if (e.team === SPELER && e.karelWacht !== undefined) {
+    if (e.team === SPELER && (e.karelWacht !== undefined || (e.post !== undefined && !e.opMuur))) {
       karelWachtDenk(e, k, anderen);
       schuifOp(e, k);
       return;

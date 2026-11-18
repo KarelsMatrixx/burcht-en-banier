@@ -89,6 +89,12 @@ await kaartTik(); await kaartTik(); await totTaak(6);
 check('taak 7: belasting', (await st()).taak === 6 && /purse|people/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 await p.tap('#knop-buidel'); await p.waitForTimeout(500);
 check('gids wijst een belastingknop aan', /tax level/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+// 0.76.7: alleen de omcirkelde stand telt; de andere knoppen zijn dicht
+const bel = await p.evaluate(() => { const ks = [...document.querySelectorAll('#volk-belasting button')]; const open = ks.filter((k) => !k.classList.contains('tut-dicht')); return { n: ks.length, open: open.length, doelNietActief: open.length === 1 && !open[0].classList.contains('actief') }; });
+check('belasting: alleen de omcirkelde knop open', bel.open === 1 && bel.doelNietActief, JSON.stringify(bel));
+await p.evaluate(() => { const k = [...document.querySelectorAll('#volk-belasting button')].find((x) => x.classList.contains('tut-dicht')); k.click(); });
+await p.waitForTimeout(400);
+check('belasting: een andere knop telt niet', /tax level in the golden ring/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 const voor = await p.evaluate(() => window.spel.economie.stemming().belasting);
 await p.tap('#volk-belasting button:not(.actief)'); await p.waitForTimeout(500);
 const na = await p.evaluate(() => window.spel.economie.stemming().belasting);
@@ -206,6 +212,11 @@ check('nog steeds geen uitslag', (await p.evaluate(() => window.spel.strijd.uits
 // Burcht onder 40%: de scène
 await p.evaluate(() => { const b = window.spel.strijd.burcht(); window.spel.strijd.zetBurcht(Math.floor(b.max * 0.35)); });
 await p.waitForFunction(() => window.spel.proloog.stand().fase === 'ontvoering', null, { timeout: 5000 }).catch(() => {});
+// 0.76.7: eerst vier gesprekskaartjes, dan de ruiter
+await p.waitForTimeout(500);   // de gids kijkt elke 150 ms of hij bedekt is
+let voorRit = 0;
+while (await p.isVisible('#gids-kaart') && voorRit < 8) { voorRit++; await p.tap('#gids-kaart button'); await p.waitForTimeout(300); }
+check('gesprek voor de rit: vier kaartjes', voorRit === 4, voorRit);
 check('eerst de ontvoering: een ruiter', (await st()).fase === 'ontvoering' && (await p.evaluate(() => window.spel.strijd.effecten.some((f) => f.soort === 'ruiter'))));
 await p.waitForTimeout(3500);
 await p.screenshot({ path: '/tmp/s/ruiter.png' });
@@ -214,7 +225,7 @@ check('scène open', await p.isVisible('#scene'));
 await p.screenshot({ path: '/home/claude/proloog-scene.png' });
 let kaarten = 0;
 while (await p.isVisible('#scene') && kaarten < 20) { kaarten++; await p.tap('#scene-verder'); await p.waitForTimeout(150); }
-check('dertien kaarten', kaarten === 13, kaarten);
+check('negen kaarten (vier kwamen voor de rit)', kaarten === 9, kaarten);
 check('levelkaart open', await p.isVisible('#titel-kaart'));
 check('proloog gewonnen', (await p.evaluate(() => JSON.parse(localStorage.getItem('burcht-banier.campagne')).klaar)).includes(0));
 check('proloogstand gewist', (await p.evaluate(() => localStorage.getItem('burcht-banier.proloog'))) === null);

@@ -106,6 +106,14 @@ check('lijfwacht: blijft bij de posten (hooguit 3 man ver weg)', lw2.ver <= 3, J
 await p.evaluate(() => { const k = window.spel.strijd.koning(0); k.leven = Math.ceil(k.levenMax / 2); });
 await p.waitForTimeout(1500);
 check('Karel op de helft: de ontvoering begint', (await st()).fase === 'ontvoering', JSON.stringify({ fase: (await st()).fase }));
+// 0.76.7: eerst het gesprek (kaartjes), de ruiter pas daarna
+check('eerst het gesprek: kaartje open, nog geen ruiter', await p.isVisible('#gids-kaart') && !(await p.evaluate(() => window.spel.strijd.effecten.some((f) => f.soort === 'ruiter'))));
+const regels = [];
+while (await p.isVisible('#gids-kaart')) { regels.push((await p.textContent('#gids-kaart')).slice(0, 30)); await p.tap('#gids-kaart button'); await p.waitForTimeout(300); }
+console.log('gesprek voor de rit:', regels.join(' / '));
+check('gesprek: vier kaartjes', regels.length === 4, regels.length);
+await p.waitForTimeout(500);
+check('na het gesprek: de ruiter rijdt', await p.evaluate(() => window.spel.strijd.effecten.some((f) => f.soort === 'ruiter')));
 // De route: elke stap is een buurvak, en geen enkel vak is muur of toren
 const rit = await p.evaluate(() => { const s = window.spel; const f = (Array.isArray(s.strijd.effecten) ? s.strijd.effecten : s.strijd.effecten()).find((x) => x.soort === 'ruiter'); if (!f) return null;
   const B = s.kaart.breedte; let sprong = 0, muur = 0, poorten = 0;

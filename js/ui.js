@@ -273,7 +273,7 @@ export function maakUi() {
     klapVolk(el('volkpaneel').hidden);
     el('knop-buidel').classList.toggle('actief', !el('volkpaneel').hidden);
   };
-  el('voorraad').addEventListener('click', (ev) => { if (!el('voorraad').classList.contains('tut-dicht')) tikVolk(ev); });
+  el('voorraad').addEventListener('click', (ev) => { if (!el('voorraad').classList.contains('tut-klik')) tikVolk(ev); });
   el('knop-buidel').addEventListener('click', tikVolk);
   el('volk-sluit').addEventListener('click', () => { klapVolk(false); el('knop-buidel').classList.remove('actief'); });
 
@@ -943,7 +943,8 @@ export function maakUi() {
       const zet = (id, open) => { const k = el(id); if (!k) return; k.classList.toggle('tut-dicht', !open); if ('disabled' in k && k.tagName === 'BUTTON') k.disabled = !open; };
       zet('knop-zwaard', !mag || mag('zwaard'));
       zet('knop-buidel', !mag || mag('volk'));
-      zet('voorraad', !mag || mag('volk'));
+      // De voorraadbalk niet grijs maken (naar Karel: hij werd doorzichtig), alleen de tik blokkeren
+      el('voorraad').classList.toggle('tut-klik', !!mag && !mag('volk'));
       zet('adviseur', !mag || mag('logboek'));
       zet('knop-oog', !mag || mag('oog'));
       if (mag && !mag('zwaard') && paneel === 'leger') zetPaneel(null);

@@ -167,7 +167,8 @@ check('les 3: ridders gekozen', (await st()).nKlaar, JSON.stringify(await st()))
 await leesKaart(); await leesKaart();
 for (let k = 0; k < 12 && (await st()).nBevel !== 4; k++) { if (await kaartOpen()) break; await tikGids(); }
 check('les 4: bevel gegeven', (await st()).nBevel === 4, JSON.stringify(await st()));
-const onderweg4 = await p.evaluate(() => window.spel.leger.gekozen().some((e) => e.pad));
+const onderweg4 = await p.evaluate(() => window.spel.leger.soldaten().some((e) => e.soldaat.sleutel === 'ridder' && e.pad && e.soldaat.doel >= 0));   // de keuze vervalt na het bevel (0.76.7)
+check('les 4: gids zegt onderweg', /on their way/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 check('les 4: niet klaar zolang ze lopen', onderweg4 && !(await st()).nKlaar, JSON.stringify({ onderweg4, k: (await st()).nKlaar }));
 check('les 4: taakregel zegt onderweg', /on their way/i.test(await p.evaluate(() => document.body.textContent)));
 await p.waitForFunction(() => window.spel.proloog.stand().nKlaar, null, { timeout: 60000 }).catch(() => {});
