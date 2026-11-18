@@ -23,15 +23,30 @@ import { metLidwoord } from './taal.js';
 import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
 import { maakHinderlaag } from './hinderlaag.js';
+import { maakReserve } from './reserve.js';
 import { maakPoortwacht } from './poortwacht.js';
 import { maakGids } from './gids.js';
 import { maakFiguranten } from './figuranten.js';
 import { maakSlachting } from './slachting.js';
 import { maakDoel } from './doel.js';
 import { maakLoodsen } from './loodsen.js';
+import { maakBevrijding } from './bevrijding.js';
 import { maakGevangene } from './gevangene.js';
 import { SOORT } from './eenheden.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, eerstWinnen, ontgrendeld } from './modus.js';
+
+// Landschapsprofiel uit data/landschappen.json; zonder naam of bij een fout: null (gewoon groen).
+async function laadLandschap(naam) {
+  if (!naam) return null;
+  try {
+    const antwoord = await fetch('data/landschappen.json');
+    if (!antwoord.ok) return null;
+    const lijst = (await antwoord.json()).landschappen;
+    return lijst[naam] ? { sleutel: naam, ...lijst[naam] } : null;
+  } catch (fout) {
+    return null;
+  }
+}
 
 const GEEN_TITEL = 'burcht-banier.geenTitel';
 const TOON_BEELD = 'burcht-banier.toonBeeld';   // na het kiezen van een level op de kaart: eerst het verhaalbeeld
@@ -66,7 +81,15 @@ async function start() {
 
   // De rode koning is in de campagne de heer zelf: zijn kleding en wapen.
   const heerKoning = missie && missie.rood && missie.rood.koning;
-  const assets = await laadAssets(heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {}, roodKasteel);
+  // Het landschap van dit level (versie 0.71.0): grondkleuren, bomen, rotsen, weer.
+  // Alleen het uiterlijk; het spel zelf verandert niet.
+  const landschapProfiel = await laadLandschap(missie && missie.landschap);
+  const aanpassingen = heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {};
+  if (landschapProfiel) {
+    aanpassingen['object.boom'] = { kleur: landschapProfiel.boomKleur, stijl: landschapProfiel.bomen };
+    if (landschapProfiel.rotsKleur || landschapProfiel.rotsSneeuw) aanpassingen['object.steen'] = { ...(landschapProfiel.rotsKleur ? { kleur: landschapProfiel.rotsKleur } : {}), sneeuw: !!landschapProfiel.rotsSneeuw };
+  }
+  const assets = await laadAssets(aanpassingen, roodKasteel);
   assets.meldingen.forEach((tekst) => ui.toonMelding(tekst, { soort: 'uitleg' }));
   // In de campagne heb je alleen wat het verhaal al heeft vrijgegeven.
   const mag = ontgrendeld(missies.campagne, missie ? missie.id : null);
@@ -75,7 +98,7 @@ async function start() {
   const kaart = maakKaart({ ...(kaarten[kaartNaam] || CONFIG.kaart), ...(ontwerp ? { kasteel: ontwerp } : {}) });
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
-  const tekenaar = maakTekenaar(canvas, kaart, camera, assets);
+  const tekenaar = maakTekenaar(canvas, kaart, camera, assets, landschapProfiel);
   tekenaar.zetWimpels(!!(ontwerp && ontwerp.wimpels));
   const gevangene = maakGevangene({ kaart, missie });   // level 5: Ludolf in zijn cel
   const wegvinder = maakWegvinder(kaart);
@@ -204,10 +227,15 @@ async function start() {
     strijd.zetStand(bewaard.strijd);
   } else {
     strijd.maakRoodKoning();
+    strijd.maakGarnizoen();   // level 4: de soldaten in het tentenkamp
   }
   if (gevangene && strijd.uitslag() === 'gewonnen') gevangene.bevrijd();   // de cel staat open als je het level al won
   // Jouw koning: hij staat altijd bij de burcht als hij er nog niet is.
-  if (!strijd.uitslag()) leger.zetKoning((kaart.start[0].y + 2) * kaart.breedte + kaart.start[0].x + 2);   // voor de burcht, zodat je hem ziet
+  const koningVak = (kaart.start[0].y + 2) * kaart.breedte + kaart.start[0].x + 2;   // voor de burcht, zodat je hem ziet
+  // Het thuisvak ook onthouden als het level al beslist was (bewaarde winst): zonder dat komt de koning bij
+  // "Start over" niet terug en verlies je meteen weer ("Your king fell during attack 0").
+  leger.zetKoningThuis(koningVak);
+  if (!strijd.uitslag()) leger.zetKoning(koningVak);
   bewaren = true;
 
   // Alles wat de tekenlaag moet weten. doel = waar je soldaten heen stuurt
@@ -407,7 +435,7 @@ async function start() {
     const aantal = {};
     for (const e of ontvangen) {
       const def = leger.soorten[e.soldaat.sleutel];
-      const soort = def.vast ? 'toren' : def.ladder ? 'ladder' : def.sleutel === 'katapult' ? 'katapult' : def.alleenBouw ? 'ram' : null;
+      const soort = def.vast ? 'toren' : def.ladder ? 'ladder' : def.sleutel === 'katapult' ? 'katapult' : def.sabotage ? 'saboteur' : def.alleenBouw ? 'ram' : null;
       if (soort) aantal[soort] = (aantal[soort] || 0) + 1;
     }
     const rood = `the red ${doel || 'wall'}`;
@@ -416,6 +444,7 @@ async function start() {
       toren: (n) => `${n > 1 ? 'The siege towers are' : 'The siege tower is'} being placed against ${rood}. Then your soldiers can climb over ${n > 1 ? 'them' : 'it'}.`,
       ram: (n) => `${n > 1 ? 'The battering rams are' : 'The battering ram is'} going to break through ${rood}.`,
       katapult: (n) => `${n > 1 ? 'The catapults are' : 'The catapult is'} going to fire at ${rood}.`,
+      saboteur: (n) => `${n > 1 ? 'The saboteurs sneak' : 'The saboteur sneaks'} toward ${rood} with a powder keg.`,
     };
     for (const soort of ['ladder', 'toren', 'ram', 'katapult']) {
       if (aantal[soort]) ui.toonMelding(tekst[soort](aantal[soort]), { soort: 'leger', toon: true });
@@ -619,8 +648,10 @@ async function start() {
     const bomenTerug = economie.herstel();
     if (bomenTerug.size) kaartGewijzigd(bomenTerug);
     leger.herstel();
+    leger.zetKoning(koningVak);   // altijd: wat de bewaarde stand ook was, na Start over staat je koning er weer (anders meteen weer Defeat)
     strijd.herstel();
     if (hinderlaag) hinderlaag.wis();   // level 2: de nissen in de rotsen dicht, de hinderlaag komt weer
+    if (reserve) reserve.wis();   // level 9: de verborgen reserve staat weer klaar
     sluitKazerne();
     ui.toonEinde({ open: false });
     ui.verbergVerhaal();
@@ -706,6 +737,7 @@ async function start() {
     }
     const s = strijd.stand();
     if (wat === 'gewonnen') {
+      if (doel && doel.klaar) doel.klaar();   // de klok van dit level begint de volgende keer opnieuw
       const na = s.golf ? ` You withstood ${s.golf} ${s.golf === 1 ? 'attack' : 'attacks'}.` : '';
       if (missie) {
         missieGewonnen(missie.id);
@@ -822,8 +854,10 @@ async function start() {
     titel: missie.titel,
     tegen: missie.heer ? `Against ${missie.heer}` : '',
     tekst: missie.intro,
-    taak: doel.omschrijving ? doel.omschrijving() : `Your goal: hold Mother Gesina's hut until her ritual is done (${Math.ceil(doel.over() / 60)} min left). If the hut falls, or your king, you lose.`,
-    portret: doel.omschrijving ? 'lambrecht' : 'gesina',
+    taak: doel.omschrijving ? doel.omschrijving() : doel.fase && doel.fase() === 1
+      ? "Your goal: defeat Huntmaster Brandt in his tent camp. The Flameweavers of the Silent Folk are yours: tap them and send them in. If your king falls, you lose."
+      : `Your goal: hold Mother Gesina's hut until her ritual is done (${Math.ceil(doel.over() / 60)} min left). If the hut falls, or your king, you lose. Then the Silent Folk come, and you go after Brandt.`,
+    portret: doel.omschrijving ? (missie.doel.soort === 'bevrijden' ? 'bartholt' : missie.portret || 'lambrecht') : 'gesina',
   } : missie ? {
     titel: missie.titel,
     tegen: missie.heer ? `Against ${missie.heer}` : '',
@@ -845,7 +879,8 @@ async function start() {
   // De proloog: taken van Bartholt, de nacht en de scène.
   const gids = missie && missie.proloog ? maakGids({
     // Waar staat een tegel op het scherm, en hoe groot is hij? Voor de gouden ruit op de bouwplek.
-    plekNaarScherm: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); const sc = camera.wereldNaarScherm(w.x, w.y); return { x: sc.x, y: sc.y, zoom: camera.zoom }; },
+    // boven: de bovenkant van het bouwwerk op die plek (een muur), daar tikt de speler om er een soldaat op te zetten
+    plekNaarScherm: (x, y, boven = false) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); const h = boven ? hoogteOp(y * kaart.breedte + x) : 0; const sc = camera.wereldNaarScherm(w.x, w.y - h); return { x: sc.x, y: sc.y, zoom: camera.zoom }; },
     tegelMaat: { breedte: CONFIG.tegel.breedte, hoogte: CONFIG.tegel.hoogte },
   }) : null;
   const slachting = maakSlachting({ strijd, economie, wegvinder, kaart, eenheden, leger, rood });
@@ -853,6 +888,9 @@ async function start() {
   proloog = missie && missie.proloog ? maakProloog({
     soortKoning: SOORT.KONING, kaart, bouwer, bouwwerken, leger, strijd, wegvinder, eenheden,
     koningSoort: 'koning', gids, figuranten, bevolking: () => economie.bevolking(),
+    // Het oog uit: met het oog aan telt een tik als een tik op de grond, dan kom je de muur niet op
+    oogUit: () => { tekenaar.zetDoorzicht(false); oog.classList.remove('actief'); oog.setAttribute('aria-pressed', 'false'); },
+    geefVoorraad: (naam, n) => { economie.voorraad[naam] = (economie.voorraad[naam] || 0) + n; if (naVoorraad) naVoorraad(); },
     kiesGeen: () => { leger.kiesGeen(); if (naLeger) naLeger(); },
     sluitPanelen: () => { stopBouw(); sluitKazerne(); leger.kiesGeen(); if (naLeger) naLeger(); },
     stopBouw: () => stopBouw(),
@@ -877,12 +915,14 @@ async function start() {
   // In de proloog staat je volk stil: populariteit en boeren dalen of stijgen niet door tijd of honger (economie.js bevries).
   if (proloog) economie.bevries(true);
   // Een level met een eigen doel (level 4: de hut van Gesina houden).
-  doel = missie && missie.doel ? (missie.doel.soort === 'loodsen' ? maakLoodsen : maakDoel)({
+  doel = missie && missie.doel ? (missie.doel.soort === 'loodsen' ? maakLoodsen : missie.doel.soort === 'bevrijden' ? maakBevrijding : maakDoel)({
     missie, kaart, bouwer, strijd, wegvinder,
     toonVerhaal: (b) => ui.toonVerhaal(b),
     toonTaak: (t) => ui.toonTaak(t),
     toonAanvalKlok: (k) => ui.toonAanvalKlok(k),
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
+    leger,
+    kijkNaar: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); camera.kijkNaar(w.x, w.y); },
     kaartGewijzigd,
   }) : null;
   // Je poorten gaan vanzelf dicht als er vijandelijke soldaten dichtbij komen (js/poortwacht.js).
@@ -894,6 +934,12 @@ async function start() {
   // Level 2: boogschutters in de rotsen van de pas (js/hinderlaag.js)
   const hinderlaag = missie && missie.hinderlaag ? maakHinderlaag({
     instelling: missie.hinderlaag, kaart, leger, strijd, kaartGewijzigd,
+    toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
+    toonVerhaal: (tekst) => ui.toonVerhaal({ naam: missie.heer, portret: missie.portret, tekst }),
+  }) : null;
+  // Level 9: de verborgen reserve van Valkenier (js/reserve.js)
+  const reserve = missie && missie.reserve ? maakReserve({
+    missie, kaart, strijd, leger, wegvinder,
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
     toonVerhaal: (tekst) => ui.toonVerhaal({ naam: missie.heer, portret: missie.portret, tekst }),
   }) : null;
@@ -1184,16 +1230,24 @@ async function start() {
   maakSpellus({
     stappenPerSeconde: CONFIG.spel.stappenPerSeconde,
     stap: (dt) => {
-      if (strijd.uitslag() || titelOpen || beeldOpen || !menuPaneel.hidden) return;   // gewonnen of verloren, beginscherm of menu open: alles staat stil
+      // Stilstaan zonder trillen: de tekenaar tekent tussen de vorige en de huidige plek in; zonder rekenstap
+      // zou hij blijven heen en weer springen. Dus de vorige plek gelijk aan de huidige.
+      const stilzetten = () => { for (const e of eenheden.lijst) { e.vorigeX = e.x; e.vorigeY = e.y; } };
+      if (strijd.uitslag() || titelOpen || beeldOpen || !menuPaneel.hidden) { stilzetten(); return; }   // gewonnen of verloren, beginscherm of menu open: alles staat stil
+      // Proloog: zolang er een kaartje openstaat (Bartholt of een gesprek) lopen de klokken van de tutorial niet.
+      // Overdag leeft het dorp gewoon door; bij avond en nacht staat alles stil, ook het leger van Ottger.
+      const leest = proloog && gids.kaartOpen();
+      if (leest && proloog.fase() !== 'bouw') { stilzetten(); return; }
       eenheden.stap(dt);
       economie.stap();
       leger.stap();
       strijd.stap();
       poortwacht.stap();
       verhaal.stap(dt, verhaalStand);
-      if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); }
+      if (proloog) { if (!leest) proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); }
       if (doel) doel.stap(dt);
       if (hinderlaag && !strijd.uitslag()) hinderlaag.stap(dt);
+      if (reserve) reserve.stap(dt);
       slachting.stap(dt);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),
@@ -1242,7 +1296,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht };
+  window.spel = { gids, hinderlaag, reserve, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

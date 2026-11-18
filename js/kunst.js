@@ -301,7 +301,276 @@ function struik(naam, def) {
   return { beeld: doek, b, h, ax: b / 2, ay: h };
 }
 
+// --- Boomsoorten per landschap (versie 0.71.0) ---------------------------------
+// Elk level kan een eigen mix van bomen hebben (data/landschappen.json, bomen).
+// Alle bomen hebben dezelfde maat en hetzelfde ankerpunt als de loofboom,
+// zodat omhakken en wind ze hetzelfde behandelen.
+
+function stam(ctx, mx, voet, hoog, breed, kleur) {
+  blok(ctx, mx - breed / 2, voet - hoog, breed, hoog, kleur);
+  blok(ctx, mx - breed / 2, voet - hoog, breed * 0.4, hoog, 'rgba(0,0,0,0.25)');
+}
+
+// Een kale tak die zich vertakt (voor dorre en dode bomen).
+function tak(ctx, x, y, hoek, lang, dikte, kleur, diepte, toeval) {
+  const x2 = x + Math.cos(hoek) * lang;
+  const y2 = y + Math.sin(hoek) * lang;
+  ctx.strokeStyle = kleur;
+  ctx.lineWidth = dikte;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x + Math.cos(hoek + 0.3) * lang * 0.5, y + Math.sin(hoek + 0.3) * lang * 0.5, x2, y2);
+  ctx.stroke();
+  if (diepte <= 0) return;
+  const n = 2 + (toeval() < 0.35 ? 1 : 0);
+  for (let i = 0; i < n; i++) {
+    const nh = hoek + (i - (n - 1) / 2) * (0.5 + toeval() * 0.35);
+    tak(ctx, x2, y2, nh, lang * (0.58 + toeval() * 0.18), dikte * 0.62, kleur, diepte - 1, toeval);
+  }
+}
+
+function berk(naam, def, variant) {
+  const b = 76;
+  const h = 104;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const mx = b / 2;
+  const voet = h - HH;
+  const groot = variant ? 1.1 : 0.95;
+  ovaal(ctx, mx + 3, voet + 1, 13 * groot, 5.5 * groot, 'rgba(0,0,0,0.22)');
+  // Witte stam met zwarte streepjes
+  blok(ctx, mx - 2, voet - 34 * groot, 4, 34 * groot, '#e8e4d8');
+  blok(ctx, mx, voet - 34 * groot, 2, 34 * groot, 'rgba(0,0,0,0.12)');
+  for (let i = 0; i < 6; i++) blok(ctx, mx - 2 + (i % 2), voet - 6 - i * 5 * groot, 2.4, 1.1, '#2b2620');
+  // Ijle kruin van kleine blaadjesbollen
+  const toeval = toevalVoor(naam + 'berk' + variant);
+  const kruin = voet - 40 * groot;
+  for (let i = 0; i < 26; i++) {
+    const x = mx + (toeval() - 0.5) * 22 * groot;
+    const y = kruin + (toeval() - 0.5) * 26 * groot + i * 0.3;
+    const r = 2.6 + toeval() * 3;
+    ovaal(ctx, x, y, r, r * 0.85, tint(def.kleur, (toeval() - 0.55) * 0.5));
+  }
+  for (let i = 0; i < 8; i++) ovaal(ctx, mx + 3 + (toeval() - 0.5) * 16, kruin - 6 + (toeval() - 0.5) * 14, 1.8, 1.4, 'rgba(255,250,190,0.22)');
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
+
+// Dorre boom: kale takken met hier en daar wat bruin blad.
+function dor(naam, def, variant, zwart) {
+  const b = 76;
+  const h = 104;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const mx = b / 2;
+  const voet = h - HH;
+  const toeval = toevalVoor(naam + (zwart ? 'dood' : 'dor') + variant);
+  const kleur = zwart ? '#26211e' : '#5a4430';
+  ovaal(ctx, mx + 3, voet + 1, 13, 5, 'rgba(0,0,0,0.22)');
+  // Stam met een knik
+  ctx.fillStyle = kleur;
+  ctx.beginPath();
+  ctx.moveTo(mx - 3.4, voet);
+  ctx.lineTo(mx - 1.6, voet - 22);
+  ctx.lineTo(mx + (zwart ? 2 : -1), voet - 30);
+  ctx.lineTo(mx + 2.2, voet - 22);
+  ctx.lineTo(mx + 3.4, voet);
+  ctx.closePath();
+  ctx.fill();
+  blok(ctx, mx - 3.4, voet - 22, 2, 22, 'rgba(0,0,0,0.25)');
+  const top = zwart ? -1.75 : -1.6;
+  tak(ctx, mx, voet - 22, top - 0.55, 14, 2.6, kleur, 2, toeval);
+  tak(ctx, mx + 1, voet - 26, top + 0.5, 13, 2.4, kleur, 2, toeval);
+  tak(ctx, mx, voet - 29, top, 12, 2.2, kleur, 2 + (variant % 2), toeval);
+  if (zwart) {
+    // Een gebroken tak die omlaag hangt
+    tak(ctx, mx - 1, voet - 16, 2.6, 10, 1.6, kleur, 0, toeval);
+  } else {
+    // Wat dor blad
+    for (let i = 0; i < 12; i++) {
+      const x = mx + (toeval() - 0.5) * 30;
+      const y = voet - 44 + (toeval() - 0.5) * 22;
+      ovaal(ctx, x, y, 2 + toeval() * 1.6, 1.6, tint(def.kleur, -0.1 - toeval() * 0.3));
+    }
+  }
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
+
+// Boom met lagen naalden; scheef van de wind of met sneeuw op de takken.
+function naaldboom(naam, def, variant, soort) {
+  const b = 64;
+  const h = 104;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const mx = b / 2;
+  const voet = h - HH;
+  const spar = soort === 'spar';
+  const groot = (variant % 2 ? 1.1 : 1) * (spar ? 1.08 : 1);
+  const kleur = tint(def.kleur, spar ? -0.1 : -0.05);
+  ovaal(ctx, mx + 3, voet + 1, (spar ? 11 : 14) * groot, 5.5 * groot, 'rgba(0,0,0,0.24)');
+  blok(ctx, mx - 2.2, voet - 14, 4.4, 14, '#4c3522');
+  const schuin = soort === 'wind' ? 1 : 0;
+  const lagen = spar
+    ? [[-8, 10, 18], [-19, 9, 17], [-30, 8, 16], [-41, 6.5, 15], [-52, 5, 13], [-61, 3.5, 11]]
+    : [[-8, 15, 22], [-22, 12.5, 20], [-35, 10, 18], [-47, 7, 16]];
+  lagen.forEach(([onder, half, hoog], n) => {
+    const y = voet + onder * groot;
+    const w = half * groot;
+    const top = y - hoog * groot;
+    const sx = schuin * (n + 1) * 2.2;   // de top waait naar rechts
+    const tx = mx + sx + schuin * 3;
+    vlak(ctx, [[mx - w + sx * 0.6, y], [tx, top], [mx + w + sx * 1.6, y], [mx + w * 0.45 + sx, y - 2.5], [mx + sx, y + 1.5], [mx - w * 0.45 + sx, y - 2.5]], kleur);
+    vlak(ctx, [[mx - w + sx * 0.6, y], [tx, top], [mx + sx, y + 1.5], [mx - w * 0.45 + sx, y - 2.5]], 'rgba(0,0,0,0.24)');
+    if (soort === 'sneeuw') {
+      // Sneeuw op de bovenkant van elke laag
+      vlak(ctx, [[mx - w * 0.75 + sx * 0.6, y - 3], [tx, top], [mx + w * 0.8 + sx * 1.5, y - 3], [mx + w * 0.3 + sx, y - hoog * groot * 0.45], [mx + sx, y - hoog * groot * 0.38], [mx - w * 0.3 + sx, y - hoog * groot * 0.45]], 'rgba(246,250,255,0.95)');
+      vlak(ctx, [[mx - w * 0.75 + sx * 0.6, y - 3], [tx, top], [mx + sx, y - hoog * groot * 0.38], [mx - w * 0.3 + sx, y - hoog * groot * 0.45]], 'rgba(150,170,200,0.35)');
+    } else {
+      vlak(ctx, [[mx + w * 0.3 + sx, y - hoog * groot * 0.45], [mx + w + sx * 1.6, y], [mx + w * 0.45 + sx, y - 2.5]], 'rgba(255,255,220,0.12)');
+    }
+  });
+  if (soort === 'sneeuw') ovaal(ctx, mx, voet - 1, 12, 3.5, 'rgba(255,255,255,0.75)');
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
+
+// Treurwilg: brede kruin met hangende slierten tot bijna op de grond.
+function wilg(naam, def, variant) {
+  const b = 80;
+  const h = 104;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const mx = b / 2;
+  const voet = h - HH;
+  const toeval = toevalVoor(naam + 'wilg' + variant);
+  ovaal(ctx, mx + 3, voet + 1, 20, 8, 'rgba(0,0,0,0.24)');
+  stam(ctx, mx, voet, 22, 5, '#4f3a26');
+  const kruin = voet - 34;
+  ovaal(ctx, mx, kruin, 20, 12, tint(def.kleur, -0.3));
+  ovaal(ctx, mx + 2, kruin - 3, 16, 9, def.kleur);
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 34; i++) {
+    const x = mx + (toeval() - 0.5) * 40;
+    const y = kruin - 4 + toeval() * 8;
+    const lang = 14 + toeval() * 16;
+    ctx.strokeStyle = tint(def.kleur, (toeval() - 0.5) * 0.5);
+    ctx.lineWidth = 2 + toeval() * 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(x + (x - mx) * 0.15, y + lang * 0.5, x + (x - mx) * 0.1 + 1, y + lang);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 10; i++) ovaal(ctx, mx + 4 + (toeval() - 0.5) * 26, kruin - 5 + (toeval() - 0.5) * 8, 2, 1.3, 'rgba(255,255,200,0.2)');
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
+
+// Knotwilg: dikke korte stam met een bos rechte twijgen erop (polder).
+function knotwilg(naam, def, variant) {
+  const b = 64;
+  const h = 84;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const mx = b / 2;
+  const voet = h - HH;
+  const toeval = toevalVoor(naam + 'knot' + variant);
+  ovaal(ctx, mx + 3, voet + 1, 14, 6, 'rgba(0,0,0,0.24)');
+  ctx.fillStyle = '#5a4632';
+  ctx.beginPath();
+  ctx.moveTo(mx - 5, voet);
+  ctx.lineTo(mx - 6, voet - 18);
+  ctx.quadraticCurveTo(mx, voet - 23, mx + 6, voet - 18);
+  ctx.lineTo(mx + 5, voet);
+  ctx.closePath();
+  ctx.fill();
+  blok(ctx, mx - 5, voet - 18, 3, 18, 'rgba(0,0,0,0.25)');
+  ovaal(ctx, mx - 1, voet - 10, 1.6, 2.4, 'rgba(0,0,0,0.35)');
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 26; i++) {
+    const hoek = -Math.PI / 2 + (toeval() - 0.5) * 1.9;
+    const lang = 16 + toeval() * 16;
+    const x = mx + (toeval() - 0.5) * 8;
+    ctx.strokeStyle = toeval() < 0.3 ? '#7a5a3a' : tint(def.kleur, (toeval() - 0.4) * 0.5);
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x, voet - 20);
+    ctx.lineTo(x + Math.cos(hoek) * lang, voet - 20 + Math.sin(hoek) * lang);
+    ctx.stroke();
+    ovaal(ctx, x + Math.cos(hoek) * lang, voet - 20 + Math.sin(hoek) * lang, 2.4, 1.8, tint(def.kleur, (toeval() - 0.5) * 0.4));
+  }
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
+
+// Loofboom in een andere vorm: els (smal en rond) of eik (breed en laag).
+function vormboom(naam, def, variant, soort) {
+  const b = 84;
+  const h = 104;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const mx = b / 2;
+  const voet = h - HH;
+  const eik = soort === 'eik';
+  const toeval = toevalVoor(naam + soort + variant);
+  const sx = eik ? 1.35 : 0.78;
+  const sy = eik ? 0.85 : 1.15;
+  ovaal(ctx, mx + 3, voet + 1, 20 * sx, 7.5, 'rgba(0,0,0,0.24)');
+  stam(ctx, mx, voet, eik ? 18 : 20, eik ? 7 : 4.5, eik ? '#4a3523' : '#5d4127');
+  if (eik) {
+    lijn(ctx, mx, voet - 16, mx - 9, voet - 24, '#4a3523', 3);
+    lijn(ctx, mx, voet - 16, mx + 10, voet - 25, '#4a3523', 3);
+  }
+  const kruin = voet - (eik ? 32 : 36);
+  const bollen = [[-11, 5, 11], [10, 6, 11], [0, -1, 15], [-7, -11, 10], [8, -10, 10]];
+  bollen.forEach(([x, y, r]) => ovaal(ctx, mx + x * sx, kruin + y * sy, r * sx, r * sy * 0.92, tint(def.kleur, -0.32)));
+  [[3, -3, 13], [-6, 2, 8.5], [10, 2, 8.5], [2, -13, 8.5]].forEach(([x, y, r]) => ovaal(ctx, mx + x * sx, kruin + y * sy, r * sx, r * sy * 0.92, def.kleur));
+  [[7, -9, 6], [12, -1, 4.5], [0, -15, 4.5]].forEach(([x, y, r]) => ovaal(ctx, mx + x * sx, kruin + y * sy, r * sx, r * sy * 0.92, tint(def.kleur, 0.16)));
+  for (let i = 0; i < 14; i++) ovaal(ctx, mx + 3 + (toeval() - 0.5) * 26 * sx, kruin - 4 + (toeval() - 0.5) * 22 * sy, 1.3, 1, toeval() < 0.6 ? 'rgba(255,255,200,0.16)' : 'rgba(0,20,0,0.16)');
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
+
+function struikVar(naam, def, soort) {
+  const asset = struik(naam, def);
+  if (soort === 'struik') return asset;
+  const ctx = asset.beeld.getContext('2d');
+  const mx = asset.b / 2;
+  const voet = asset.h - HH;
+  if (soort === 'struikdor') {
+    // Dorre struik: bruiner blad en een paar kale twijgen
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.fillStyle = 'rgba(120,80,40,0.45)';
+    ctx.fillRect(0, 0, asset.b, asset.h);
+    ctx.globalCompositeOperation = 'source-over';
+    lijn(ctx, mx - 3, voet - 6, mx - 9, voet - 15, '#4e3a28', 1);
+    lijn(ctx, mx + 2, voet - 8, mx + 7, voet - 16, '#4e3a28', 1);
+  } else if (soort === 'struiksneeuw') {
+    [[0, -9, 7], [-5, -6, 4.5], [6, -6, 4]].forEach(([x, y, r]) => ovaal(ctx, mx + x, voet + y, r, r * 0.55, 'rgba(248,251,255,0.95)'));
+  }
+  return asset;
+}
+
+const BOOMSOORTEN = {
+  loof: (n, d, v) => loofboom(n, d, v % 3),
+  den: (n, d, v) => den(n, d, 3 + (v % 2)),
+  struik: (n, d) => struikVar(n, d, 'struik'),
+  struikdor: (n, d) => struikVar(n, d, 'struikdor'),
+  struiksneeuw: (n, d) => struikVar(n, d, 'struiksneeuw'),
+  berk: (n, d, v) => berk(n, d, v % 2),
+  dor: (n, d, v) => dor(n, d, v, false),
+  kaal: (n, d, v) => dor(n, d, v + 7, false),
+  dood: (n, d, v) => dor(n, d, v, true),
+  windden: (n, d, v) => naaldboom(n, d, v, 'wind'),
+  spar: (n, d, v) => naaldboom(n, d, v, 'spar'),
+  sneeuwden: (n, d, v) => naaldboom(n, d, v, 'sneeuw'),
+  wilg: (n, d, v) => wilg(n, d, v),
+  knotwilg: (n, d, v) => knotwilg(n, d, v),
+  els: (n, d, v) => vormboom(n, d, v, 'els'),
+  eik: (n, d, v) => vormboom(n, d, v, 'eik'),
+};
+
 export function tekenBoom(naam, def) {
+  if (Array.isArray(def.stijl) && def.stijl.length) {
+    const tel = {};
+    return {
+      kies: 'toeval',
+      varianten: def.stijl.map((soort) => {
+        const maak = BOOMSOORTEN[soort] || BOOMSOORTEN.loof;
+        tel[soort] = (tel[soort] || 0) + 1;
+        return maak(naam, def, tel[soort] - 1);
+      }),
+    };
+  }
   return {
     kies: 'toeval',
     varianten: [
@@ -332,6 +601,11 @@ export function tekenRots(naam, def) {
   lijn(ctx, mx + 3, voet - 9, mx + 6, voet - 1, 'rgba(0,0,0,0.2)', 0.7);
   ovaal(ctx, mx - 9, voet + 3, 5, 1.8, 'rgba(78,104,46,0.5)');
 
+  if (def.sneeuw) {
+    // Sneeuwkap (bergen, level 9)
+    vlak(ctx, p([[-13, -13], [-3, -21], [9, -16], [6, -11], [0, -14], [-6, -10]]), 'rgba(248,251,255,0.95)');
+    vlak(ctx, p([[9, -6], [17, -9], [20, -4], [14, -5]]), 'rgba(248,251,255,0.9)');
+  }
   if (def.accent) {
     // Kopererts: oranje aders met groene vlekjes (patina).
     for (const [x, y, lang] of [[-9, -12, 5], [-2, -5, 6], [4, -12, 5], [11, -3, 5], [-5, -17, 4], [15, -5, 4]]) {
@@ -3418,4 +3692,208 @@ function kampVloerTegel(naam, def, masker) {
 
 export function tekenKampVloer(naam, def) {
   return { kies: 'masker', varianten: Array.from({ length: 16 }, (_, masker) => kampVloerTegel(naam, def, masker)) };
+}
+
+// Een stukje begraafplaats (level 10, bij de kerk): op elke tegel twee of drie graven,
+// grafstenen met een ronde top, houten en stenen kruisen, een verzakte grafheuvel en
+// hier en daar een kaarsje of verdorde bloemen. Vier varianten, zodat een veld graven
+// niet op een herhaald patroon lijkt.
+export function tekenGraf(naam, def) {
+  const ROOSTER = [
+    [['steen', -12, -2], ['kruis', 6, -6], ['heuvel', 4, 5]],
+    [['kruis', -10, -4], ['steen', 9, -1], ['hout', -2, 6]],
+    [['steen', -6, -6], ['steen', 10, 2], ['heuvel', -10, 5]],
+    [['hout', 8, -5], ['kruis', -9, 1], ['steen', 2, 6]],
+  ];
+  return {
+    kies: 'toeval',
+    varianten: ROOSTER.map((graven, v) => {
+      const b = TB;
+      const h = 48;
+      const { doek, ctx } = nieuwDoek(b, h);
+      const toeval = toevalVoor(naam + 'graf' + v);
+      const cx = b / 2;
+      const cy = h - HH;
+      const steen = def.kleur || '#8d8a86';
+      // Van achter naar voren tekenen
+      for (const [soort, dx, dy] of [...graven].sort((a, c) => a[2] - c[2])) {
+        const x = cx + dx;
+        const y = cy + dy;
+        // Het graf zelf: een rechthoek van aarde in isometrische stand
+        vlak(ctx, [[x - 5, y + 1], [x + 1, y - 2], [x + 8, y + 1.5], [x + 2, y + 4.5]], 'rgba(70,58,48,0.55)');
+        if (soort === 'heuvel') {
+          ovaal(ctx, x + 1.5, y + 1, 6.5, 2.8, '#5e5044');
+          ovaal(ctx, x + 1, y + 0.3, 5, 1.8, '#6e6052');
+          lijn(ctx, x - 3, y - 4, x - 3, y + 1, '#4a3a2a', 1.2);
+          lijn(ctx, x - 4.6, y - 2.6, x - 1.4, y - 2.6, '#4a3a2a', 1.2);
+          continue;
+        }
+        ovaal(ctx, x + 1.5, y + 1, 4.5, 1.6, 'rgba(0,0,0,0.25)');
+        if (soort === 'steen') {
+          const hoog = 7 + toeval() * 3;
+          const scheef = (toeval() - 0.5) * 0.18;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(scheef);
+          ctx.fillStyle = tint(steen, -0.25);
+          ctx.beginPath();
+          ctx.moveTo(-3.2, 0);
+          ctx.lineTo(-3.2, -hoog + 3);
+          ctx.arc(0, -hoog + 3, 3.2, Math.PI, 0);
+          ctx.lineTo(3.2, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = steen;
+          ctx.beginPath();
+          ctx.moveTo(-2.2, 0);
+          ctx.lineTo(-2.2, -hoog + 3);
+          ctx.arc(0.2, -hoog + 3, 2.4, Math.PI, 0);
+          ctx.lineTo(2.6, 0);
+          ctx.closePath();
+          ctx.fill();
+          lijn(ctx, -1, -hoog + 3.5, 1.6, -hoog + 3.5, 'rgba(0,0,0,0.35)', 0.6);
+          lijn(ctx, -1, -hoog + 5, 1.6, -hoog + 5, 'rgba(0,0,0,0.3)', 0.6);
+          ovaal(ctx, -1.6, -1, 1.6, 0.9, 'rgba(70,96,50,0.6)');   // mos aan de voet
+          ctx.restore();
+        } else {
+          const houten = soort === 'hout';
+          const k = houten ? '#5d4430' : tint(steen, -0.1);
+          const hoog = houten ? 9 : 11;
+          blok(ctx, x - 0.9, y - hoog, 1.8, hoog, k);
+          blok(ctx, x - 3.6, y - hoog + 2.6, 7.2, 1.7, k);
+          blok(ctx, x - 0.9, y - hoog, 0.8, hoog, 'rgba(0,0,0,0.25)');
+          if (!houten) blok(ctx, x - 2.5, y - 1, 5, 1.6, tint(steen, -0.3));   // voetstuk
+        }
+        // Soms een kaarsje of verdorde bloemen voor het graf
+        const r = toeval();
+        if (r < 0.3) {
+          blok(ctx, x + 3, y + 1, 1.1, 2.4, '#e9e0c8');
+          ovaal(ctx, x + 3.55, y + 0.4, 0.9, 1.4, 'rgba(255,190,80,0.95)');
+        } else if (r < 0.55) {
+          ovaal(ctx, x + 3, y + 2, 1.4, 0.8, '#6a4a5a');
+          ovaal(ctx, x + 4.2, y + 1.6, 1.1, 0.7, '#8a3a3a');
+        }
+      }
+      return { beeld: doek, b, h, ax: b / 2, ay: h };
+    }),
+  };
+}
+
+// De sluis van de Witte Dijk (level 8): een stenen sluishoofd met twee zware houten
+// deuren, een windas met een rad erop, een smal stroompje water dat eronderdoor loopt
+// en een rood wimpeltje van Rutger. Eén tegel, hoger dan een huis.
+export function tekenSluis(naam, def) {
+  const b = TB + 24;
+  const h = TH + 46;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const steen = def.kleur || '#9a968c';
+  const hout = '#5d4430';
+  // Een gemetseld kanaal schuin over de tegel, met water erin
+  vlak(ctx, [[cx - 34, cy - 6], [cx - 20, cy - 13], [cx + 34, cy + 14], [cx + 20, cy + 21]], tint(steen, -0.3));
+  vlak(ctx, [[cx - 28, cy - 6], [cx - 20, cy - 10], [cx + 28, cy + 13], [cx + 20, cy + 17]], '#3f6d86');
+  vlak(ctx, [[cx - 24, cy - 6], [cx - 20, cy - 8], [cx + 24, cy + 13], [cx + 20, cy + 15]], '#5a8ea8');
+  for (const t of [0.15, 0.4, 0.65, 0.88]) lijn(ctx, cx - 24 + t * 46, cy - 7 + t * 21, cx - 20 + t * 46, cy - 5 + t * 21, 'rgba(255,255,255,0.45)', 0.8);
+  // Twee lage stenen sluishoofden
+  const kolom = (x, y) => {
+    const w = 12;
+    const hoog = 16;
+    vlak(ctx, [[x - w, y], [x, y + w / 2], [x, y + w / 2 - hoog], [x - w, y - hoog]], tint(steen, -0.22));
+    vlak(ctx, [[x, y + w / 2], [x + w, y], [x + w, y - hoog], [x, y + w / 2 - hoog]], steen);
+    vlak(ctx, [[x - w, y - hoog], [x, y + w / 2 - hoog], [x + w, y - hoog], [x, y - w / 2 - hoog]], tint(steen, 0.18));
+    for (let r = 1; r < 3; r++) {
+      lijn(ctx, x - w, y - r * 5.5, x, y + w / 2 - r * 5.5, 'rgba(0,0,0,0.18)', 0.6);
+      lijn(ctx, x, y + w / 2 - r * 5.5, x + w, y - r * 5.5, 'rgba(0,0,0,0.14)', 0.6);
+    }
+  };
+  kolom(cx - 13, cy - 8);
+  // De twee houten deuren in het kanaal, met ijzeren banden
+  vlak(ctx, [[cx - 4, cy - 2], [cx + 6, cy + 3], [cx + 6, cy - 11], [cx - 4, cy - 16]], hout);
+  vlak(ctx, [[cx - 4, cy - 2], [cx + 1, cy + 0.5], [cx + 1, cy - 13.5], [cx - 4, cy - 16]], tint(hout, -0.2));
+  for (const y of [-5, -10]) lijn(ctx, cx - 4, cy + y, cx + 6, cy + y + 5, '#2c2a28', 1);
+  kolom(cx + 15, cy + 6);
+  // Loopbrug over de deuren, tussen de hoofden
+  vlak(ctx, [[cx - 13, cy - 26], [cx + 15, cy - 12], [cx + 15, cy - 9], [cx - 13, cy - 23]], '#7a5a3c');
+  lijn(ctx, cx - 13, cy - 31, cx + 15, cy - 17, '#4a3624', 1);
+  for (let i = 0; i <= 4; i++) lijn(ctx, cx - 13 + i * 7, cy - 26 + i * 3.5, cx - 13 + i * 7, cy - 31 + i * 3.5, '#4a3624', 0.9);
+  // Het rad van het windas op de brug
+  ctx.strokeStyle = '#3e2c1c';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.ellipse(cx + 1, cy - 26, 4, 5.5, 0.4, 0, Math.PI * 2);
+  ctx.stroke();
+  for (let i = 0; i < 4; i++) {
+    const a = i * Math.PI / 4;
+    lijn(ctx, cx + 1 - Math.cos(a) * 3.6, cy - 26 - Math.sin(a) * 5, cx + 1 + Math.cos(a) * 3.6, cy - 26 + Math.sin(a) * 5, '#3e2c1c', 0.8);
+  }
+  // Wimpel van Rutger op het linker hoofd
+  lijn(ctx, cx - 21, cy - 22, cx - 21, cy - 44, '#3a2a1a', 1.2);
+  vlak(ctx, [[cx - 21, cy - 44], [cx - 9, cy - 41], [cx - 21, cy - 37]], def.accent || '#c23a2e');
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
+
+// De Raaftoren van Mournkeep (level 10): een slanke, hoge ronde toren van donkere steen
+// met een spits leien dak, een zwarte rouwbanier, raven op de kantelen en hoog één
+// verlicht raam: daar zit Wessel. Onderaan een zware deur met ijzeren banden.
+export function tekenRaaftoren(naam, def) {
+  const b = TB + 8;
+  const h = TH + 184;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - 1 - HH;
+  const steen = def.kleur || '#4a4850';
+  const r = 17;
+  const hoog = 146;
+  ovaal(ctx, cx + 4, voet + 2, r + 8, 9, 'rgba(0,0,0,0.3)');
+  // De ronde schacht: links donker, rechts licht
+  ctx.fillStyle = steen;
+  ctx.fillRect(cx - r, voet - hoog, r * 2, hoog);
+  ovaal(ctx, cx, voet, r, r * 0.5, steen);
+  const g = ctx.createLinearGradient(cx - r, 0, cx + r, 0);
+  g.addColorStop(0, 'rgba(0,0,0,0.38)'); g.addColorStop(0.55, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(255,255,255,0.12)');
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - r, voet - hoog, r * 2, hoog + r * 0.5);
+  // Voegen
+  for (let y = 8; y < hoog; y += 7) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.ellipse(cx, voet - y, r, r * 0.5, 0, 0.15, Math.PI - 0.15);
+    ctx.stroke();
+  }
+  // Kantelen bovenaan
+  ovaal(ctx, cx, voet - hoog, r + 2, (r + 2) * 0.5, tint(steen, 0.12));
+  for (let i = 0; i < 7; i++) {
+    const x = cx - r + 1 + i * ((r * 2 - 2) / 6);
+    blok(ctx, x - 2, voet - hoog - 6 + Math.abs(i - 3) * 0.7, 4, 6, i < 3 ? tint(steen, -0.15) : tint(steen, 0.1));
+  }
+  // Spits leien dak
+  vlak(ctx, [[cx - r + 1, voet - hoog - 4], [cx, voet - hoog - 44], [cx + r - 1, voet - hoog - 4]], '#2b2b33');
+  vlak(ctx, [[cx, voet - hoog - 44], [cx + r - 1, voet - hoog - 4], [cx + 3, voet - hoog - 2]], '#3b3b45');
+  // Rouwbanier op de punt
+  lijn(ctx, cx, voet - hoog - 44, cx, voet - hoog - 60, '#222', 1.2);
+  vlak(ctx, [[cx, voet - hoog - 60], [cx + 13, voet - hoog - 57], [cx + 10, voet - hoog - 54], [cx + 13, voet - hoog - 51], [cx, voet - hoog - 50]], '#141418');
+  // Het verlichte raam van Wessel, met een gloed
+  const gl = ctx.createRadialGradient(cx + 5, voet - 118, 0.5, cx + 5, voet - 118, 12);
+  gl.addColorStop(0, 'rgba(255,214,120,0.55)'); gl.addColorStop(1, 'rgba(255,214,120,0)');
+  ctx.fillStyle = gl;
+  ctx.beginPath(); ctx.arc(cx + 5, voet - 118, 12, 0, Math.PI * 2); ctx.fill();
+  vlak(ctx, [[cx + 2.5, voet - 114], [cx + 2.5, voet - 122], [cx + 5, voet - 125], [cx + 7.5, voet - 122], [cx + 7.5, voet - 114]], '#ffd27a');
+  lijn(ctx, cx + 5, voet - 124, cx + 5, voet - 114, '#5a4020', 0.7);
+  // Een donker raam lager
+  vlak(ctx, [[cx - 7, voet - 70], [cx - 7, voet - 76], [cx - 5, voet - 78], [cx - 3, voet - 76], [cx - 3, voet - 70]], '#151518');
+  // Zware deur met ijzeren banden
+  vlak(ctx, [[cx - 1, voet + 7], [cx - 1, voet - 10], [cx + 4, voet - 14], [cx + 9, voet - 10], [cx + 9, voet + 5]], '#3e2c1c');
+  for (const y of [-6, -1, 3]) lijn(ctx, cx - 1, voet + y, cx + 9, voet + y - 1.6, '#1c1c1e', 1);
+  // Raven op de kantelen
+  const raaf = (x, y, s) => {
+    ovaal(ctx, x, y, 2.2 * s, 1.4 * s, '#0e0c0e');
+    ovaal(ctx, x + 2 * s, y - 1 * s, 1.1 * s, 1 * s, '#0e0c0e');
+    vlak(ctx, [[x + 2.8 * s, y - 1.2 * s], [x + 4.2 * s, y - 0.8 * s], [x + 2.8 * s, y - 0.4 * s]], '#3a3a3a');
+    vlak(ctx, [[x - 2 * s, y], [x - 4 * s, y + 0.8 * s], [x - 1.5 * s, y + 0.8 * s]], '#0e0c0e');
+  };
+  raaf(cx - 11, voet - hoog - 7, 1);
+  raaf(cx + 9, voet - hoog - 8, 0.9);
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
 }

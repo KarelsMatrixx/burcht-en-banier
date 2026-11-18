@@ -499,6 +499,87 @@
      }
     ]
    }
+  },
+  "rouwpoort": {
+   "naam": "The Mourngate",
+   "breedte": 64,
+   "hoogte": 64,
+   "zaad": 9909,
+   "water": 0.14,
+   "zand": 0.22,
+   "bos": 0.62,
+   "start": [
+    0.2,
+    0.8
+   ],
+   "vorm": {
+    "soort": "pas",
+    "breed": 0.3,
+    "smal": 0.14,
+    "lang": 0.08
+   },
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -9,
+     "dy": -9,
+     "straal": 2.6
+    },
+    {
+     "soort": "IJZER",
+     "dx": 6,
+     "dy": 9,
+     "straal": 2.2
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3.4
+    }
+   ],
+   "midden": []
+  },
+  "rouwburcht": {
+   "naam": "Blackmark",
+   "breedte": 64,
+   "hoogte": 64,
+   "zaad": 10010,
+   "water": 0.24,
+   "zand": 0.22,
+   "bos": 0.6,
+   "start": [
+    0.2,
+    0.8
+   ],
+   "vindplaatsen": [
+    {
+     "soort": "STEEN",
+     "dx": -9,
+     "dy": -9,
+     "straal": 2.6
+    },
+    {
+     "soort": "IJZER",
+     "dx": 6,
+     "dy": 9,
+     "straal": 2.2
+    },
+    {
+     "soort": "BOOM",
+     "dx": -9,
+     "dy": 4,
+     "straal": 3.4
+    }
+   ],
+   "midden": [
+    {
+     "soort": "IJZER",
+     "dx": -4,
+     "dy": 3,
+     "straal": 2.2
+    }
+   ]
   }
  }
 }

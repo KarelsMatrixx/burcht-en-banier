@@ -24,6 +24,7 @@ export async function laadMissies() {
   m.campagne = cj.levels;
   m.figuren = cj.figuren || {};
   m.berichtenAltijd = cj.berichtenAltijd || [];
+  m.eersteBericht = cj.eersteBericht || null;   // Bartholts raad over de eerste gebouwen, als eerste bericht in elk level (niet de proloog)
   for (const c of m.campagne) if (!m.profielen[c.profiel]) throw new Error(`campagne.json: level ${c.id} verwijst naar onbekend profiel ${c.profiel}`);
   // De weg en de brug op het schilderij van de levelkaart.
   const lk = await fetch('data/levelkaart.json');
@@ -156,6 +157,11 @@ function pasRoodToe(regels, rood) {
   if (Number.isFinite(rood.legerMax) && rood.legerMax > 0) regels.legerMax = Math.round(rood.legerMax);
   // lijfwacht: { soort, aantal }: soldaten die achter de rode heer aan lopen en hem verdedigen.
   if (rood.lijfwacht && rood.lijfwacht.soort) regels.strijd.lijfwacht = { soort: rood.lijfwacht.soort, aantal: Math.max(0, Math.min(6, rood.lijfwacht.aantal | 0)) };
+  // garnizoen: { soort: aantal }: soldaten die in het kamp van rood blijven staan en het verdedigen (level 4).
+  if (rood.garnizoen && typeof rood.garnizoen === 'object') {
+    regels.strijd.garnizoen = {};
+    for (const [soort, aantal] of Object.entries(rood.garnizoen)) if (Number.isFinite(aantal) && aantal > 0) regels.strijd.garnizoen[soort] = Math.min(60, Math.round(aantal));
+  }
   if (rood.koning && Number.isFinite(rood.koning.leven)) regels.strijd.roodKoningLeven = rood.koning.leven / 100;
   // schiet: { bereik, schade, slagTijd } maakt van de rode koning een schutter.
   if (rood.koning && rood.koning.schiet) regels.strijd.roodKoningSchiet = { ...rood.koning.schiet };

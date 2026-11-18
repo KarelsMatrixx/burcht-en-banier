@@ -668,6 +668,8 @@ Aanvulling 0.69.0: eigen plaatjes van Karel (Gemini) voor level 3. Twee smederij
 - Bartholts uitleg over je volk noemt de echte getallen uit de balk (`{volk}/{ruimte}`) in plaats van vaste 4/6.
 - Test: tests/proloog69.mjs.
 
+## 0.70.1: de Mage Tower heet overal Mystic Lodge (bouwmenu, melding "Unlocked", tegelinfo)
+
 ## 0.70.0: level 4 (The Fen): klok voor de volgende aanval en een tentenkamp (naar Karels wens van 17 november)
 
 - **Aanvalsklok linksboven.** Onder de adviseur staat nu een klein paneel "Next attack" met de tijd tot de volgende golf van Brandts jagers en "Wave 1 of 5". Vanaf 15 seconden voor de golf kleurt hij rood en pulseert hij. Na de laatste golf (er komt er geen meer in de laatste 15 s) verdwijnt hij; ook bij winst of verlies. De tijd die je de hut moet houden staat ongewijzigd rechtsboven ("Hold Gesina's hut: 7:57 left"). Code: `doel.js` (`volgende()`, `toonKlok`), `ui.toonAanvalKlok`, `#aanvalklok` in index.html en stijl.css. Hij is smal (64 px) zodat de meldingslinten rechts van de adviseur er niet overheen komen.
@@ -727,3 +729,141 @@ Naar aanleiding van Karels feedback (17 november 2026).
 
 ## 0.70.1 (deel 4): sjamaanhut hoger
 - De muren van de Mystic Lodge zijn hoger, het dak lager, de deur groter, de tekens hoger op de wand en de rook staat naast het gewei in plaats van erdoorheen.
+
+## 0.71.1: een gewonnen level opnieuw spelen gaf meteen weer "Defeat"
+- **Klacht van Karel (18 november):** bij level 4 (The Fen, de hut bewaken) kwam bij opnieuw spelen het scherm "Your king fell during attack 0", terwijl de koning niet gevallen was, en "Start over" bracht hem steeds op hetzelfde scherm terug.
+- **Oorzaak:** na een gewonnen level wordt de stand bewaard. Bij herladen (opnieuw spelen) is het level dan al beslist, en main.js zette de koning alleen neer als er nog geen uitslag was (`if (!strijd.uitslag()) leger.zetKoning(...)`). Daardoor kende leger.js het thuisvak van de koning niet (`koningThuis` bleef -1). "Start over" (`leger.herstel()`) haalde alle soldaten weg en zette de koning niet terug; de volgende rekenstap zag dat je koning ontbrak en gaf meteen verloren, elke keer opnieuw. De tekst "attack 0" komt doordat er dan nog geen golf was.
+- **Fix:** nieuwe `leger.zetKoningThuis(vak)` onthoudt het thuisvak altijd (main.js), ook bij een beslechte bewaarde stand. De koning zelf wordt nog steeds alleen neergezet als het level nog loopt.
+- **Test:** `tests/opnieuw_na_winst71.mjs` (12 punten): level 4 winnen, herladen, Start over, koning terug, hut heel, klok loopt, nog een keer. Zonder de fix faalt de test met exact de melding van Karel.
+- Versie op 0.71.1 in config.js, sw.js, test_stap15 en test_stap17.
+- **Niet nagegaan:** of dezelfde lus ook in andere levels met een eigen doel (6 loodsen, 8 sluis) optreedt na een bewaarde winst. De oorzaak zit in gedeelde code (leger.js, main.js), dus de fix geldt daar ook, maar alleen level 4 is getest.
+
+## 0.71.0: rood verzamelt en marcheert samen op (de veldheer, laag 1 opnieuw)
+- Aanleiding (Karel, 17 november): de aanvallen van rood waren nog vaak ongecoördineerd; machines kwamen eerder aan en waren al kapot voordat de soldaten er waren. Gekozen: rood verzamelt zichtbaar voor jouw muren.
+- Oorzaak: de veldheer rekende bij vertrek één keer wachttijden uit en liet iedereen daarna zelfstandig lopen. Elk oponthoud onderweg (vechten, omlopen, poorten) gooide dat in de war, en een ram had geen regel om op begeleiding te wachten.
+- Nieuw (js/veldheer.js): elke groep heeft drie fasen.
+  - Verzamelen: een open plek buiten bereik van jouw torens, muren en poorten (minstens 8 tegels), 9 tot 16 tegels (liefst 12) van de bres, aan de kant van het leger. Ieder krijgt een eigen vakje. Opmars als 85% er is, of 25 s nadat de helft er is, of na 120 s.
+  - Opmars: ridders voorop, machines direct erachter, schutters achteraan. Een machine loopt nooit voor de voorste ridder uit; ridders lopen hooguit 3 tegels voor de achterste machine uit. Klaar als de achterste machine bij de muur is (zonder machines: als de ridders er zijn), als de bres al gevallen is, of na 100 s.
+  - Aanval: iedereen vrij. Is er van een groep geen soldaat meer over, dan gaat een machine die nog niet bij de muur is terug naar het verzamelpunt en sluit hij aan bij de volgende aanval.
+  - De flank vertrekt zo dat hij tegelijk met de hoofdmacht aankomt; de tweede lijn verzamelt mee en vertrekt pas 22 s (niveau 5: 16 s) nadat de hoofdmacht aanvalt. Verkenners vertrekken meteen, zoals voorheen.
+  - Terugtrekken (niveau 5) kan nu in elke fase.
+  - Meldingen (door Claude geschreven): "Red gathers outside your west wall!" of "The red army gathers before it strikes." en "The red army advances!".
+- Nieuw in strijd.js: wie verzamelt of in de opmars loopt, jaagt niemand ver na (alleen wie binnen bereik plus 1,5 tegel komt); een ladderdrager wacht ook (hij bleef eerst doorlopen).
+- De oude rekensom met wachttijden blijft als reserve als er geen verzamelpunt te vinden is.
+- Meting (level 5, ringmuur, 4 zwaardvechters, 4 ridders, 3 schutters, 2 rammen, 1 ladder): verzamelen tot 44 s, opmars 44 tot 61 s; de eerste ram raakt de muur met 3 tot 4 eigen soldaten binnen 5 tegels; geen machine liep meer dan 1 tegel voor de ridders uit; de flank kwam 2 tot 4 s na de hoofdmacht aan de andere kant aan.
+- Test: tests/opmars40.mjs (7 punten); veldheer38 aangepast aan de nieuwe werkwijze. Bekend: veldheer38 "zonder plan ... ver uit elkaar" faalt ook zonder deze wijziging (11,8 s in plaats van meer dan 15), net als losse punten in hut36, ronde39 en campagne30; die komen uit eerdere versies.
+- Risico's: aanvallen komen 30 tot 60 s later op gang dan voorheen, dus lagere levels voelen mogelijk makkelijker; het verzamelpunt is niet op elke kaart bekeken; het plan wordt nog steeds niet bewaard bij opslaan.
+## 0.72.0: een eigen landschap per level (naar Karels wens van 17 en 18 november)
+- **Landschapsprofielen** in `data/landschappen.json`; een level kiest er een met `landschap` in data/campagne.json. Alleen uiterlijk: het terrein heeft geen invloed op het spel (besluit Karel). Proloog en vrij spel blijven groen.
+  | Level | Profiel | Grond | Bomen | Weer en vogels |
+  |---|---|---|---|---|
+  | 1 Witherheath | heide | oker en bruin, paarse heidevlekken | berken, dorre bomen | stof, warm licht |
+  | 2 Sevenwinds | wind | grijsgroen met rots | scheve windsparren | windstrepen en blaadjes |
+  | 3 Ironmarsh | kool | grauw met zwart gruis, roestig water | kale en dode bomen | as, raven |
+  | 4 The Fen | veen | donkergroen, modder, groen water, riet | treurwilgen, elzen | mist |
+  | 5 Stillwater | meer | bleek groen, helder water, riet | elzen | pluisjes, meeuwen |
+  | 6 Giant's Spine | rug | schraal gras met rots | brede eiken | wind, grijs licht |
+  | 7 Greyford | kloof | mosgroen en grijs | smalle sparren | mist, raven |
+  | 8 White Dike | polder | fris groen, klei, riet | knotwilgen | meeuwen |
+  | 9 Mourngate | sneeuw | sneeuw met rots, ijs (geen golfjes) | besneeuwde dennen, sneeuwkap op rotsen | sneeuwval, geen vogels |
+  | 10 Mournkeep | rouw | donker grijsolijf met as, zwart water | dode zwarte bomen | regen, af en toe bliksem, raven |
+- Code: `landschap.js` (kleuren, tweede grondkleur in vlekken, bloemen, steentjes, riet, schuim, rimpels uit het profiel), `kunst.js` (16 boomsoorten, `tekenBoom` met `stijl`, rots met sneeuwkap), `sfeer.js` (`tekenWeer`: waas en deeltjes in schermmaat; meeuwen en raven), `tekenaar.js` (vijfde argument profiel), `main.js` (`laadLandschap`). Bij een traag beeld (sfeerLicht) vallen de deeltjes weg, de waas blijft.
+- **Level 10: kerk met begraafplaats** op een open plek in het dode bos rechts van Mournkeep: nieuw decorobject GRAF (41, `dorp.graf`, vier varianten met grafstenen, kruisen, grafheuvels, kaarsjes). Decor `kerk` en `graf` mogen bomen wegkappen (kaart.js).
+- Nieuwe test `tests/landschap71.mjs` (32 controles; zet levels 7 tot 10 voor de proef open). Groen gebleven: kasteel33, kasteeldecor53, hut70, kaartvorm34, siege52, kaarten24, stillwater40, proloog35, test_stap17.
+- Niet gezien op de iPhone: snelheid met sneeuw (110 vlokjes) en regen (120 strepen), en of de bliksemflits prettig is. Levels 7 tot 10 zijn nog niet speelbaar; hun landschap staat klaar.
+
+## 0.72.3: opnieuw spelen werkt in de hele game (geen defeat-lus meer)
+- **Aanleiding (Karel, 18 november):** niet alleen level 4: ook in andere levels kwam je na opnieuw spelen op "Defeat" terecht en kwam je er niet uit.
+- **Gemeten:** met de fix van 0.71.1 tijdelijk uit ging het in alle zes speelbare levels en in vrij spel (rustig, normaal, zwaar) fout na een winst en herladen: "Start over" gaf meteen weer "Your king fell during attack 0". Het was dus één oorzaak in gedeelde code, niet per level.
+- **Extra beveiliging in `opnieuw()` (main.js):** na `leger.herstel()` wordt de koning altijd neergezet (`leger.zetKoning`), wat de bewaarde stand ook was. Samen met `leger.zetKoningThuis` (0.71.1) kan "Start over" niet meer in een defeat-lus eindigen.
+- **Test:** `tests/opnieuw_alle_levels71.mjs` (167 punten): level 1 tot 6 en vrij spel (rustig, normaal, zwaar, vrede), elk met winst en verlies, direct en na herladen. Daarna "Start over", koning terug, geen uitslag, 3,5 s later nog steeds geen defeat. Het verhaalbeeld van 20 s wordt in de test ingekort.
+- **Niet gedekt:** de proloog (level 0) heeft een eigen herstart (herladen met schone kaart) en is niet meegenomen. Niet op de iPhone gezien.
+
+## 0.72.1: het weer hangt in de wereld (Karels feedback van 18 november)
+- Mist, sneeuw, regen, as, stof en windstrepen bewogen mee met de camera (ze stonden in schermmaat). Nu staan ze in de wereld, in tegels van 1100 bij 640 wereldpixels die zich over de kaart herhalen: schuif je de kaart, dan blijft de mist hangen waar hij hangt (sfeer.js `tekenWeer`). Alleen de kleurwaas, de stofvlaag en de bliksemflits liggen nog over het hele scherm (`tekenWaas`).
+- Alvast in de code, nog niet vrijgegeven: de windzanger (soort WIND 34, mystieke kazerne). Een windvlaag blaast een soldaat van een muur of toren naar de grond ernaast (18 schade, 2,5 s verdoofd), niet van het dak van een hoofdkasteel. Wordt de beloning van level 7.
+- Bekend rood, los van deze wijziging: mystiek27 (vindt de knop van de sluipmoordenaar niet; ook rood zonder deze wijziging).
+
+## 0.72.2: level 4 (The Fen): garnizoen in het kamp en het Stille Volk komt na de acht minuten (naar Karels wens van 17 november)
+
+- **Garnizoen.** Het tentenkamp staat vol soldaten: 40 man, waarvan 20 rode ninja's (sluipmoordenaars), 12 boogschutters en 8 ridders (`rood.garnizoen` in campagne.json, maximaal 60). Ze staan verspreid tussen de tenten en bomen, bereikbaar vanaf de ingang van de commandotent, en blijven op hun post. Komt er iets van jou in zicht, dan gaan ze erop af, maar niet verder dan 9 tegels van hun post; daarna lopen ze terug. Ze tellen niet als aanvaller (komen dus niet op je hut of burcht af) en worden apart bewaard (`strijd.garnizoen()`, `bewaarStand().garnizoen`). Bij opnieuw beginnen staan ze er weer. De ninja's zijn voor jou half doorzichtig tot je dichtbij komt: dat is de gewone regel van de sluipmoordenaar.
+- **Na de acht minuten wint je niet meer.** Is de hut-tijd om, dan komen er vanuit de linkerbovenhoek van de kaart 80 vlammenwevers tevoorschijn (8 batches van 10, om de 0,6 s), die van jou zijn: je kiest ze en stuurt ze zoals je eigen leger. De camera kijkt naar de hoek en Gesina vertelt wat er gebeurt. De hut hoeft dan niet meer te blijven staan (`strijd.hutVrij()`), de aanvalsklok verdwijnt en rechtsboven staat "Defeat Huntmaster Brandt: 40 guards left". Je wint door Brandt in zijn kamp te verslaan; verlies je koning, dan verlies je. Instelling: `doel.versterking` in campagne.json (soort, aantal, hoek als deel van de kaart, perBatch, tussen).
+- De wevers tellen mee in je leger maar de grens houdt ze niet tegen (`leger.geef`); level 4 heeft `legerMax` 250 zodat ze ook na herladen terugkomen. Herladen in de tweede fase werkt: de wevers, het garnizoen en de fase blijven, er komen er geen bij. Na de winst begint de klok van dit level de volgende keer opnieuw (`doel.klaar()`).
+- Maximum aantal rode soldaten tegelijk van 60 naar 90, zodat het garnizoen de golven van de jagers niet blokkeert.
+- Teksten: intro, `uit` (winst) en de doelrol rechtsonder zijn aangepast aan de tweede fase.
+- Nieuwe test: `tests/versterking71.mjs` (35 controles: garnizoen 40 met 20/12/8, blijft staan, ritueel-einde geeft geen winst, 80 wevers links boven en van jou, herladen, het level is met de wevers te winnen, opnieuw beginnen, doorspelen). `hut70` en `hut36` kennen nu de tweede fase.
+- Niet gezien op de iPhone: snelheid met 80 wevers en 40 vijanden tegelijk. In de simulatie wint het Stille Volk vrij gemakkelijk (het garnizoen is na ongeveer 30 seconden vechten weg en er blijven zo'n 45 wevers over): de getallen zijn makkelijk bij te stellen als dat te snel gaat.
+## 0.73.0: level 7 Greyford is speelbaar, met de windzanger als beloning
+- Level 7 (Greyford, Governor Everhard) staat open na level 6. Kaart grauwvoort (kloof), tolburcht met drie poorten achter elkaar (drie_poorten), landschap kloof (mist, sparren). Winst: de rode koning doden.
+- Rood: vooral zwaardvechters met banierdragers, boog- en kruisboogschutters, wat ridders; lijfwacht van 3 zwaardvechters; 12 wachters; eerste aanval na 130 s (startwaarden, na te lezen). Vanaf zijn derde aanval neemt hij ook windzangers mee (regel: wat je in een level wint, gebruikt rood daar al tegen je). Katapult vanaf aanval 3, belegeringstoren vanaf aanval 4.
+- Beloning: de windzanger (Mystic Lodge, 24 goud en 6 brood). Haar windvlaag blaast een soldaat van een muur of toren naar de grond (18 schade, 2,5 s verdoofd); op de grond doet ze maar 4 schade. Ze kiest bij voorkeur iemand op een muur. Niet van het dak van een hoofdkasteel.
+- Nieuwe Engelse teksten (intro, uitkomst, vier berichten): door Claude geschreven, na te lezen.
+- Test: `tests/level7_72.mjs` (9 controles). test_stap17 telt het aantal levels in het menu niet meer vast.
+
+## 0.73.1: zachter weer (Karels feedback van 18 november)
+- De mist had een harde rechte rand: het mistplaatje werd aan de bovenkant afgesneden. Een mistbank is nu een onregelmatige wolk van 18 zachte bollen die elk geleidelijk uitlopen naar doorzichtig.
+- Ook de rest zachter: stofkorrels zijn ronde stipjes, windstrepen zijn dunner, doorzichtiger en golven, regen is dunner en lichter, en de stofvlaag over de grond loopt geleidelijk in plaats van met een rechte rand.
+- Alles blijft in de wereld hangen (sinds 0.72.1): schuiven met de kaart beweegt het weer niet mee.
+
+## 0.73.2: level 4 (The Fen): het garnizoen loopt rustig rond (naar Karels wens van 18 november)
+
+- De soldaten in het tentenkamp stonden stil. Nu slentert om de 2 tot 8 seconden ongeveer een derde van hen naar een ander vrij plekje binnen 3 tegels van zijn post (korte paden van hooguit 8 stappen) en blijft daar even staan. Komt er iets van jou in zicht, dan vallen ze nog steeds aan (tot 9 tegels van hun post) en lopen daarna terug. Code: `garnizoenDenk` in strijd.js (`GARNIZOEN_SLENTER`).
+- `tests/versterking71.mjs` uitgebreid (38 controles): na 40 seconden staan minstens 10 soldaten ergens anders, er lopen er tegelijk een paar maar niet allemaal, en niemand komt verder dan 4,5 tegels van zijn post.
+## 0.74.0: level 8 The White Dike is speelbaar, met de saboteur als beloning
+- Level 8 (Dike Reeve Rutger) staat open na level 7. Kaart witte_dijk (polder), kasteel met gracht, landschap polder.
+- **Doel in twee fasen** (doeltype C uit loodsen.js, nu algemener): eerst de stenen sluis slopen (object SLUIS 42, 700 leven, aan het water vlak voor zijn kasteel), daarna Rutger zelf verslaan. Zolang de sluis staat kan de rode koning niet sneuvelen (strijd.js `beschermKoning`). loodsen.js kent nu `object`, `bijWater`, `daarna: 'koning'` en `teksten` per level; level 6 werkt ongewijzigd.
+- Rood: veel boog- en kruisboogschutters, lijfwacht van 2 kruisboogschutters, eerste aanval na 120 s. Vanaf zijn derde aanval zet hij saboteurs in (max 2), katapult vanaf aanval 3, toren vanaf aanval 4.
+- **Saboteur** (soort SABOTEUR 35, Mystic Lodge, 26 goud en 4 koper): sluipt (pas op 3 tegels te zien), vecht niet met soldaten, blaast muren en gebouwen op (30 per 3 s), twee keer zo hard tegen poorten, torens, de sluis en loodsen. Melding bij een bevel: "The saboteur sneaks toward the red ... with a powder keg."
+- Windzanger: staat er geen vrije grond naast de muur (gracht), dan blijft het doelwit staan maar krijgt het wel de 18 schade van de vlaag.
+- Alle Engelse teksten en getallen: door Claude, na te lezen.
+- Tests: nieuw `tests/level8_74.mjs` (10 controles); `level7_72` test de windvlaag nu in vrij spel. Bekend rood en niet van deze reeks: ronde39 ("zes golven oplopend tot 25", ook rood zonder deze wijziging), mystiek27.
+
+## 0.75.0: level 9 The Mourngate is speelbaar, met de ziener en de verborgen reserve
+- Level 9 (Marshal Falconer) staat open na level 8. Nieuwe kaart `rouwpoort` (brede bergpas), bergfort met twee ringen, landschap sneeuw. Winst: Falconer doden.
+- **Verborgen reserve** (js/reserve.js): 24 man (ridders, bijlridders, kruisboog, zwaardvechters, banierdrager) wacht onzichtbaar op 15 tegels opzij van het fort. Je ziet ze niet en kunt ze niet aanvallen, tenzij een soldaat van jou vlakbij komt (2 tegels) of een ziener binnen 10 tegels staat. Ze vechten alleen met wie vlak bij hen komt. Ze vallen aan zodra je soldaten binnen 8 tegels van zijn burcht komen (in je flank), als ze ontdekt en benaderd worden, of na 9 minuten. Niet bewaard in de strijdstand; de stand (al los of niet) staat in localStorage, Start over zet ze terug.
+- **Ziener** (soort ZIENER 36, Mystic Lodge, 20 goud en 8 brood): vecht niet; ziet de verborgen reserve en maakt sluipmoordenaars en saboteurs van de andere kant binnen 10 tegels zichtbaar. In level 9 krijg je twee zieners van het Stille Volk mee; zelf opleiden kan vanaf level 10 (beloning). Rood koopt in level 9 vanaf aanval 2 ook zieners, en gebruikt saboteurs en windzangers.
+- tekenaar.js tekent onzichtbare eenheden niet (`e.onzichtbaar`).
+- Engelse teksten en alle getallen: door Claude, na te lezen.
+- Test: `tests/level9_75.mjs` (10 controles).
+
+## 0.76.0: level 10 Mournkeep is speelbaar: Wessel bevrijden en het slot
+- Level 10 (Duke Ottger) staat open na level 9. Nieuwe kaart `rouwburcht`, kasteel met drie ringen, landschap rouw (regen, dode bomen, raven), kerk met begraafplaats achter het kasteel.
+- **Doeltype D** (js/bevrijding.js): Wessel zit in de **Raaftoren** (object RAAFTOREN 43, decor van niemand, dus onkwetsbaar) tussen de buitenste en de middelste ring, aan de achterkant. Breng een soldaat naar de deur (binnen 1,7 tegel) en houd 15 seconden achter elkaar stand; de taakbalk telt af. Ottger vecht niet: zijn koningsfiguur kan niet sneuvelen (`beschermKoning`).
+- **Reinouts gat**: de buitenste ring heeft een open stuk van 3 tegels zonder muur (kastelen.json `open: ['rechts']`, kaart.js). Rood herbouwt dat niet, want het hoorde nooit bij zijn muur.
+- **Het slot**: is het doel gehaald, dan staakt het gevecht (strijd.js `staak`: niemand beweegt of vecht nog), de camera gaat naar de toren en er volgen drie kaartjes (Wessel, Wessel, Ottger, elk 6 s). Daarna het winstscherm met de epiloog in `uit`. `beslis('gewonnen', { staak: true })` laat de vijanden in leven (Ottger blijft).
+- Rood: alles wat hij heeft, beste startgoud, lijfwacht van 4 zwaardvechters, 16 wachters, eerste aanval na 90 s, saboteurs en zieners vanaf aanval 1, ruiters vanaf 2, plus een verborgen reserve van 24 man (js/reserve.js). Geen beloning na level 10.
+- Engelse teksten (intro, Reinout, slot, epiloog) en alle getallen: door Claude, na te lezen.
+- Test: `tests/level10_76.mjs` (11 controles: toren, gat, bereikbaarheid, kerkhof, bescherming, reserve, 15 s, staken, winst, epiloog).
+
+## 0.76.1: tutorial na een speelsessie van Karel
+
+- Geen klok meer in de nachtlessen: het leger van Ottger valt pas aan na "Hold" (de oude grens van 150 s, die ook tijdens het lezen doorliep, is weg).
+- Wachtende vijanden in de opmars vechten niet en worden niet beschoten (ook niet door boogschutters op de poortmuur of door de burcht); pas na laatOpmarsLos (strijd.js `wachtBuiten`).
+- Zolang een kaartje van de gids openstaat, lopen de klokken van de tutorial niet. Bij avond en nacht staat dan alles stil, ook het leger; overdag leeft het dorp door (main.js).
+- Volgorde: de voorraadkamer is les 2. Gesprek met Wessel nu na het huis (les 5), Reinouts opmerking bij de boomgaard.
+- 60 hout extra bij het begin van de proloog (120 in totaal; de bouwlessen kosten 95), zodat niemand op hout hoeft te wachten.
+- Teksten van boomgaard, huis, volk en belasting kloppen met de vaste populariteit ("in battle ..."). Na te lezen.
+- Avond: geen 20 s vrije tijd meer; meteen een kaartje van Bartholt ("To the walls"), dan 8 s schemer en de nacht.
+- Kiesles in de nacht telt alleen als je precies die soort gekozen hebt.
+- Gevonden met de nieuwe test: (a) de gouden plek "Wall here" lag op de grond en stuurde de soldaat naast de muur; nu op de bovenkant (main.js plekNaarScherm met `boven`). (b) Het oog uit les 10 bleef aan in de muurles, waardoor een tik op de muur als grond telde; het oog gaat nu uit bij elke muurles. (c) In de logboekles verdween de gids zodra het logboek open was; nu wijst hij het portret om te sluiten. (d) Bij bevel-lessen kijkt de camera eerst naar je nieuwe soldaat en na het kiezen naar de doelplek (die lag soms onder de knoppen).
+- Bartholts raad over de eerste gebouwen staat niet meer in de proloog, maar is het eerste bericht in elk ander level (campagne.json `eersteBericht`, verhaal.js, modus.js).
+- Test: tests/proloog70.mjs speelt de hele tutorial met een trage lezer (4 s per kaartje) en alleen tikken waar de gids wijst, plus level 1. proloog35, proloog40 en verhaal31 bijgewerkt (verhaal31 houdt zijn 5 oude fouten).
+
+## 0.76.2: einde van de tutorial en de oogles (Karels feedback van 18 november)
+
+- Ontvoering zodra Karel in de storm op de helft van zijn leven staat (lager kan niet). Vangnet blijft: 5 minuten nacht of burcht onder 40%.
+- De ruiter rijdt over een echte route (wegvinden, team rood, poorten open) van de burcht door de vier oostpoorten naar buiten, niet meer over de muren. In en net achter een poortdoorgang is hij even onzichtbaar, zoals gewone eenheden (effecten worden boven alles getekend). Ritduur volgt de lengte van de route (4,5 tegels per seconde, minstens 8 s).
+- Tegelijk trekt het hele leger van Ottger zich terug naar buiten (strijd.js `trekTerug`, `tak.aftocht`): ze vechten niet meer en worden niet meer aangevallen. Wie geen weg heeft (bijvoorbeeld op een muur) blijft staan.
+- De ruiter in kleur: bruin paard met witte bles, rood dekkleed met gouden zoom, stalen harnas en helm, rode mantel en pluim. De banier blijft zwart (de Rouwbanier) met een zilveren rand. Na te bekijken op de iPhone.
+- Oogles: aan het begin van les 10 (soldaat sturen) gaat het oog uit en vraagt de gids altijd naar het oog, ook als de speler het eerder al eens aantikte (toen sloeg de gids de stap over).
+- Melding: "A rider breaks out of the keep... he has Wessel! The Mourning Banner is falling back with him." Na te lezen.
+- Test: tests/proloog77.mjs (oog, ontvoering, route, aftocht, scène). proloog43 meet nu het hoogste aantal binnen tot de ontvoering.
+
+## 0.76.3: oogles, pauze, ruiter en lijfwacht van Karel (Karels feedback van 18 november)
+
+- Grondles (les 10) in vaste volgorde: 1. het oog (ring om het oog, nog geen gouden plek), 2. de nieuwe soldaat kiezen, 3. de gouden plek. Het bevel telt alleen na het oog en op of vlak naast de plek (1,5 tegel; was 4). Zonder oog: melding "First tap the eye...".
+- De gouden plek van de grondles ligt op open grond waar niemand binnen 2,5 tegels staat; loopt er toch iemand op, dan schuift de plek op (proloog.js `vrijeGrondplek`). Eerst lag hij klem tussen twee muurstukken, midden tussen Karel, Reinout en het garnizoen.
+- Pauze zonder trillen: als het spel stilstaat (menu, titel, kaartje 's nachts) wordt de vorige plek van elke eenheid gelijk aan de huidige, zodat het tekenen tussen twee rekenstappen niet blijft heen en weer springen (main.js `stilzetten`).
+- Ruiter: zit in het zadel (bovenbeen naar voren, onderbeen langs de flank, heup op het zadel), 20% kleiner; bij een poort vervaagt hij geleidelijk (ook de fakkelgloed) in plaats van ineens weg te springen.
+- Lijfwacht van Karel: bij het begin van de nacht staat Karel aan de oostkant van de burcht met 20 zwaardvechters op vaste posten om zich heen (proloog.js `zetLijfwacht`, strijd.js `karelWachtDenk`). Niet te kiezen of te besturen (leger.js `kies`); ze vechten alleen met wie binnen 2,5 tegels van hun post komt en lopen daarna terug. Karel houdt zelf ook zijn plek. Zolang er nog 5 of meer leven, raakt Karel geen leven kwijt. Gemeten in proloog43: van de storm tot de ruiter ongeveer 50 s (was 16 tot 21 s). Na herladen worden de wachten opnieuw gemarkeerd via `s.lijfwacht`.
+- Tests: proloog77 (volgorde oogles, vrije plek, pauze, lijfwacht), proloog35 en proloog43 bijgewerkt.

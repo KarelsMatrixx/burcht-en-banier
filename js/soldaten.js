@@ -859,10 +859,145 @@ function ruiter(def, zonder = false) {
   return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
 }
 
+// ------------------------------------------------------------------ windzanger
+// Een zangeres van Zevenwind (level 7): lange grijsgroene mantel met windvlaag,
+// kap in teamkleur, een gebogen hoorn aan de lippen; bij het blazen waait een krul uit de hoorn.
+function windzanger(def) {
+  const K = def.kleur;
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const blaas = houding === 'los';
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const zwier = vecht ? -1.2 : [0, 1, 0, -1][beeld];
+    const mx = 13;
+    // mantel die naar achteren waait
+    vlak(ctx, [[mx - 4.6, 17.4 + wip], [mx + 4.6, 17.4 + wip], [mx + 6 + zwier, 33.6], [mx - 8 + zwier, 33.6], [mx - 9.5 + zwier, 30]], '#5f7466');
+    vlak(ctx, [[mx - 4.6, 17.4 + wip], [mx - 1.4, 17.6 + wip], [mx - 3 + zwier, 33.6], [mx - 8 + zwier, 33.6], [mx - 9.5 + zwier, 30]], '#47584d');
+    vlak(ctx, [[mx + 0.6, 17.6 + wip], [mx + 4.6, 17.4 + wip], [mx + 6 + zwier, 33.6], [mx + 2 + zwier, 33.6]], '#7e937f');
+    // windvlaag op de mantel
+    ctx.strokeStyle = '#d8e4dc'; ctx.lineWidth = 0.7;
+    ctx.beginPath(); ctx.moveTo(mx - 3, 27 + wip); ctx.quadraticCurveTo(mx + 1, 24.5 + wip, mx + 3.6, 27.2 + wip); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mx - 2, 29.6 + wip); ctx.quadraticCurveTo(mx + 1.4, 27.6 + wip, mx + 4.4, 30 + wip); ctx.stroke();
+    // riem en sjerp in teamkleur
+    vlak(ctx, [[mx - 4.6, 18 + wip], [mx - 2.4, 17.4 + wip], [mx + 4.6, 24.6 + wip], [mx + 2.6, 26 + wip]], K);
+    blok(ctx, mx - 4.6, 23.6 + wip, 9.2, 1.1, '#3a2a1a');
+    // gezicht, lange grijze vlecht, kap in teamkleur
+    gezichtje(ctx, mx + 0.6, 12.6 + wip, { haar: '#9a9a90', rx: 2.8, ry: 3.1 });
+    lijn(ctx, mx - 3, 13 + wip, mx - 5 + zwier * 0.5, 22 + wip, '#a8a89e', 1.6);
+    vlak(ctx, [[mx - 4.2, 13 + wip], [mx + 4.4, 11 + wip], [mx + 3.6, 7 + wip], [mx + 0.4, 6.2 + wip], [mx - 3.6, 7.6 + wip]], K);
+    vlak(ctx, [[mx + 0.8, 6.4 + wip], [mx + 3.6, 7 + wip], [mx + 4.4, 11 + wip], [mx + 2.4, 10.6 + wip]], tint(K, 0.22));
+    vlak(ctx, [[mx - 4.2, 13 + wip], [mx - 3.6, 7.6 + wip], [mx - 2.2, 11.6 + wip]], tint(K, -0.3));
+    if (!vecht) {
+      lijn(ctx, mx - 3, 19 + wip, mx - 5.6, 24 + wip, '#47584d', 2.3);
+      hand(ctx, mx - 5.8, 24.4 + wip, HUID, 1.3);
+      // hoorn aan de riem
+      vlak(ctx, [[mx + 3, 22 + wip], [mx + 7, 24 + wip], [mx + 8.4, 21.6 + wip], [mx + 7.4, 25.8 + wip], [mx + 3, 23.4 + wip]], '#d9c9a0');
+      lijn(ctx, mx + 3, 19 + wip, mx + 4.6, 24 + wip, '#5f7466', 2.3);
+    } else {
+      // de hoorn aan de mond, met twee handen
+      lijn(ctx, mx - 2.6, 19, mx + 3, 15, '#47584d', 2.3);
+      lijn(ctx, mx + 3, 19, mx + 6, 16, '#5f7466', 2.3);
+      vlak(ctx, [[mx + 3.2, 13.4], [mx + 9, 12], [mx + 11.6, 9], [mx + 12.4, 13.6], [mx + 9.4, 14.6], [mx + 3.4, 14.8]], '#e2d3aa');
+      ovaal(ctx, mx + 12, 11.3, 1.1, 2.3, '#9a8456');
+      hand(ctx, mx + 3.4, 14.8, HUID, 1.2); hand(ctx, mx + 6.6, 15.6, HUID, 1.2);
+      if (blaas) {
+        ctx.strokeStyle = 'rgba(245,252,255,0.95)'; ctx.lineWidth = 1;
+        for (const [r, dx] of [[2, 15], [3, 19], [3.8, 23.5]]) { ctx.beginPath(); ctx.arc(mx + dx, 11.2, r, -1.2, 1.6); ctx.stroke(); }
+      }
+    }
+  };
+  return pakket(teken, { schiet: [['aan', 0], ['los', 0]] });
+}
+
+// ------------------------------------------------------------------ saboteur
+// Een man van het Stille Volk (level 8): donkere kap en mantel met een band in teamkleur,
+// een kruitvaatje op de rug en een smeulende lont in de hand. Hij sluipt en blaast bouwwerken op.
+function saboteur(def) {
+  const K = def.kleur;
+  const MANTEL = '#3b3a34';
+  const MANTEL2 = '#2a2925';
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const slag = houding === 'slag';
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 1.4 : LOOP[beeld];
+    const mx = 13;
+    // benen
+    lijn(ctx, mx - 1.6, 26 + wip, mx - 1.6 - pas, 33.6, '#2c2a26', 2.4);
+    lijn(ctx, mx + 1.6, 26 + wip, mx + 1.6 + pas, 33.6, '#2c2a26', 2.4);
+    // vaatje op de rug
+    ovaal(ctx, mx - 5.4, 19 + wip, 3.6, 4.6, '#7a5634');
+    lijn(ctx, mx - 8.6, 17 + wip, mx - 2.2, 17 + wip, '#3a3a3a', 0.8);
+    lijn(ctx, mx - 8.8, 21 + wip, mx - 2, 21 + wip, '#3a3a3a', 0.8);
+    // gebogen romp in mantel
+    vlak(ctx, [[mx - 4, 15.6 + wip], [mx + 4.4, 16 + wip], [mx + 5, 27 + wip], [mx - 4.4, 27 + wip]], MANTEL);
+    vlak(ctx, [[mx - 4, 15.6 + wip], [mx - 0.6, 15.8 + wip], [mx - 1, 27 + wip], [mx - 4.4, 27 + wip]], MANTEL2);
+    vlak(ctx, [[mx - 4, 17 + wip], [mx - 2, 16.4 + wip], [mx + 4.6, 22.6 + wip], [mx + 3, 24 + wip]], K);
+    blok(ctx, mx - 4.4, 23.4 + wip, 9.4, 1.1, '#1e1a14');
+    // kap met gezicht in de schaduw
+    gezichtje(ctx, mx + 1, 11.6 + wip, { rx: 2.6, ry: 2.9 });
+    vlak(ctx, [[mx - 3.8, 13.4 + wip], [mx - 3.2, 7.6 + wip], [mx + 1, 6.2 + wip], [mx + 4.4, 8.4 + wip], [mx + 4.6, 10 + wip], [mx + 1.6, 9.4 + wip], [mx - 1, 14 + wip]], MANTEL2);
+    lijn(ctx, mx - 1, 10.6 + wip, mx + 3.6, 10.6 + wip, 'rgba(0,0,0,0.35)', 1.2);
+    // armen en lont
+    const lont = (x, y) => {
+      lijn(ctx, x, y, x + 2.6, y - 2.8, '#6b4a2a', 0.9);
+      ovaal(ctx, x + 2.8, y - 3, 1.3, 1.3, 'rgba(255,170,60,0.9)');
+      ovaal(ctx, x + 2.8, y - 3, 0.6, 0.6, '#fff0b0');
+    };
+    if (!vecht) {
+      lijn(ctx, mx + 3, 18 + wip, mx + 5.6, 23 + wip, MANTEL, 2.2); hand(ctx, mx + 5.8, 23.4 + wip, HUID, 1.2); lont(mx + 5.8, 23.4 + wip);
+    } else if (!slag) {
+      lijn(ctx, mx + 3, 18, mx + 7.6, 16, MANTEL, 2.2); hand(ctx, mx + 7.8, 16, HUID, 1.2); lont(mx + 7.8, 16);
+    } else {
+      // gooit het lont naar voren; een vonkenregen
+      lijn(ctx, mx + 3, 18, mx + 9, 20, MANTEL, 2.2); hand(ctx, mx + 9.2, 20.2, HUID, 1.2);
+      for (const [dx, dy] of [[12, 18], [14, 21], [11, 23], [15, 17]]) ovaal(ctx, mx + dx, dy, 0.8, 0.8, '#ffc04a');
+    }
+    lijn(ctx, mx - 3, 18 + wip, mx - 5, 23 + wip, MANTEL2, 2.2);
+  };
+  return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
+}
+
+// ------------------------------------------------------------------ ziener
+// Een ziener van het Stille Volk (level 9): lange witgrijze pij, kap in teamkleur met een
+// geschilderd oog, een staf met een lantaarn waarin een blauw licht brandt.
+function ziener(def) {
+  const K = def.kleur;
+  const PIJ = '#c9c4b4';
+  const PIJ2 = '#a39e8e';
+  const teken = (ctx, houding, beeld) => {
+    const wip = houding === 'lopen' && beeld % 2 ? -1 : 0;
+    const zwier = houding === 'lopen' ? [0, 1, 0, -1][beeld] : 0;
+    const mx = 13;
+    // staf met lantaarn
+    lijn(ctx, mx + 6.4, 33.4, mx + 6.4, 8 + wip, '#5a4126', 1.3);
+    lijn(ctx, mx + 6.4, 8 + wip, mx + 9, 7 + wip, '#5a4126', 1.1);
+    const g = ctx.createRadialGradient(mx + 9, 10.6 + wip, 0.3, mx + 9, 10.6 + wip, 5);
+    g.addColorStop(0, 'rgba(200,235,255,0.95)'); g.addColorStop(0.4, 'rgba(120,190,255,0.5)'); g.addColorStop(1, 'rgba(120,190,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mx + 9, 10.6 + wip, 5, 0, Math.PI * 2); ctx.fill();
+    blok(ctx, mx + 7.6, 8.4 + wip, 2.8, 4.2, 'rgba(60,50,40,0.9)');
+    blok(ctx, mx + 8.1, 9 + wip, 1.8, 3, '#bfe4ff');
+    // pij
+    vlak(ctx, [[mx - 4.6, 16.6 + wip], [mx + 4.6, 16.6 + wip], [mx + 6 + zwier, 33.6], [mx - 6 + zwier, 33.6]], PIJ);
+    vlak(ctx, [[mx - 4.6, 16.6 + wip], [mx - 1.2, 16.8 + wip], [mx - 2.4 + zwier, 33.6], [mx - 6 + zwier, 33.6]], PIJ2);
+    blok(ctx, mx - 4.4, 23.4 + wip, 8.8, 1.1, K);
+    // kap in teamkleur met oog
+    gezichtje(ctx, mx + 0.6, 12.6 + wip, { rx: 2.7, ry: 3, baard: '#dcd8cc', haar: '#cfcabd' });
+    lijn(ctx, mx - 2.2, 12.2 + wip, mx + 3.4, 12.2 + wip, '#2a2a2a', 1.2);   // blinddoek
+    vlak(ctx, [[mx - 4.4, 14.6 + wip], [mx - 4, 8.2 + wip], [mx + 0.6, 5.8 + wip], [mx + 4.6, 8 + wip], [mx + 4.8, 11 + wip], [mx + 2.6, 9.6 + wip], [mx - 1.6, 10 + wip], [mx - 2.4, 15 + wip]], K);
+    ovaal(ctx, mx + 0.4, 7.8 + wip, 1.4, 0.8, '#f2e7b8');
+    ovaal(ctx, mx + 0.4, 7.8 + wip, 0.5, 0.5, '#2a2a2a');
+    // armen
+    lijn(ctx, mx + 3, 18 + wip, mx + 6.2, 20 + wip, PIJ2, 2.2); hand(ctx, mx + 6.4, 20 + wip, HUID, 1.2);
+    lijn(ctx, mx - 3, 18 + wip, mx - 4.6, 23 + wip, PIJ2, 2.2); hand(ctx, mx - 4.6, 23.4 + wip, HUID, 1.2);
+  };
+  return pakket(teken, { sla: [['lopen', 0], ['lopen', 0]] });
+}
+
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
-  zwaardvechter, banierdrager, heler, steenwachter, ruiter, paard: (def) => ruiter(def, true),
+  zwaardvechter, banierdrager, heler, steenwachter, windzanger, saboteur, ziener, ruiter, paard: (def) => ruiter(def, true),
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

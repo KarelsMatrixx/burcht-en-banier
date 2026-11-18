@@ -578,7 +578,71 @@
    "zicht": 5,
    "pijlDekking": 0.25,
    "tip": "A mystic giant of living stone. Slow and very tough, arrows barely scratch him. Takes two army places and cannot climb ladders. Axe knights hurt him most."
+  },  "windzanger": {
+   "naam": "Wind Singer",
+   "meervoud": "Wind Singers",
+   "soort": "WIND",
+   "kazerne": "mystiek",
+   "boeren": 2,
+   "kosten": {
+    "goud": 24,
+    "brood": 6
+   },
+   "snelheid": 1.9,
+   "leven": 48,
+   "schade": 4,
+   "schadeBouw": 1,
+   "slagTijd": 4.0,
+   "bereik": 6,
+   "zicht": 8,
+   "windstoot": { "val": 18, "verdoofd": 2.5 },
+   "tip": "Blows a gust from her horn. A soldier on a wall or tower is blown off and falls down, hurt and dazed. Weak against soldiers on the ground."
+  },  "saboteur": {
+   "naam": "Saboteur",
+   "meervoud": "Saboteurs",
+   "soort": "SABOTEUR",
+   "kazerne": "mystiek",
+   "boeren": 2,
+   "kosten": {
+    "goud": 26,
+    "koper": 4
+   },
+   "snelheid": 2.4,
+   "leven": 44,
+   "schade": 0,
+   "schadeBouw": 30,
+   "slagTijd": 3.0,
+   "bereik": 1.5,
+   "zicht": 6,
+   "alleenBouw": true,
+   "sabotage": true,
+   "verborgen": 3,
+   "bouwBonus": { "objecten": ["SLUIS", "LOODS", "POORT", "TOREN", "WACHTTOREN"], "keer": 2 },
+   "tip": "A man of the Silent Folk with a powder keg. Enemies only spot him up close. Blows up walls and buildings, twice as hard on gates, towers and the sluice. Does not fight soldiers."
+  },  "ziener": {
+   "naam": "Seer",
+   "meervoud": "Seers",
+   "soort": "ZIENER",
+   "kazerne": "mystiek",
+   "boeren": 2,
+   "kosten": {
+    "goud": 20,
+    "brood": 8
+   },
+   "snelheid": 2.0,
+   "leven": 40,
+   "schade": 0,
+   "schadeBouw": 0,
+   "slagTijd": 1,
+   "bereik": 1.5,
+   "zicht": 10,
+   "steun": true,
+   "ziener": 10,
+   "tip": "Does not fight. Sees what hides: hidden soldiers, assassins and saboteurs within 10 tiles can no longer stay out of sight."
   },
+
+
+
   "ruiter": {
    "naam": "Mounted Knight",
    "meervoud": "Mounted Knights",
@@ -729,7 +793,10 @@
    "banierdrager": 1,
    "heler": 1,
    "steenwachter": 3,
-   "ruiter": 1.8
+   "ruiter": 1.8,
+   "windzanger": 1.3,
+   "saboteur": 1.2,
+   "ziener": 0.8
   },
   "ridderPerSchutter": 2,
   "rammenVanaf": 3,

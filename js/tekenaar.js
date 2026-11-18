@@ -19,7 +19,7 @@ import { maakLandschap } from './landschap.js';
 import { wereldNaarRaster, HALVE_BREEDTE, HALVE_HOOGTE, TEGEL_HOOGTE } from './iso.js';
 import { tekenLadderOp } from './kunst.js';
 
-// De zwarte ruiter met Wessel (proloog). Getekend rond (0, 0) = de grond onder het paard, kijkend naar rechts.
+// De ruiter van Ottger met Wessel (proloog): bruin paard, stalen harnas, rode mantel (naar Karel: niet zwart). Getekend rond (0, 0) = de grond onder het paard, kijkend naar rechts.
 function tekenRuiter(ctx, galop, nu) {
   const g2 = Math.sin(nu / 70 + 1.6);
   const op = galop * 0.8;   // het lijf deint mee
@@ -34,23 +34,23 @@ function tekenRuiter(ctx, galop, nu) {
     const vx = kx + Math.sin(fase - (voor ? 0.9 : -0.9)) * 3.2;
     const vy = Math.min(-0.5, ky + 5.5 - Math.max(0, Math.cos(fase)) * 2.2);
     ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(kx, ky); ctx.lineTo(vx, vy); ctx.stroke();
-    ctx.fillStyle = '#0b0908'; ctx.fillRect(vx - 1.3, vy - 0.4, 2.8, 1.6);
+    ctx.fillStyle = '#1d1510'; ctx.fillRect(vx - 1.3, vy - 0.4, 2.8, 1.6);
   };
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.strokeStyle = '#141010'; ctx.lineWidth = 2.4;
+  ctx.strokeStyle = '#4a2c18'; ctx.lineWidth = 2.4;
   been(-8, -10 + op, nu / 70 + 3.1, false);   // achterbenen (verre kant eerst)
   been(7, -10 + op, nu / 70 + 1.2, true);
-  ctx.strokeStyle = '#2a201b';
+  ctx.strokeStyle = '#6e4226';
   been(-6, -10 + op, nu / 70, false);
   been(9, -10 + op, nu / 70 + 2.2, true);
   // staart, wapperend
-  ctx.strokeStyle = '#0c0a09'; ctx.lineWidth = 2.6;
+  ctx.strokeStyle = '#21140c'; ctx.lineWidth = 2.6;
   ctx.beginPath(); ctx.moveTo(-12, -15 + op); ctx.quadraticCurveTo(-18, -14 + g2 * 2, -20, -8 + g2 * 2.5); ctx.stroke();
   ctx.lineWidth = 1.4;
   ctx.beginPath(); ctx.moveTo(-12, -14 + op); ctx.quadraticCurveTo(-17, -11 + g2, -18, -5 + g2 * 2); ctx.stroke();
   // lijf met glans
   const lijf = ctx.createLinearGradient(0, -18 + op, 0, -5 + op);
-  lijf.addColorStop(0, '#4a3c34'); lijf.addColorStop(0.45, '#241c18'); lijf.addColorStop(1, '#100c0a');
+  lijf.addColorStop(0, '#b77544'); lijf.addColorStop(0.45, '#8a512c'); lijf.addColorStop(1, '#55311b');
   ctx.fillStyle = lijf;
   ctx.beginPath(); ctx.ellipse(0, -12 + op, 13, 5.8, 0, 0, Math.PI * 2); ctx.fill();
   // hals en kop
@@ -58,23 +58,24 @@ function tekenRuiter(ctx, galop, nu) {
   ctx.moveTo(8, -16 + op); ctx.quadraticCurveTo(12, -25 + op, 16, -27 + op);
   ctx.lineTo(21, -23 + op); ctx.lineTo(22.5, -20.5 + op); ctx.lineTo(19.5, -19.5 + op);
   ctx.quadraticCurveTo(15, -18 + op, 12, -10 + op); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#3a2e28';
+  ctx.fillStyle = '#7a4628';
   ctx.beginPath(); ctx.moveTo(15.5, -27.5 + op); ctx.lineTo(16.5, -30.5 + op); ctx.lineTo(17.8, -27 + op); ctx.closePath(); ctx.fill();   // oor
-  ctx.fillStyle = '#e8c070'; ctx.fillRect(18.2, -25 + op, 1.1, 1.1);   // oog in het fakkellicht
+  ctx.fillStyle = '#f2ebe0'; ctx.beginPath(); ctx.moveTo(19.3, -24.5 + op); ctx.lineTo(22, -21 + op); ctx.lineTo(20.8, -20.5 + op); ctx.closePath(); ctx.fill();   // witte bles
+  ctx.fillStyle = '#1a100a'; ctx.fillRect(18.2, -25 + op, 1.1, 1.1);   // oog
   // manen
-  ctx.strokeStyle = '#080606'; ctx.lineWidth = 1.2;
+  ctx.strokeStyle = '#24160d'; ctx.lineWidth = 1.2;
   for (let m = 0; m < 5; m++) {
     const mx = 9 + m * 1.6, my = -18 - m * 1.9 + op;
     ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx - 3 + g2, my + 2.5); ctx.stroke();
   }
   // teugels
-  ctx.strokeStyle = '#7a1a14'; ctx.lineWidth = 0.7;
+  ctx.strokeStyle = '#5a3820'; ctx.lineWidth = 0.7;
   ctx.beginPath(); ctx.moveTo(20.5, -21 + op); ctx.lineTo(7, -24 + op); ctx.stroke();
-  // dekkleed: zwart met een donkerrode zoom
-  ctx.fillStyle = '#121012';
+  // dekkleed: diep rood met een gouden zoom
+  ctx.fillStyle = '#7c1a22';
   ctx.beginPath(); ctx.moveTo(-9, -17 + op); ctx.lineTo(7, -17 + op); ctx.lineTo(9, -7 + op); ctx.lineTo(-11, -7 + op); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#6e1712'; ctx.fillRect(-11, -8 + op, 20, 1.3);
-  ctx.fillStyle = '#9a8a6a'; ctx.beginPath(); ctx.arc(-1, -12 + op, 1.6, 0, Math.PI * 2); ctx.fill();   // speld
+  ctx.fillStyle = '#d0a64e'; ctx.fillRect(-11, -8 + op, 20, 1.3);
+  ctx.fillStyle = '#e6c46a'; ctx.beginPath(); ctx.arc(-1, -12 + op, 1.6, 0, Math.PI * 2); ctx.fill();   // speld
   // Wessel dwars over het paard, voor het zadel: armen en benen hangen omlaag
   ctx.fillStyle = '#2f5fc4'; ctx.fillRect(2, -21.5 + op, 8, 4.2);
   ctx.fillStyle = '#244a9a'; ctx.fillRect(2, -18.2 + op, 8, 1);
@@ -84,23 +85,35 @@ function tekenRuiter(ctx, galop, nu) {
   ctx.beginPath(); ctx.moveTo(2.5, -18 + op); ctx.lineTo(1.5 - g2 * 0.6, -13.5 + op); ctx.moveTo(4, -18 + op); ctx.lineTo(3.5 - g2 * 0.5, -13 + op); ctx.stroke();   // benen
   ctx.fillStyle = '#e0b890'; ctx.beginPath(); ctx.arc(11.4, -18.6 + op, 1.9, 0, Math.PI * 2); ctx.fill();   // hoofd
   ctx.fillStyle = '#7a5530'; ctx.beginPath(); ctx.arc(11.6, -19.6 + op, 1.6, Math.PI, 0); ctx.fill();   // haar
-  // de ruiter: wapperende mantel, been in de stijgbeugel, harnas, helm met pluim
-  ctx.fillStyle = '#0a0809';
+  // de ruiter: wapperende mantel, been in de stijgbeugel, harnas, helm met pluim.
+  // Hij zit in het zadel (naar Karel: hij stond erop): zijn heup (-1,5, -21,5) komt op het zadel (-16),
+  // en hij is 20% kleiner dan eerst (naar Karel: te groot voor het paard).
+  ctx.save();
+  ctx.translate(-1.5, -16 + op);
+  ctx.scale(0.8, 0.8);
+  ctx.translate(1.5, 21.5 - op);
+  ctx.fillStyle = '#9a2228';
   ctx.beginPath(); ctx.moveTo(-1, -33 + op); ctx.quadraticCurveTo(-10, -30 + g2 * 2, -16, -22 + g2 * 3); ctx.lineTo(-9, -19 + op); ctx.lineTo(-2, -21 + op); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#1c1a1c'; ctx.fillRect(-2.5, -21 + op, 3, 7);   // been
-  ctx.fillStyle = '#5a5a60'; ctx.fillRect(-3, -14.5 + op, 4, 1.2);   // stijgbeugel
+  // been: bovenbeen naar voren over het zadel, onderbeen langs de flank, voet in de stijgbeugel
+  ctx.strokeStyle = '#5a3e2a'; ctx.lineWidth = 2.6;
+  ctx.beginPath(); ctx.moveTo(-1.5, -21.5 + op); ctx.lineTo(4.5, -21.5 + op); ctx.lineTo(3.2, -14 + op); ctx.stroke();
+  ctx.fillStyle = '#3a281a'; ctx.fillRect(2, -14.5 + op, 3.4, 1.7);   // laars
+  ctx.fillStyle = '#a8aeb8'; ctx.fillRect(1.6, -13 + op, 4, 1);   // stijgbeugel
   const harnas = ctx.createLinearGradient(-4, -33, 3, -33);
-  harnas.addColorStop(0, '#2a2a30'); harnas.addColorStop(0.5, '#5a5c66'); harnas.addColorStop(1, '#1e1e24');
+  harnas.addColorStop(0, '#7e858f'); harnas.addColorStop(0.5, '#e2e6ec'); harnas.addColorStop(1, '#6a707a');
   ctx.fillStyle = harnas;
   ctx.beginPath(); ctx.moveTo(-4.5, -32 + op); ctx.lineTo(2.5, -32 + op); ctx.lineTo(1.5, -21 + op); ctx.lineTo(-4, -21 + op); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#121012'; ctx.fillRect(-4.2, -24 + op, 6, 1.4);   // riem
-  ctx.fillStyle = '#3c3e46';
+  ctx.fillStyle = '#5a3820'; ctx.fillRect(-4.2, -24 + op, 6, 1.4);   // riem
+  ctx.fillStyle = '#e0bb5a'; ctx.fillRect(-1.6, -24 + op, 1.4, 1.4);   // gesp
+  const helm = ctx.createRadialGradient(-2, -37 + op, 0.5, -1, -35.5 + op, 3.6);
+  helm.addColorStop(0, '#f2f4f7'); helm.addColorStop(1, '#8a909a');
+  ctx.fillStyle = helm;
   ctx.beginPath(); ctx.arc(-1, -35.5 + op, 3.4, 0, Math.PI * 2); ctx.fill();   // helm
-  ctx.fillStyle = '#0a0a0a'; ctx.fillRect(-0.2, -36.3 + op, 3.4, 0.9);   // vizier
-  ctx.strokeStyle = '#0d0b0b'; ctx.lineWidth = 1.6;
+  ctx.fillStyle = '#2a2c30'; ctx.fillRect(-0.2, -36.3 + op, 3.4, 0.9);   // vizier
+  ctx.strokeStyle = '#c42a2e'; ctx.lineWidth = 1.6;
   ctx.beginPath(); ctx.moveTo(-1, -38.5 + op); ctx.quadraticCurveTo(-5, -42 + g2, -9, -40 + g2 * 1.5); ctx.stroke();   // pluim
   // arm met de teugels
-  ctx.strokeStyle = '#2e2e34'; ctx.lineWidth = 1.8;
+  ctx.strokeStyle = '#a4aab4'; ctx.lineWidth = 1.8;
   ctx.beginPath(); ctx.moveTo(1, -30 + op); ctx.lineTo(6, -25 + op); ctx.stroke();
   // lans met de zwarte banier (de Rouwbanier)
   ctx.strokeStyle = '#4a3a2a'; ctx.lineWidth = 1.2;
@@ -111,12 +124,13 @@ function tekenRuiter(ctx, galop, nu) {
   ctx.quadraticCurveTo(-11, -52 + g2 * 2, -19, -50 + g2 * 2.5);
   ctx.lineTo(-17, -46 + g2); ctx.lineTo(-19, -42 + g2 * 2.5);
   ctx.quadraticCurveTo(-11, -44 + g2 * 2, -5, -43 + op); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = '#3a1210'; ctx.lineWidth = 0.6; ctx.stroke();
+  ctx.strokeStyle = '#c8ccd2'; ctx.lineWidth = 0.7; ctx.stroke();   // zilveren rand om de Rouwbanier
   // fakkel in de andere hand
   ctx.strokeStyle = '#6a4a2a'; ctx.lineWidth = 1.3;
   ctx.beginPath(); ctx.moveTo(2, -27 + op); ctx.lineTo(5, -36 + op); ctx.stroke();
   ctx.fillStyle = '#ff9a2e'; ctx.beginPath(); ctx.ellipse(5.4, -38.5 + op, 2.2, 3.4 + g2 * 0.5, 0, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#ffe9a0'; ctx.beginPath(); ctx.ellipse(5.4, -37.8 + op, 1, 1.7, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
   ctx.lineCap = 'butt'; ctx.lineJoin = 'miter';
 }
 
@@ -130,7 +144,7 @@ function tegelToeval(x, y, extra) {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
-export function maakTekenaar(canvas, kaart, camera, assets) {
+export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
   // Valhekken: per poorttegel hoe ver het hek omhoog is (0 dicht, 1 open). Het doel komt van main.js
   // (zetHekDoel); de stand schuift er langzaam naartoe, zo zie je het hek bewegen.
   const HEK_TEMPO = 0.45;   // deel per seconde: ruim 2 seconden van dicht naar open
@@ -191,14 +205,17 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     [assets.haal('eenheid.ruiter_blauw'), assets.haal('eenheid.ruiter_rood')],
     [assets.haal('eenheid.paardenboer_blauw'), assets.haal('eenheid.paardenboer_rood')],
     [assets.haal('eenheid.paard_blauw'), assets.haal('eenheid.paard_rood')],
+    [assets.haal('eenheid.wind_blauw'), assets.haal('eenheid.wind_rood')],
+    [assets.haal('eenheid.sabo_blauw'), assets.haal('eenheid.sabo_rood')],
+    [assets.haal('eenheid.ziener_blauw'), assets.haal('eenheid.ziener_rood')],
   ];
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
-  const landschap = maakLandschap(kaart);
+  const landschap = maakLandschap(kaart, profiel);
   // Sfeer (stap G-A/B): echte slagschaduwen, wind, rook, water, wolken en vogels.
   // Uit te zetten met CONFIG.beeld.sfeer = false, of ?sfeer=uit in de adresbalk.
   const sfeerAan = (new URLSearchParams(location.search).get('sfeer') || (CONFIG.beeld.sfeer === false ? 'uit' : 'aan')) !== 'uit';
-  const sfeer = maakSfeer(kaart, landschap);
+  const sfeer = maakSfeer(kaart, landschap, profiel);
   let wimpels = false;   // windvaantjes op de torens van rood (Zevenwind, level 2)
   const basis = [1, 0, 0, 1, 0, 0];   // de cameratransformatie van dit beeld
   // Zelfbewaking: blijft het beeld langer traag (onder ongeveer 30 beelden per
@@ -753,6 +770,7 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
           ctx.ellipse(plekX[i], plekY[i], 11, 5.5, 0, 0, Math.PI * 2);
           ctx.stroke();
         }
+        if (e.onzichtbaar) continue;   // de verborgen reserve van rood (level 9): niet te zien
         const plaatje = kiesBeeld(e, i, s);
         // Een houthakker sleept zijn boom achter zich aan.
         const sleep = sleeptBoom(e) && !(e.werk.wacht > 0) ? sleepRichting(e) : null;
@@ -891,6 +909,20 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         };
         const kop = punt(t);
         const staart = punt(Math.max(0, t - 0.16));
+        if (f.wind) {
+          // Een windvlaag (de windzanger): drie witte krullen die meedraaien
+          ctx.strokeStyle = 'rgba(240, 250, 255, 0.85)';
+          ctx.lineWidth = 1.3;
+          for (let s = 0; s < 3; s++) {
+            const q = punt(Math.max(0, t - s * 0.07));
+            const r = 3.2 - s * 0.7;
+            const draai = t * 14 + s * 2;
+            ctx.beginPath();
+            ctx.arc(q[0], q[1] - s * 1.5, r, draai, draai + Math.PI * 1.4);
+            ctx.stroke();
+          }
+          continue;
+        }
         if (f.vuur) {
           // Een vuurbal met een gloeiende staart
           for (let s = 4; s >= 1; s--) {
@@ -975,6 +1007,18 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         const u = deel - k;
         const x = r[k][0] + (r[k + 1][0] - r[k][0]) * u;
         const y = r[k][1] + (r[k + 1][1] - r[k][1]) * u;
+        // In de poortdoorgang (en net erachter, achter de muur) is hij even niet te zien, net als gewone eenheden:
+        // anders lijkt hij over de muur te rijden (effecten worden boven alles getekend).
+        // Vervagen: hoe dichter bij het midden van een poort, hoe doorzichtiger (in de boog helemaal weg).
+        const tx = Math.floor(x), ty = Math.floor(y), Bk = kaart.breedte;
+        let dPoort = 9;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+          const vx = tx + dx, vy = ty + dy;
+          if (vx < 0 || vy < 0 || vx >= Bk || kaart.object[vy * Bk + vx] !== OBJECT.POORT) continue;
+          dPoort = Math.min(dPoort, Math.hypot(vx + 0.5 - x, vy + 0.5 - y));
+        }
+        const zicht = Math.max(0, Math.min(1, (dPoort - 0.35) / 1.1));
+        if (zicht <= 0) continue;
         const wx = (x - y) * HALVE_BREEDTE;
         const wy = (x + y) * HALVE_HOOGTE;
         const dxs = (r[k + 1][0] - r[k][0]) - (r[k + 1][1] - r[k][1]);
@@ -984,12 +1028,13 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
         ctx.translate(wx, wy);
         ctx.scale(kant * 1.5, 1.5);
         // Een fakkelgloed, zodat je hem in het donker ziet
+        ctx.globalAlpha = zicht;
         const gloed = ctx.createRadialGradient(4, -26, 2, 4, -26, 30);
         gloed.addColorStop(0, 'rgba(255, 190, 90, 0.55)');
         gloed.addColorStop(1, 'rgba(255, 150, 60, 0)');
         ctx.fillStyle = gloed;
         ctx.beginPath(); ctx.arc(4, -26, 30, 0, Math.PI * 2); ctx.fill();
-        ctx.globalAlpha = t > 0.92 ? (1 - t) / 0.08 : 1;
+        ctx.globalAlpha = (t > 0.92 ? (1 - t) / 0.08 : 1) * zicht;
         tekenRuiter(ctx, galop, nu);
         ctx.restore();
       }
@@ -1044,6 +1089,17 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     }
 
     nabewerking.toepassen(ctx, canvas);
+
+    // Weer en waas van het landschap van dit level. Het weer hangt in de wereld
+    // (beweegt niet mee met de camera); de waas ligt over het hele scherm.
+    if (sfeerAan && profiel) {
+      if (!sfeerLicht && profiel.deeltjes !== 'geen') {
+        ctx.setTransform(basis[0], 0, 0, basis[3], basis[4], basis[5]);
+        sfeer.tekenWeer(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t);
+      }
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      sfeer.tekenWaas(ctx, canvas.width / pixelRatio, canvas.height / pixelRatio, t);
+    }
 
     // De nacht (proloog): een donkerblauwe waas over de wereld, 0 tot 1.
     const nacht = staat.nacht ? staat.nacht() : 0;

@@ -16,7 +16,7 @@ const plek = await vrij(4); const veld = await vrij(9);
 // 1. Magiertoren bouwen met tikken, paneel toont alleen mystieke soldaten
 await p.evaluate(() => { const v = window.spel.economie.voorraad; v.planken = 100; v.steen = 100; v.goud = 300; v.koper = 40; });
 const knop = async (t) => { for (const x of await p.$$('#bouwbalk button')) { if ((await x.textContent()).startsWith(t) && await x.isVisible()) { await x.tap(); return true; } } return false; };
-await knop('Army'); check('knop Magiertoren', await knop('Mage Tower'));
+await knop('Army'); check('knop Magiertoren', await knop('Mystic Lodge'));
 let sp = await p.evaluate(([x, y]) => { const s = window.spel; const w = window.__iso.rasterNaarWereld(x + 0.5, y + 0.5); s.camera.x = w.x; s.camera.y = w.y; s.camera.zetZoom(1); return s.camera.wereldNaarScherm(w.x, w.y); }, plek);
 await p.touchscreen.tap(sp.x, sp.y); await p.tap('#knop-hamer'); await knop('Done');
 check('magiertoren staat', (await p.evaluate(([x, y]) => window.spel.kaart.object[y * 64 + x], plek)) === 27);

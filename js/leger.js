@@ -124,6 +124,18 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     return e;
   }
 
+  // Een geschenk: een soldaat die erbij komt zonder dat je hem opleidt (level 4: het Stille Volk).
+  // Hij telt wel mee in je leger, maar de grens houdt hem niet tegen: die geldt alleen voor wie je zelf opleidt.
+  function geef(sleutel, vak, ver = 14) {
+    if (!soorten[sleutel] || soorten[sleutel].koning) return null;
+    const plek = plekBij(vak, ver);
+    if (plek < 0) return null;
+    const e = maak(sleutel, plek);
+    opVerandering();
+    opLeger();
+    return e;
+  }
+
   // De koning: er is er altijd één, bij de burcht. Hij wordt niet opgeleid.
   let koningThuis = -1;
   function zetKoning(burchtVak) {
@@ -243,7 +255,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   function kies(lijst, erbij = false, bewaarDeel = false) {
     if (!bewaarDeel) deelset = null;
     if (!erbij) for (const e of soldaten) e.gekozen = false;
-    for (const e of lijst) e.gekozen = true;
+    for (const e of lijst) if (e.karelWacht === undefined) e.gekozen = true;   // de lijfwacht van Karel (proloog) bestuur je niet
     opLeger();
   }
 
@@ -564,7 +576,9 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     gekozenHoog: () => gekozen().some(isHoog),
     soorten, get max() { return legerMax(); }, waaromNiet, leidOp, vind, kies, stuur, stap,
     kiesAlles: () => kies(soldaten.filter((e) => !isKoning(e))),
-    zetKoning,
+    zetKoning, geef,
+    // Alleen onthouden waar de koning thuishoort, zonder hem neer te zetten (voor een bewaarde, al beslechte stand).
+    zetKoningThuis: (burchtVak) => { koningThuis = burchtVak; },
     groepVan, kiesGroep, kiesSoort, kiesKader, kiesDeel, telling,
     kiesGeen: () => kies([]),
     // Een wandelingetje op de grond (voor de koning in de proloog); telt niet als bevel van de speler.

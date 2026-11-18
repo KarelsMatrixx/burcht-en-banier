@@ -12,22 +12,27 @@
 // eerste = seconden tot de eerste golf, tussen = seconden tussen golven,
 // begin = mannen in de eerste golf, erbij = zoveel meer per golf, max = hooguit.
 //
+// Is de tijd om, dan wint je niet meteen: Gesina roept het Stille Volk. Vanuit de linkerbovenhoek
+// van de kaart komen vlammenwevers tevoorschijn (doel.versterking), die van jou zijn. De hut hoeft
+// dan niet meer te blijven staan. Je wint pas als de rode heer in zijn tentenkamp is verslagen.
+//   versterking: { soort, aantal, hoek: { x, y } (deel van de kaart, 0 tot 1), perBatch, tussen (seconden) }
+//
 // De klok staat in localStorage, zodat herladen verder telt.
 
 import { OBJECT } from './kaart.js';
 
 const SLEUTEL = 'burcht-banier.doel.';
 
-export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal, toonTaak, toonMelding, toonAanvalKlok, kaartGewijzigd }) {
+export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, leger, kijkNaar, toonVerhaal, toonTaak, toonMelding, toonAanvalKlok, kaartGewijzigd }) {
   const d = missie.doel;
   const g = d.golven || {};
   const geheugen = SLEUTEL + missie.id;
   const B = kaart.breedte;
-  let s = lees() || nieuw();
+  let s = { ...nieuw(), ...(lees() || {}) };
   let loopt = false;
   let kijk = 0;
 
-  function nieuw() { return { tijd: 0, golven: 0, gemeld: {} }; }
+  function nieuw() { return { tijd: 0, golven: 0, gemeld: {}, fase: 0, gekomen: 0 }; }
   function lees() {
     try { return JSON.parse(localStorage.getItem(geheugen) || 'null'); } catch (e) { return null; }
   }
@@ -130,16 +135,60 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal
   const aantalGolven = Math.max(1, Math.ceil((laatsteMoment - eersteGolf) / tussenGolf));
   const toonKlok = () => {
     if (!toonAanvalKlok) return;
+    if (s.fase === 1) { toonAanvalKlok(null); return; }
     const nog = volgendeGolf();
     if (nog < 0) { toonAanvalKlok(null); return; }
     toonAanvalKlok({ seconden: Math.max(0, Math.ceil(nog)), golf: Math.min(aantalGolven, s.golven + 1), totaal: aantalGolven });
   };
+
+  // --- Na het ritueel: het Stille Volk komt ------------------------------------------------
+  const v = d.versterking || null;
+  const hoek = () => {
+    const h = (v && v.hoek) || { x: 0.06, y: 0.3 };
+    return { x: Math.round(h.x * (kaart.breedte - 1)), y: Math.round(h.y * (kaart.hoogte - 1)) };
+  };
+  let batchKlok = 0;
+  let mislukt = 0;
+  const totaal = () => (v ? Math.max(0, v.aantal | 0) : 0);
+
+  function startAanval() {
+    s.fase = 1;
+    s.gekomen = 0;
+    batchKlok = 0;
+    mislukt = 0;
+    toonTaak('');
+    if (toonAanvalKlok) toonAanvalKlok(null);
+    strijd.hutVrij();
+    const h = hoek();
+    if (kijkNaar) kijkNaar(h.x, h.y);
+    gesina(`It is done, Karel! The Silent Folk rise out of the reeds, ${totaal()} flameweavers, and they are yours. Tap them and send them at Brandt's camp. Do not let him leave my fen alive.`);
+    toonMelding(`The Silent Folk have come: ${totaal()} Flameweavers join you. Defeat Huntmaster Brandt!`);
+    bewaar();
+  }
+
+  // Elke batch tevoorschijn uit de hoek: perBatch tegelijk, daarna even wachten.
+  function versterkingStap(dt) {
+    if (s.gekomen >= totaal() || !leger) return;
+    batchKlok -= dt;
+    if (batchKlok > 0) return;
+    batchKlok = (v && v.tussen) || 0.6;
+    const h = hoek();
+    const vak = h.y * B + h.x;
+    const n = Math.min((v && v.perBatch) || 10, totaal() - s.gekomen);
+    let gelukt = 0;
+    for (let i = 0; i < n; i++) if (leger.geef(v.soort, vak, 18)) gelukt++;
+    s.gekomen += gelukt;
+    // Is er geen plek meer (bijvoorbeeld door bomen), dan houden we het hierbij.
+    if (!gelukt && ++mislukt >= 3) s.gekomen = totaal();
+    bewaar();
+  }
 
   zetHut();
 
   return {
     start() {
       loopt = true;
+      if (s.fase === 1) strijd.hutVrij();   // het ritueel was al klaar (herladen)
       toonKlok();
       if (!s.gemeld.begin) {
         s.gemeld.begin = true;
@@ -150,6 +199,15 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal
     stap(dt) {
       if (!loopt) return;
       if (strijd.uitslag()) { if (toonAanvalKlok) toonAanvalKlok(null); return; }
+      if (s.fase === 1) {
+        versterkingStap(dt);
+        kijk += dt;
+        if (kijk < 0.5) return;
+        kijk = 0;
+        if (strijd.stand().vrede) { toonTaak(''); return; }   // gewonnen en verder gespeeld
+        toonTaak(`Defeat Huntmaster Brandt: ${strijd.garnizoen().length} guards left`);
+        return;
+      }
       s.tijd += dt;
       kijk += dt;
       if (kijk < 0.5) return;
@@ -168,10 +226,7 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal
         gesina('The Silent Folk are close. I can feel them in the water. Two more minutes!');
       }
       if (over <= 0) {
-        toonTaak('');
-        if (toonAanvalKlok) toonAanvalKlok(null);
-        strijd.beslis('gewonnen');
-        try { localStorage.removeItem(geheugen); } catch (e) { /* niet erg */ }
+        startAanval();
         return;
       }
       if (Math.round(s.tijd) % 5 === 0) bewaar();
@@ -188,6 +243,9 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, toonVerhaal
       }
     },
     over: () => Math.max(0, (d.duur || 480) - s.tijd),
+    fase: () => s.fase,
+    // Het level is gewonnen: de klok begint de volgende keer opnieuw.
+    klaar() { try { localStorage.removeItem(geheugen); } catch (e) { /* niet erg */ } },
     volgende: volgendeGolf,
     // Voor de tests.
     stand: () => ({ ...s }),

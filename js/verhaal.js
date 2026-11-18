@@ -8,7 +8,8 @@
 //   koning      als je eigen koning onder zoveel procent leven komt
 //   roodBurcht  als de burcht van rood onder zoveel procent komt
 //   roodKoning  als de koning van rood onder zoveel procent komt
-// Daarnaast gelden de berichten uit berichtenAltijd in elk level.
+// Daarnaast gelden de berichten uit berichtenAltijd in elk level, en komt eersteBericht als eerste
+// (niet in de proloog: daar neemt Bartholt je mee door de lessen).
 //
 // wie: een figuur uit campagne.figuren, of "heer" voor de heer van dit level.
 // portret: een ander portret van dezelfde figuur (bijvoorbeeld karel_boos).
@@ -25,6 +26,7 @@ export function maakVerhaal({ campagne, missie, toon }) {
   try {
     if (geheugen) getoond = new Set(JSON.parse(localStorage.getItem(geheugen) || '[]'));
   } catch (e) { /* geen geheugen: dan komen berichten na herladen opnieuw */ }
+  const eerste = missie && !missie.proloog ? campagne.eersteBericht || null : null;
   let speeltijd = 0;
   let loopt = false;
   let kijkTegoed = 0;
@@ -60,13 +62,20 @@ export function maakVerhaal({ campagne, missie, toon }) {
     // Een stap van het spel.
     // Kijken doen we twee keer per seconde; standVan() geeft de stand.
     stap(dt, standVan) {
-      if (!loopt || !lijst.length) return;
+      if (!loopt || (!lijst.length && !eerste)) return;
       speeltijd += dt;
       kijkTegoed += dt;
       if (kijkTegoed < 0.5) return;
       kijkTegoed = 0;
       const s = standVan();
       if (s.uitslag) return;
+      // In elk level behalve de proloog: eerst Bartholts raad over de eerste gebouwen (campagne.eersteBericht)
+      if (eerste && !getoond.has('eerste')) {
+        getoond.add('eerste');
+        bewaar();
+        toon({ ...spreker(eerste), tekst: eerste.tekst });
+        return;
+      }
       for (let i = 0; i < lijst.length; i++) {
         const b = lijst[i];
         const id = (i < (missie.berichten || []).length ? 'l' : 'a') + i;

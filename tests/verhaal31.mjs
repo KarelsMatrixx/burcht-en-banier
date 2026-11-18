@@ -39,6 +39,10 @@ check('geen bericht tijdens briefing', await p.isHidden('#verhaal'));
 await p.tap('#missie-begin');
 
 // Bericht op tijd (na 15 s spelen)
+// 0.73: eerst Bartholts raad over de eerste gebouwen
+await p.waitForFunction(() => !document.getElementById('verhaal').hidden, null, { timeout: 25000 });
+check('eerste bericht: raad van Bartholt', /Bartholt/.test(await p.textContent('#verhaal-wie')) && /Build these first/.test(await p.textContent('#verhaal-tekst')), await p.textContent('#verhaal-tekst'));
+await p.tap('#verhaal'); await p.waitForTimeout(300);
 await p.waitForFunction(() => !document.getElementById('verhaal').hidden, null, { timeout: 25000 });
 check('bericht Bartholt', /Bartholt/.test(await p.textContent('#verhaal-wie')) && /too high for ladders/.test(await p.textContent("#verhaal-tekst")), await p.textContent('#verhaal-tekst'));
 await p.waitForTimeout(500); await p.screenshot({ path: '/home/claude/stap31-balk.png' });
@@ -75,7 +79,7 @@ await p.screenshot({ path: '/home/claude/stap31-einde.png' });
 // Opnieuw beginnen wist het geheugen
 await p.tap('#einde-opnieuw');
 await p.waitForTimeout(400);
-const na = await p.evaluate(() => JSON.parse(localStorage.getItem('burcht-banier.verhaal.2') || '[]').length);
+const na = await p.evaluate(() => JSON.parse(localStorage.getItem('burcht-banier.verhaal.2') || '[]').filter((x) => x !== 'eerste').length);   // de raad mag na opnieuw beginnen meteen weer komen
 check('opnieuw wist berichten', na === 0, na);
 
 // Vrij spel: geen briefing, geen berichten

@@ -66,6 +66,10 @@
    "tekst": "Not yet. Not before I have my son back."
   }
  ],
+ "eersteBericht": {
+  "wie": "bartholt",
+  "tekst": "Build these first, Sire, as soon as you can. Woodcutter's Hut: wood for everything you build. Storehouse: room to keep your wood, stone and food. House: room for more peasants. Orchard: food for your people."
+ },
  "levels": [
   {
    "id": 0,
@@ -115,6 +119,7 @@
    "portret": "reinout",
    "profiel": "rustig",
    "kaart": "dal",
+   "landschap": "heide",
    "punt": {
     "x": 10.9,
     "y": 50.1
@@ -202,6 +207,7 @@
    "portret": "mechteld",
    "profiel": "normaal",
    "kaart": "zevenwind",
+   "landschap": "wind",
    "punt": {
     "x": 20.9,
     "y": 34.4
@@ -305,6 +311,7 @@
    "portret": "hademar",
    "profiel": "zwaar",
    "kaart": "ijzerbroek",
+   "landschap": "kool",
    "punt": {
     "x": 38.5,
     "y": 55.6
@@ -388,15 +395,16 @@
    "portret": "brandt",
    "profiel": "normaal",
    "kaart": "veen",
+   "landschap": "veen",
    "punt": {
     "x": 44.7,
     "y": 38.4
    },
    "speelbaar": true,
-   "intro": "In the middle of the fen stands the hut of Mother Gesina, who helped Wessel into the world. She needs eight minutes to call the Silent Folk. Huntmaster Brandt is hunting her. Hold the hut.",
+   "intro": "In the middle of the fen stands the hut of Mother Gesina, who helped Wessel into the world. She needs eight minutes to call the Silent Folk. Huntmaster Brandt is hunting her. Hold the hut, and when the Silent Folk rise, lead them against his camp.",
    "beeld": "beelden/verhaal/level04.webp",
    "verhaal": "Deep in the fen lives Mother Gesina, who brought Wessel into the world. She can call the Silent Folk, but she needs time. Huntmaster Brandt is already hunting her through the reeds. Karel must hold her hut.",
-   "uit": "The Silent Folk rise out of the reeds and Brandt's hunters flee. Gesina takes your hand: \"Ottger is not angry, Karel. He is grieving, and grief with an army is more dangerous.\" From now on the Silent Folk stand with you.",
+   "uit": "Brandt falls in the middle of his own camp and his hunters scatter into the reeds. Gesina takes your hand: \"Ottger is not angry, Karel. He is grieving, and grief with an army is more dangerous.\" From now on the Silent Folk stand with you.",
    "wessel": "The first letter: \"I am not afraid. Everything here is very big.\"",
    "beloning": [
     "sluipmoordenaar",
@@ -430,6 +438,12 @@
      }
     },
     "eersteAanval": 99999,
+    "garnizoen": {
+     "sluipmoordenaar": 20,
+     "boogschutter": 12,
+     "ridder": 8
+    },
+    "legerMax": 250,
     "aanval": {
      "niveau": 3,
      "max": 3,
@@ -457,6 +471,16 @@
        "vanaf": 2
       }
      }
+    },
+    "versterking": {
+     "soort": "vlammenwever",
+     "aantal": 80,
+     "hoek": {
+      "x": 0.06,
+      "y": 0.3
+     },
+     "perBatch": 10,
+     "tussen": 0.6
     }
    },
    "berichten": [
@@ -482,6 +506,7 @@
    "portret": "aleid",
    "profiel": "normaal",
    "kaart": "meren",
+   "landschap": "meer",
    "punt": {
     "x": 51.2,
     "y": 44.2
@@ -522,10 +547,22 @@
      }
     },
     "extra_soorten": {
-     "banierdrager": { "vanaf": 1, "max": 1 },
-     "katapult": { "vanaf": 5, "max": 1 },
-     "toren": { "vanaf": 6, "max": 1 },
-     "ruiter": { "vanaf": 2, "max": 2 }
+     "banierdrager": {
+      "vanaf": 1,
+      "max": 1
+     },
+     "katapult": {
+      "vanaf": 5,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 6,
+      "max": 1
+     },
+     "ruiter": {
+      "vanaf": 2,
+      "max": 2
+     }
     },
     "koning": {
      "leven": 120,
@@ -555,7 +592,10 @@
     "doelBegin": 4,
     "doelPerAanval": 1.35,
     "doelMax": 16,
-    "doelVanaf": { "aanval": 4, "factor": 2 },
+    "doelVanaf": {
+     "aanval": 4,
+     "factor": 2
+    },
     "groei": {
      "doelPerStap": 0.15,
      "max": 8
@@ -618,6 +658,7 @@
    "portret": "lambrecht",
    "profiel": "normaal",
    "kaart": "reuzenrug",
+   "landschap": "rug",
    "punt": {
     "x": 61.1,
     "y": 32.3
@@ -782,30 +823,44 @@
    "portret": "everhard",
    "profiel": "zwaar",
    "kaart": "grauwvoort",
+   "landschap": "kloof",
    "punt": {
     "x": 69.9,
     "y": 44.6
    },
-   "speelbaar": false,
-   "intro": "The tollhouse closes the only road with three gates, one behind the other.",
+   "speelbaar": true,
+   "intro": "The tollhouse of Greyford closes the only road with three gates, one behind the other. Governor Everhard's swordsmen hold every gate. Lady Mechteld has sent you her wind singers.",
    "beeld": "beelden/verhaal/level07.webp",
    "verhaal": "The tollhouse of Greyford closes the only road with three gates in a row. Governor Everhard keeps every seal and every rule. Lady Mechteld has sent her wind singers, for she will not serve a duke who sends soldiers for a child. Karel must break gate after gate.",
-   "uit": "",
+   "uit": "In the archive lies a letter from Ottger, sent three times and never answered: \"My daughter is nine winters dead and I have one blood left. Send the boy, Karel, before I die too.\" Gesina says: \"You knew.\" Karel: \"He could have asked without an army.\"",
    "wessel": "A letter to his father: \"Grandpa is old. He cries when he thinks I am asleep.\"",
-   "beloning": [],
+   "beloning": [
+    "windzanger"
+   ],
    "rood": {
     "legerMax": 150,
     "sterkte": 120,
     "tempo": 80,
     "leger": {
-     "ridder": {
-      "aandeel": 2
+     "zwaardvechter": {
+      "aandeel": 3
+     },
+     "banierdrager": {
+      "aandeel": 1,
+      "vanaf": 1
      },
      "boogschutter": {
       "aandeel": 2
      },
      "kruisboog": {
       "aandeel": 1
+     },
+     "ridder": {
+      "aandeel": 1
+     },
+     "windzanger": {
+      "aandeel": 1,
+      "vanaf": 2
      }
     },
     "koning": {
@@ -823,9 +878,56 @@
     "aanval": {
      "niveau": 4,
      "max": 5
-    }
+    },
+    "extra_soorten": {
+     "katapult": {
+      "vanaf": 3,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 4,
+      "max": 1
+     }
+    },
+    "lijfwacht": {
+     "soort": "zwaardvechter",
+     "aantal": 3
+    },
+    "eersteAanval": 130,
+    "begin": {
+     "goud": 150,
+     "hout": 20,
+     "steen": 20
+    },
+    "wachters": 12
    },
-   "kasteel": "drie_poorten"
+   "kasteel": "drie_poorten",
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 8,
+     "wie": "bartholt",
+     "tekst": "Three gates in a row, Sire. Behind every gate stands another wall full of swordsmen. Bring rams, and patience."
+    },
+    {
+     "bij": "tijd",
+     "waarde": 25,
+     "wie": "bartholt",
+     "tekst": "Lady Mechteld's wind singers wait at your Mystic Lodge. Their horns blow soldiers right off the walls."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "The road is closed by order of the duke. Turn back, or pay the toll in blood."
+    },
+    {
+     "bij": "roodBurcht",
+     "waarde": 50,
+     "wie": "heer",
+     "tekst": "Every gate is sealed and stamped! This is not how a siege is done!"
+    }
+   ]
   },
   {
    "id": 8,
@@ -835,18 +937,20 @@
    "portret": "rutger",
    "profiel": "zwaar",
    "kaart": "witte_dijk",
+   "landschap": "polder",
    "punt": {
     "x": 76.1,
     "y": 56.2
    },
-   "speelbaar": false,
-   "intro": "Behind the dike lies low land. A stone sluice keeps the red keep dry and within reach.",
+   "speelbaar": true,
+   "intro": "Behind the White Dike lies low land. Dike Reeve Rutger's stone sluice keeps his keep dry and his men supplied. Break the sluice first, then take the keep. Spare the polder.",
    "beeld": "beelden/verhaal/level08.webp",
    "verhaal": "Behind the White Dike lies low land, green and full of farms. Dike Reeve Rutger serves the duke out of debt, not love. The sluice must fall, but the fields must be spared. Karel will not drown a land to win.",
-   "uit": "",
+   "uit": "Rutger lays his boathook on the dike. \"I held back the water. That is all I can do.\" The sluice gates hang open, but the polder stays dry: the Silent Folk closed the old dam behind it. The road to the Mourngate is open.",
    "wessel": "A little sailing boat made of bark, found in the reeds.",
-   "beloning": [],
-   "beloningLater": "saboteur (idee)",
+   "beloning": [
+    "saboteur"
+   ],
    "rood": {
     "legerMax": 180,
     "sterkte": 110,
@@ -877,9 +981,75 @@
     "muur": 180,
     "aanval": {
      "niveau": 5
+    },
+    "extra_soorten": {
+     "saboteur": {
+      "vanaf": 2,
+      "max": 2
+     },
+     "katapult": {
+      "vanaf": 3,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 4,
+      "max": 1
+     }
+    },
+    "eersteAanval": 120,
+    "begin": {
+     "goud": 160,
+     "hout": 20,
+     "steen": 20
+    },
+    "lijfwacht": {
+     "soort": "kruisboog",
+     "aantal": 2
     }
    },
-   "kasteel": "gracht"
+   "kasteel": "gracht",
+   "doel": {
+    "soort": "loodsen",
+    "object": "SLUIS",
+    "aantal": 1,
+    "leven": 700,
+    "afstand": 9,
+    "bijWater": true,
+    "daarna": "koning",
+    "teksten": {
+     "naam": "Dike Reeve Rutger",
+     "portret": "rutger",
+     "wie": "Rutger's",
+     "begin": "The sluice holds back the sea and keeps my keep standing, Karel. Touch it, and my crossbows will be waiting.",
+     "eerste": "",
+     "alles": "The sluice is broken! Rutger's keep lies open.",
+     "taak": "Destroy Rutger's sluice by the water",
+     "daarna": "My sluice... Then come, king. I will not run from my own walls.",
+     "daarnaTaak": "Now defeat Rutger in his keep",
+     "omschrijving": "Your goal: first destroy Rutger's stone sluice by the water. While it stands, his men pull him to safety and he cannot fall. Then defeat Rutger in his keep. If your king falls, you lose.",
+     "daarnaOmschrijving": "The sluice is broken. Your goal now: defeat Rutger in his keep. If your king falls, you lose."
+    }
+   },
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 8,
+     "wie": "bartholt",
+     "tekst": "Spare the polder, Sire. Break the sluice, not the dike. Without it, Rutger cannot hold out."
+    },
+    {
+     "bij": "tijd",
+     "waarde": 25,
+     "wie": "bartholt",
+     "tekst": "His crossbowmen stand on every wall, Sire. Lady Mechteld's wind singers can blow them down."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "I owe the duke more than I can pay. So I fight. Do not take it personally, Karel."
+    }
+   ]
   },
   {
    "id": 9,
@@ -888,19 +1058,21 @@
    "heer": "Marshal Evert Falconer",
    "portret": "valkenier",
    "profiel": "zwaar",
-   "kaart": "standaard",
+   "kaart": "rouwpoort",
+   "landschap": "sneeuw",
    "punt": {
     "x": 84.1,
     "y": 48.9
    },
-   "speelbaar": false,
-   "intro": "A great mountain fort closes the last road to Blackmark. Falconer leads the Mourning Guard.",
+   "speelbaar": true,
+   "intro": "A great mountain fort closes the last road to Blackmark. Marshal Falconer leads the Mourning Guard, and part of his army waits hidden on the flank of the fort. The Silent Folk send two seers with you to find it.",
    "beeld": "beelden/verhaal/level09.webp",
    "verhaal": "The Mourngate closes the last road to Blackmark. Marshal Falconer leads the Mourning Guard, and he keeps part of his army hidden. The Silent Folk send a seer to reveal it. Beyond these walls waits the duke.",
-   "uit": "",
+   "uit": "Falconer kneels in the snow. \"He told me you would kill him out of revenge. I believed him.\" Then Reinout steps out of the trees with a few men. \"I served as a page in Mournkeep. There is a back gate in the outer ring. Let me open it for you.\"",
    "wessel": "A drawing of two banners side by side.",
-   "beloning": [],
-   "beloningLater": "windzanger (idee)",
+   "beloning": [
+    "ziener"
+   ],
    "rood": {
     "legerMax": 180,
     "sterkte": 130,
@@ -914,8 +1086,15 @@
      "kruisboog": {
       "aandeel": 2
      },
+     "zwaardvechter": {
+      "aandeel": 1
+     },
      "sluipmoordenaar": {
       "aandeel": 1
+     },
+     "windzanger": {
+      "aandeel": 0.5,
+      "vanaf": 1
      }
     },
     "koning": {
@@ -932,9 +1111,80 @@
     "muur": 210,
     "aanval": {
      "niveau": 5
+    },
+    "extra_soorten": {
+     "ziener": {
+      "vanaf": 2,
+      "max": 2
+     },
+     "katapult": {
+      "vanaf": 2,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 3,
+      "max": 1
+     },
+     "saboteur": {
+      "vanaf": 1,
+      "max": 2
+     }
+    },
+    "eersteAanval": 100,
+    "begin": {
+     "goud": 180,
+     "hout": 20,
+     "steen": 20
+    },
+    "lijfwacht": {
+     "soort": "zwaardvechter",
+     "aantal": 3
+    },
+    "wachters": 14
+   },
+   "kasteel": "bergfort",
+   "reserve": {
+    "leger": {
+     "ridder": 8,
+     "bijlridder": 6,
+     "kruisboog": 5,
+     "zwaardvechter": 4,
+     "banierdrager": 1
+    },
+    "afstand": 15,
+    "kant": 1.5,
+    "los": {
+     "naderen": 8,
+     "tijd": 540
+    },
+    "zieners": 2,
+    "teksten": {
+     "zieners": "Two seers of the Silent Folk join you at your keep. They see what hides.",
+     "ontdekt": "Your seer sees soldiers hidden on the flank of the fort! Falconer's reserve.",
+     "aanval": "Now, Guard! Out of the trees and into their flank!"
     }
    },
-   "kasteel": "bergfort"
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 8,
+     "wie": "bartholt",
+     "tekst": "Falconer never shows all his men, Sire. Send a seer ahead before you storm the fort, or his reserve will fall on your flank."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "The Mourning Guard does not break, Karel. Not for you, not for anyone."
+    },
+    {
+     "bij": "roodBurcht",
+     "waarde": 50,
+     "wie": "karel",
+     "portret": "karel_boos",
+     "tekst": "One more gate. Then only Mournkeep stands between me and my son."
+    }
+   ]
   },
   {
    "id": 10,
@@ -943,16 +1193,17 @@
    "heer": "Duke Ottger of Blackmark",
    "portret": "ottger",
    "profiel": "zwaar",
-   "kaart": "standaard",
+   "kaart": "rouwburcht",
+   "landschap": "rouw",
    "punt": {
     "x": 88.1,
     "y": 30.3
    },
-   "speelbaar": false,
-   "intro": "Three rings, and the Raven Tower on the east side, where Wessel is kept.",
+   "speelbaar": true,
+   "intro": "Three rings of black stone, and the Raven Tower at the back, where Wessel is kept. Reinout has opened a gap in the outer ring. Duke Ottger does not fight himself: reach the tower and bring your son home.",
    "beeld": "beelden/verhaal/level10.webp",
    "verhaal": "Three rings of stone, and the Raven Tower in the east. One window is lit, and a boy sits behind it. A gate in the outer ring stands open, because someone kept a promise. Tonight Karel goes to bring his son home.",
-   "uit": "",
+   "uit": "Wessel walks onto the wall and orders the fighting to stop. \"I want to go home, but I want Grandpa to stay too.\" Ottger lowers the Mourning Banner, and two banners hang side by side. Reinout goes back to his land, Mechteld and Hademar swear the new peace, Gesina stays with Wessel. Karel and Ottger become his guardians together, and the black band leaves Karel's arm.",
    "wessel": "",
    "beloning": [],
    "rood": {
@@ -972,11 +1223,20 @@
      "kruisboog": {
       "aandeel": 2
      },
+     "zwaardvechter": {
+      "aandeel": 1
+     },
      "sluipmoordenaar": {
       "aandeel": 1
      },
      "vlammenwever": {
       "aandeel": 1
+     },
+     "windzanger": {
+      "aandeel": 0.5
+     },
+     "heler": {
+      "aandeel": 0.5
      }
     },
     "koning": {
@@ -993,9 +1253,103 @@
     "muur": 240,
     "aanval": {
      "niveau": 5
+    },
+    "extra_soorten": {
+     "saboteur": {
+      "vanaf": 1,
+      "max": 2
+     },
+     "ziener": {
+      "vanaf": 1,
+      "max": 2
+     },
+     "katapult": {
+      "vanaf": 2,
+      "max": 2
+     },
+     "toren": {
+      "vanaf": 3,
+      "max": 1
+     },
+     "ruiter": {
+      "vanaf": 2,
+      "max": 3
+     }
+    },
+    "eersteAanval": 90,
+    "begin": {
+     "goud": 220,
+     "hout": 30,
+     "steen": 30
+    },
+    "lijfwacht": {
+     "soort": "zwaardvechter",
+     "aantal": 4
+    },
+    "wachters": 16
+   },
+   "kasteel": "drie_ringen",
+   "reserve": {
+    "leger": {
+     "ridder": 6,
+     "bijlridder": 6,
+     "kruisboog": 6,
+     "zwaardvechter": 4,
+     "vlammenwever": 2
+    },
+    "afstand": 14,
+    "kant": -1.4,
+    "los": {
+     "naderen": 10,
+     "tijd": 480
+    },
+    "teksten": {
+     "ontdekt": "Your seer sees Ottger's last reserve hidden beside Mournkeep!",
+     "aanval": "Black Guard! Out, and keep them from the tower!"
     }
    },
-   "kasteel": "drie_ringen"
+   "doel": {
+    "soort": "bevrijden",
+    "seconden": 15,
+    "straal": 1.7,
+    "slotSeconden": 6,
+    "teksten": {
+     "begin": "The gap in the outer ring is open, Karel, as I promised. The Raven Tower stands at the back, between the outer and the middle ring. Go.",
+     "taak": "Bring a soldier to the door of the Raven Tower",
+     "houd": "Hold at the door of the Raven Tower: {s} s"
+    },
+    "slot": [
+     {
+      "naam": "Wessel",
+      "portret": "wessel_blij",
+      "tekst": "Stop! Everybody stop fighting! Father, I am here. I am not hurt."
+     },
+     {
+      "naam": "Wessel",
+      "portret": "wessel",
+      "tekst": "I want to go home. But I want Grandpa to stay too. He is old, and he is alone."
+     },
+     {
+      "naam": "Duke Ottger",
+      "portret": "ottger_verdriet",
+      "tekst": "Lower the Mourning Banner. Let the blue one hang beside it. The boy has decided."
+     }
+    ]
+   },
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 10,
+     "wie": "bartholt",
+     "tekst": "Sire, take the tower, not the keep. Find Reinout's gap in the outer ring and go around to the back. Ottger will not fight."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "You came for him at last, Karel. Nine winters too late, and with an army."
+    }
+   ]
   }
  ]
 }

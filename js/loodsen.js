@@ -16,13 +16,30 @@
 // het kasteel van rood), zodat herladen dezelfde plekken geeft. Wat gevallen is
 // blijft gevallen. De klok en de stand staan in localStorage.
 
-import { OBJECT } from './kaart.js';
+// Sinds 0.74.0 ook voor level 8 (The White Dike): één sluis (object SLUIS) bij het water.
+// Extra velden in doel: object ('LOODS' of 'SLUIS'), bijWater (liefst naast water),
+// daarna: 'koning' (na het slopen is het nog niet gewonnen: dan moet de rode koning
+// vallen; zolang het doel staat, kan hij niet sneuvelen), teksten (zie TEKSTEN hieronder).
+
+import { OBJECT, GROND } from './kaart.js';
+
+const TEKSTEN = {
+  naam: 'Lambrecht Kuyper', portret: 'lambrecht', wie: "Lambrecht's",
+  begin: 'Two sheds, Karel, and every beam in them becomes a ram for the duke. Come and take them if you dare. My men will not make it easy.',
+  eerste: 'My shed! Hold the line, men, the other one must not fall!',
+  alles: 'Both siege sheds are in ruins!',
+  taak: 'Destroy the siege sheds: {over} of {aantal} left',
+  omschrijving: "Your goal: destroy both of Lambrecht's siege sheds, outside his walls. The longer they stand, the more men he sends. If your king falls, you lose.",
+};
 
 const SLEUTEL = 'burcht-banier.doel.';
 
 export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, toonTaak, toonMelding, kaartGewijzigd }) {
   const d = missie.doel;
   const druk = d.druk || {};
+  const T = { ...TEKSTEN, ...(d.teksten || {}) };
+  const OBJ = OBJECT[d.object || 'LOODS'];
+  const tekst = (t) => t.replace('{over}', staand()).replace('{aantal}', aantal);
   const aantal = d.aantal || 2;
   const geheugen = SLEUTEL + missie.id;
   const B = kaart.breedte;
@@ -42,7 +59,15 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
     }
     try { localStorage.setItem(geheugen, JSON.stringify(s)); } catch (e) { /* niet erg */ }
   }
-  const lambrecht = (tekst) => toonVerhaal({ naam: 'Lambrecht Kuyper', portret: 'lambrecht', tekst });
+  const lambrecht = (t) => toonVerhaal({ naam: T.naam, portret: T.portret, tekst: t });
+  // Ligt er water direct naast (voor de sluis)?
+  const bijWater = (x, y) => {
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const xx = x + dx, yy = y + dy;
+      if (xx >= 0 && yy >= 0 && xx < B && yy < kaart.hoogte && kaart.grond[yy * B + xx] === GROND.WATER) return true;
+    }
+    return false;
+  };
 
   // Is dit vak geschikt voor een loods: droog, leeg, van niemand, met vier vrije
   // buren (zodat je soldaten er omheen kunnen) en voor jou bereikbaar.
@@ -51,7 +76,9 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
     const vak = y * B + x;
     if (kaart.object[vak] !== OBJECT.GEEN || kaart.eigenaar[vak] !== 0 || !wegvinder.isVrij(x, y, 0)) return false;
     const buren = [1, -1, B, -B].map((o) => vak + o);
-    if (!buren.every((b) => wegvinder.isVrij(b % B, Math.floor(b / B), 0) && wegvinder.isVrij(b % B, Math.floor(b / B), 1))) return false;
+    const vrij = buren.filter((b) => wegvinder.isVrij(b % B, Math.floor(b / B), 0) && wegvinder.isVrij(b % B, Math.floor(b / B), 1)).length;
+    // Een sluis staat aan het water: dan zijn twee vrije buren genoeg.
+    if (vrij < (d.bijWater ? 2 : 4)) return false;
     return buren.some((b) => wegvinder.verbonden(jij, b, 0));
   }
 
@@ -81,13 +108,15 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
       const tx = Math.round(rood.x + Math.cos(hoek) * afstand);
       const ty = Math.round(rood.y + Math.sin(hoek) * afstand);
       let gekozen = -1;
+      // Met bijWater eerst een plek naast het water zoeken, anders gewoon de dichtstbijzijnde.
+      for (const eis of d.bijWater ? [true, false] : [false]) {
       for (let r = 0; r < 14 && gekozen < 0; r++) {
         for (let dy = -r; dy <= r && gekozen < 0; dy++) {
           for (let dx = -r; dx <= r; dx++) {
             if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
             const x = tx + dx;
             const y = ty + dy;
-            if (!geschikt(x, y, jijVak)) continue;
+            if (!geschikt(x, y, jijVak) || (eis && !bijWater(x, y))) continue;
             const vak = y * B + x;
             // Niet te dicht bij een eerder gekozen loods.
             if (uitslag.some((v) => Math.max(Math.abs((v % B) - x), Math.abs(Math.floor(v / B) - y)) < 6)) continue;
@@ -96,9 +125,11 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
           }
         }
       }
+      if (gekozen >= 0) break;
+      }
       if (gekozen < 0) throw new Error(`Level ${missie.id}: geen plek voor bouwloods ${i + 1} gevonden`);
       // Zet hem er al neer, zodat de volgende plek er rekening mee houdt.
-      kaart.object[gekozen] = OBJECT.LOODS;
+      kaart.object[gekozen] = OBJ;
       kaart.eigenaar[gekozen] = 2;
       wegvinder.herbereken();
       uitslag.push(gekozen);
@@ -116,7 +147,7 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
     const gezet = new Set();
     for (const vak of s.loodsen) {
       if (s.gevallen.includes(vak)) continue;
-      kaart.object[vak] = OBJECT.LOODS;
+      kaart.object[vak] = OBJ;
       kaart.eigenaar[vak] = 2;
       gezet.add(vak);
     }
@@ -149,14 +180,14 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
     s.volgende = s.tijd + wachtNa(s.golven - 1);
     s.gewaarschuwd = false;
     strijd.stuurLeger(inhoud, true);
-    toonMelding(`Lambrecht's ${g.naam} attacks! Wave ${s.golven}: ${n} soldiers.`);
+    toonMelding(`${T.wie} ${g.naam} attacks! Wave ${s.golven}: ${n} soldiers.`);
     bewaar();
   }
   // Een korte waarschuwing voor een golf, zodat je kunt bijsturen.
   function waarschuw() {
     const g = lijst()[Math.min(s.golven, lijst().length - 1)];
     s.gewaarschuwd = true;
-    toonMelding(`Scouts report: Lambrecht's ${g.naam} is gathering. It marches in ${druk.waarschuwing || 20} seconds.`);
+    toonMelding(`Scouts report: ${T.wie} ${g.naam} is gathering. It marches in ${druk.waarschuwing || 20} seconds.`);
   }
 
   zetLoodsen();
@@ -166,9 +197,11 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
       loopt = true;
       if (!s.gemeld.begin) {
         s.gemeld.begin = true;
-        lambrecht('Two sheds, Karel, and every beam in them becomes a ram for the duke. Come and take them if you dare. My men will not make it easy.');
+        lambrecht(T.begin);
         bewaar();
       }
+      // Zolang het doel staat, kan de rode koning niet vallen (alleen met daarna: 'koning').
+      if (d.daarna === 'koning') strijd.beschermKoning(!s.klaar);
     },
     stap(dt) {
       if (!loopt || strijd.uitslag()) return;
@@ -180,21 +213,30 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
       let nieuwGevallen = 0;
       for (const vak of s.loodsen) {
         if (s.gevallen.includes(vak)) continue;
-        if (kaart.object[vak] !== OBJECT.LOODS || kaart.eigenaar[vak] !== 2) { s.gevallen.push(vak); nieuwGevallen++; }
+        if (kaart.object[vak] !== OBJ || kaart.eigenaar[vak] !== 2) { s.gevallen.push(vak); nieuwGevallen++; }
       }
       if (nieuwGevallen) bewaar();
       const over = staand();
+      if (s.klaar) return;   // tweede fase: de rode koning moet nog vallen (strijd beslist)
       if (over === 0) {
+        toonMelding(T.alles);
+        if (d.daarna === 'koning') {
+          s.klaar = true;
+          strijd.beschermKoning(false);
+          toonTaak(T.daarnaTaak || '');
+          if (T.daarna) lambrecht(T.daarna);
+          bewaar();
+          return;
+        }
         toonTaak('');
-        toonMelding('Both siege sheds are in ruins!');
         strijd.beslis('gewonnen');
         try { localStorage.removeItem(geheugen); } catch (e) { /* niet erg */ }
         return;
       }
-      toonTaak(`Destroy the siege sheds: ${over} of ${aantal} left`);
+      toonTaak(tekst(T.taak));
       if (nieuwGevallen && !s.gemeld.eerste) {
         s.gemeld.eerste = true;
-        lambrecht('My shed! Hold the line, men, the other one must not fall!');
+        lambrecht(T.eerste);
       }
       if (!s.volgende) s.volgende = druk.eerste || 150;
       if (lijst().length) {
@@ -212,7 +254,8 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
       zetLoodsen();
       if (loopt) this.start();
     },
-    omschrijving: () => `Your goal: destroy both of Lambrecht's siege sheds, outside his walls. The longer they stand, the more men he sends. If your king falls, you lose.`,
+    omschrijving: () => (s.klaar && T.daarnaOmschrijving ? T.daarnaOmschrijving : T.omschrijving),
+    klaar: () => !!s.klaar,
     // Voor de tests.
     loodsen: () => s.loodsen.slice(),
     gevallen: () => s.gevallen.slice(),

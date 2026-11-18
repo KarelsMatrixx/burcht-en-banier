@@ -153,7 +153,7 @@ export function maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd, koni
         if (g) { gast = g; g.snelheid = 0.5; lijst.push({ e: g, thuis: { x: Math.floor(g.x), y: Math.floor(g.y) }, straal: 4, wacht: 2 }); }
       }
       const k = leger.lijst.find((e) => e.soldaat && e.soldaat.sleutel === koningSleutel && !e.dood);
-      if (k && !k.pad && !k.opMuur && !leger.gekozen().includes(k)) {
+      if (k && !k.pad && !k.opMuur && !k.blijf && !leger.gekozen().includes(k)) {   // blijf: 's nachts staat Karel bij zijn lijfwacht
         koningWacht -= dt;
         if (koningWacht <= 0) {
           koningWacht = 4 + toeval() * 8;

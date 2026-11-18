@@ -112,11 +112,12 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       return { e: el('adviseur'), tekst: logboekOpen ? 'Tap the portrait again to close the messages.' : 'Tap Bartholt\'s portrait to read your messages.' };
     }
     if (doel.soort === 'sturen' || doel.soort === 'muur') {
-      // 1. de soldaat die je net trainde aantikken, 2. (grond) het oog, 3. de gouden plek
+      // Grondles: 1. het oog, 2. de soldaat die je net trainde aantikken, 3. de gouden plek.
+      // Muurles: 1. de soldaat, 2. het stuk muur.
       const oog = el('knop-oog');
       if (oog && oog.getAttribute('aria-pressed') === 'true') oogGezien = true;
+      if (doel.soort === 'sturen' && !oogGezien && oog) return { e: oog, tekst: 'The spot lies behind a wall. First tap the eye: walls turn see-through.' };
       if (wijsSoldaat()) return { e: null, tekst: 'Tap your new soldier (the golden spot) to choose him.' };
-      if (doel.soort === 'sturen' && !oogGezien && oog) return { e: oog, tekst: 'Walls can hide your soldiers. Tap the eye to see through them.' };
       return { e: null, tekst: doel.soort === 'muur' ? 'Now tap the golden piece of wall.' : 'Now tap the golden spot on the ground.' };
     }
     return null;
@@ -128,13 +129,14 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
   // Nog niemand gekozen in een les met een bevel: de gouden plek staat op een nieuwe soldaat
   const wijsSoldaat = () => (doel && doel.soldaat && doel.heeftKeuze && !doel.heeftKeuze() ? doel.soldaat() : null);
   function zetPlek() {
+    // Grondles: eerst alleen het oog; de gouden plek (op de soldaat of de grond) pas daarna
+    if (doel && doel.soort === 'sturen' && !oogGezien) { plek.hidden = true; return; }
     const sol = wijsSoldaat();
-    // Grondles: de doelplek pas tonen als het oog is uitgelegd
-    if (!sol && doel && doel.soort === 'sturen' && !oogGezien) { plek.hidden = true; return; }
     const p = sol ? { x: Math.floor(sol.x), y: Math.floor(sol.y) } : doel && doel.plek;
     if (!p || !plekNaarScherm) { plek.hidden = true; return; }
     if (doel.soort === 'opleiden' && zichtbaar(el('legerpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open
-    const sc = plekNaarScherm(p.x, p.y);
+    // Een plek op de muur: de ruit op de bovenkant, waar de tik de soldaat de muur op stuurt
+    const sc = plekNaarScherm(p.x, p.y, !sol && !!doel && (doel.soort === 'muur' || !!doel.opMuur));
     const z = sc.zoom;
     const breed = tegelMaat.breedte * z * 1.1;
     const hoog = tegelMaat.hoogte * z * 1.1;
@@ -241,7 +243,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
   // Ligt er een beeldvullend scherm over het spel (titel, menu, verhaal, uitslag), dan verdwijnt de gids helemaal.
   // Een eigen klokje, want de spellus staat dan stil.
   const BEDEKKERS = ['titelscherm', 'menu', 'verhaalbeeld', 'missie', 'uitslag', 'einde', 'scene', 'logboek', 'verhaal', 'instellingen'];
-  const bedektNu = () => BEDEKKERS.some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
+  // In de logboekles hoort het open logboek bij de les: de gids blijft dan staan en wijst het portret om het te sluiten.
+  const bedektNu = () => BEDEKKERS.some((id) => { if (id === 'logboek' && doel && doel.soort === 'logboek') return false; const e = document.getElementById(id); return e && !e.hidden; });
   setInterval(() => {
     const bedekt = bedektNu();
     document.body.classList.toggle('gids-bedekt', bedekt);
@@ -251,8 +254,11 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     // Richt de gids op een taak: soort 'bouw' (met sleutel), 'opleiden', 'sturen', 'muur'.
     // Logboekles: open geweest en weer dicht
     logboekGelezen: () => { if (!el('logboek').hidden) logboekOpen = true; return logboekOpen && el('logboek').hidden; },
-    richt(taak) { doel = taak; laatsteTik = nu; vorigeTekst = ''; belastingTik = false; paneelGezien = false; },
+    // Een nieuwe grondles vraagt altijd naar het oog, ook als het eerder al eens aan is geweest
+    richt(taak) { if (taak && taak.soort === 'sturen' && (!doel || doel.soort !== 'sturen')) oogGezien = false; doel = taak; laatsteTik = nu; vorigeTekst = ''; belastingTik = false; paneelGezien = false; },
     belastingGekozen: () => belastingTik,
+    // Grondles: is het oog in deze les aangezet?
+    oogGezien: () => oogGezien,
     // Is het volkspaneel in deze les geopend geweest?
     volkGezien: () => paneelGezien,
     volkGesloten: () => paneelGezien && !zichtbaar(el('volkpaneel')),
