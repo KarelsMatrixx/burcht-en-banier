@@ -25,8 +25,10 @@ await p.reload(); await wacht(); await p.waitForTimeout(300);
 await p.tap('#missie-begin'); await p.waitForTimeout(1500);
 await p.evaluate(() => { try { window.spel.ui.verbergVerhaal(); } catch (e) { /* niet erg */ } });
 // Winnen: de hut gehouden
-await p.evaluate(() => window.spel.doel.zetTijd(479.5));
-await p.waitForTimeout(2500);
+await p.evaluate(() => { window.spel.doel.zetTijd(479.5); });   // sinds 0.72.1 komt dan het Stille Volk; de winst komt als Brandt verslagen is
+await p.waitForTimeout(1500);
+await p.evaluate(() => window.spel.strijd.beslis('gewonnen'));
+await p.waitForTimeout(1500);
 let s = await stand();
 check('level 4 gewonnen', s.uitslag === 'gewonnen' && s.einde, JSON.stringify(s));
 await p.waitForTimeout(11500);   // de stand wordt om de tien seconden bewaard
@@ -49,8 +51,10 @@ s = await stand();
 check('3 s later nog steeds geen defeat', s.uitslag === null && !s.einde && s.koning, JSON.stringify(s));
 check('klok loopt', s.tijd > 1, s.tijd);
 // Nog een keer winnen en weer opnieuw (de lus mag nergens terugkomen)
-await p.evaluate(() => window.spel.doel.zetTijd(479.5));
-await p.waitForTimeout(2500);
+await p.evaluate(() => { window.spel.doel.zetTijd(479.5); });   // sinds 0.72.1 komt dan het Stille Volk; de winst komt als Brandt verslagen is
+await p.waitForTimeout(1500);
+await p.evaluate(() => window.spel.strijd.beslis('gewonnen'));
+await p.waitForTimeout(1500);
 s = await stand();
 check('tweede keer gewonnen', s.uitslag === 'gewonnen', JSON.stringify(s));
 await p.tap('#einde-opnieuw'); await p.waitForTimeout(2000);
