@@ -723,10 +723,26 @@ Naar aanleiding van Karels feedback (17 november 2026).
 ## 0.70.1 (deel 4): sjamaanhut hoger
 - De muren van de Mystic Lodge zijn hoger, het dak lager, de deur groter, de tekens hoger op de wand en de rook staat naast het gewei in plaats van erdoorheen.
 
-## 0.70.4: een gewonnen level opnieuw spelen gaf meteen weer "Defeat"
+## 0.71.1: een gewonnen level opnieuw spelen gaf meteen weer "Defeat"
 - **Klacht van Karel (18 november):** bij level 4 (The Fen, de hut bewaken) kwam bij opnieuw spelen het scherm "Your king fell during attack 0", terwijl de koning niet gevallen was, en "Start over" bracht hem steeds op hetzelfde scherm terug.
 - **Oorzaak:** na een gewonnen level wordt de stand bewaard. Bij herladen (opnieuw spelen) is het level dan al beslist, en main.js zette de koning alleen neer als er nog geen uitslag was (`if (!strijd.uitslag()) leger.zetKoning(...)`). Daardoor kende leger.js het thuisvak van de koning niet (`koningThuis` bleef -1). "Start over" (`leger.herstel()`) haalde alle soldaten weg en zette de koning niet terug; de volgende rekenstap zag dat je koning ontbrak en gaf meteen verloren, elke keer opnieuw. De tekst "attack 0" komt doordat er dan nog geen golf was.
 - **Fix:** nieuwe `leger.zetKoningThuis(vak)` onthoudt het thuisvak altijd (main.js), ook bij een beslechte bewaarde stand. De koning zelf wordt nog steeds alleen neergezet als het level nog loopt.
 - **Test:** `tests/opnieuw_na_winst71.mjs` (12 punten): level 4 winnen, herladen, Start over, koning terug, hut heel, klok loopt, nog een keer. Zonder de fix faalt de test met exact de melding van Karel.
-- Versie op 0.70.4 in config.js, sw.js, test_stap15 en test_stap17.
+- Versie op 0.71.1 in config.js, sw.js, test_stap15 en test_stap17.
 - **Niet nagegaan:** of dezelfde lus ook in andere levels met een eigen doel (6 loodsen, 8 sluis) optreedt na een bewaarde winst. De oorzaak zit in gedeelde code (leger.js, main.js), dus de fix geldt daar ook, maar alleen level 4 is getest.
+
+## 0.71.0: rood verzamelt en marcheert samen op (de veldheer, laag 1 opnieuw)
+- Aanleiding (Karel, 17 november): de aanvallen van rood waren nog vaak ongecoördineerd; machines kwamen eerder aan en waren al kapot voordat de soldaten er waren. Gekozen: rood verzamelt zichtbaar voor jouw muren.
+- Oorzaak: de veldheer rekende bij vertrek één keer wachttijden uit en liet iedereen daarna zelfstandig lopen. Elk oponthoud onderweg (vechten, omlopen, poorten) gooide dat in de war, en een ram had geen regel om op begeleiding te wachten.
+- Nieuw (js/veldheer.js): elke groep heeft drie fasen.
+  - Verzamelen: een open plek buiten bereik van jouw torens, muren en poorten (minstens 8 tegels), 9 tot 16 tegels (liefst 12) van de bres, aan de kant van het leger. Ieder krijgt een eigen vakje. Opmars als 85% er is, of 25 s nadat de helft er is, of na 120 s.
+  - Opmars: ridders voorop, machines direct erachter, schutters achteraan. Een machine loopt nooit voor de voorste ridder uit; ridders lopen hooguit 3 tegels voor de achterste machine uit. Klaar als de achterste machine bij de muur is (zonder machines: als de ridders er zijn), als de bres al gevallen is, of na 100 s.
+  - Aanval: iedereen vrij. Is er van een groep geen soldaat meer over, dan gaat een machine die nog niet bij de muur is terug naar het verzamelpunt en sluit hij aan bij de volgende aanval.
+  - De flank vertrekt zo dat hij tegelijk met de hoofdmacht aankomt; de tweede lijn verzamelt mee en vertrekt pas 22 s (niveau 5: 16 s) nadat de hoofdmacht aanvalt. Verkenners vertrekken meteen, zoals voorheen.
+  - Terugtrekken (niveau 5) kan nu in elke fase.
+  - Meldingen (door Claude geschreven): "Red gathers outside your west wall!" of "The red army gathers before it strikes." en "The red army advances!".
+- Nieuw in strijd.js: wie verzamelt of in de opmars loopt, jaagt niemand ver na (alleen wie binnen bereik plus 1,5 tegel komt); een ladderdrager wacht ook (hij bleef eerst doorlopen).
+- De oude rekensom met wachttijden blijft als reserve als er geen verzamelpunt te vinden is.
+- Meting (level 5, ringmuur, 4 zwaardvechters, 4 ridders, 3 schutters, 2 rammen, 1 ladder): verzamelen tot 44 s, opmars 44 tot 61 s; de eerste ram raakt de muur met 3 tot 4 eigen soldaten binnen 5 tegels; geen machine liep meer dan 1 tegel voor de ridders uit; de flank kwam 2 tot 4 s na de hoofdmacht aan de andere kant aan.
+- Test: tests/opmars40.mjs (7 punten); veldheer38 aangepast aan de nieuwe werkwijze. Bekend: veldheer38 "zonder plan ... ver uit elkaar" faalt ook zonder deze wijziging (11,8 s in plaats van meer dan 15), net als losse punten in hut36, ronde39 en campagne30; die komen uit eerdere versies.
+- Risico's: aanvallen komen 30 tot 60 s later op gang dan voorheen, dus lagere levels voelen mogelijk makkelijker; het verzamelpunt is niet op elke kaart bekeken; het plan wordt nog steeds niet bewaard bij opslaan.
