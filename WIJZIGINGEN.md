@@ -800,6 +800,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Ook de rest zachter: stofkorrels zijn ronde stipjes, windstrepen zijn dunner, doorzichtiger en golven, regen is dunner en lichter, en de stofvlaag over de grond loopt geleidelijk in plaats van met een rechte rand.
 - Alles blijft in de wereld hangen (sinds 0.72.1): schuiven met de kaart beweegt het weer niet mee.
 
+## 0.73.2: level 4 (The Fen): het garnizoen loopt rustig rond (naar Karels wens van 18 november)
+
+- De soldaten in het tentenkamp stonden stil. Nu slentert om de 2 tot 8 seconden ongeveer een derde van hen naar een ander vrij plekje binnen 3 tegels van zijn post (korte paden van hooguit 8 stappen) en blijft daar even staan. Komt er iets van jou in zicht, dan vallen ze nog steeds aan (tot 9 tegels van hun post) en lopen daarna terug. Code: `garnizoenDenk` in strijd.js (`GARNIZOEN_SLENTER`).
+- `tests/versterking71.mjs` uitgebreid (38 controles): na 40 seconden staan minstens 10 soldaten ergens anders, er lopen er tegelijk een paar maar niet allemaal, en niemand komt verder dan 4,5 tegels van zijn post.
 ## 0.74.0: level 8 The White Dike is speelbaar, met de saboteur als beloning
 - Level 8 (Dike Reeve Rutger) staat open na level 7. Kaart witte_dijk (polder), kasteel met gracht, landschap polder.
 - **Doel in twee fasen** (doeltype C uit loodsen.js, nu algemener): eerst de stenen sluis slopen (object SLUIS 42, 700 leven, aan het water vlak voor zijn kasteel), daarna Rutger zelf verslaan. Zolang de sluis staat kan de rode koning niet sneuvelen (strijd.js `beschermKoning`). loodsen.js kent nu `object`, `bijWater`, `daarna: 'koning'` en `teksten` per level; level 6 werkt ongewijzigd.
