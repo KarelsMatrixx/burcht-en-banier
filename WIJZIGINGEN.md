@@ -812,3 +812,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Windzanger: staat er geen vrije grond naast de muur (gracht), dan blijft het doelwit staan maar krijgt het wel de 18 schade van de vlaag.
 - Alle Engelse teksten en getallen: door Claude, na te lezen.
 - Tests: nieuw `tests/level8_74.mjs` (10 controles); `level7_72` test de windvlaag nu in vrij spel. Bekend rood en niet van deze reeks: ronde39 ("zes golven oplopend tot 25", ook rood zonder deze wijziging), mystiek27.
+
+## 0.75.0: level 9 The Mourngate is speelbaar, met de ziener en de verborgen reserve
+- Level 9 (Marshal Falconer) staat open na level 8. Nieuwe kaart `rouwpoort` (brede bergpas), bergfort met twee ringen, landschap sneeuw. Winst: Falconer doden.
+- **Verborgen reserve** (js/reserve.js): 24 man (ridders, bijlridders, kruisboog, zwaardvechters, banierdrager) wacht onzichtbaar op 15 tegels opzij van het fort. Je ziet ze niet en kunt ze niet aanvallen, tenzij een soldaat van jou vlakbij komt (2 tegels) of een ziener binnen 10 tegels staat. Ze vechten alleen met wie vlak bij hen komt. Ze vallen aan zodra je soldaten binnen 8 tegels van zijn burcht komen (in je flank), als ze ontdekt en benaderd worden, of na 9 minuten. Niet bewaard in de strijdstand; de stand (al los of niet) staat in localStorage, Start over zet ze terug.
+- **Ziener** (soort ZIENER 36, Mystic Lodge, 20 goud en 8 brood): vecht niet; ziet de verborgen reserve en maakt sluipmoordenaars en saboteurs van de andere kant binnen 10 tegels zichtbaar. In level 9 krijg je twee zieners van het Stille Volk mee; zelf opleiden kan vanaf level 10 (beloning). Rood koopt in level 9 vanaf aanval 2 ook zieners, en gebruikt saboteurs en windzangers.
+- tekenaar.js tekent onzichtbare eenheden niet (`e.onzichtbaar`).
+- Engelse teksten en alle getallen: door Claude, na te lezen.
+- Test: `tests/level9_75.mjs` (10 controles).

@@ -958,10 +958,46 @@ function saboteur(def) {
   return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
 }
 
+// ------------------------------------------------------------------ ziener
+// Een ziener van het Stille Volk (level 9): lange witgrijze pij, kap in teamkleur met een
+// geschilderd oog, een staf met een lantaarn waarin een blauw licht brandt.
+function ziener(def) {
+  const K = def.kleur;
+  const PIJ = '#c9c4b4';
+  const PIJ2 = '#a39e8e';
+  const teken = (ctx, houding, beeld) => {
+    const wip = houding === 'lopen' && beeld % 2 ? -1 : 0;
+    const zwier = houding === 'lopen' ? [0, 1, 0, -1][beeld] : 0;
+    const mx = 13;
+    // staf met lantaarn
+    lijn(ctx, mx + 6.4, 33.4, mx + 6.4, 8 + wip, '#5a4126', 1.3);
+    lijn(ctx, mx + 6.4, 8 + wip, mx + 9, 7 + wip, '#5a4126', 1.1);
+    const g = ctx.createRadialGradient(mx + 9, 10.6 + wip, 0.3, mx + 9, 10.6 + wip, 5);
+    g.addColorStop(0, 'rgba(200,235,255,0.95)'); g.addColorStop(0.4, 'rgba(120,190,255,0.5)'); g.addColorStop(1, 'rgba(120,190,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mx + 9, 10.6 + wip, 5, 0, Math.PI * 2); ctx.fill();
+    blok(ctx, mx + 7.6, 8.4 + wip, 2.8, 4.2, 'rgba(60,50,40,0.9)');
+    blok(ctx, mx + 8.1, 9 + wip, 1.8, 3, '#bfe4ff');
+    // pij
+    vlak(ctx, [[mx - 4.6, 16.6 + wip], [mx + 4.6, 16.6 + wip], [mx + 6 + zwier, 33.6], [mx - 6 + zwier, 33.6]], PIJ);
+    vlak(ctx, [[mx - 4.6, 16.6 + wip], [mx - 1.2, 16.8 + wip], [mx - 2.4 + zwier, 33.6], [mx - 6 + zwier, 33.6]], PIJ2);
+    blok(ctx, mx - 4.4, 23.4 + wip, 8.8, 1.1, K);
+    // kap in teamkleur met oog
+    gezichtje(ctx, mx + 0.6, 12.6 + wip, { rx: 2.7, ry: 3, baard: '#dcd8cc', haar: '#cfcabd' });
+    lijn(ctx, mx - 2.2, 12.2 + wip, mx + 3.4, 12.2 + wip, '#2a2a2a', 1.2);   // blinddoek
+    vlak(ctx, [[mx - 4.4, 14.6 + wip], [mx - 4, 8.2 + wip], [mx + 0.6, 5.8 + wip], [mx + 4.6, 8 + wip], [mx + 4.8, 11 + wip], [mx + 2.6, 9.6 + wip], [mx - 1.6, 10 + wip], [mx - 2.4, 15 + wip]], K);
+    ovaal(ctx, mx + 0.4, 7.8 + wip, 1.4, 0.8, '#f2e7b8');
+    ovaal(ctx, mx + 0.4, 7.8 + wip, 0.5, 0.5, '#2a2a2a');
+    // armen
+    lijn(ctx, mx + 3, 18 + wip, mx + 6.2, 20 + wip, PIJ2, 2.2); hand(ctx, mx + 6.4, 20 + wip, HUID, 1.2);
+    lijn(ctx, mx - 3, 18 + wip, mx - 4.6, 23 + wip, PIJ2, 2.2); hand(ctx, mx - 4.6, 23.4 + wip, HUID, 1.2);
+  };
+  return pakket(teken, { sla: [['lopen', 0], ['lopen', 0]] });
+}
+
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
-  zwaardvechter, banierdrager, heler, steenwachter, windzanger, saboteur, ruiter, paard: (def) => ruiter(def, true),
+  zwaardvechter, banierdrager, heler, steenwachter, windzanger, saboteur, ziener, ruiter, paard: (def) => ruiter(def, true),
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

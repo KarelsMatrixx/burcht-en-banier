@@ -193,6 +193,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     [assets.haal('eenheid.paard_blauw'), assets.haal('eenheid.paard_rood')],
     [assets.haal('eenheid.wind_blauw'), assets.haal('eenheid.wind_rood')],
     [assets.haal('eenheid.sabo_blauw'), assets.haal('eenheid.sabo_rood')],
+    [assets.haal('eenheid.ziener_blauw'), assets.haal('eenheid.ziener_rood')],
   ];
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
@@ -755,6 +756,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
           ctx.ellipse(plekX[i], plekY[i], 11, 5.5, 0, 0, Math.PI * 2);
           ctx.stroke();
         }
+        if (e.onzichtbaar) continue;   // de verborgen reserve van rood (level 9): niet te zien
         const plaatje = kiesBeeld(e, i, s);
         // Een houthakker sleept zijn boom achter zich aan.
         const sleep = sleeptBoom(e) && !(e.werk.wacht > 0) ? sleepRichting(e) : null;

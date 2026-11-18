@@ -23,6 +23,7 @@ import { metLidwoord } from './taal.js';
 import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
 import { maakHinderlaag } from './hinderlaag.js';
+import { maakReserve } from './reserve.js';
 import { maakPoortwacht } from './poortwacht.js';
 import { maakGids } from './gids.js';
 import { maakFiguranten } from './figuranten.js';
@@ -649,6 +650,7 @@ async function start() {
     leger.zetKoning(koningVak);   // altijd: wat de bewaarde stand ook was, na Start over staat je koning er weer (anders meteen weer Defeat)
     strijd.herstel();
     if (hinderlaag) hinderlaag.wis();   // level 2: de nissen in de rotsen dicht, de hinderlaag komt weer
+    if (reserve) reserve.wis();   // level 9: de verborgen reserve staat weer klaar
     sluitKazerne();
     ui.toonEinde({ open: false });
     ui.verbergVerhaal();
@@ -927,6 +929,12 @@ async function start() {
   // Level 2: boogschutters in de rotsen van de pas (js/hinderlaag.js)
   const hinderlaag = missie && missie.hinderlaag ? maakHinderlaag({
     instelling: missie.hinderlaag, kaart, leger, strijd, kaartGewijzigd,
+    toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
+    toonVerhaal: (tekst) => ui.toonVerhaal({ naam: missie.heer, portret: missie.portret, tekst }),
+  }) : null;
+  // Level 9: de verborgen reserve van Valkenier (js/reserve.js)
+  const reserve = missie && missie.reserve ? maakReserve({
+    missie, kaart, strijd, leger, wegvinder,
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
     toonVerhaal: (tekst) => ui.toonVerhaal({ naam: missie.heer, portret: missie.portret, tekst }),
   }) : null;
@@ -1227,6 +1235,7 @@ async function start() {
       if (proloog) { proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); }
       if (doel) doel.stap(dt);
       if (hinderlaag && !strijd.uitslag()) hinderlaag.stap(dt);
+      if (reserve) reserve.stap(dt);
       slachting.stap(dt);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),
@@ -1275,7 +1284,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel };
+  window.spel = { gids, hinderlaag, reserve, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

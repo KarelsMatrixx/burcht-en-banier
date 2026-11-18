@@ -310,6 +310,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   };
   // Een sluipmoordenaar die al even niet heeft geslagen, zie je pas van dichtbij.
   const verborgenVoor = (a, d) => {
+    if (a.onzichtbaar) return true;   // de verborgen reserve van rood (level 9)
+    if (a.gezienDoorZiener) return false;   // een ziener van de andere kant ziet hem
     const ka = krijgVan(a);
     return !!(ka && ka.def.verborgen && stapNr >= (ka.gezienTot || 0) && d > ka.def.verborgen);
   };
@@ -619,7 +621,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (k.bevel.dood || (!kanRaken(e, k, k.bevel) && !klimtNaar(e, k, k.bevel))) k.bevel = null;
       else if (!e.opMuur || Math.hypot(k.bevel.x - e.x, k.bevel.y - e.y) <= bereik) return k.bevel;
     }
-    const ver = blijft ? bereik : k.def.zicht;
+    // De verborgen reserve verraadt zich niet: hij vecht alleen met wie vlak bij hem komt.
+    const ver = e.reserveWacht ? Math.min(2.5, bereik + 1) : blijft ? bereik : k.def.zicht;
     let beste = null;
     let min = ver + 0.001;
     for (let i = 0; i < anderen.length; i++) {
@@ -1920,10 +1923,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // Wie er op je af komt: alle vijanden behalve de wachters op de muur van rood.
-  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning && !e.lijfwacht && !e.garnizoen);
+  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning && !e.lijfwacht && !e.garnizoen && !e.reserveWacht);
   function aantalAanvallers() {
     let n = 0;
-    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning && !vijanden[i].lijfwacht && !vijanden[i].garnizoen) n++;
+    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning && !vijanden[i].lijfwacht && !vijanden[i].garnizoen && !vijanden[i].reserveWacht) n++;
     return n;
   }
 
@@ -1994,6 +1997,59 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     opVerandering();
     opStand();
     return e;
+  }
+
+  // De verborgen reserve van rood (level 9, js/reserve.js): wacht onzichtbaar op een vaste plek.
+  // Je ziet ze pas van heel dichtbij, of als er een ziener van jou in de buurt is.
+  function reserveSoldaat(sleutel, vak) {
+    if (!soorten[sleutel] || vak < 0) return null;
+    const e = maakVijand(sleutel, vak);
+    e.reserveWacht = true;
+    e.onzichtbaar = true;
+    const t = tak(e);
+    t.houd = true;
+    t.via = -1;
+    opVerandering();
+    opStand();
+    return e;
+  }
+  // Wie kan de reserve zien? Een soldaat van jou heel dichtbij, of een ziener binnen zijn zicht.
+  function reserveZicht() {
+    const zieners = leger.lijst.filter((a) => !a.dood && krijgVan(a).def.ziener);
+    for (const e of vijanden) {
+      if (!e.reserveWacht || e.dood) continue;
+      let gezien = false;
+      for (const z of zieners) if (Math.hypot(z.x - e.x, z.y - e.y) <= krijgVan(z).def.ziener) { gezien = true; break; }
+      if (!gezien) for (const a of leger.lijst) if (!a.dood && Math.hypot(a.x - e.x, a.y - e.y) <= 2.2) { gezien = true; break; }
+      e.onzichtbaar = !gezien;
+    }
+  }
+  // De ziener (beloning van level 9): een sluipmoordenaar of saboteur van de andere kant
+  // binnen zijn zicht kan zich niet meer verbergen.
+  function zienerZicht() {
+    for (const [mijn, ander] of [[leger.lijst, vijanden], [vijanden, leger.lijst]]) {
+      const zieners = mijn.filter((a) => !a.dood && krijgVan(a).def.ziener);
+      for (const e of ander) {
+        if (e.dood || !krijgVan(e).def.verborgen) continue;
+        e.gezienDoorZiener = zieners.some((z) => Math.hypot(z.x - e.x, z.y - e.y) <= krijgVan(z).def.ziener);
+      }
+    }
+  }
+
+  // De reserve valt aan: iedereen zichtbaar en op weg naar jou.
+  function laatReserveLos() {
+    let n = 0;
+    for (const e of vijanden) {
+      if (!e.reserveWacht || e.dood) continue;
+      e.reserveWacht = false;
+      e.onzichtbaar = false;
+      const k = krijgVan(e);
+      if (k.tak) k.tak.houd = false;
+      e.pad = null;
+      k.denk = 1;
+      n++;
+    }
+    return n;
   }
 
   // De opmars is klaar: iedereen die wachtte, gaat naar de burcht.
@@ -2084,7 +2140,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     for (let i = 0; i < eigen.length; i++) krijgerStap(eigen[i], vijanden);
     burchtStap(burcht, vijanden);
     if (!R.proloog) burchtStap(rood, eigen);
-    if (stapNr % stappen(1) === 0) helerStap();   // in de proloog staat er geen kasteel van rood
+    if (stapNr % stappen(1) === 0) helerStap();
+    if (stapNr % stappen(0.5) === 0 && vijanden.some((e) => e.reserveWacht)) reserveZicht();
+    if (stapNr % stappen(0.5) === 0) zienerZicht();   // in de proloog staat er geen kasteel van rood
     brandStap();
     ruimOp();
     if (R.proloog) {
@@ -2380,6 +2438,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   return {
     beschermKoning: (aan) => { koningBeschermd = !!aan; },
+    reserveSoldaat, laatReserveLos, reserveZicht,
+    reserve: () => vijanden.filter((e) => e.reserveWacht && !e.dood),
     koningBeschermd: () => koningBeschermd,
     stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, ruiter, laatOpmarsLos, opmarsDirect, opmarsStand, hinderlaag,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,

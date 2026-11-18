@@ -43,6 +43,6 @@ check('geen scriptfouten', fouten.length === 0, fouten.join('|'));
 // ---- Level 9: saboteur vrijgegeven
 await start(9, [1, 2, 3, 4, 5, 6, 7, 8]);
 const c = await p.evaluate(() => { const s = window.spel; return { m: s.modus, sab: s.leger.waaromNiet('saboteur') }; });
-if (c.m.missie === 9) check('saboteur vrij in level 9 (alleen de lodge ontbreekt)', !c.sab || /lodge/i.test(c.sab), c.sab);
+if (c.m.missie === 9) check('saboteur vrij in level 9', !c.sab || !/unlock|later|not yet|win /i.test(c.sab), c.sab);
 console.log('ok', ok, 'fout', fout);
 srv.kill(); await b.close();

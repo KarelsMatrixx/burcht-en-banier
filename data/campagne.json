@@ -1054,20 +1054,21 @@
    "heer": "Marshal Evert Falconer",
    "portret": "valkenier",
    "profiel": "zwaar",
-   "kaart": "standaard",
+   "kaart": "rouwpoort",
    "landschap": "sneeuw",
    "punt": {
     "x": 84.1,
     "y": 48.9
    },
-   "speelbaar": false,
-   "intro": "A great mountain fort closes the last road to Blackmark. Falconer leads the Mourning Guard.",
+   "speelbaar": true,
+   "intro": "A great mountain fort closes the last road to Blackmark. Marshal Falconer leads the Mourning Guard, and part of his army waits hidden on the flank of the fort. The Silent Folk send two seers with you to find it.",
    "beeld": "beelden/verhaal/level09.webp",
    "verhaal": "The Mourngate closes the last road to Blackmark. Marshal Falconer leads the Mourning Guard, and he keeps part of his army hidden. The Silent Folk send a seer to reveal it. Beyond these walls waits the duke.",
-   "uit": "",
+   "uit": "Falconer kneels in the snow. \"He told me you would kill him out of revenge. I believed him.\" Then Reinout steps out of the trees with a few men. \"I served as a page in Mournkeep. There is a back gate in the outer ring. Let me open it for you.\"",
    "wessel": "A drawing of two banners side by side.",
-   "beloning": [],
-   "beloningLater": "windzanger (idee)",
+   "beloning": [
+    "ziener"
+   ],
    "rood": {
     "legerMax": 180,
     "sterkte": 130,
@@ -1081,8 +1082,15 @@
      "kruisboog": {
       "aandeel": 2
      },
+     "zwaardvechter": {
+      "aandeel": 1
+     },
      "sluipmoordenaar": {
       "aandeel": 1
+     },
+     "windzanger": {
+      "aandeel": 0.5,
+      "vanaf": 1
      }
     },
     "koning": {
@@ -1099,9 +1107,80 @@
     "muur": 210,
     "aanval": {
      "niveau": 5
+    },
+    "extra_soorten": {
+     "ziener": {
+      "vanaf": 2,
+      "max": 2
+     },
+     "katapult": {
+      "vanaf": 2,
+      "max": 1
+     },
+     "toren": {
+      "vanaf": 3,
+      "max": 1
+     },
+     "saboteur": {
+      "vanaf": 1,
+      "max": 2
+     }
+    },
+    "eersteAanval": 100,
+    "begin": {
+     "goud": 180,
+     "hout": 20,
+     "steen": 20
+    },
+    "lijfwacht": {
+     "soort": "zwaardvechter",
+     "aantal": 3
+    },
+    "wachters": 14
+   },
+   "kasteel": "bergfort",
+   "reserve": {
+    "leger": {
+     "ridder": 8,
+     "bijlridder": 6,
+     "kruisboog": 5,
+     "zwaardvechter": 4,
+     "banierdrager": 1
+    },
+    "afstand": 15,
+    "kant": 1.5,
+    "los": {
+     "naderen": 8,
+     "tijd": 540
+    },
+    "zieners": 2,
+    "teksten": {
+     "zieners": "Two seers of the Silent Folk join you at your keep. They see what hides.",
+     "ontdekt": "Your seer sees soldiers hidden on the flank of the fort! Falconer's reserve.",
+     "aanval": "Now, Guard! Out of the trees and into their flank!"
     }
    },
-   "kasteel": "bergfort"
+   "berichten": [
+    {
+     "bij": "tijd",
+     "waarde": 8,
+     "wie": "bartholt",
+     "tekst": "Falconer never shows all his men, Sire. Send a seer ahead before you storm the fort, or his reserve will fall on your flank."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 1,
+     "wie": "heer",
+     "tekst": "The Mourning Guard does not break, Karel. Not for you, not for anyone."
+    },
+    {
+     "bij": "roodBurcht",
+     "waarde": 50,
+     "wie": "karel",
+     "portret": "karel_boos",
+     "tekst": "One more gate. Then only Mournkeep stands between me and my son."
+    }
+   ]
   },
   {
    "id": 10,
