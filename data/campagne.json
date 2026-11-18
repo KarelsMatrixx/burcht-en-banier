@@ -115,6 +115,7 @@
    "portret": "reinout",
    "profiel": "rustig",
    "kaart": "dal",
+   "landschap": "heide",
    "punt": {
     "x": 10.9,
     "y": 50.1
@@ -202,6 +203,7 @@
    "portret": "mechteld",
    "profiel": "normaal",
    "kaart": "zevenwind",
+   "landschap": "wind",
    "punt": {
     "x": 20.9,
     "y": 34.4
@@ -305,6 +307,7 @@
    "portret": "hademar",
    "profiel": "zwaar",
    "kaart": "ijzerbroek",
+   "landschap": "kool",
    "punt": {
     "x": 38.5,
     "y": 55.6
@@ -388,6 +391,7 @@
    "portret": "brandt",
    "profiel": "normaal",
    "kaart": "veen",
+   "landschap": "veen",
    "punt": {
     "x": 44.7,
     "y": 38.4
@@ -482,6 +486,7 @@
    "portret": "aleid",
    "profiel": "normaal",
    "kaart": "meren",
+   "landschap": "meer",
    "punt": {
     "x": 51.2,
     "y": 44.2
@@ -618,6 +623,7 @@
    "portret": "lambrecht",
    "profiel": "normaal",
    "kaart": "reuzenrug",
+   "landschap": "rug",
    "punt": {
     "x": 61.1,
     "y": 32.3
@@ -782,6 +788,7 @@
    "portret": "everhard",
    "profiel": "zwaar",
    "kaart": "grauwvoort",
+   "landschap": "kloof",
    "punt": {
     "x": 69.9,
     "y": 44.6
@@ -835,6 +842,7 @@
    "portret": "rutger",
    "profiel": "zwaar",
    "kaart": "witte_dijk",
+   "landschap": "polder",
    "punt": {
     "x": 76.1,
     "y": 56.2
@@ -889,6 +897,7 @@
    "portret": "valkenier",
    "profiel": "zwaar",
    "kaart": "standaard",
+   "landschap": "sneeuw",
    "punt": {
     "x": 84.1,
     "y": 48.9
@@ -944,6 +953,7 @@
    "portret": "ottger",
    "profiel": "zwaar",
    "kaart": "standaard",
+   "landschap": "rouw",
    "punt": {
     "x": 88.1,
     "y": 30.3

@@ -34,14 +34,22 @@ const OVERLAP = 2;           // stukken overlappen, zodat er geen naden zijn
 const MAX_STUKKEN = 90;      // zoveel stukken bewaren we (ca. 0,5 MB per stuk)
 const TEX = 512;             // maat van de korreltextuur (herhaalt na 256 wereldpixels)
 
-// Kleuren (r, g, b)
-const GRAS_LICHT = [112, 150, 72];
-const GRAS_DONKER = [90, 126, 58];
-const ZAND = [208, 190, 138];
-const ZAND_NAT = [168, 150, 104];
-const AARDE = [140, 117, 84];
-const WATER_ONDIEP = [86, 150, 166];
-const WATER_DIEP = [42, 88, 124];
+// Kleuren (r, g, b). Dit is het gewone groene landschap; een level kan via
+// data/landschappen.json een eigen profiel meegeven (versie 0.71.0).
+const STANDAARD = {
+  gras: [[112, 150, 72], [90, 126, 58]],
+  zand: [[208, 190, 138], [168, 150, 104]],
+  aarde: [140, 117, 84],
+  water: [[86, 150, 166], [42, 88, 124]],
+  schuim: [246, 250, 250],
+  rimpels: true,
+  vlek: null,
+  spriet: ['rgba(238,246,170,0.34)', 'rgba(10,45,5,0.30)'],
+  bloemen: ['rgba(255,255,255,0.9)', 'rgba(250,222,90,0.95)'],
+  bloemKans: 0.045,
+  steenKans: 0.025,
+  riet: 0,
+};
 
 // --- Ruis --------------------------------------------------------------------
 
@@ -164,6 +172,7 @@ function bouwVeld(kaart, zaad) {
     aarde: new Float32Array(LB * LH),
     donker: new Float32Array(LB * LH),
     diep: new Float32Array(LB * LH),
+    vlek: new Float32Array(LB * LH),
   };
   // Waarde van een tegelkanaal op een plek in tegelmaat (vloeiend tussen de middens)
   const bij = (kanaal, gx, gy) => {
@@ -186,6 +195,8 @@ function bouwVeld(kaart, zaad) {
       veld.aarde[k] = bij(aarde, gx, gy) + ruis3(gx * 1.4 + 80, gy * 1.4 + 20, zaad + 6) * 0.5;
       veld.donker[k] = klem(bij(donker, gx, gy) * 0.8 + ruis3(gx * 0.35 + 5, gy * 0.35 + 9, zaad + 9) * 1.1 - 0.1, 0, 1);
       veld.diep[k] = bij(diepTegel, gx, gy);
+      // Grote vlekken van een tweede grondkleur (heide, rots, sneeuw): los van de tegels.
+      veld.vlek[k] = ruis3(gx * 0.42 + 21, gy * 0.42 + 63, zaad + 12) + ruis3(gx * 1.6 + 5, gy * 1.6 + 2, zaad + 15) * 0.35 + 0.5;
     }
   }
   return veld;
@@ -193,8 +204,17 @@ function bouwVeld(kaart, zaad) {
 
 // --- Het landschap --------------------------------------------------------------
 
-export function maakLandschap(kaart) {
+export function maakLandschap(kaart, profiel = null) {
   maakTexturen();
+  const P = { ...STANDAARD, ...(profiel || {}) };
+  const [GRAS_LICHT, GRAS_DONKER] = P.gras;
+  const [ZAND, ZAND_NAT] = P.zand;
+  const AARDE = P.aarde;
+  const [WATER_ONDIEP, WATER_DIEP] = P.water;
+  const SCHUIM = P.schuim;
+  const VLEK_KLEUR = P.vlek ? P.vlek.kleur : null;
+  // Drempel in het vlekkenveld: hoger aandeel = lagere drempel = meer vlekken.
+  const VLEK_DREMPEL = P.vlek ? 1 - klem(P.vlek.aandeel, 0, 1) : 2;
   const zaad = (kaart.zaad | 0) % 1000;
   let veld = null;
   let handtekening = '';
@@ -273,6 +293,7 @@ export function maakLandschap(kaart) {
     const vAarde = veld.aarde;
     const vDonker = veld.donker;
     const vDiep = veld.diep;
+    const vVlek = veld.vlek;
     const W = 0.022;   // zachtheid van de kustlijn
 
     for (let py = 0; py < bh; py++) {
@@ -314,9 +335,9 @@ export function maakLandschap(kaart) {
           // Schuim langs de kust
           const schuim = stap(0.41, 0.5, fl) * (0.5 + 0.5 * vlek) * 0.5;
           if (schuim > 0) {
-            r += (246 - r) * schuim;
-            g += (250 - g) * schuim;
-            b += (250 - b) * schuim;
+            r += (SCHUIM[0] - r) * schuim;
+            g += (SCHUIM[1] - g) * schuim;
+            b += (SCHUIM[2] - b) * schuim;
           }
         }
         if (fl > 0.5 - W) {
@@ -335,6 +356,16 @@ export function maakLandschap(kaart) {
           let lr = (GRAS_LICHT[0] + (GRAS_DONKER[0] - GRAS_LICHT[0]) * dk) * lumG;
           let lg = (GRAS_LICHT[1] + (GRAS_DONKER[1] - GRAS_LICHT[1]) * dk) * lumG;
           let lb = (GRAS_LICHT[2] + (GRAS_DONKER[2] - GRAS_LICHT[2]) * dk) * lumG;
+          if (VLEK_KLEUR) {
+            const vl = vVlek[k] * w00 + vVlek[k + 1] * w10 + vVlek[k + LB] * w01 + vVlek[k + LB + 1] * w11;
+            const mv = stap(VLEK_DREMPEL - 0.04, VLEK_DREMPEL + 0.04, vl + fijn * 0.025 + vlek * 0.03) * 0.92;
+            if (mv > 0) {
+              const lumV = 1 + vlek * 0.08 + fijn * 0.07;
+              lr += (VLEK_KLEUR[0] * lumV - lr) * mv;
+              lg += (VLEK_KLEUR[1] * lumV - lg) * mv;
+              lb += (VLEK_KLEUR[2] * lumV - lb) * mv;
+            }
+          }
           const lumA = 1 + vlek * 0.09 + fijn * 0.07;
           const ma = sa * (1 - sz);
           lr += (AARDE[0] * lumA - lr) * ma;
@@ -388,7 +419,7 @@ export function maakLandschap(kaart) {
             if (soortOp(sx, sy) !== 3) continue;
             const hoogte = 1.6 + h(12 + n * 3) * 2.2;
             const schuin = (h(30 + n) - 0.5) * 1.4;
-            c.strokeStyle = h(40 + n) < 0.55 ? 'rgba(238,246,170,0.34)' : 'rgba(10,45,5,0.30)';
+            c.strokeStyle = h(40 + n) < 0.55 ? P.spriet[0] : P.spriet[1];
             c.lineWidth = 0.8;
             c.beginPath();
             c.moveTo(sx, sy);
@@ -396,16 +427,40 @@ export function maakLandschap(kaart) {
             c.stroke();
           }
           const z = h(60);
-          if (z < 0.045) {
+          // Riet langs de oever (moeras, meer, polder)
+          if (P.riet > 0 && h(80) < P.riet) {
+            veldOp(x, y, monster);
+            if (monster.land < 0.66) {
+              for (let n = 0; n < 6; n++) {
+                const rx2 = x + (h(81 + n) - 0.5) * 8;
+                const hoog = 4 + h(88 + n) * 5;
+                const sch = (h(95 + n) - 0.5) * 2.4;
+                c.strokeStyle = n % 3 === 0 ? 'rgba(170,150,80,0.9)' : n % 3 === 1 ? 'rgba(96,120,52,0.9)' : 'rgba(64,84,36,0.9)';
+                c.lineWidth = 0.9;
+                c.beginPath();
+                c.moveTo(rx2, y);
+                c.quadraticCurveTo(rx2 + sch * 0.3, y - hoog * 0.6, rx2 + sch, y - hoog);
+                c.stroke();
+                if (n === 2) {
+                  c.fillStyle = 'rgba(92,60,30,0.95)';
+                  c.beginPath();
+                  c.ellipse(rx2 + sch, y - hoog - 1, 0.8, 1.8, 0, 0, Math.PI * 2);
+                  c.fill();
+                }
+              }
+              continue;
+            }
+          }
+          if (z < P.bloemKans && P.bloemen.length) {
             for (let n = 0; n < 4; n++) {
               const bx = x + (h(61 + n) - 0.5) * 7;
               const by = y + (h(65 + n) - 0.5) * 3.5;
-              c.fillStyle = h(70) < 0.5 ? 'rgba(255,255,255,0.9)' : 'rgba(250,222,90,0.95)';
+              c.fillStyle = P.bloemen[Math.floor(h(70) * P.bloemen.length) % P.bloemen.length];
               c.beginPath();
               c.arc(bx, by, 0.95, 0, Math.PI * 2);
               c.fill();
             }
-          } else if (z > 0.975) {
+          } else if (z > 1 - P.steenKans) {
             c.fillStyle = 'rgba(0,0,0,0.20)';
             c.beginPath();
             c.ellipse(x, y + 0.7, 2.1, 1.2, 0, 0, Math.PI * 2);
@@ -440,7 +495,7 @@ export function maakLandschap(kaart) {
             c.ellipse(sx, sy, 1 + h(25 + n), 0.7, 0, 0, Math.PI * 2);
             c.fill();
           }
-        } else if (soort === 0 && h(3) < 0.4) {
+        } else if (soort === 0 && P.rimpels && h(3) < 0.4) {
           // Water: kleine rimpels, alleen een stukje van de kust af
           veldOp(x, y, monster);
           if (monster.land < 0.36) {

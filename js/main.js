@@ -33,6 +33,19 @@ import { maakGevangene } from './gevangene.js';
 import { SOORT } from './eenheden.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, eerstWinnen, ontgrendeld } from './modus.js';
 
+// Landschapsprofiel uit data/landschappen.json; zonder naam of bij een fout: null (gewoon groen).
+async function laadLandschap(naam) {
+  if (!naam) return null;
+  try {
+    const antwoord = await fetch('data/landschappen.json');
+    if (!antwoord.ok) return null;
+    const lijst = (await antwoord.json()).landschappen;
+    return lijst[naam] ? { sleutel: naam, ...lijst[naam] } : null;
+  } catch (fout) {
+    return null;
+  }
+}
+
 const GEEN_TITEL = 'burcht-banier.geenTitel';
 const TOON_BEELD = 'burcht-banier.toonBeeld';   // na het kiezen van een level op de kaart: eerst het verhaalbeeld
 
@@ -66,7 +79,15 @@ async function start() {
 
   // De rode koning is in de campagne de heer zelf: zijn kleding en wapen.
   const heerKoning = missie && missie.rood && missie.rood.koning;
-  const assets = await laadAssets(heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {}, roodKasteel);
+  // Het landschap van dit level (versie 0.71.0): grondkleuren, bomen, rotsen, weer.
+  // Alleen het uiterlijk; het spel zelf verandert niet.
+  const landschapProfiel = await laadLandschap(missie && missie.landschap);
+  const aanpassingen = heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {};
+  if (landschapProfiel) {
+    aanpassingen['object.boom'] = { kleur: landschapProfiel.boomKleur, stijl: landschapProfiel.bomen };
+    if (landschapProfiel.rotsKleur || landschapProfiel.rotsSneeuw) aanpassingen['object.steen'] = { ...(landschapProfiel.rotsKleur ? { kleur: landschapProfiel.rotsKleur } : {}), sneeuw: !!landschapProfiel.rotsSneeuw };
+  }
+  const assets = await laadAssets(aanpassingen, roodKasteel);
   assets.meldingen.forEach((tekst) => ui.toonMelding(tekst, { soort: 'uitleg' }));
   // In de campagne heb je alleen wat het verhaal al heeft vrijgegeven.
   const mag = ontgrendeld(missies.campagne, missie ? missie.id : null);
@@ -75,7 +96,7 @@ async function start() {
   const kaart = maakKaart({ ...(kaarten[kaartNaam] || CONFIG.kaart), ...(ontwerp ? { kasteel: ontwerp } : {}) });
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
-  const tekenaar = maakTekenaar(canvas, kaart, camera, assets);
+  const tekenaar = maakTekenaar(canvas, kaart, camera, assets, landschapProfiel);
   tekenaar.zetWimpels(!!(ontwerp && ontwerp.wimpels));
   const gevangene = maakGevangene({ kaart, missie });   // level 5: Ludolf in zijn cel
   const wegvinder = maakWegvinder(kaart);
@@ -1242,7 +1263,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht };
+  window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

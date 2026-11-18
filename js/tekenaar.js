@@ -130,7 +130,7 @@ function tegelToeval(x, y, extra) {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
-export function maakTekenaar(canvas, kaart, camera, assets) {
+export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
   // Valhekken: per poorttegel hoe ver het hek omhoog is (0 dicht, 1 open). Het doel komt van main.js
   // (zetHekDoel); de stand schuift er langzaam naartoe, zo zie je het hek bewegen.
   const HEK_TEMPO = 0.45;   // deel per seconde: ruim 2 seconden van dicht naar open
@@ -194,11 +194,11 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
   ];
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
-  const landschap = maakLandschap(kaart);
+  const landschap = maakLandschap(kaart, profiel);
   // Sfeer (stap G-A/B): echte slagschaduwen, wind, rook, water, wolken en vogels.
   // Uit te zetten met CONFIG.beeld.sfeer = false, of ?sfeer=uit in de adresbalk.
   const sfeerAan = (new URLSearchParams(location.search).get('sfeer') || (CONFIG.beeld.sfeer === false ? 'uit' : 'aan')) !== 'uit';
-  const sfeer = maakSfeer(kaart, landschap);
+  const sfeer = maakSfeer(kaart, landschap, profiel);
   let wimpels = false;   // windvaantjes op de torens van rood (Zevenwind, level 2)
   const basis = [1, 0, 0, 1, 0, 0];   // de cameratransformatie van dit beeld
   // Zelfbewaking: blijft het beeld langer traag (onder ongeveer 30 beelden per
@@ -1044,6 +1044,17 @@ export function maakTekenaar(canvas, kaart, camera, assets) {
     }
 
     nabewerking.toepassen(ctx, canvas);
+
+    // Weer en waas van het landschap van dit level (stof, mist, sneeuw, storm).
+    if (sfeerAan && profiel) {
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      if (!sfeerLicht || profiel.deeltjes === 'geen') sfeer.tekenWeer(ctx, canvas.width / pixelRatio, canvas.height / pixelRatio, t);
+      else if (profiel.waas) {
+        const w = profiel.waas;
+        ctx.fillStyle = `rgba(${w[0]}, ${w[1]}, ${w[2]}, ${w[3]})`;
+        ctx.fillRect(0, 0, canvas.width / pixelRatio, canvas.height / pixelRatio);
+      }
+    }
 
     // De nacht (proloog): een donkerblauwe waas over de wereld, 0 tot 1.
     const nacht = staat.nacht ? staat.nacht() : 0;

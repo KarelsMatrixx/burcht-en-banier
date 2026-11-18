@@ -722,3 +722,22 @@ Naar aanleiding van Karels feedback (17 november 2026).
 
 ## 0.70.1 (deel 4): sjamaanhut hoger
 - De muren van de Mystic Lodge zijn hoger, het dak lager, de deur groter, de tekens hoger op de wand en de rook staat naast het gewei in plaats van erdoorheen.
+
+## 0.71.0: een eigen landschap per level (naar Karels wens van 17 en 18 november)
+- **Landschapsprofielen** in `data/landschappen.json`; een level kiest er een met `landschap` in data/campagne.json. Alleen uiterlijk: het terrein heeft geen invloed op het spel (besluit Karel). Proloog en vrij spel blijven groen.
+  | Level | Profiel | Grond | Bomen | Weer en vogels |
+  |---|---|---|---|---|
+  | 1 Witherheath | heide | oker en bruin, paarse heidevlekken | berken, dorre bomen | stof, warm licht |
+  | 2 Sevenwinds | wind | grijsgroen met rots | scheve windsparren | windstrepen en blaadjes |
+  | 3 Ironmarsh | kool | grauw met zwart gruis, roestig water | kale en dode bomen | as, raven |
+  | 4 The Fen | veen | donkergroen, modder, groen water, riet | treurwilgen, elzen | mist |
+  | 5 Stillwater | meer | bleek groen, helder water, riet | elzen | pluisjes, meeuwen |
+  | 6 Giant's Spine | rug | schraal gras met rots | brede eiken | wind, grijs licht |
+  | 7 Greyford | kloof | mosgroen en grijs | smalle sparren | mist, raven |
+  | 8 White Dike | polder | fris groen, klei, riet | knotwilgen | meeuwen |
+  | 9 Mourngate | sneeuw | sneeuw met rots, ijs (geen golfjes) | besneeuwde dennen, sneeuwkap op rotsen | sneeuwval, geen vogels |
+  | 10 Mournkeep | rouw | donker grijsolijf met as, zwart water | dode zwarte bomen | regen, af en toe bliksem, raven |
+- Code: `landschap.js` (kleuren, tweede grondkleur in vlekken, bloemen, steentjes, riet, schuim, rimpels uit het profiel), `kunst.js` (16 boomsoorten, `tekenBoom` met `stijl`, rots met sneeuwkap), `sfeer.js` (`tekenWeer`: waas en deeltjes in schermmaat; meeuwen en raven), `tekenaar.js` (vijfde argument profiel), `main.js` (`laadLandschap`). Bij een traag beeld (sfeerLicht) vallen de deeltjes weg, de waas blijft.
+- **Level 10: kerk met begraafplaats** op een open plek in het dode bos rechts van Mournkeep: nieuw decorobject GRAF (41, `dorp.graf`, vier varianten met grafstenen, kruisen, grafheuvels, kaarsjes). Decor `kerk` en `graf` mogen bomen wegkappen (kaart.js).
+- Nieuwe test `tests/landschap71.mjs` (32 controles; zet levels 7 tot 10 voor de proef open). Groen gebleven: kasteel33, kasteeldecor53, hut70, kaartvorm34, siege52, kaarten24, stillwater40, proloog35, test_stap17.
+- Niet gezien op de iPhone: snelheid met sneeuw (110 vlokjes) en regen (120 strepen), en of de bliksemflits prettig is. Levels 7 tot 10 zijn nog niet speelbaar; hun landschap staat klaar.
