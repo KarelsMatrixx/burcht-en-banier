@@ -663,6 +663,8 @@ Aanvulling 0.69.0: eigen plaatjes van Karel (Gemini) voor level 3. Twee smederij
 - Bartholts uitleg over je volk noemt de echte getallen uit de balk (`{volk}/{ruimte}`) in plaats van vaste 4/6.
 - Test: tests/proloog69.mjs.
 
+## 0.70.1: de Mage Tower heet overal Mystic Lodge (bouwmenu, melding "Unlocked", tegelinfo)
+
 ## 0.70.0: level 4 (The Fen): klok voor de volgende aanval en een tentenkamp (naar Karels wens van 17 november)
 
 - **Aanvalsklok linksboven.** Onder de adviseur staat nu een klein paneel "Next attack" met de tijd tot de volgende golf van Brandts jagers en "Wave 1 of 5". Vanaf 15 seconden voor de golf kleurt hij rood en pulseert hij. Na de laatste golf (er komt er geen meer in de laatste 15 s) verdwijnt hij; ook bij winst of verlies. De tijd die je de hut moet houden staat ongewijzigd rechtsboven ("Hold Gesina's hut: 7:57 left"). Code: `doel.js` (`volgende()`, `toonKlok`), `ui.toonAanvalKlok`, `#aanvalklok` in index.html en stijl.css. Hij is smal (64 px) zodat de meldingslinten rechts van de adviseur er niet overheen komen.
@@ -770,6 +772,15 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Alvast in de code, nog niet vrijgegeven: de windzanger (soort WIND 34, mystieke kazerne). Een windvlaag blaast een soldaat van een muur of toren naar de grond ernaast (18 schade, 2,5 s verdoofd), niet van het dak van een hoofdkasteel. Wordt de beloning van level 7.
 - Bekend rood, los van deze wijziging: mystiek27 (vindt de knop van de sluipmoordenaar niet; ook rood zonder deze wijziging).
 
+## 0.72.2: level 4 (The Fen): garnizoen in het kamp en het Stille Volk komt na de acht minuten (naar Karels wens van 17 november)
+
+- **Garnizoen.** Het tentenkamp staat vol soldaten: 40 man, waarvan 20 rode ninja's (sluipmoordenaars), 12 boogschutters en 8 ridders (`rood.garnizoen` in campagne.json, maximaal 60). Ze staan verspreid tussen de tenten en bomen, bereikbaar vanaf de ingang van de commandotent, en blijven op hun post. Komt er iets van jou in zicht, dan gaan ze erop af, maar niet verder dan 9 tegels van hun post; daarna lopen ze terug. Ze tellen niet als aanvaller (komen dus niet op je hut of burcht af) en worden apart bewaard (`strijd.garnizoen()`, `bewaarStand().garnizoen`). Bij opnieuw beginnen staan ze er weer. De ninja's zijn voor jou half doorzichtig tot je dichtbij komt: dat is de gewone regel van de sluipmoordenaar.
+- **Na de acht minuten wint je niet meer.** Is de hut-tijd om, dan komen er vanuit de linkerbovenhoek van de kaart 80 vlammenwevers tevoorschijn (8 batches van 10, om de 0,6 s), die van jou zijn: je kiest ze en stuurt ze zoals je eigen leger. De camera kijkt naar de hoek en Gesina vertelt wat er gebeurt. De hut hoeft dan niet meer te blijven staan (`strijd.hutVrij()`), de aanvalsklok verdwijnt en rechtsboven staat "Defeat Huntmaster Brandt: 40 guards left". Je wint door Brandt in zijn kamp te verslaan; verlies je koning, dan verlies je. Instelling: `doel.versterking` in campagne.json (soort, aantal, hoek als deel van de kaart, perBatch, tussen).
+- De wevers tellen mee in je leger maar de grens houdt ze niet tegen (`leger.geef`); level 4 heeft `legerMax` 250 zodat ze ook na herladen terugkomen. Herladen in de tweede fase werkt: de wevers, het garnizoen en de fase blijven, er komen er geen bij. Na de winst begint de klok van dit level de volgende keer opnieuw (`doel.klaar()`).
+- Maximum aantal rode soldaten tegelijk van 60 naar 90, zodat het garnizoen de golven van de jagers niet blokkeert.
+- Teksten: intro, `uit` (winst) en de doelrol rechtsonder zijn aangepast aan de tweede fase.
+- Nieuwe test: `tests/versterking71.mjs` (35 controles: garnizoen 40 met 20/12/8, blijft staan, ritueel-einde geeft geen winst, 80 wevers links boven en van jou, herladen, het level is met de wevers te winnen, opnieuw beginnen, doorspelen). `hut70` en `hut36` kennen nu de tweede fase.
+- Niet gezien op de iPhone: snelheid met 80 wevers en 40 vijanden tegelijk. In de simulatie wint het Stille Volk vrij gemakkelijk (het garnizoen is na ongeveer 30 seconden vechten weg en er blijven zo'n 45 wevers over): de getallen zijn makkelijk bij te stellen als dat te snel gaat.
 ## 0.73.0: level 7 Greyford is speelbaar, met de windzanger als beloning
 - Level 7 (Greyford, Governor Everhard) staat open na level 6. Kaart grauwvoort (kloof), tolburcht met drie poorten achter elkaar (drie_poorten), landschap kloof (mist, sparren). Winst: de rode koning doden.
 - Rood: vooral zwaardvechters met banierdragers, boog- en kruisboogschutters, wat ridders; lijfwacht van 3 zwaardvechters; 12 wachters; eerste aanval na 130 s (startwaarden, na te lezen). Vanaf zijn derde aanval neemt hij ook windzangers mee (regel: wat je in een level wint, gebruikt rood daar al tegen je). Katapult vanaf aanval 3, belegeringstoren vanaf aanval 4.

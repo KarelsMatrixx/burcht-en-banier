@@ -225,6 +225,7 @@ async function start() {
     strijd.zetStand(bewaard.strijd);
   } else {
     strijd.maakRoodKoning();
+    strijd.maakGarnizoen();   // level 4: de soldaten in het tentenkamp
   }
   if (gevangene && strijd.uitslag() === 'gewonnen') gevangene.bevrijd();   // de cel staat open als je het level al won
   // Jouw koning: hij staat altijd bij de burcht als hij er nog niet is.
@@ -731,6 +732,7 @@ async function start() {
     }
     const s = strijd.stand();
     if (wat === 'gewonnen') {
+      if (doel && doel.klaar) doel.klaar();   // de klok van dit level begint de volgende keer opnieuw
       const na = s.golf ? ` You withstood ${s.golf} ${s.golf === 1 ? 'attack' : 'attacks'}.` : '';
       if (missie) {
         missieGewonnen(missie.id);
@@ -847,7 +849,9 @@ async function start() {
     titel: missie.titel,
     tegen: missie.heer ? `Against ${missie.heer}` : '',
     tekst: missie.intro,
-    taak: doel.omschrijving ? doel.omschrijving() : `Your goal: hold Mother Gesina's hut until her ritual is done (${Math.ceil(doel.over() / 60)} min left). If the hut falls, or your king, you lose.`,
+    taak: doel.omschrijving ? doel.omschrijving() : doel.fase && doel.fase() === 1
+      ? "Your goal: defeat Huntmaster Brandt in his tent camp. The Flameweavers of the Silent Folk are yours: tap them and send them in. If your king falls, you lose."
+      : `Your goal: hold Mother Gesina's hut until her ritual is done (${Math.ceil(doel.over() / 60)} min left). If the hut falls, or your king, you lose. Then the Silent Folk come, and you go after Brandt.`,
     portret: doel.omschrijving ? 'lambrecht' : 'gesina',
   } : missie ? {
     titel: missie.titel,
@@ -908,6 +912,8 @@ async function start() {
     toonTaak: (t) => ui.toonTaak(t),
     toonAanvalKlok: (k) => ui.toonAanvalKlok(k),
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
+    leger,
+    kijkNaar: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); camera.kijkNaar(w.x, w.y); },
     kaartGewijzigd,
   }) : null;
   // Je poorten gaan vanzelf dicht als er vijandelijke soldaten dichtbij komen (js/poortwacht.js).

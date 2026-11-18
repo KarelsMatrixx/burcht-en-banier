@@ -397,10 +397,10 @@
     "y": 38.4
    },
    "speelbaar": true,
-   "intro": "In the middle of the fen stands the hut of Mother Gesina, who helped Wessel into the world. She needs eight minutes to call the Silent Folk. Huntmaster Brandt is hunting her. Hold the hut.",
+   "intro": "In the middle of the fen stands the hut of Mother Gesina, who helped Wessel into the world. She needs eight minutes to call the Silent Folk. Huntmaster Brandt is hunting her. Hold the hut, and when the Silent Folk rise, lead them against his camp.",
    "beeld": "beelden/verhaal/level04.webp",
    "verhaal": "Deep in the fen lives Mother Gesina, who brought Wessel into the world. She can call the Silent Folk, but she needs time. Huntmaster Brandt is already hunting her through the reeds. Karel must hold her hut.",
-   "uit": "The Silent Folk rise out of the reeds and Brandt's hunters flee. Gesina takes your hand: \"Ottger is not angry, Karel. He is grieving, and grief with an army is more dangerous.\" From now on the Silent Folk stand with you.",
+   "uit": "Brandt falls in the middle of his own camp and his hunters scatter into the reeds. Gesina takes your hand: \"Ottger is not angry, Karel. He is grieving, and grief with an army is more dangerous.\" From now on the Silent Folk stand with you.",
    "wessel": "The first letter: \"I am not afraid. Everything here is very big.\"",
    "beloning": [
     "sluipmoordenaar",
@@ -434,6 +434,12 @@
      }
     },
     "eersteAanval": 99999,
+    "garnizoen": {
+     "sluipmoordenaar": 20,
+     "boogschutter": 12,
+     "ridder": 8
+    },
+    "legerMax": 250,
     "aanval": {
      "niveau": 3,
      "max": 3,
@@ -461,6 +467,13 @@
        "vanaf": 2
       }
      }
+    },
+    "versterking": {
+     "soort": "vlammenwever",
+     "aantal": 80,
+     "hoek": { "x": 0.06, "y": 0.3 },
+     "perBatch": 10,
+     "tussen": 0.6
     }
    },
    "berichten": [
