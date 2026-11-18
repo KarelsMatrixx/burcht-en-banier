@@ -92,6 +92,16 @@ while (Date.now() < tEind) {
     await p.waitForTimeout(300); continue;
   }
   if (!takenGezien.includes(s.taak)) takenGezien.push(s.taak);
+  if (s.taak === 4 && !globalThis.huisGetest) {
+    globalThis.huisGetest = true;
+    const r = await p.evaluate(() => { const sp = window.spel; const dicht = (id) => document.getElementById(id).classList.contains('tut-dicht');
+      sp.leger.kiesAlles(); const gek = sp.leger.aantalGekozen(); sp.leger.kiesGeen();
+      return { zwaard: dicht('knop-zwaard'), buidel: dicht('knop-buidel'), oog: dicht('knop-oog'), portret: dicht('adviseur'), gek }; });
+    check('huisles: zwaard, buidel, oog en portret dicht', r.zwaard && r.buidel && r.oog && r.portret, JSON.stringify(r));
+    check('huisles: geen soldaten te kiezen', r.gek === 0, JSON.stringify(r));
+    await p.tap('#knop-zwaard', { force: true }).catch(() => {}); await p.waitForTimeout(300);
+    check('huisles: legerpaneel gaat niet open', !(await p.isVisible('#leger-groepen button')));
+  }
   const melding = await p.evaluate(() => [...document.querySelectorAll('#meldingen *, #bouwhint, #gids-zin')].map((e) => e.textContent).join('|'));
   if (/not enough|need .* wood|more wood/i.test(melding)) wachtenOpHout++;
   // Les 9: er is soms nog geen boer zonder werk; dan wachten (het volk groeit)
@@ -114,6 +124,7 @@ await p.waitForFunction(() => window.spel.proloog.stand().fase === 'nacht', null
 check('nacht binnen 20 s na het avondkaartje', (await st()).fase === 'nacht', JSON.stringify(await st()));
 
 // --- De nacht ---
+check('nacht: zwaard open', !(await p.evaluate(() => document.getElementById('knop-zwaard').classList.contains('tut-dicht'))));
 check('nacht: intro van les 1', await kaartOpen() && /archers/i.test(await p.textContent('#gids-kaart')));
 await leesKaart();
 // Les 1 streng: eerst per ongeluk de ridders

@@ -21,8 +21,9 @@ await p.tap('#missie-begin'); await p.waitForTimeout(1500);
 const st = () => p.evaluate(() => window.spel.proloog.stand());
 
 // --- Oog: zet het oog vooraf aan; de grondles moet er toch naar vragen
-await p.tap('#knop-oog'); await p.waitForTimeout(200);
-check('oog staat aan voor de test', await p.evaluate(() => document.getElementById('knop-oog').getAttribute('aria-pressed') === 'true'));
+// 0.76.6: buiten les 10 is de oogknop dicht (tutorial: alleen wat de les vraagt)
+await p.waitForTimeout(500);
+check('oogknop dicht buiten de grondles', await p.evaluate(() => document.getElementById('knop-oog').classList.contains('tut-dicht')));
 // De testsoldaat op een goed bereikbaar vak (zoals een soldaat uit de kazerne), niet in een ingesloten hoekje
 await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; const B = s.kaart.breedte; let best = null, bestN = -1;
   for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { const x = st.x + dx, y = st.y + dy; if (Math.max(Math.abs(dx), Math.abs(dy)) < 6 || !s.wegvinder.isVrij(x, y, 0)) continue;

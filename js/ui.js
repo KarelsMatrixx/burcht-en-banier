@@ -144,7 +144,7 @@ export function maakUi() {
     }
     zetTeller();
   };
-  el('adviseur').addEventListener('click', () => klapLogboek(el('logboek').hidden));
+  el('adviseur').addEventListener('click', () => { if (!el('adviseur').classList.contains('tut-dicht')) klapLogboek(el('logboek').hidden); });
 
   // Instellingen achter het tandwiel.
   const klapInstellingen = (open) => {
@@ -206,6 +206,7 @@ export function maakUi() {
   let paneel = null;
   try { paneel = sessionStorage.getItem('burcht-banier.paneel') || null; } catch (fout) { /* geen opslag */ }
   let bouwtNu = false;
+  let knoppenStand = '';   // proloog: welke knoppen nu open zijn (beperkKnoppen)
   let beperktTot;   // proloog: undefined = geen beperking, anders de sleutel van het bouwwerk dat mag (of null)
   let legerStand = { zichtbaar: false };
   function zetPaneel(nieuw) {
@@ -272,7 +273,7 @@ export function maakUi() {
     klapVolk(el('volkpaneel').hidden);
     el('knop-buidel').classList.toggle('actief', !el('volkpaneel').hidden);
   };
-  el('voorraad').addEventListener('click', tikVolk);
+  el('voorraad').addEventListener('click', (ev) => { if (!el('voorraad').classList.contains('tut-dicht')) tikVolk(ev); });
   el('knop-buidel').addEventListener('click', tikVolk);
   el('volk-sluit').addEventListener('click', () => { klapVolk(false); el('knop-buidel').classList.remove('actief'); });
 
@@ -933,6 +934,19 @@ export function maakUi() {
       el('knop-bevestig').classList.toggle('gevaar', actief === 'sloop');
       // Tijdens het bouwen is de ruimte onderin nodig voor de uitleg.
       el('tip').classList.toggle('weg', !!actief);
+    },
+    // Proloog: knoppen die niet bij de les horen zijn grijs en doen niets (mag = proloog.mag).
+    beperkKnoppen(mag) {
+      const stand = mag ? ['zwaard', 'volk', 'logboek', 'oog'].map((w) => mag(w)).join() : '';
+      if (stand === knoppenStand) return;
+      knoppenStand = stand;
+      const zet = (id, open) => { const k = el(id); if (!k) return; k.classList.toggle('tut-dicht', !open); if ('disabled' in k && k.tagName === 'BUTTON') k.disabled = !open; };
+      zet('knop-zwaard', !mag || mag('zwaard'));
+      zet('knop-buidel', !mag || mag('volk'));
+      zet('voorraad', !mag || mag('volk'));
+      zet('adviseur', !mag || mag('logboek'));
+      zet('knop-oog', !mag || mag('oog'));
+      if (mag && !mag('zwaard') && paneel === 'leger') zetPaneel(null);
     },
     // Proloog: alleen het bouwwerk van de les is te kiezen (sleutel), of niets (null).
     // De rest van de bouwbalk, Slopen en zo nodig de hamer zijn dan dicht.

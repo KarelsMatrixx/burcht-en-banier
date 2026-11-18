@@ -914,6 +914,8 @@ async function start() {
   }) : null;
   // In de proloog staat je volk stil: populariteit en boeren dalen of stijgen niet door tijd of honger (economie.js bevries).
   if (proloog) economie.bevries(true);
+  // Tutorial: alleen de soldaat van de les (overdag) of niet de lijfwacht ('s nachts) is te kiezen
+  if (proloog) leger.zetKiesFilter((e) => proloog.magKiezen(e));
   // Een level met een eigen doel (level 4: de hut van Gesina houden).
   doel = missie && missie.doel ? (missie.doel.soort === 'loodsen' ? maakLoodsen : missie.doel.soort === 'bevrijden' ? maakBevrijding : maakDoel)({
     missie, kaart, bouwer, strijd, wegvinder,
@@ -1012,7 +1014,8 @@ async function start() {
       const erachter = (e) => !!vanRood && e.hoogte === 0 && e.x + e.y < vanRood.x + vanRood.y + 1;
       // Een eigen soldaat aangetikt: die kies je.
       const soldaat = leger.vind(wereld.x, wereld.y, 8 / camera.zoom);
-      if (soldaat && !erachter(soldaat)) {
+      // Tutorial: een soldaat die nu niet te kiezen is (niet die van de les, of de poortles) telt niet als tik op een soldaat
+      if (soldaat && !erachter(soldaat) && (!proloog || proloog.magKiezen(soldaat))) {
         kaderAan = false;
         leger.kies([soldaat]);
         return;
@@ -1038,6 +1041,8 @@ async function start() {
       }
       // De kazerne aangetikt: daar leid je soldaten op.
       const aangetikt = binnenKaart(kaart, x, y) ? bouwer.werkOp(x, y) : null;
+      // Proloog: een gebouw aantikken opent alleen een paneel als de les erom vraagt
+      if (aangetikt && proloog && ((aangetikt.handel && !proloog.mag('handel')) || (aangetikt.leidtOp && !proloog.mag('kazerne')))) return;
       if (aangetikt && aangetikt.handel) {
         handelVak = y * kaart.breedte + x;
         handelBericht = '';
@@ -1147,6 +1152,7 @@ async function start() {
       }
       // Je eigen poort aantikken (geen soldaten gekozen): dicht of open
       const poort = poortOnder(x, y, wereld);
+      if (poort && proloog && !proloog.mag('poort')) return;   // overdag in de tutorial geen poorten open of dicht
       if (poort) {
         if (wegvinder.poortenOpen()) { ui.toonMelding('The gate is jammed open. It cannot be closed now.', { soort: 'leger' }); return; }
         const nuDicht = !wegvinder.isPoortDicht(poort[0]);
@@ -1244,7 +1250,7 @@ async function start() {
       strijd.stap();
       poortwacht.stap();
       verhaal.stap(dt, verhaalStand);
-      if (proloog) { if (!leest) proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); }
+      if (proloog) { if (!leest) proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); ui.beperkKnoppen(proloog.mag); if (kazerneVak >= 0 && !proloog.mag('kazerne')) sluitKazerne(); }   // opleidles klaar: het kazernepaneel dicht
       if (doel) doel.stap(dt);
       if (hinderlaag && !strijd.uitslag()) hinderlaag.stap(dt);
       if (reserve) reserve.stap(dt);

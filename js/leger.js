@@ -252,10 +252,11 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
 
   // Kiest deze soldaten. erbij = wat al gekozen was blijft gekozen.
   // bewaarDeel = de ingeboxte groep (deelset) blijft bestaan; anders wordt hij gewist.
+  let kiesFilter = null;   // proloog: wie de speler nu mag kiezen (zetKiesFilter)
   function kies(lijst, erbij = false, bewaarDeel = false) {
     if (!bewaarDeel) deelset = null;
     if (!erbij) for (const e of soldaten) e.gekozen = false;
-    for (const e of lijst) if (e.karelWacht === undefined) e.gekozen = true;   // de lijfwacht van Karel (proloog) bestuur je niet
+    for (const e of lijst) if (e.karelWacht === undefined && (!kiesFilter || kiesFilter(e))) e.gekozen = true;   // de lijfwacht van Karel (proloog) bestuur je niet
     opLeger();
   }
 
@@ -581,6 +582,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     zetKoningThuis: (burchtVak) => { koningThuis = burchtVak; },
     groepVan, kiesGroep, kiesSoort, kiesKader, kiesDeel, telling,
     kiesGeen: () => kies([]),
+    zetKiesFilter: (f) => { kiesFilter = f || null; },
     // Een wandelingetje op de grond (voor de koning in de proloog); telt niet als bevel van de speler.
     wandel: (e, x, y) => x >= 0 && y >= 0 && x < B && y < H && isVrij(y * B + x) && !bezet(y * B + x, [e]) ? loopNaar(e, y * B + x) : false,
     bewaarStand, zetStand, herstel, sneuvel, kaartVeranderd,

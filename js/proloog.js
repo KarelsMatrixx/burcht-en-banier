@@ -756,6 +756,31 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       return TAKEN.map((t, i) => ({ taak: t.taak, klaar: s.fase !== 'bouw' || i < s.taak || (i === s.taak && s.klaar), nu: s.fase === 'bouw' && i === s.taak }));
     },
     fase: () => s.fase,
+    // Wat mag de speler nu (naar Karel: in de tutorial alleen wat de les vraagt)?
+    // wat: 'zwaard' (legerpaneel), 'volk' (voorraadbalk en buidel), 'logboek', 'oog', 'kazerne', 'handel', 'poort'.
+    mag(wat) {
+      if (s.fase === 'nacht') return wat !== 'volk' && wat !== 'handel' && wat !== 'kazerne';
+      if (s.fase !== 'bouw') return wat === 'logboek';
+      const les = TAKEN[s.taak];
+      const actief = !!s.basis && !s.klaar;
+      if (!actief) return false;
+      if (wat === 'volk') return !!(les.volk || les.belasting);
+      if (wat === 'logboek') return !!les.logboek;
+      if (wat === 'oog') return !!les.sturen;
+      if (wat === 'kazerne') return !!les.kazernePlek;
+      return false;   // zwaard, handel, poort: overdag nooit
+    },
+    // Welke soldaten mag de speler kiezen? Overdag alleen de soldaat van de bevel-les, 's nachts iedereen behalve de lijfwacht.
+    magKiezen(e) {
+      if (s.fase === 'nacht') {
+        // Poortles: een tik bij de poort is voor de poort, niet voor de soldaten die ernaast staan
+        if (s.deel === 'opmars' && NACHT_TAKEN[s.nTaak].poort && s.nBegonnen && !s.nKlaar) return false;
+        return e.karelWacht === undefined;
+      }
+      if (s.fase !== 'bouw' || !s.basis || s.klaar) return false;
+      const les = TAKEN[s.taak];
+      return !!(les.sturen || les.opMuur) && e === nieuweSoldaat();
+    },
     // Welk bouwwerk mag de speler nu kiezen? Alleen dat van de les die bezig is (en pas na
     // "Start lesson"); verder niets. null = niets bouwen of slopen.
     bouwSleutel() {

@@ -120,10 +120,10 @@ check('sturen: eerst het oog', /eye/i.test(await p.textContent('#gids-zin')) && 
 await p.tap('#knop-oog'); await p.waitForTimeout(500);
 check('oog aan: nu de nieuwe soldaat aanwijzen', await p.evaluate(() => { const e = document.getElementById('gids-plek'); return !e.hidden && (/Tap this soldier/.test(e.textContent) || e.classList.contains('buiten')) && /new soldier/i.test(document.getElementById('gids-zin').textContent); }), await p.textContent('#gids-zin'));
 // Een bevel naar de muur telt niet voor de grondles
-await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().filter((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning').pop(); s.leger.kies([e]); const st = s.kaart.start[0]; s.leger.stuur(st.x - 5, st.y - 2, true); });
+await p.evaluate(() => { const s = window.spel; const e = s.gids.doel() && s.gids.doel().soldaat ? s.gids.doel().soldaat() : null; s.leger.kies(e ? [e] : []); const st = s.kaart.start[0]; s.leger.stuur(st.x - 5, st.y - 2, true); });
 await p.waitForTimeout(1200);
 check('grondles: soldaat op de muur telt niet', !(await st()).klaar);
-await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().filter((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning').pop() || s.leger.soldaten().filter((e) => !e.wachter && e.soldaat.sleutel !== 'koning').pop(); s.leger.kies([e]); });
+await p.evaluate(() => { const s = window.spel; const e = s.gids.doel() && s.gids.doel().soldaat ? s.gids.doel().soldaat() : null; s.leger.kies(e ? [e] : []); });
 await p.waitForTimeout(500);
 check('soldaat gekozen: nu de gouden plek', /golden spot/i.test(await p.textContent('#gids-zin')) && /Send him here/.test(await p.textContent('#gids-plek')), await p.textContent('#gids-zin'));
 await p.tap('#knop-oog'); await p.waitForTimeout(400);
@@ -131,8 +131,13 @@ check('oog weer uit: gids vraagt er niet opnieuw om', !/eye/i.test(await p.textC
 check('zin niet over de legerhint', await p.evaluate(() => { const h = document.getElementById('legerhint'); if (h.hidden) return true; const a = h.getBoundingClientRect(), z = document.getElementById('gids-zin').getBoundingClientRect(); return !(z.left < a.right && z.right > a.left && z.top < a.bottom && z.bottom > a.top); }));
 // Nu echt: oog aan, soldaat kiezen en op de gouden plek tikken
 await p.tap('#knop-oog'); await p.waitForTimeout(300);
-await p.evaluate(() => { const s = window.spel; const e = s.leger.soldaten().find((e) => !e.wachter && !e.opMuur && e.soldaat.sleutel !== 'koning'); s.leger.kies([e]); });
+await p.evaluate(() => { const s = window.spel; const e = s.gids.doel() && s.gids.doel().soldaat ? s.gids.doel().soldaat() : null; s.leger.kies(e ? [e] : []); });
 await p.waitForTimeout(500);
+// De plek ligt verder weg: het beeld schuiven in de richting van de pijl tot hij in beeld is
+for (let k = 0; k < 8 && await p.evaluate(() => document.getElementById('gids-plek').classList.contains('buiten')); k++) {
+  await p.evaluate(() => { const s = window.spel; const r = document.getElementById('gids-plek').getBoundingClientRect(); const mx = innerWidth / 2, my = innerHeight / 2; const dx = r.left + r.width / 2 - mx, dy = r.top + r.height / 2 - my, l = Math.hypot(dx, dy) || 1; const w = s.camera.schermNaarWereld(mx + dx / l * 220, my + dy / l * 220); s.camera.kijkNaar(w.x, w.y); });
+  await p.waitForTimeout(500);
+}
 const gp = await p.evaluate(() => { const r = document.getElementById('gids-plek'); const c = r.getBoundingClientRect(); return [c.left + c.width / 2, c.top + c.height / 2, r.hidden, r.classList.contains('buiten')]; });
 check('gouden plek in beeld voor het bevel', !gp[2] && !gp[3], JSON.stringify(gp));
 await p.evaluate(() => { const l = window.spel.leger; const w = l.stuur; l.stuur = (...a) => { window.__st = a; return w(...a); }; });
@@ -152,8 +157,10 @@ check('titelscherm: gids verborgen', await p.evaluate(() => ['gids-ring', 'gids-
 await p.evaluate(() => { document.getElementById('titelscherm').hidden = true; }); await p.waitForTimeout(500);
 await p.waitForFunction(() => !document.body.classList.contains('gids-bedekt'), null, { timeout: 4000 }).catch(() => {});
 check('titelscherm weg: gids terug', await p.evaluate(() => !document.body.classList.contains('gids-bedekt') && getComputedStyle(document.getElementById('gids-zin')).display !== 'none'));
-// Elk bevel naar de muur telt, ook als de speler een wachter verplaatst (zo speelde Karel het)
-await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; s.leger.kies(s.leger.soldaten().filter((e) => e.opMuur && e.wachter).slice(0, 3)); s.leger.stuur(st.x - 5, st.y - 2, true); });
+// 0.76.6: een wachter kun je in de tutorial niet kiezen; alleen de soldaat van de les
+const wachterGekozen = await p.evaluate(() => { const s = window.spel; s.leger.kies(s.leger.soldaten().filter((e) => e.opMuur && e.wachter).slice(0, 3)); return s.leger.aantalGekozen(); });
+check('muurles: wachters niet te kiezen', wachterGekozen === 0, wachterGekozen);
+await p.evaluate(() => { const s = window.spel; const e = s.gids.doel().soldaat(); s.leger.kies([e]); const g = s.gids.doel().plek; s.leger.stuur(g.x, g.y, true); });
 await p.waitForTimeout(1500);
 check('bevel naar de muur telt', (await st()).klaar);
 // Alle soldaten gekozen (wachters en nieuwe), dan naar de muur: de nieuwe telt wel

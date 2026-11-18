@@ -875,3 +875,13 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Grondles: de gouden plek ligt buiten het loopgebied van Karel en Reinout (minstens 6 tegels van de burcht) en moet bereikbaar zijn voor de soldaat van de les; lukt dat niet, dan een bereikbare plek dichterbij. Eerst kon de plek achter een dichte poort liggen, en dan lukte geen enkel bevel.
 - Muurles: kiest een stuk muur waar de soldaat van de les echt kan komen.
 - Tests: proloog70 (wacht op aankomst in de nachtlessen), proloog43 (afstand lijfwacht), proloog77 (testsoldaat op een bereikbare plek).
+
+## 0.76.6: in de tutorial alleen wat de les vraagt (Karels feedback van 18 november)
+
+- Overdag (de lessen) kun je alleen doen wat de les vraagt (proloog.js `mag`, `magKiezen`):
+  - Soldaten kiezen alleen in de grond- en muurles, en dan alleen de soldaat van de les (leger.js `zetKiesFilter`). Ook Alle, Kader en dubbeltik kiezen niets anders.
+  - Het zwaard (legerpaneel) is overdag dicht; de buidel en de voorraadbalk alleen in de lessen over je volk en de belasting; het oog alleen in de grondles; het portret (logboek) alleen in de logboekles. Dichte knoppen zijn grijs (ui.js `beperkKnoppen`, klasse `tut-dicht`).
+  - Een tik op de kazerne opent het paneel alleen in de opleidles; de voorraadkamer (handel) en poorten doen overdag niets.
+  - Het kazernepaneel gaat vanzelf dicht zodra de opleidles klaar is (stond na twee soldaten nog open).
+- 's Nachts is het leger vrij te besturen, behalve de lijfwacht. In de poortles kiest een tik bij de poort geen soldaat meer (de boogschutters op de muur ernaast werden gekozen in plaats van dat de poort dichtging; dan bleef de gids om "None" vragen).
+- Tests: proloog70 (knoppen en kiezen in de huisles), proloog35, proloog77 bijgewerkt.
