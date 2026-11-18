@@ -55,10 +55,20 @@ check('ieder op een eigen tegel', g.uniek === 40, g.uniek);
 check('allemaal in en rond het kamp', g.max <= 14, g.max);
 check('het garnizoen telt niet als aanvaller', g.aanvallers === 0, g.aanvallers);
 
-// Ze blijven in het kamp staan
-await p.evaluate(() => window.ga(40));
-const blijf = await p.evaluate(() => { const s = window.spel; const m = s.kaart.start[1]; const l = s.strijd.garnizoen(); return { n: l.length, max: Math.max(...l.map((e) => Math.max(Math.abs(e.x - m.x), Math.abs(e.y - m.y)))) }; });
+// Ze blijven in het kamp, maar lopen rustig heen en weer (levendigheid)
+await p.evaluate(() => { window.begin40 = window.spel.strijd.garnizoen().map((e) => [e.x, e.y]); window.beweegt = 0; });
+for (let i = 0; i < 40; i++) await p.evaluate(() => { window.ga(1); window.beweegt = Math.max(window.beweegt, window.spel.strijd.garnizoen().filter((e) => e.pad && e.pad.length).length); });
+const blijf = await p.evaluate(() => {
+  const s = window.spel; const m = s.kaart.start[1]; const l = s.strijd.garnizoen();
+  const verplaatst = l.filter((e, i) => Math.hypot(e.x - window.begin40[i][0], e.y - window.begin40[i][1]) > 0.6).length;
+  const postVer = Math.max(...l.map((e) => Math.hypot(e.x - ((e.post % s.kaart.breedte) + 0.5), e.y - (Math.floor(e.post / s.kaart.breedte) + 0.5))));
+  return { n: l.length, max: Math.max(...l.map((e) => Math.max(Math.abs(e.x - m.x), Math.abs(e.y - m.y)))), verplaatst, postVer, beweegt: window.beweegt };
+});
+console.log('slenteren', JSON.stringify(blijf));
 check('na 40 seconden staat iedereen nog in het kamp', blijf.n === 40 && blijf.max <= 15, JSON.stringify(blijf));
+check('er wordt rondgelopen: minstens 10 soldaten staan ergens anders', blijf.verplaatst >= 10, blijf.verplaatst);
+check('er lopen er tegelijk een paar, niet allemaal', blijf.beweegt >= 2 && blijf.beweegt < 40, blijf.beweegt);
+check('ze blijven bij hun post (hooguit 4,5 tegels)', blijf.postVer <= 4.5, blijf.postVer);
 check('nog geen wevers van jou', (await wevers()) === 0);
 
 // --- Tijdens het ritueel: de hut moet nog verdedigd worden ---

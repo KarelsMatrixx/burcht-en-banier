@@ -799,3 +799,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - De mist had een harde rechte rand: het mistplaatje werd aan de bovenkant afgesneden. Een mistbank is nu een onregelmatige wolk van 18 zachte bollen die elk geleidelijk uitlopen naar doorzichtig.
 - Ook de rest zachter: stofkorrels zijn ronde stipjes, windstrepen zijn dunner, doorzichtiger en golven, regen is dunner en lichter, en de stofvlaag over de grond loopt geleidelijk in plaats van met een rechte rand.
 - Alles blijft in de wereld hangen (sinds 0.72.1): schuiven met de kaart beweegt het weer niet mee.
+
+## 0.73.2: level 4 (The Fen): het garnizoen loopt rustig rond (naar Karels wens van 18 november)
+
+- De soldaten in het tentenkamp stonden stil. Nu slentert om de 2 tot 8 seconden ongeveer een derde van hen naar een ander vrij plekje binnen 3 tegels van zijn post (korte paden van hooguit 8 stappen) en blijft daar even staan. Komt er iets van jou in zicht, dan vallen ze nog steeds aan (tot 9 tegels van hun post) en lopen daarna terug. Code: `garnizoenDenk` in strijd.js (`GARNIZOEN_SLENTER`).
+- `tests/versterking71.mjs` uitgebreid (38 controles): na 40 seconden staan minstens 10 soldaten ergens anders, er lopen er tegelijk een paar maar niet allemaal, en niemand komt verder dan 4,5 tegels van zijn post.

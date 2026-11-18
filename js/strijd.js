@@ -170,7 +170,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // Soldaten die in het kamp blijven staan. Komt er iets van jou in zicht, dan gaan ze erop af,
   // maar niet ver van hun post; is het voorbij, dan lopen ze terug. Het garnizoen telt niet
   // mee als aanvaller en komt dus ook niet op je burcht af.
-  const GARNIZOEN_KETTING = 9;   // zo ver gaan ze van hun post
+  const GARNIZOEN_KETTING = 9;   // zo ver gaan ze van hun post om iets aan te vallen
+  const GARNIZOEN_SLENTER = 3;   // zo ver slenteren ze rond bij hun post
   function maakGarnizoen(lijst) {
     if (R.proloog || !koningSleutel) return 0;
     const nieuwMaken = !Array.isArray(lijst);
@@ -236,9 +237,25 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (ver <= GARNIZOEN_KETTING) { jaag(e, k); return; }
       k.doelwit = null;
     }
-    if (ver > 1.2 && !e.pad) {
+    if (e.pad) return;
+    if (ver > GARNIZOEN_SLENTER + 1) {   // te ver van zijn post (na een gevecht): terug
       const pad = zoekPad(e, e.post);
       if (pad) zetPad(e, pad);
+      return;
+    }
+    // Rustig heen en weer: om de paar seconden slentert een deel van de soldaten naar een
+    // ander plekje bij zijn post en blijft daar even staan. Zo is het kamp levendig.
+    if (stapNr < (k.rondNa || 0)) return;
+    k.rondNa = stapNr + stappen(2 + toeval() * 6);
+    if (toeval() > 0.65) return;
+    for (let poging = 0; poging < 8; poging++) {
+      const x = Math.round(px - 0.5 + (toeval() * 2 - 1) * GARNIZOEN_SLENTER);
+      const y = Math.round(py - 0.5 + (toeval() * 2 - 1) * GARNIZOEN_SLENTER);
+      if (x < 1 || y < 1 || x >= B - 1 || y >= H - 1 || (x === Math.floor(e.x) && y === Math.floor(e.y))) continue;
+      const vak = y * B + x;
+      if (!wegvinder.isVrij(x, y, e.team) || bezetDoorVriend(vak, e)) continue;
+      const pad = zoekPad(e, vak);
+      if (pad && pad.length && pad.length <= 8) { zetPad(e, pad); return; }
     }
   }
   const inBurcht = (vak, b) => Math.abs((vak % B) - b.vx) <= 1 && Math.abs(Math.floor(vak / B) - b.vy) <= 1 && isBurcht(kaart.object[vak]);
