@@ -25,7 +25,7 @@
   "Voedsel: eet is een lijst (brood en voedsel, dat zijn de appels). Je volk eet om de beurt van elke soort. stemming.afwisseling telt per ronde bij de populariteit als er van meer dan één soort te eten is. De bakker maakt van 4 tarwe 8 brood.",
   "handel: bij een voorraadkamer verkoop je per keer 'per' stuks van een grondstof voor 'prijs' goud.",
   "zwaai: deze soldaat raakt ook één vijand naast zijn doelwit, met dit deel van zijn schade (1 = volle schade). bouwBonus: keer zoveel schade aan de genoemde bouwwerken. doorboort: pijlDekking van het doelwit telt niet (de bolt gaat door een schild).",
-  "kazerne: klassiek of mystiek, bij welke kazerne je hem opleidt. boeren: zoveel boeren zonder werk kost hij (anders 1). eersteSlag: zijn eerste slag op een nieuw doelwit doet zoveel keer schade. klimMuur: hij klimt in zoveel seconden een gewone muur op zonder ladder. verborgen: vijanden zien hem pas binnen zoveel tegels, tot hij slaat. gebied: dit deel van zijn schade raakt ook wie naast het doelwit staat. brand: hout dat hij raakt brandt duur seconden en verliest perSeconde leven per seconde.",
+  "kazerne: klassiek, mystiek of belegering, bij welk gebouw je hem opleidt (belegering = de belegeringswerkplaats voor ram, katapult en belegeringstoren; de ladderdrager blijft bij de gewone kazerne). boeren: zoveel boeren zonder werk kost hij (anders 1). eersteSlag: zijn eerste slag op een nieuw doelwit doet zoveel keer schade. klimMuur: hij klimt in zoveel seconden een gewone muur op zonder ladder. verborgen: vijanden zien hem pas binnen zoveel tegels, tot hij slaat. gebied: dit deel van zijn schade raakt ook wie naast het doelwit staat. brand: hout dat hij raakt brandt duur seconden en verliest perSeconde leven per seconde.",
   "koning: er is er één voor jou en één voor rood, niet op te leiden. Valt jouw koning, dan heb je verloren; valt de koning van rood, dan heb je gewonnen. zwaaiAantal: zoveel vijanden naast het doelwit raakt zijn slag. vaandel: eigen soldaten binnen bereik doen extra meer schade. zwak: zijn schade als zijn burcht kapot is. thuisBereik: de koning van rood verdedigt alleen binnen zoveel tegels van zijn burcht. zwerfStraal: hij loopt tot zoveel tegels van zijn burcht rond. alarmAfstand: zijn je soldaten zoveel tegels bij zijn burcht of bij hem, dan gaat hij terug naar zijn hoofdkasteel. Een koning geneest alleen bij zijn eigen burcht.",
   "ruiter (stap 44): kazerne stal. perStal: zoveel levende ruiters per stal die een paardenboer heeft. charge: heeft hij minstens tegels gelopen sinds zijn laatste klap, dan doet zijn eerste klap keer zoveel schade. bonusTegen: keer zoveel schade tegen de genoemde soorten (0.5 is de helft). beroep met verzorgt: true (de paardenboer) werkt niet aan een bron maar loopt rond bij zijn stal; zonder hem traint de stal niet. rood betaalt tarwe met tarwePrijs goud per stuk. De paarden eten tarwe: de bakker laat minstens 20 tarwe in de voorraad liggen (reserve) zodat de paarden niet leeg komen te staan.",
   "legerMax: zoveel soldaten kun je hoogstens hebben (een level kan dit hoger zetten).",
@@ -384,7 +384,7 @@
    "zicht": 4,
    "alleenBouw": true,
    "pijlDekking": 0.15,
-   "kazerne": "klassiek"
+   "kazerne": "belegering"
   },
   "ladder": {
    "naam": "Ladder Bearer",
@@ -421,7 +421,7 @@
    "zicht": 10,
    "alleenBouw": true,
    "pijlDekking": 0.5,
-   "kazerne": "klassiek"
+   "kazerne": "belegering"
   },
   "toren": {
    "naam": "Siege Tower",
@@ -441,7 +441,7 @@
    "ladder": true,
    "vast": true,
    "pijlDekking": 0.3,
-   "kazerne": "klassiek"
+   "kazerne": "belegering"
   },
   "sluipmoordenaar": {
    "naam": "Assassin",
@@ -727,7 +727,7 @@
    "zwaardvechter": 1.2,
    "banierdrager": 1,
    "heler": 1,
-   "steenwachter": 0,
+   "steenwachter": 3,
    "ruiter": 1.8
   },
   "ridderPerSchutter": 2,
@@ -750,6 +750,7 @@
    }
   },
   "koperPrijs": 2,
+  "broodPrijs": 1,
   "tarwePrijs": 1,
   "aanval": {
    "niveau": 2,

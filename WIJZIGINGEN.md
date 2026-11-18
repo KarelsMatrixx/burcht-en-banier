@@ -1,3 +1,14 @@
+## 0.70.3
+- Stillwater (level 5): rond het kasteel van de rode koning staan nu paardenstallen als decor (kastelen.json, abdij.decor; nieuw decorsoort 'stal' in kaart.js).
+
+## 0.70.2
+- Fout opgelost: na 'Keep playing' bleef het volgende level dicht in het menu en op de levelkaart, omdat de lijst met gewonnen levels maar één keer bij het laden werd gelezen. Nu wordt hij elke keer opnieuw gelezen (tests/menu70.mjs).
+- Stillwater: rode ruiters komen al vanaf aanval 2 (max 2) in plaats van vanaf aanval 5.
+
+## 0.70.1 (deel 5)
+- Stillwater (level 5): de banierdrager van rood komt nu echt in aanval 2, zodat Bartholts tip klopt (vanaf 1 en vast in extra_soorten).
+- Stillwater: vanaf aanval 4 zijn de aanvallen van rood ongeveer 2x zo groot (heer.doelVanaf in campagne.json, gelezen in rood.js en modus.js).
+
 ## 0.15.0 (stap 15): de rode heer met eigen economie
 - Nieuw: js/rood.js. Rood heeft voorraad (hout, steen, goud), werken buiten zijn muur (houthakkershut, steengroeve, boomgaard, door kaart.js geplaatst, eigenaar 2) en koopt soldaten in een reserve.
 - Geen klok meer voor de aanvallen: hij valt aan als zijn reserve sterk genoeg is (doel groeit per aanval) en er minstens 200 s (eerste) of 100 s (daarna) voorbij zijn. Rammen en ladders vanaf aanval 4, daarvoor spaart hij.
@@ -666,7 +677,97 @@ Aanvulling 0.69.0: eigen plaatjes van Karel (Gemini) voor level 3. Twee smederij
 - Niet gezien op de iPhone: leesbaarheid van de klok in het spel zelf, snelheid met het dichte bos, en of de commandotent als "kasteel" prettig op de kaart staat. De getallen (15 s rood, 5 golven) volgen uit campagne.json (eerste 150 s, tussen 70 s, duur 480 s).
 
 
-## 0.71.0: level 4 (The Fen): garnizoen in het kamp en het Stille Volk komt na de acht minuten (naar Karels wens van 17 november)
+## 0.70.1 (deel 1): siege gear, unlocks tegen jou en de belegeringswerkplaats
+Naar aanleiding van Karels feedback (17 november 2026).
+
+**1. Bevestiging bij siege gear.** Zodra een siege-eenheid een bevel echt heeft ontvangen, krijg je een melding (main.js `meldSiege`, soort Army, ook in beeld). Gewone soldaten krijgen die niet.
+- Ladderdrager: "A ladder is being set against the red wall."
+- Belegeringstoren: "The siege tower is being placed against the red wall. Then your soldiers can climb over it."
+- Stormram: "The battering ram is going to break through the red {wall, gate, ...}."
+- Katapult: "The catapult is going to fire at the red {wall, ...}."
+- strijd.js: `zetLadderBevel` en `valBouwAan` hebben een extra parameter `uit`: daar komen de eenheden in die het bevel kregen. Een melding komt alleen voor wie het bevel echt kreeg (niet bij "cannot reach"). Alle teksten zijn door Claude geschreven: na te lezen.
+
+**2. Wat je unlockt, wordt in dat level tegen je gebruikt.** Regel: wat je als beloning van level N krijgt, zet rood in level N tegen jou in, in de loop van het level (niet in de eerste aanval of golf).
+- Level 1 (toren): rood koopt vanaf zijn eerste aanval een belegeringstoren (`extra_soorten.toren`, vanaf 1, max 1). Dus in zijn tweede aanval rolt er een toren tegen je muur (de bestaande melding "Red is rolling a siege tower against your wall!").
+- Level 2 (katapult): `extra_soorten.katapult` vanaf 1, max 1. (Kruisboog zat er al in.)
+- Level 4 (vlammenwever): de golven om de hut van Gesina krijgen vanaf de derde golf een vlammenwever (`doel.golven.leger.vlammenwever = { aandeel, vanaf }`). doel.js ondersteunt nu `{ aandeel, vanaf }` naast een getal; vanaf telt golven, begint bij 0.
+- Level 5 (heler): `rood.leger.heler` vanaf 2.
+- Level 6 (steenwachter): `rood.leger.steenwachter` vanaf 2, plus 1 steenwachter in de golven "siege train" en "whole host" van de loodsen.
+- Al in orde: level 3 bijlridder, level 4 sluipmoordenaar, level 5 zwaardvechter en banierdrager, de proloog (ram en ladder in het nachtleger).
+- rood.js: brood betaalt rood met goud (`heer.broodPrijs` 1), anders kon hij nooit een heler kopen. economie.json: gewicht van de steenwachter van 0 naar 3 (geschat, na te lezen), anders telde hij niet mee voor de sterkte en kocht rood er eindeloos.
+- Gebouwen en mijnen in een beloning (kopermijn, magiertoren) doen niet mee.
+- Voor volgende levels (7 tot 10): zet nieuwe beloningen meteen ook in het leger van rood. Uitleg staat onderaan `_uitleg` in data/campagne.json. Test siege52 bewaakt dit voor elk speelbaar level.
+
+**3. Aparte barak voor siege gear: de Siege Workshop.**
+- Nieuw gebouw `belegeringswerkplaats` (OBJECT 40, `leidtOp: "belegering"`). Hier leid je op: stormram, katapult, belegeringstoren, en alles wat later nog bij siege komt (zet `"kazerne": "belegering"` bij de soldaat in economie.json). De ladderdrager blijft bij de gewone kazerne.
+- Kosten 20 planken en 10 steen (geschat, na te lezen). Geeft net als een kazerne 40 legerplekken. Beloning van de proloog, samen met ram en ladder (dus niet in de proloog zelf te bouwen).
+- Ontwerp (kunst.js `tekenBelegeringswerkplaats`): niet de stenen kazerne en niet de open zagerij, maar een erf met donkere balken en ijzer, een half afgebouwd belegeringstorenskelet dat boven alles uitsteekt (met valbrug, kruisverbanden en een wimpel in teamkleur), een ram aan kettingen onder een rood afdak, een stapel balken, een los wiel en een ketel pek.
+- Het paneel toont bij dit gebouw alleen siege gear; bij de kazerne geen ram, katapult of toren meer. Bericht na opleiden: "... is ready at the siege workshop."
+- Ook in brand te steken (houtlijst in strijd.js).
+
+**Tests.** Nieuw: `tests/siege52.mjs` (data, regel per level, werkplaats, paneel, meldingen met echte tikken, rood koopt en gebruikt). Versie op 0.68.0 in config.js, sw.js, test_stap15 en test_stap17.
+
+**Bekend / open.**
+- Niet op de iPhone gezien: ontwerp van de werkplaats op het scherm, en of de melding niet over andere berichten heen komt (hooguit twee tegelijk in beeld).
+- Balans van de nieuwe aanvallen (toren in level 1 vanaf aanval 2, heler en steenwachter) is niet gespeeld. De steenwachter vanaf aanval 2 in level 6 komt in de praktijk later, omdat rood eerst zijn machines koopt.
+- Bestaande bewaarde spellen met een ram, katapult of toren blijven werken; wie er een wil bijmaken, heeft nu de werkplaats nodig.
+
+## 0.70.1 (deel 2): de mystieke kazerne wordt een sjamaanhut
+- De Mage Tower is vervangen door de "Mystic Lodge": een ronde hut van huid met kegeldak, gewei met veren en botten, geschilderde tekens, een vuurplaats en een totempaal. Lager en breder dan de torens, zodat hij niet op de Siege Workshop lijkt.
+- Alleen het plaatje (js/kunst.js, tekenMagiertoren), de naam en de tip zijn veranderd. Interne sleutels (magiertoren, MAGIERTOREN, leidtOp mystiek) blijven gelijk, dus bestaande opslag en tests werken door.
+- De Siege Workshop blijft zoals hij was (besluit na drie rondes ontwerpen).
+
+## 0.70.1 (deel 3): machines van rood slaan niet meer op het hoofdkasteel
+- Een stormram of katapult van rood gaat niet meer op jouw hoofdkasteel af. Hij gaat op weg naar de burcht en slaat het eerste wat in de weg staat kapot (muur, poort, toren). Is de weg vrij, dan kiest hij het dichtstbijzijnde andere bouwwerk van jou (kazerne, werken, huizen enz.); is er niets meer, dan wacht hij. Het hoofdkasteel zelf raken alleen soldaten en de koning (strijd.js `kiesBelegerDoel`, `breekDoor` met `doelB` null).
+- Nieuwe test: tests/siege53.mjs (machines kiezen het hoofdkasteel nooit, level 1 en 3).
+- Let op bij de balans: in een level waar jij nog niets gebouwd hebt, doen rammen en katapulten niets tot er een muur of gebouw staat.
+
+## 0.70.1 (deel 4): sjamaanhut hoger
+- De muren van de Mystic Lodge zijn hoger, het dak lager, de deur groter, de tekens hoger op de wand en de rook staat naast het gewei in plaats van erdoorheen.
+
+## 0.71.1: een gewonnen level opnieuw spelen gaf meteen weer "Defeat"
+- **Klacht van Karel (18 november):** bij level 4 (The Fen, de hut bewaken) kwam bij opnieuw spelen het scherm "Your king fell during attack 0", terwijl de koning niet gevallen was, en "Start over" bracht hem steeds op hetzelfde scherm terug.
+- **Oorzaak:** na een gewonnen level wordt de stand bewaard. Bij herladen (opnieuw spelen) is het level dan al beslist, en main.js zette de koning alleen neer als er nog geen uitslag was (`if (!strijd.uitslag()) leger.zetKoning(...)`). Daardoor kende leger.js het thuisvak van de koning niet (`koningThuis` bleef -1). "Start over" (`leger.herstel()`) haalde alle soldaten weg en zette de koning niet terug; de volgende rekenstap zag dat je koning ontbrak en gaf meteen verloren, elke keer opnieuw. De tekst "attack 0" komt doordat er dan nog geen golf was.
+- **Fix:** nieuwe `leger.zetKoningThuis(vak)` onthoudt het thuisvak altijd (main.js), ook bij een beslechte bewaarde stand. De koning zelf wordt nog steeds alleen neergezet als het level nog loopt.
+- **Test:** `tests/opnieuw_na_winst71.mjs` (12 punten): level 4 winnen, herladen, Start over, koning terug, hut heel, klok loopt, nog een keer. Zonder de fix faalt de test met exact de melding van Karel.
+- Versie op 0.71.1 in config.js, sw.js, test_stap15 en test_stap17.
+- **Niet nagegaan:** of dezelfde lus ook in andere levels met een eigen doel (6 loodsen, 8 sluis) optreedt na een bewaarde winst. De oorzaak zit in gedeelde code (leger.js, main.js), dus de fix geldt daar ook, maar alleen level 4 is getest.
+
+## 0.71.0: rood verzamelt en marcheert samen op (de veldheer, laag 1 opnieuw)
+- Aanleiding (Karel, 17 november): de aanvallen van rood waren nog vaak ongecoördineerd; machines kwamen eerder aan en waren al kapot voordat de soldaten er waren. Gekozen: rood verzamelt zichtbaar voor jouw muren.
+- Oorzaak: de veldheer rekende bij vertrek één keer wachttijden uit en liet iedereen daarna zelfstandig lopen. Elk oponthoud onderweg (vechten, omlopen, poorten) gooide dat in de war, en een ram had geen regel om op begeleiding te wachten.
+- Nieuw (js/veldheer.js): elke groep heeft drie fasen.
+  - Verzamelen: een open plek buiten bereik van jouw torens, muren en poorten (minstens 8 tegels), 9 tot 16 tegels (liefst 12) van de bres, aan de kant van het leger. Ieder krijgt een eigen vakje. Opmars als 85% er is, of 25 s nadat de helft er is, of na 120 s.
+  - Opmars: ridders voorop, machines direct erachter, schutters achteraan. Een machine loopt nooit voor de voorste ridder uit; ridders lopen hooguit 3 tegels voor de achterste machine uit. Klaar als de achterste machine bij de muur is (zonder machines: als de ridders er zijn), als de bres al gevallen is, of na 100 s.
+  - Aanval: iedereen vrij. Is er van een groep geen soldaat meer over, dan gaat een machine die nog niet bij de muur is terug naar het verzamelpunt en sluit hij aan bij de volgende aanval.
+  - De flank vertrekt zo dat hij tegelijk met de hoofdmacht aankomt; de tweede lijn verzamelt mee en vertrekt pas 22 s (niveau 5: 16 s) nadat de hoofdmacht aanvalt. Verkenners vertrekken meteen, zoals voorheen.
+  - Terugtrekken (niveau 5) kan nu in elke fase.
+  - Meldingen (door Claude geschreven): "Red gathers outside your west wall!" of "The red army gathers before it strikes." en "The red army advances!".
+- Nieuw in strijd.js: wie verzamelt of in de opmars loopt, jaagt niemand ver na (alleen wie binnen bereik plus 1,5 tegel komt); een ladderdrager wacht ook (hij bleef eerst doorlopen).
+- De oude rekensom met wachttijden blijft als reserve als er geen verzamelpunt te vinden is.
+- Meting (level 5, ringmuur, 4 zwaardvechters, 4 ridders, 3 schutters, 2 rammen, 1 ladder): verzamelen tot 44 s, opmars 44 tot 61 s; de eerste ram raakt de muur met 3 tot 4 eigen soldaten binnen 5 tegels; geen machine liep meer dan 1 tegel voor de ridders uit; de flank kwam 2 tot 4 s na de hoofdmacht aan de andere kant aan.
+- Test: tests/opmars40.mjs (7 punten); veldheer38 aangepast aan de nieuwe werkwijze. Bekend: veldheer38 "zonder plan ... ver uit elkaar" faalt ook zonder deze wijziging (11,8 s in plaats van meer dan 15), net als losse punten in hut36, ronde39 en campagne30; die komen uit eerdere versies.
+- Risico's: aanvallen komen 30 tot 60 s later op gang dan voorheen, dus lagere levels voelen mogelijk makkelijker; het verzamelpunt is niet op elke kaart bekeken; het plan wordt nog steeds niet bewaard bij opslaan.
+## 0.72.0: een eigen landschap per level (naar Karels wens van 17 en 18 november)
+- **Landschapsprofielen** in `data/landschappen.json`; een level kiest er een met `landschap` in data/campagne.json. Alleen uiterlijk: het terrein heeft geen invloed op het spel (besluit Karel). Proloog en vrij spel blijven groen.
+  | Level | Profiel | Grond | Bomen | Weer en vogels |
+  |---|---|---|---|---|
+  | 1 Witherheath | heide | oker en bruin, paarse heidevlekken | berken, dorre bomen | stof, warm licht |
+  | 2 Sevenwinds | wind | grijsgroen met rots | scheve windsparren | windstrepen en blaadjes |
+  | 3 Ironmarsh | kool | grauw met zwart gruis, roestig water | kale en dode bomen | as, raven |
+  | 4 The Fen | veen | donkergroen, modder, groen water, riet | treurwilgen, elzen | mist |
+  | 5 Stillwater | meer | bleek groen, helder water, riet | elzen | pluisjes, meeuwen |
+  | 6 Giant's Spine | rug | schraal gras met rots | brede eiken | wind, grijs licht |
+  | 7 Greyford | kloof | mosgroen en grijs | smalle sparren | mist, raven |
+  | 8 White Dike | polder | fris groen, klei, riet | knotwilgen | meeuwen |
+  | 9 Mourngate | sneeuw | sneeuw met rots, ijs (geen golfjes) | besneeuwde dennen, sneeuwkap op rotsen | sneeuwval, geen vogels |
+  | 10 Mournkeep | rouw | donker grijsolijf met as, zwart water | dode zwarte bomen | regen, af en toe bliksem, raven |
+- Code: `landschap.js` (kleuren, tweede grondkleur in vlekken, bloemen, steentjes, riet, schuim, rimpels uit het profiel), `kunst.js` (16 boomsoorten, `tekenBoom` met `stijl`, rots met sneeuwkap), `sfeer.js` (`tekenWeer`: waas en deeltjes in schermmaat; meeuwen en raven), `tekenaar.js` (vijfde argument profiel), `main.js` (`laadLandschap`). Bij een traag beeld (sfeerLicht) vallen de deeltjes weg, de waas blijft.
+- **Level 10: kerk met begraafplaats** op een open plek in het dode bos rechts van Mournkeep: nieuw decorobject GRAF (41, `dorp.graf`, vier varianten met grafstenen, kruisen, grafheuvels, kaarsjes). Decor `kerk` en `graf` mogen bomen wegkappen (kaart.js).
+- Nieuwe test `tests/landschap71.mjs` (32 controles; zet levels 7 tot 10 voor de proef open). Groen gebleven: kasteel33, kasteeldecor53, hut70, kaartvorm34, siege52, kaarten24, stillwater40, proloog35, test_stap17.
+- Niet gezien op de iPhone: snelheid met sneeuw (110 vlokjes) en regen (120 strepen), en of de bliksemflits prettig is. Levels 7 tot 10 zijn nog niet speelbaar; hun landschap staat klaar.
+
+## 0.72.1: level 4 (The Fen): garnizoen in het kamp en het Stille Volk komt na de acht minuten (naar Karels wens van 17 november)
 
 - **Garnizoen.** Het tentenkamp staat vol soldaten: 40 man, waarvan 20 rode ninja's (sluipmoordenaars), 12 boogschutters en 8 ridders (`rood.garnizoen` in campagne.json, maximaal 60). Ze staan verspreid tussen de tenten en bomen, bereikbaar vanaf de ingang van de commandotent, en blijven op hun post. Komt er iets van jou in zicht, dan gaan ze erop af, maar niet verder dan 9 tegels van hun post; daarna lopen ze terug. Ze tellen niet als aanvaller (komen dus niet op je hut of burcht af) en worden apart bewaard (`strijd.garnizoen()`, `bewaarStand().garnizoen`). Bij opnieuw beginnen staan ze er weer. De ninja's zijn voor jou half doorzichtig tot je dichtbij komt: dat is de gewone regel van de sluipmoordenaar.
 - **Na de acht minuten wint je niet meer.** Is de hut-tijd om, dan komen er vanuit de linkerbovenhoek van de kaart 80 vlammenwevers tevoorschijn (8 batches van 10, om de 0,6 s), die van jou zijn: je kiest ze en stuurt ze zoals je eigen leger. De camera kijkt naar de hoek en Gesina vertelt wat er gebeurt. De hut hoeft dan niet meer te blijven staan (`strijd.hutVrij()`), de aanvalsklok verdwijnt en rechtsboven staat "Defeat Huntmaster Brandt: 40 guards left". Je wint door Brandt in zijn kamp te verslaan; verlies je koning, dan verlies je. Instelling: `doel.versterking` in campagne.json (soort, aantal, hoek als deel van de kaart, perBatch, tussen).

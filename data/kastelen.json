@@ -6,7 +6,8 @@
   "materiaal: de kleur van muur, torens, poort en burcht van rood, uit materialen. hoog: true = muren te hoog voor ladders (alleen de belegeringstoren), en iets hoger getekend.",
   "Het kasteel moet op de kaart passen: maat plus gracht tot ongeveer 10 tegels.",
   "Nog niet: palissade van palen (jachtkamp, level 4), loodsen (level 6), sluis en kades (level 8), terrassen (level 9), Raaftoren (level 10). Die horen bij de levels zelf.",
-  "kamp: true = een tentenkamp (level 4): geen muren, torens of poort; de ring bepaalt alleen hoe groot het vrije erf is. De burcht in het midden is dan de commandotent (materiaal met vorm kampburcht). omgeving: bomen en moerasplassen rondom het kamp met een open laan naar jouw kant (zie js/kaart.js 5b2)."
+  "kamp: true = een tentenkamp (level 4): geen muren, torens of poort; de ring bepaalt alleen hoe groot het vrije erf is. De burcht in het midden is dan de commandotent (materiaal met vorm kampburcht). omgeving: bomen en moerasplassen rondom het kamp met een open laan naar jouw kant (zie js/kaart.js 5b2).",
+  "Level 10 (Mournkeep): een kerk met een begraafplaats op een open plek in het dode bos naast de buitenste ring (decor kerk en graf, versie 0.71.0). Kerk en graf mogen bomen wegkappen. Let op: dx en dy van decor staan gespiegeld ten opzichte van de kaart."
  ],
  "kastelen": {
   "ring": {
@@ -327,7 +328,59 @@
     "afstand": 2,
     "breedte": 2
    },
-   "materiaal": "wit"
+   "materiaal": "wit",
+   "decor": [
+    [
+     "stal",
+     -11,
+     -8
+    ],
+    [
+     "stal",
+     -11,
+     -3
+    ],
+    [
+     "stal",
+     -11,
+     3
+    ],
+    [
+     "stal",
+     -11,
+     8
+    ],
+    [
+     "stal",
+     -4,
+     -11
+    ],
+    [
+     "stal",
+     4,
+     -11
+    ],
+    [
+     "stal",
+     -4,
+     11
+    ],
+    [
+     "stal",
+     4,
+     11
+    ],
+    [
+     "stal",
+     11,
+     -6
+    ],
+    [
+     "stal",
+     11,
+     6
+    ]
+   ]
   },
   "werkplaats": {
    "naam": "Siege yard",
@@ -429,7 +482,94 @@
      ]
     }
    ],
-   "materiaal": "zwart"
+   "materiaal": "zwart",
+   "decor": [
+    [
+     "kerk",
+     -11,
+     2
+    ],
+    [
+     "graf",
+     -10,
+     0
+    ],
+    [
+     "graf",
+     -10,
+     -1
+    ],
+    [
+     "graf",
+     -10,
+     -2
+    ],
+    [
+     "graf",
+     -10,
+     -3
+    ],
+    [
+     "graf",
+     -11,
+     0
+    ],
+    [
+     "graf",
+     -11,
+     -1
+    ],
+    [
+     "graf",
+     -11,
+     -2
+    ],
+    [
+     "graf",
+     -11,
+     -3
+    ],
+    [
+     "graf",
+     -12,
+     0
+    ],
+    [
+     "graf",
+     -12,
+     -1
+    ],
+    [
+     "graf",
+     -12,
+     -2
+    ],
+    [
+     "graf",
+     -12,
+     -3
+    ],
+    [
+     "graf",
+     -13,
+     0
+    ],
+    [
+     "graf",
+     -13,
+     -1
+    ],
+    [
+     "graf",
+     -13,
+     -2
+    ],
+    [
+     "graf",
+     -13,
+     -3
+    ]
+   ]
   },
   "tentenkamp": {
    "naam": "Tent camp",

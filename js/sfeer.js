@@ -52,7 +52,10 @@ function hash(n) {
   return s - Math.floor(s);
 }
 
-export function maakSfeer(kaart, landschap) {
+export function maakSfeer(kaart, landschap, profiel = null) {
+  const vogelSoort = (profiel && profiel.vogels) || 'vogels';
+  const deeltjes = (profiel && profiel.deeltjes) || 'geen';
+  const waas = (profiel && profiel.waas) || null;
   // --- Wind -----------------------------------------------------------------
   // Een golf die over de kaart rolt, met af en toe een vlaag.
   function wind(wx, wy, t) {
@@ -198,10 +201,13 @@ export function maakSfeer(kaart, landschap) {
     { snel: 19, hoek: 2.6, zaad: 0.61, aantal: 3, hoog: 70 },
   ];
   function tekenVogels(ctx, l, b, r, o, t, sterkte) {
-    if (sterkte <= 0) return;
+    if (sterkte <= 0 || vogelSoort === 'geen') return;
+    const meeuw = vogelSoort === 'meeuwen';
+    const raaf = vogelSoort === 'raven';
+    const kleur = meeuw ? '246, 246, 240' : raaf ? '14, 12, 14' : '36, 30, 26';
     const rondje = wereldB + wereldH + 600;
     for (const v of VLUCHTEN) {
-      const afstand = (t * v.snel + v.zaad * rondje) % rondje - 300;
+      const afstand = (t * v.snel * (raaf ? 0.7 : 1) + v.zaad * rondje) % rondje - 300;
       const gx = wereldL + wereldB * v.zaad + Math.cos(v.hoek) * afstand;
       const gy = wereldH * 0.5 + Math.sin(v.hoek) * afstand * 0.5;
       for (let k = 0; k < v.aantal; k++) {
@@ -214,14 +220,14 @@ export function maakSfeer(kaart, landschap) {
         const vx = bx;
         const vy = by - h;
         if (vx < l - 40 || vx > r + 40 || vy < b - 40 || by > o + 40) continue;
-        const klap = Math.sin(t * 9 + k * 1.7) * 2.2;
+        const klap = Math.sin(t * (raaf ? 5 : meeuw ? 6 : 9) + k * 1.7) * (raaf ? 3 : 2.2);
         // Schaduw op de grond
         ctx.strokeStyle = `rgba(20, 16, 10, ${0.22 * sterkte})`;
         ctx.lineWidth = 1.4;
         vleugels(ctx, bx - ZON_X * h, by - ZON_Y * h, klap * 0.5);
         // De vogel zelf
-        ctx.strokeStyle = `rgba(36, 30, 26, ${0.85 * sterkte})`;
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = `rgba(${kleur}, ${0.9 * sterkte})`;
+        ctx.lineWidth = raaf ? 1.9 : meeuw ? 1.5 : 1.2;
         vleugels(ctx, vx, vy, klap);
       }
     }
@@ -234,5 +240,123 @@ export function maakSfeer(kaart, landschap) {
     ctx.stroke();
   }
 
-  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenWimpel, tekenHamer };
+  // --- Weer en waas per landschap (versie 0.71.0) ---------------------------
+  // In schermmaat, over de wereld heen: stof, wind, as, mist, pluis, sneeuw of
+  // storm. Vaste aantallen, posities volgen uit de tijd, dus geen geheugen.
+  let mistVlek = null;
+  function maakMistVlek() {
+    const d = document.createElement('canvas');
+    d.width = 256;
+    d.height = 128;
+    const c = d.getContext('2d');
+    const g = c.createRadialGradient(128, 64, 4, 128, 64, 126);
+    g.addColorStop(0, 'rgba(235,240,236,0.55)');
+    g.addColorStop(0.6, 'rgba(235,240,236,0.22)');
+    g.addColorStop(1, 'rgba(235,240,236,0)');
+    c.setTransform(1, 0, 0, 0.5, 0, 32);
+    c.fillStyle = g;
+    c.fillRect(0, 0, 256, 256);
+    return d;
+  }
+  // b, h: schermmaat in CSS-pixels; de aanroeper zet de transformatie.
+  function tekenWeer(ctx, b, h, t) {
+    if (waas) {
+      ctx.fillStyle = `rgba(${waas[0]}, ${waas[1]}, ${waas[2]}, ${waas[3]})`;
+      ctx.fillRect(0, 0, b, h);
+    }
+    if (deeltjes === 'geen') return;
+    const rond = (v, m) => ((v % m) + m) % m;
+    if (deeltjes === 'mist') {
+      mistVlek = mistVlek || maakMistVlek();
+      for (let i = 0; i < 7; i++) {
+        const z = hash(i * 3.7 + 1);
+        const w = b * (0.55 + z * 0.4);
+        const x = rond(z * b * 1.6 + t * (6 + z * 6), b + w * 1.2) - w * 0.6;
+        const y = h * (0.12 + hash(i * 5.1 + 2) * 0.8) + Math.sin(t * 0.1 + i) * 8 - w * 0.25;
+        ctx.globalAlpha = 0.55 + 0.25 * Math.sin(t * 0.15 + i * 2);
+        ctx.drawImage(mistVlek, x - w / 2, y, w, w / 2);
+      }
+      ctx.globalAlpha = 1;
+      return;
+    }
+    if (deeltjes === 'stof') {
+      ctx.fillStyle = 'rgba(224, 196, 140, 0.45)';
+      for (let i = 0; i < 46; i++) {
+        const z = hash(i * 7.3 + 4);
+        const x = rond(z * 3000 + t * (24 + z * 30), b + 40) - 20;
+        const y = rond(hash(i * 2.9) * h + Math.sin(t * 0.9 + i) * 10, h);
+        ctx.fillRect(x, y, 1.6 + z * 1.4, 1.2);
+      }
+      // Af en toe een zachte stofvlaag over de grond
+      const vlaag = Math.max(0, Math.sin(t * 0.13));
+      if (vlaag > 0.6) {
+        ctx.fillStyle = `rgba(214, 180, 120, ${(vlaag - 0.6) * 0.25})`;
+        ctx.fillRect(0, h * 0.55, b, h * 0.45);
+      }
+      return;
+    }
+    if (deeltjes === 'wind' || deeltjes === 'storm') {
+      const storm = deeltjes === 'storm';
+      const n = storm ? 120 : 24;
+      ctx.lineWidth = storm ? 1 : 1.1;
+      ctx.strokeStyle = storm ? 'rgba(190, 200, 220, 0.32)' : 'rgba(255, 255, 255, 0.30)';
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const z = hash(i * 4.1 + 9);
+        if (storm) {
+          // Regen die schuin naar links valt
+          const y = rond(z * 900 + t * (520 + z * 160), h + 40) - 20;
+          const x = rond(hash(i * 1.7) * b * 1.3 - y * 0.25, b + 20) - 10;
+          ctx.moveTo(x, y);
+          ctx.lineTo(x - 4, y + 14);
+        } else {
+          // Windstrepen die over het scherm schieten
+          const x = rond(z * 4000 + t * (260 + z * 140), b + 160) - 80;
+          const y = hash(i * 6.3) * h + Math.sin(t * 2 + i) * 4;
+          ctx.moveTo(x, y);
+          ctx.quadraticCurveTo(x + 22, y - 3, x + 44 + z * 30, y + 1);
+        }
+      }
+      ctx.stroke();
+      if (!storm) {
+        ctx.fillStyle = 'rgba(150, 140, 70, 0.8)';
+        for (let i = 0; i < 8; i++) {
+          const z = hash(i * 9.7 + 3);
+          const x = rond(z * 2000 + t * (150 + z * 60), b + 40) - 20;
+          const y = hash(i * 3.3) * h + Math.sin(t * 3 + i) * 12;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(t * 4 + i);
+          ctx.fillRect(-2, -1, 4, 2);
+          ctx.restore();
+        }
+      } else {
+        // Bliksem: ongeveer elke 17 seconden een korte, zachte flits
+        const fase = rond(t, 17);
+        if (fase < 0.25) {
+          ctx.fillStyle = `rgba(220, 225, 255, ${0.16 * (1 - fase / 0.25)})`;
+          ctx.fillRect(0, 0, b, h);
+        }
+      }
+      return;
+    }
+    // Vallende of zwevende deeltjes: as, pluis, sneeuw
+    const sneeuw = deeltjes === 'sneeuw';
+    const pluis = deeltjes === 'pluis';
+    const n = sneeuw ? 110 : pluis ? 22 : 60;
+    ctx.fillStyle = sneeuw ? 'rgba(255, 255, 255, 0.85)' : pluis ? 'rgba(255, 255, 248, 0.75)' : 'rgba(70, 66, 64, 0.55)';
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const z = hash(i * 5.7 + 2);
+      const val = sneeuw ? 34 + z * 30 : pluis ? 5 + z * 5 : 12 + z * 10;
+      const y = rond(z * 1700 + t * val * (pluis ? (i % 2 ? 1 : -1) : 1), h + 20) - 10;
+      const x = rond(hash(i * 2.3) * b + t * (sneeuw ? 14 : 8) + Math.sin(t * (0.6 + z) + i) * (pluis ? 18 : 10), b + 20) - 10;
+      const r = sneeuw ? 0.9 + z * 1.5 : pluis ? 1.2 : 0.8 + z * 0.9;
+      ctx.moveTo(x + r, y);
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  }
+
+  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenWimpel, tekenHamer, tekenWeer };
 }

@@ -33,6 +33,19 @@ import { maakGevangene } from './gevangene.js';
 import { SOORT } from './eenheden.js';
 import { laadMissies, leesModus, zetModus, voortgang, missieGewonnen, opslagSleutel, profielVan, pasProfielToe, isOpen, eerstWinnen, ontgrendeld } from './modus.js';
 
+// Landschapsprofiel uit data/landschappen.json; zonder naam of bij een fout: null (gewoon groen).
+async function laadLandschap(naam) {
+  if (!naam) return null;
+  try {
+    const antwoord = await fetch('data/landschappen.json');
+    if (!antwoord.ok) return null;
+    const lijst = (await antwoord.json()).landschappen;
+    return lijst[naam] ? { sleutel: naam, ...lijst[naam] } : null;
+  } catch (fout) {
+    return null;
+  }
+}
+
 const GEEN_TITEL = 'burcht-banier.geenTitel';
 const TOON_BEELD = 'burcht-banier.toonBeeld';   // na het kiezen van een level op de kaart: eerst het verhaalbeeld
 
@@ -66,7 +79,15 @@ async function start() {
 
   // De rode koning is in de campagne de heer zelf: zijn kleding en wapen.
   const heerKoning = missie && missie.rood && missie.rood.koning;
-  const assets = await laadAssets(heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {}, roodKasteel);
+  // Het landschap van dit level (versie 0.71.0): grondkleuren, bomen, rotsen, weer.
+  // Alleen het uiterlijk; het spel zelf verandert niet.
+  const landschapProfiel = await laadLandschap(missie && missie.landschap);
+  const aanpassingen = heerKoning ? { 'eenheid.koning_rood': heerKoning.uiterlijk || {} } : {};
+  if (landschapProfiel) {
+    aanpassingen['object.boom'] = { kleur: landschapProfiel.boomKleur, stijl: landschapProfiel.bomen };
+    if (landschapProfiel.rotsKleur || landschapProfiel.rotsSneeuw) aanpassingen['object.steen'] = { ...(landschapProfiel.rotsKleur ? { kleur: landschapProfiel.rotsKleur } : {}), sneeuw: !!landschapProfiel.rotsSneeuw };
+  }
+  const assets = await laadAssets(aanpassingen, roodKasteel);
   assets.meldingen.forEach((tekst) => ui.toonMelding(tekst, { soort: 'uitleg' }));
   // In de campagne heb je alleen wat het verhaal al heeft vrijgegeven.
   const mag = ontgrendeld(missies.campagne, missie ? missie.id : null);
@@ -75,7 +96,7 @@ async function start() {
   const kaart = maakKaart({ ...(kaarten[kaartNaam] || CONFIG.kaart), ...(ontwerp ? { kasteel: ontwerp } : {}) });
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
-  const tekenaar = maakTekenaar(canvas, kaart, camera, assets);
+  const tekenaar = maakTekenaar(canvas, kaart, camera, assets, landschapProfiel);
   tekenaar.zetWimpels(!!(ontwerp && ontwerp.wimpels));
   const gevangene = maakGevangene({ kaart, missie });   // level 5: Ludolf in zijn cel
   const wegvinder = maakWegvinder(kaart);
@@ -208,7 +229,11 @@ async function start() {
   }
   if (gevangene && strijd.uitslag() === 'gewonnen') gevangene.bevrijd();   // de cel staat open als je het level al won
   // Jouw koning: hij staat altijd bij de burcht als hij er nog niet is.
-  if (!strijd.uitslag()) leger.zetKoning((kaart.start[0].y + 2) * kaart.breedte + kaart.start[0].x + 2);   // voor de burcht, zodat je hem ziet
+  const koningVak = (kaart.start[0].y + 2) * kaart.breedte + kaart.start[0].x + 2;   // voor de burcht, zodat je hem ziet
+  // Het thuisvak ook onthouden als het level al beslist was (bewaarde winst): zonder dat komt de koning bij
+  // "Start over" niet terug en verlies je meteen weer ("Your king fell during attack 0").
+  leger.zetKoningThuis(koningVak);
+  if (!strijd.uitslag()) leger.zetKoning(koningVak);
   bewaren = true;
 
   // Alles wat de tekenlaag moet weten. doel = waar je soldaten heen stuurt
@@ -400,6 +425,29 @@ async function start() {
 
   // --- Het leger --------------------------------------------------------------------
   // De kazerne: tik hem aan en leid soldaten op.
+  // Siege gear krijgt een bevestiging zodra het zijn opdracht heeft: de ladders worden tegen de
+  // muur gezet, de ram gaat de muur doorbreken, de toren wordt geplaatst, de katapult gaat schieten.
+  // Gewone soldaten krijgen die melding niet. ontvangen = de eenheden die het bevel echt kregen;
+  // doel = wat het bevel aanwees ('wall', 'gate', ...).
+  function meldSiege(ontvangen, doel) {
+    const aantal = {};
+    for (const e of ontvangen) {
+      const def = leger.soorten[e.soldaat.sleutel];
+      const soort = def.vast ? 'toren' : def.ladder ? 'ladder' : def.sleutel === 'katapult' ? 'katapult' : def.alleenBouw ? 'ram' : null;
+      if (soort) aantal[soort] = (aantal[soort] || 0) + 1;
+    }
+    const rood = `the red ${doel || 'wall'}`;
+    const tekst = {
+      ladder: () => `A ladder is being set against ${rood}.`,
+      toren: (n) => `${n > 1 ? 'The siege towers are' : 'The siege tower is'} being placed against ${rood}. Then your soldiers can climb over ${n > 1 ? 'them' : 'it'}.`,
+      ram: (n) => `${n > 1 ? 'The battering rams are' : 'The battering ram is'} going to break through ${rood}.`,
+      katapult: (n) => `${n > 1 ? 'The catapults are' : 'The catapult is'} going to fire at ${rood}.`,
+    };
+    for (const soort of ['ladder', 'toren', 'ram', 'katapult']) {
+      if (aantal[soort]) ui.toonMelding(tekst[soort](aantal[soort]), { soort: 'leger', toon: true });
+    }
+  }
+
   let kazerneVak = -1;         // de kazerne waarvan het paneel openstaat
   let kazerneBericht = '';     // wat er het laatst gebeurde
   const toonKazerne = () => {
@@ -416,7 +464,7 @@ async function start() {
       open: true,
       regels: [
         `${gebouw.naam}. Army places: ${leger.plekken()} of ${leger.max}. Gold: ${economie.voorraad.goud}. Idle peasants: ${Math.max(0, volk.vrij)}.`,
-        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : gebouw.leidtOp === 'stal' ? 'A mounted knight costs gold, copper, wheat and one idle peasant. Each stable holds five horses and needs a horse keeper.' : 'A soldier costs gold and one idle peasant.'),
+        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : gebouw.leidtOp === 'belegering' ? 'Siege gear costs gold, planks and one idle peasant. Ladder bearers are trained at the barracks.' : gebouw.leidtOp === 'stal' ? 'A mounted knight costs gold, copper, wheat and one idle peasant. Each stable holds five horses and needs a horse keeper.' : 'A soldier costs gold and one idle peasant.'),
       ],
       knoppen: Object.values(leger.soorten).filter((def) => mag(def.sleutel) && (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
     });
@@ -429,7 +477,7 @@ async function start() {
   ui.opKazerneSluit(sluitKazerne);
   ui.opOpleiden((sleutel) => {
     const reden = leger.leidOp(sleutel, kazerneVak);
-    kazerneBericht = reden ? `Not possible: ${reden}.` : `${metLidwoord(leger.soorten[sleutel].naam.toLowerCase(), true)} is ready at the ${leger.soorten[sleutel].kazerne === 'stal' ? 'stable' : 'barracks'}.`;
+    kazerneBericht = reden ? `Not possible: ${reden}.` : `${metLidwoord(leger.soorten[sleutel].naam.toLowerCase(), true)} is ready at the ${leger.soorten[sleutel].kazerne === 'stal' ? 'stable' : leger.soorten[sleutel].kazerne === 'belegering' ? 'siege workshop' : 'barracks'}.`;
     toonKazerne();
   });
 
@@ -724,8 +772,8 @@ async function start() {
   // --- Het menu: vrij spel en de campagne -------------------------------------------------
   const modusNaam = missie ? missie.titel : `Free play: ${missies.profielen[modus.profiel].naam}`;
   document.getElementById('versie').textContent += ` · ${missie ? 'mission ' + missie.id : missies.profielen[modus.profiel].naam.toLowerCase()}`;
-  const gewonnen = voortgang();
-  const menuItems = () => [
+  const gewonnenNu = () => voortgang();   // elke keer opnieuw lezen: na een winst in dit level moet het volgende level meteen open zijn
+  const menuItems = () => { const gewonnen = gewonnenNu(); return [
     ...missies.campagne.filter((c) => c.speelbaar).map((c) => ({
       groep: 'Campaign', sleutel: `missie:${c.id}`, naam: `${c.titel}${gewonnen.includes(c.id) ? ' (won)' : ''}`,
       tekst: isOpen(c, gewonnen) ? c.intro.split('. ')[0] + '.' : eerstWinnen(c.id),
@@ -736,7 +784,7 @@ async function start() {
       groep: 'Free play', sleutel: `vrij:${v.profiel}`, naam: missies.profielen[v.profiel].naam, tekst: v.tekst,
       nu: modus.soort === 'vrij' && modus.profiel === v.profiel,
     })),
-  ];
+  ]; };
   const kiesModus = (sleutel) => {
     const [soort, waarde] = sleutel.split(':');
     const nieuw = soort === 'missie' ? { soort: 'campagne', missie: Number(waarde) } : { soort: 'vrij', profiel: waarde };
@@ -752,12 +800,12 @@ async function start() {
   const openMenu = () => ui.toonMenu({ open: true, nu: `Now: ${modusNaam}. Each mode keeps its own game.`, items: menuItems() });
   const kanVerder = !!bewaard || !!missie;   // is er al iets gespeeld?
   const toonKaart = () => {
-    const open = (c) => isOpen(c, gewonnen);
+    const open = (c) => isOpen(c, gewonnenNu());
     ui.toonTitel({ open: true, weergave: 'kaart' });
     ui.toonLevelkaart(missies.campagne.map((c, i) => ({
       id: c.id, naam: c.naam, portret: c.portret,
       x: c.punt ? c.punt.x : 10 + i * 8, y: c.punt ? c.punt.y : 50,
-      staat: gewonnen.includes(c.id) ? 'gewonnen' : !c.speelbaar ? 'later' : !open(c) ? 'dicht' : modus.soort === 'campagne' && modus.missie === c.id ? 'nu' : 'open',
+      staat: gewonnenNu().includes(c.id) ? 'gewonnen' : !c.speelbaar ? 'later' : !open(c) ? 'dicht' : modus.soort === 'campagne' && modus.missie === c.id ? 'nu' : 'open',
     })), (id) => {
       const c = missies.campagne.find((m) => m.id === id);
       const tekst = document.getElementById('kaart-tekst');
@@ -1016,9 +1064,10 @@ async function start() {
             ui.toonMelding('These walls are too high for ladders. Bring a siege tower.', { soort: 'leger' });
             return;
           }
-          if (strijd.zetLadderBevel(groep.filter(isDrager), muurVak)) {
+          const kregen = [];
+          if (strijd.zetLadderBevel(groep.filter(isDrager), muurVak, kregen)) {
             staat.doel = { x: muurVak % kaart.breedte, y: Math.floor(muurVak / kaart.breedte), duur: 900, tot: performance.now() + 900 };
-            ui.toonMelding(groep.some((e) => leger.soorten[e.soldaat.sleutel].vast) ? 'The siege tower rolls to the red wall. Then your soldiers climb over it.' : 'Your ladder bearer sets a ladder against the red wall.', { soort: 'leger' });
+            meldSiege(kregen, 'wall');
           } else {
             ui.toonMelding('Your ladder bearer cannot reach that wall.', { soort: 'leger' });
           }
@@ -1030,7 +1079,10 @@ async function start() {
         }
         if (leger.heeftTrap(vanRood.x, vanRood.y) && groep.some((e) => !isRam(e) && !isDrager(e))) {
           const rammen = groep.filter(isRam);
-          if (rammen.length) strijd.valBouwAan(rammen, vanRood.vak);
+          if (rammen.length) {
+            const kregen = [];
+            if (strijd.valBouwAan(rammen, vanRood.vak, kregen)) meldSiege(kregen, beschrijfTegel(kaart, vanRood.x, vanRood.y));
+          }
           leger.kies(groep.filter((e) => !isRam(e) && !isDrager(e)));
           const opWeg = leger.stuur(vanRood.x, vanRood.y, true);
           leger.kies(groep);
@@ -1042,8 +1094,10 @@ async function start() {
       }
       // Een bouwwerk van rood aangetikt: je gekozen soldaten vallen het aan.
       if (vanRood && leger.aantalGekozen()) {
-        if (strijd.valBouwAan(leger.gekozen(), vanRood.vak)) {
+        const kregen = [];
+        if (strijd.valBouwAan(leger.gekozen(), vanRood.vak, kregen)) {
           staat.doel = { x: vanRood.x, y: vanRood.y, duur: 900, tot: performance.now() + 900, aanval: true };
+          meldSiege(kregen, beschrijfTegel(kaart, vanRood.x, vanRood.y));
         } else {
           ui.toonMelding('Your soldiers cannot reach that. Break through the red gate or wall first.', { soort: 'leger' });
         }
@@ -1219,7 +1273,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht };
+  window.spel = { gids, hinderlaag, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

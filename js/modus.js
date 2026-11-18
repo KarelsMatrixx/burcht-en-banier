@@ -144,6 +144,7 @@ function pasRoodToe(regels, rood) {
   if (rood.begin) h.begin = { ...h.begin, ...rood.begin };
   // Hoe groot zijn aanvallen zijn, in gewichten van economie.json (een ridder telt 1): absolute waarden.
   for (const veld of ['doelBegin', 'doelPerAanval', 'doelMax']) if (Number.isFinite(rood[veld])) h[veld] = rood[veld];
+  if (rood.doelVanaf && Number.isFinite(rood.doelVanaf.aanval) && Number.isFinite(rood.doelVanaf.factor)) h.doelVanaf = { ...rood.doelVanaf };
   if (Number.isFinite(rood.tempo) && rood.tempo > 0) h.tussen = Math.round((h.tussen * 100) / rood.tempo);
   if (rood.leger) h.leger = { ...rood.leger };
   if (rood.extra_soorten) h.extra_soorten = { ...rood.extra_soorten };

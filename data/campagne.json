@@ -12,7 +12,8 @@
   "kasteel (stap 33): het ontwerp van het kasteel van rood, uit data/kastelen.json.",
   "proloog: true maakt van een level de proloog (js/proloog.js): taken van Bartholt, Reinout als gast, nacht, overmacht, scène, geen winst of verlies. De rode heer heeft dan geen koning in zijn burcht; koning.uiterlijk is het uiterlijk van de gast (Reinout).",
   "doel (doeltype B, js/doel.js): een bouwwerk houden tot de tijd om is. soort hut = de hut van Gesina midden op de kaart. duur in seconden, leven van de hut, golven = { eerste, tussen (seconden), begin, erbij, max (mannen), leger = aandelen }. Valt de hut, dan verlies je. Zet rood.eersteAanval hoog: de golven komen van het doel, niet van de economie van rood.",
-  "rood.aanval (stap 38, js/veldheer.js): hoe slim rood zijn aanvallen aanpakt. niveau 1 tot 5: 1 samen aankomen, 2 golven met rol (verkenners, tweede lijn, thuiswacht), 3 doelkeuze op jouw zwakste muur en flank, 4 tegenzetten tegen jouw leger, 5 terugtrekken. max = hoogste niveau in dit level (het niveau stijgt elke stijgElke aanvallen met een). flank = aandeel van de hoofdmacht dat een andere weg neemt. De standaardwaarden staan in economie.json onder heer.aanval."
+  "rood.aanval (stap 38, js/veldheer.js): hoe slim rood zijn aanvallen aanpakt. niveau 1 tot 5: 1 samen aankomen, 2 golven met rol (verkenners, tweede lijn, thuiswacht), 3 doelkeuze op jouw zwakste muur en flank, 4 tegenzetten tegen jouw leger, 5 terugtrekken. max = hoogste niveau in dit level (het niveau stijgt elke stijgElke aanvallen met een). flank = aandeel van de hoofdmacht dat een andere weg neemt. De standaardwaarden staan in economie.json onder heer.aanval.",
+  "Regel (17 november 2026): wat je als beloning van level N krijgt, gebruikt rood in level N tegen jou, in de loop van het level (niet in de eerste aanval). Zo ken je het al als je het zelf mag gebruiken. Soldaat of machine uit beloning: hij staat in rood.leger (met vanaf), rood.extra_soorten (machines), doel.golven.leger (hut, level 4; vanaf = vanaf welke golf, begint bij 0) of doel.druk.golven (loodsen, level 6). Gebouwen en mijnen in beloning tellen niet mee. Tests/beloning_tegen_jou.mjs bewaakt dit voor elk speelbaar level."
  ],
  "figuren": {
   "karel": {
@@ -86,7 +87,8 @@
    "wessel": "",
    "beloning": [
     "ram",
-    "ladder"
+    "ladder",
+    "belegeringswerkplaats"
    ],
    "proloog": true,
    "verteller": "bartholt",
@@ -113,6 +115,7 @@
    "portret": "reinout",
    "profiel": "rustig",
    "kaart": "dal",
+   "landschap": "heide",
    "punt": {
     "x": 10.9,
     "y": 50.1
@@ -177,7 +180,12 @@
       "baard": "geen"
      }
     },
-    "extra_soorten": {},
+    "extra_soorten": {
+     "toren": {
+      "vanaf": 1,
+      "max": 1
+     }
+    },
     "muur": 100,
     "wachters": 4,
     "aanval": {
@@ -195,6 +203,7 @@
    "portret": "mechteld",
    "profiel": "normaal",
    "kaart": "zevenwind",
+   "landschap": "wind",
    "punt": {
     "x": 20.9,
     "y": 34.4
@@ -270,7 +279,12 @@
       "thuisBereik": 7
      }
     },
-    "extra_soorten": {},
+    "extra_soorten": {
+     "katapult": {
+      "vanaf": 1,
+      "max": 1
+     }
+    },
     "muur": 115,
     "aanval": {
      "niveau": 2,
@@ -293,6 +307,7 @@
    "portret": "hademar",
    "profiel": "zwaar",
    "kaart": "ijzerbroek",
+   "landschap": "kool",
    "punt": {
     "x": 38.5,
     "y": 55.6
@@ -376,6 +391,7 @@
    "portret": "brandt",
    "profiel": "normaal",
    "kaart": "veen",
+   "landschap": "veen",
    "punt": {
     "x": 44.7,
     "y": 38.4
@@ -445,7 +461,11 @@
      "leger": {
       "sluipmoordenaar": 2,
       "boogschutter": 2,
-      "ridder": 1
+      "ridder": 1,
+      "vlammenwever": {
+       "aandeel": 1,
+       "vanaf": 2
+      }
      }
     },
     "versterking": {
@@ -479,6 +499,7 @@
    "portret": "aleid",
    "profiel": "normaal",
    "kaart": "meren",
+   "landschap": "meer",
    "punt": {
     "x": 51.2,
     "y": 44.2
@@ -505,19 +526,24 @@
      },
      "banierdrager": {
       "aandeel": 1,
-      "vanaf": 2
+      "vanaf": 1
      },
      "boogschutter": {
       "aandeel": 2
      },
      "ridder": {
       "aandeel": 1
+     },
+     "heler": {
+      "aandeel": 1,
+      "vanaf": 2
      }
     },
     "extra_soorten": {
+     "banierdrager": { "vanaf": 1, "max": 1 },
      "katapult": { "vanaf": 5, "max": 1 },
      "toren": { "vanaf": 6, "max": 1 },
-     "ruiter": { "vanaf": 5, "max": 2 }
+     "ruiter": { "vanaf": 2, "max": 2 }
     },
     "koning": {
      "leven": 120,
@@ -547,6 +573,7 @@
     "doelBegin": 4,
     "doelPerAanval": 1.35,
     "doelMax": 16,
+    "doelVanaf": { "aanval": 4, "factor": 2 },
     "groei": {
      "doelPerStap": 0.15,
      "max": 8
@@ -609,6 +636,7 @@
    "portret": "lambrecht",
    "profiel": "normaal",
    "kaart": "reuzenrug",
+   "landschap": "rug",
    "punt": {
     "x": 61.1,
     "y": 32.3
@@ -631,6 +659,10 @@
      },
      "boogschutter": {
       "aandeel": 1
+     },
+     "steenwachter": {
+      "aandeel": 1,
+      "vanaf": 2
      }
     },
     "extra_soorten": {
@@ -723,7 +755,8 @@
         "bijlridder": 3,
         "ram": 2,
         "ladder": 2,
-        "katapult": 1
+        "katapult": 1,
+        "steenwachter": 1
        }
       },
       {
@@ -738,7 +771,8 @@
         "ram": 2,
         "ladder": 2,
         "katapult": 1,
-        "toren": 1
+        "toren": 1,
+        "steenwachter": 1
        }
       }
      ]
@@ -767,6 +801,7 @@
    "portret": "everhard",
    "profiel": "zwaar",
    "kaart": "grauwvoort",
+   "landschap": "kloof",
    "punt": {
     "x": 69.9,
     "y": 44.6
@@ -820,6 +855,7 @@
    "portret": "rutger",
    "profiel": "zwaar",
    "kaart": "witte_dijk",
+   "landschap": "polder",
    "punt": {
     "x": 76.1,
     "y": 56.2
@@ -874,6 +910,7 @@
    "portret": "valkenier",
    "profiel": "zwaar",
    "kaart": "standaard",
+   "landschap": "sneeuw",
    "punt": {
     "x": 84.1,
     "y": 48.9
@@ -929,6 +966,7 @@
    "portret": "ottger",
    "profiel": "zwaar",
    "kaart": "standaard",
+   "landschap": "rouw",
    "punt": {
     "x": 88.1,
     "y": 30.3

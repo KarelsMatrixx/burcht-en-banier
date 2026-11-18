@@ -25,6 +25,8 @@ export const OBJECT = {
   IJZERPOORT: 37,   // vrijstaand poortgebouw met ijzeren valhek (level 3), decor
   KAMPVUUR: 38,  // kampvuur met driepoot en rook (tentenkamp van Brandt, level 4), decor
   JAGERSTENT: 39,   // olijfgroene jagerstent met gewei (tentenkamp van Brandt, level 4), decor
+  BELEGERINGSWERKPLAATS: 40,   // de aparte kazerne voor ram, katapult en belegeringstoren
+  GRAF: 41,      // grafstenen en kruisen van een begraafplaats (level 10, bij de kerk), decor
 };
 
 // Namen waarmee de tekenlaag het juiste plaatje opzoekt in data/assets.json.
@@ -36,13 +38,13 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
 const OBJECT_TEKST = [
   '', 'forest', 'rock', 'copper ore', 'wall', 'watchtower', 'gate', 'keep', 'keep', 'keep', 'tower',
-  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'Mystic Lodge', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church', 'stable', 'coal mine', 'stonemason', 'smithy', 'iron gatehouse', 'campfire', "hunter's tent",
+  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mystic lodge', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church', 'stable', 'coal mine', 'stonemason', 'smithy', 'iron gatehouse', 'campfire', "hunter's tent", 'siege workshop', 'graveyard',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.
@@ -449,7 +451,7 @@ export function maakKaart(recept) {
       }
       // Decor binnen en buiten de muren (detailronde): [naam, dx, dy] in dezelfde maat als de ringen.
       // Alleen op een lege tegel zonder water; het pad naar de poort blijft vrij omdat het ontwerp dat bewaakt.
-      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR };
+      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR, stal: OBJECT.STAL, kerk: OBJECT.KERK, graf: OBJECT.GRAF };
       // Moerasplekjes midden in het kamp ([dx, dy]): water op een lege tegel buiten de burcht.
       for (const [dx, dy] of ontwerp.water || []) {
         const i = plek(dx, dy);
@@ -458,7 +460,9 @@ export function maakKaart(recept) {
       }
       for (const [naam, dx, dy] of ontwerp.decor || []) {
         const i = plek(dx, dy);
-        if (i < 0 || !DECOR[naam] || object[i] !== OBJECT.GEEN || grond[i] === GROND.WATER) continue;
+        // Kerk en graven mogen een open plek in het bos kappen (level 10: kerkhof tussen de dode bomen).
+        const kapt = (naam === 'kerk' || naam === 'graf') && object[i] === OBJECT.BOOM;
+        if (i < 0 || !DECOR[naam] || (object[i] !== OBJECT.GEEN && !kapt) || grond[i] === GROND.WATER) continue;
         object[i] = DECOR[naam];
       }
       // De gracht: water rondom, met een dam van aarde voor elke poort van de buitenste ring.

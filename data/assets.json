@@ -50,6 +50,7 @@
     "dorp.ijzerpoort": { "vorm": "kopermijn", "kleur": "#3b3b43", "hoogte": 60, "sprite": "poort_ijzer.png", "schaal": 2, "anker": [40, 84] },
     "dorp.jagerstent": { "vorm": "jagerstent", "kleur": "#6f7a4a", "accent": "#7a5636", "hoogte": 36, "sprite": "" },
     "dorp.kampvuur":  { "vorm": "kampvuur", "hoogte": 14, "sprite": "" },
+    "dorp.graf":      { "vorm": "graf", "kleur": "#8d8a86", "hoogte": 10, "sprite": "" },
     "dorp.kerk":      { "vorm": "kerk", "hoogte": 80, "sprite": "" },
     "dorp.cel":       { "vorm": "cel", "hoogte": 28, "sprite": "" },
     "dorp.cel_open":  { "vorm": "cel", "open": true, "hoogte": 28, "sprite": "" },
@@ -58,7 +59,8 @@
     "werk.bakkerij":  { "vorm": "bakkerij", "wand": "#b4573a", "schoorsteen": true, "pannen": true, "daken": ["#5b4636"], "hoogte": 24, "sprite": "" },
     "werk.kopermijn": { "vorm": "kopermijn", "kleur": "#7d7368", "hoogte": 24, "sprite": "" },
     "leger.stal":      { "vorm": "stal", "wand": "#9a7a52", "daken": ["#6d4a2e"], "kleur": "#2f5fc4", "hoogte": 30, "sprite": "" },
-    "leger.magiertoren": { "vorm": "magiertoren", "kleur": "#8f8a80", "dak": "#4b3a8a", "hoogte": 44, "sprite": "" },
+    "leger.belegering": { "vorm": "belegeringswerkplaats", "wand": "#5b4128", "dak": "#7a3b2a", "hoogte": 50, "sprite": "" },
+    "leger.magiertoren": { "vorm": "magiertoren", "kleur": "#a88a62", "dak": "#8a6a48", "hoogte": 56, "sprite": "" },
     "dorp.woning":     { "vorm": "huis", "wand": "#e0d2b4", "vakwerk": true, "pannen": true, "schoorsteen": true, "daken": ["#3f5e96"], "hoogte": 24, "sprite": "" },
 
     "eenheid.ridder_blauw":        { "vorm": "ridder",       "kleur": "#2f5fc4", "sprite": "" },

@@ -37,7 +37,7 @@
     "boomgaard":   { "naam": "Orchard",   "groep": "werk",    "object": "BOOMGAARD",   "kosten": { "hout": 15 }, "werker": "fruitteler",
                      "tip": "Apples are food for your peasants." },
     "magiertoren": { "naam": "Mystic Lodge", "groep": "leger",   "object": "MAGIERTOREN", "kosten": { "planken": 15, "steen": 15, "koper": 5 }, "leidtOp": "mystiek",
-                     "tip": "The mystic barracks: train assassins and flameweavers here. They cost two peasants." },
+                     "tip": "The mystic barracks: train assassins, flameweavers, healers and wardens here. They cost two peasants." },
     "tarweveld":   { "naam": "Wheat Field",   "groep": "werk",    "object": "TARWEVELD",   "kosten": { "hout": 10 }, "werker": "tarweboer",
                      "tip": "The farmer harvests wheat and brings it to the stores. A baker turns it into bread." },
     "bakkerij":    { "naam": "Bakery",    "groep": "werk",    "object": "BAKKERIJ",    "kosten": { "planken": 10, "steen": 5 }, "werker": "bakker",
@@ -52,6 +52,8 @@
                      "tip": "Your workers store wood, stone and apples here. Each storehouse holds 150 of each. Tap it to sell surplus for gold." },
     "kazerne":     { "naam": "Barracks",     "groep": "leger",   "object": "KAZERNE",     "kosten": { "planken": 10, "steen": 10 }, "leidtOp": "klassiek",
                      "tip": "Tap it afterwards to train soldiers." },
+    "belegeringswerkplaats": { "naam": "Siege Workshop", "groep": "leger", "object": "BELEGERINGSWERKPLAATS", "kosten": { "planken": 20, "steen": 10 }, "leidtOp": "belegering",
+                     "tip": "Tap it to build siege gear: battering rams, catapults and siege towers. Ladder bearers are still trained at the barracks." },
     "stal":        { "naam": "Stable",       "groep": "leger",   "object": "STAL",        "kosten": { "hout": 30, "planken": 20 }, "leidtOp": "stal", "werker": "paardenboer",
                      "tip": "Holds five warhorses and needs a horse keeper. Tap it to train mounted knights." }
   }

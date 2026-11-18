@@ -1,0 +1,112 @@
+{
+ "_uitleg": [
+  "Landschapsprofielen per level (versie 0.71.0, naar Karels wens van 17 november). Een level kiest er een in data/campagne.json (landschap: naam). Vrij spel en levels zonder keuze krijgen 'groen'.",
+  "Alleen het uiterlijk: het terrein heeft geen invloed op het spel. Water blijft water, bos blijft bos.",
+  "gras: [licht, donker], zand: [droog, nat], aarde, water: [ondiep, diep] als [r, g, b]. schuim: kleur langs de kust. rimpels: false = geen golfjes (ijs).",
+  "vlek: een tweede grondkleur in grote vlekken over het gras (heide, rots, sneeuw, as). aandeel 0 tot 1: hoeveel van het gras.",
+  "spriet: [licht, donker] kleur van de grassprieten. bloemen: kleuren van de bloemetjes, bloemKans per plekje (0.045 is normaal). steenKans: losse steentjes. riet: rietpollen langs het water.",
+  "bomen: lijst van boomsoorten waaruit per tegel gekozen wordt (loof, den, struik, berk, dor, struikdor, windden, kaal, dood, wilg, els, eik, spar, knotwilg, sneeuwden, struiksneeuw). boomKleur: kleur van het blad. rotsKleur en rotsSneeuw: de rotsen.",
+  "deeltjes: geen, stof, wind, as, mist, pluis, sneeuw of storm. vogels: vogels, meeuwen, raven of geen. waas: een lichte kleur over het hele beeld [r, g, b, sterkte]."
+ ],
+ "landschappen": {
+  "groen": {
+   "naam": "Green vale",
+   "gras": [[112, 150, 72], [90, 126, 58]], "zand": [[208, 190, 138], [168, 150, 104]], "aarde": [140, 117, 84],
+   "water": [[86, 150, 166], [42, 88, 124]], "schuim": [246, 250, 250], "rimpels": true,
+   "vlek": null,
+   "spriet": ["rgba(238,246,170,0.34)", "rgba(10,45,5,0.30)"], "bloemen": ["rgba(255,255,255,0.9)", "rgba(250,222,90,0.95)"], "bloemKans": 0.045, "steenKans": 0.025, "riet": 0,
+   "bomen": ["loof", "loof", "loof", "den", "den", "loof", "struik"], "boomKleur": "#3f7a36", "rotsKleur": null, "rotsSneeuw": false,
+   "deeltjes": "geen", "vogels": "vogels", "waas": null
+  },
+  "heide": {
+   "naam": "Withered heath",
+   "gras": [[156, 142, 86], [122, 106, 66]], "zand": [[216, 192, 132], [176, 152, 102]], "aarde": [134, 104, 70],
+   "water": [[112, 124, 96], [66, 78, 64]], "schuim": [220, 214, 186], "rimpels": true,
+   "vlek": { "kleur": [124, 90, 104], "aandeel": 0.34 },
+   "spriet": ["rgba(244,222,150,0.38)", "rgba(70,45,15,0.32)"], "bloemen": ["rgba(176,112,168,0.9)", "rgba(222,184,110,0.9)"], "bloemKans": 0.06, "steenKans": 0.06, "riet": 0,
+   "bomen": ["berk", "berk", "dor", "dor", "struikdor", "berk", "struikdor"], "boomKleur": "#97a254", "rotsKleur": "#9a8b70", "rotsSneeuw": false,
+   "deeltjes": "stof", "vogels": "vogels", "waas": [255, 186, 110, 0.07]
+  },
+  "wind": {
+   "naam": "Windswept pass",
+   "gras": [[128, 142, 104], [98, 112, 84]], "zand": [[198, 186, 156], [158, 146, 118]], "aarde": [122, 112, 100],
+   "water": [[92, 136, 152], [46, 80, 110]], "schuim": [240, 246, 250], "rimpels": true,
+   "vlek": { "kleur": [136, 132, 122], "aandeel": 0.3 },
+   "spriet": ["rgba(226,236,190,0.36)", "rgba(30,45,25,0.30)"], "bloemen": ["rgba(240,240,255,0.85)"], "bloemKans": 0.02, "steenKans": 0.07, "riet": 0,
+   "bomen": ["windden", "windden", "windden", "struik", "windden", "den"], "boomKleur": "#3e6040", "rotsKleur": "#8e8a82", "rotsSneeuw": false,
+   "deeltjes": "wind", "vogels": "vogels", "waas": [180, 200, 230, 0.06]
+  },
+  "kool": {
+   "naam": "Coal hills",
+   "gras": [[106, 114, 80], [80, 86, 62]], "zand": [[152, 138, 112], [118, 104, 84]], "aarde": [90, 78, 66],
+   "water": [[132, 102, 70], [80, 58, 44]], "schuim": [190, 160, 120], "rimpels": true,
+   "vlek": { "kleur": [66, 64, 64], "aandeel": 0.4 },
+   "spriet": ["rgba(200,200,150,0.28)", "rgba(20,20,10,0.34)"], "bloemen": ["rgba(220,210,170,0.8)"], "bloemKans": 0.012, "steenKans": 0.08, "riet": 0,
+   "bomen": ["kaal", "kaal", "dood", "struikdor", "kaal", "dor"], "boomKleur": "#5c6642", "rotsKleur": "#5c5a58", "rotsSneeuw": false,
+   "deeltjes": "as", "vogels": "raven", "waas": [120, 100, 80, 0.10]
+  },
+  "veen": {
+   "naam": "Fen",
+   "gras": [[80, 110, 58], [56, 84, 44]], "zand": [[150, 140, 100], [112, 102, 72]], "aarde": [88, 72, 50],
+   "water": [[74, 104, 74], [38, 60, 50]], "schuim": [150, 176, 110], "rimpels": true,
+   "vlek": { "kleur": [76, 68, 46], "aandeel": 0.28 },
+   "spriet": ["rgba(200,230,140,0.32)", "rgba(10,35,5,0.34)"], "bloemen": ["rgba(250,236,120,0.9)", "rgba(240,240,240,0.85)"], "bloemKans": 0.03, "steenKans": 0.01, "riet": 0.7,
+   "bomen": ["wilg", "wilg", "wilg", "loof", "struik", "wilg", "els"], "boomKleur": "#527c3c", "rotsKleur": null, "rotsSneeuw": false,
+   "deeltjes": "mist", "vogels": "vogels", "waas": [120, 150, 110, 0.07]
+  },
+  "meer": {
+   "naam": "Pale meadows",
+   "gras": [[132, 166, 98], [106, 140, 80]], "zand": [[220, 206, 160], [178, 162, 120]], "aarde": [146, 124, 92],
+   "water": [[112, 172, 184], [48, 100, 142]], "schuim": [250, 252, 252], "rimpels": true,
+   "vlek": null,
+   "spriet": ["rgba(244,250,200,0.36)", "rgba(20,60,15,0.26)"], "bloemen": ["rgba(255,255,255,0.9)", "rgba(190,200,255,0.9)", "rgba(250,222,90,0.95)"], "bloemKans": 0.06, "steenKans": 0.015, "riet": 0.35,
+   "bomen": ["els", "els", "loof", "els", "struik", "loof"], "boomKleur": "#4c8a4a", "rotsKleur": null, "rotsSneeuw": false,
+   "deeltjes": "pluis", "vogels": "meeuwen", "waas": [255, 250, 230, 0.04]
+  },
+  "rug": {
+   "naam": "Rocky ridge",
+   "gras": [[134, 136, 98], [108, 108, 78]], "zand": [[196, 184, 150], [156, 144, 112]], "aarde": [122, 108, 90],
+   "water": [[90, 130, 146], [46, 78, 106]], "schuim": [236, 240, 240], "rimpels": true,
+   "vlek": { "kleur": [142, 138, 128], "aandeel": 0.4 },
+   "spriet": ["rgba(230,230,180,0.32)", "rgba(40,40,20,0.30)"], "bloemen": ["rgba(250,236,140,0.9)"], "bloemKans": 0.015, "steenKans": 0.09, "riet": 0,
+   "bomen": ["eik", "eik", "struik", "dor", "eik", "struikdor"], "boomKleur": "#5b7040", "rotsKleur": "#8f8a80", "rotsSneeuw": false,
+   "deeltjes": "wind", "vogels": "vogels", "waas": [150, 156, 166, 0.08]
+  },
+  "kloof": {
+   "naam": "Misty gorge",
+   "gras": [[96, 122, 84], [70, 96, 66]], "zand": [[176, 168, 140], [136, 128, 104]], "aarde": [104, 94, 80],
+   "water": [[96, 142, 150], [44, 82, 100]], "schuim": [236, 246, 246], "rimpels": true,
+   "vlek": { "kleur": [112, 116, 110], "aandeel": 0.32 },
+   "spriet": ["rgba(210,236,170,0.30)", "rgba(10,40,20,0.32)"], "bloemen": ["rgba(230,230,255,0.85)"], "bloemKans": 0.015, "steenKans": 0.06, "riet": 0,
+   "bomen": ["spar", "spar", "spar", "den", "struik", "spar"], "boomKleur": "#2f5238", "rotsKleur": "#7c7e78", "rotsSneeuw": false,
+   "deeltjes": "mist", "vogels": "raven", "waas": [60, 80, 100, 0.08]
+  },
+  "polder": {
+   "naam": "Lowland",
+   "gras": [[120, 158, 80], [94, 132, 64]], "zand": [[200, 186, 150], [160, 146, 112]], "aarde": [138, 118, 96],
+   "water": [[104, 144, 162], [58, 94, 126]], "schuim": [244, 248, 250], "rimpels": true,
+   "vlek": null,
+   "spriet": ["rgba(236,246,180,0.34)", "rgba(15,50,10,0.28)"], "bloemen": ["rgba(255,255,255,0.9)", "rgba(250,222,90,0.95)", "rgba(220,80,60,0.9)"], "bloemKans": 0.05, "steenKans": 0.01, "riet": 0.55,
+   "bomen": ["knotwilg", "knotwilg", "knotwilg", "wilg", "struik", "knotwilg"], "boomKleur": "#6d8c52", "rotsKleur": null, "rotsSneeuw": false,
+   "deeltjes": "geen", "vogels": "meeuwen", "waas": [190, 206, 222, 0.06]
+  },
+  "sneeuw": {
+   "naam": "Snowy mountains",
+   "gras": [[226, 232, 238], [196, 206, 218]], "zand": [[204, 202, 196], [168, 166, 160]], "aarde": [146, 136, 128],
+   "water": [[176, 206, 220], [112, 152, 180]], "schuim": [255, 255, 255], "rimpels": false,
+   "vlek": { "kleur": [124, 122, 120], "aandeel": 0.22 },
+   "spriet": ["rgba(255,255,255,0.45)", "rgba(90,100,120,0.22)"], "bloemen": [], "bloemKans": 0, "steenKans": 0.05, "riet": 0,
+   "bomen": ["sneeuwden", "sneeuwden", "sneeuwden", "sneeuwden", "struiksneeuw", "sneeuwden"], "boomKleur": "#2c4a3c", "rotsKleur": "#7a7876", "rotsSneeuw": true,
+   "deeltjes": "sneeuw", "vogels": "geen", "waas": [170, 190, 232, 0.10]
+  },
+  "rouw": {
+   "naam": "Black crag",
+   "gras": [[88, 90, 76], [64, 64, 56]], "zand": [[124, 116, 104], [96, 88, 78]], "aarde": [72, 62, 58],
+   "water": [[54, 58, 68], [24, 26, 36]], "schuim": [150, 150, 160], "rimpels": true,
+   "vlek": { "kleur": [74, 68, 76], "aandeel": 0.36 },
+   "spriet": ["rgba(190,190,170,0.24)", "rgba(10,10,10,0.36)"], "bloemen": ["rgba(200,40,40,0.85)"], "bloemKans": 0.008, "steenKans": 0.07, "riet": 0,
+   "bomen": ["dood", "dood", "dood", "kaal", "struikdor", "dood"], "boomKleur": "#3c4032", "rotsKleur": "#4a484c", "rotsSneeuw": false,
+   "deeltjes": "storm", "vogels": "raven", "waas": [40, 30, 60, 0.16]
+  }
+ }
+}

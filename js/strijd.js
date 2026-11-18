@@ -789,7 +789,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // --- Vuur: de vlammenwever ---------------------------------------------------------
   // Wat van hout is: de poort en de werken. Dat gaat in brand.
-  const HOUT = new Set(['POORT', 'HOUTHAKKER', 'BOOMGAARD', 'ZAGERIJ', 'TARWEVELD', 'STEENGROEVE', 'VOORRAADKAMER', 'WONING', 'KAZERNE', 'STAL', 'BAKKERIJ', 'KOPERMIJN'].map((n) => OBJECT[n]));
+  const HOUT = new Set(['POORT', 'HOUTHAKKER', 'BOOMGAARD', 'ZAGERIJ', 'TARWEVELD', 'STEENGROEVE', 'VOORRAADKAMER', 'WONING', 'KAZERNE', 'STAL', 'BAKKERIJ', 'KOPERMIJN', 'BELEGERINGSWERKPLAATS'].map((n) => OBJECT[n]));
   const branden = new Map();   // vak -> { b, tot, per }
   function vuurbal(e, x, y, h) {
     effect({ soort: 'pijl', vuur: true, x1: e.x, y1: e.y, h1: 22 + (e.hoogte || 0), x2: x, y2: y, h2: h, duur: 300 + 50 * Math.hypot(x - e.x, y - e.y) });
@@ -1086,8 +1086,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // Deze ladderdragers zetten een ladder tegen de muur van rood op dat vak.
-  // Geeft terug hoeveel er gaan.
-  function zetLadderBevel(lijst, vak) {
+  // Geeft terug hoeveel er gaan. uit (mag ontbreken): hier komen de eenheden in die het bevel kregen.
+  function zetLadderBevel(lijst, vak, uit = null) {
     if (!isMuurVan(vak, VIJAND) || wegvinder.isLadder(vak, SPELER)) return 0;
     let aantal = 0;
     for (const e of lijst) {
@@ -1104,6 +1104,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       k.bouw = null;
       k.doelwit = null;
       aantal++;
+      if (uit) uit.push(e);
       break;   // één ladder is genoeg
     }
     return aantal;
@@ -1210,6 +1211,24 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       }
       return true;
     }
+    // Verzamelen (veldheer): naar zijn plek op het verzamelpunt en daar wachten.
+    if (t.verzamel >= 0) {
+      if (verVan(e, t.verzamel) > 1.2) {
+        if (!e.pad || e.pad !== k.marsPad) {
+          const pad = zoekPad(e, t.verzamel);
+          if (pad) {
+            zetPad(e, pad);
+            k.marsPad = e.pad;
+          } else t.verzamel = -1;
+        }
+      } else if (e.pad) zetPad(e, null);
+      return true;
+    }
+    // Opmars (veldheer): even stilstaan om in de pas te blijven.
+    if (t.rem) {
+      if (e.pad) zetPad(e, null);
+      return true;
+    }
     if (t.houdTot > stapNr) return true;   // wacht op de rest van zijn groep
     if (t.via >= 0) {
       if (verVan(e, t.via) <= 1.6) t.via = -1;
@@ -1252,6 +1271,33 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     return true;
   }
 
+  // De bouwwerken van jou die een machine van rood mag aanvallen. De burcht hoort er niet bij.
+  const SPERWERK = new Set([OBJECT.MUUR, OBJECT.POORT, OBJECT.TOREN, OBJECT.WACHTTOREN]);
+  const ANDERWERK = new Set([OBJECT.HOUTHAKKER, OBJECT.STEENGROEVE, OBJECT.BOOMGAARD, OBJECT.WONING, OBJECT.KAZERNE, OBJECT.STAL, OBJECT.VOORRAADKAMER, OBJECT.ZAGERIJ, OBJECT.TARWEVELD, OBJECT.BAKKERIJ, OBJECT.KOPERMIJN, OBJECT.MAGIERTOREN, OBJECT.BELEGERINGSWERKPLAATS]);
+  function kiesBelegerDoel(e, k) {
+    // Eerst op weg naar de burcht: het eerste wat in de weg staat (muur, poort, toren) gaat eraan.
+    if (!e.opMuur && !e.klimt) {
+      breekDoor(e, k, vakVan(e), plekkenBij(e), null);
+      if (k.bouw && isBurcht(k.bouw.soort)) k.bouw = null;
+      if (k.bouw || e.pad) return;
+    }
+    // De weg is vrij (of er is geen route): de overige bouwwerken van jou, de dichtstbijzijnde eerst.
+    const kandidaten = [];
+    for (let vak = 0; vak < N; vak++) {
+      if (kaart.eigenaar[vak] !== SPELER + 1) continue;
+      const soort = kaart.object[vak];
+      const eerst = SPERWERK.has(soort);
+      if (!eerst && !ANDERWERK.has(soort)) continue;
+      if (inBurcht(vak, burcht)) continue;
+      kandidaten.push({ vak, rang: (eerst ? 0 : 1000) + verVan(e, vak) });
+    }
+    kandidaten.sort((p, q) => p.rang - q.rang);
+    for (const c of kandidaten.slice(0, 6)) {
+      if (gaNaarBouw(e, k, bouwDoel(c.vak))) return;
+    }
+    k.bouw = null;   // niets bereikbaar: hij wacht
+  }
+
   function naarBurcht(e, k) {
     // Rood gaat op je koning af (ook als hij op het dak van je hoofdkasteel staat): dat beslist het level.
     if (koningSleutel && !R.proloog && !vreedzaam(k) && !isSchutter(k) && !hutStaat() && stapNr >= (k.koningPoging || 0)) {
@@ -1263,6 +1309,16 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         k.negeer = null;
         k.koningPoging = stapNr + 20;   // er is nog geen weg: eerst de muren door
       }
+    }
+    // Een stormram of katapult van rood slaat nooit op het hoofdkasteel zelf: eerst wat
+    // de weg versperrt (muur, poort, toren), daarna de overige bouwwerken. Is er niets meer, dan wacht hij.
+    if (k.def.alleenBouw && !hutStaat()) {
+      if (k.bouw && !k.bouw.burcht && staatNog(k.bouw) && (e.pad || bijBouw(e, k))) return;   // onderweg of bezig
+      k.bouw = null;
+      k.doelVak = -1;
+      k.schuif = false;
+      kiesBelegerDoel(e, k);
+      return;
     }
     if (k.bouw && staatNog(k.bouw) && (e.pad || bijBouw(e, k))) return;   // onderweg of bezig
     k.bouw = null;
@@ -1315,7 +1371,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Er is geen vrije weg naar de burcht. Zoek de route alsof de bouwwerken
   // van de speler er niet stonden: het eerste dat in de weg staat gaat eraan.
-  function breekDoor(e, k, hier, plekken, doelB = burchtDoel, wachtBij = thuisVak) {
+  function breekDoor(e, k, hier, plekken, doelB = burchtDoel, wachtBij = thuisVak) {   // doelB null: een machine van rood (geen burcht als doel)
     let pad = null;
     for (const vak of plekken) {
       if (!wegvinder.verbonden(hier, vak, BREEK)) continue;
@@ -1326,6 +1382,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     let j = 0;
     while (j < pad.length && vrijVoor(pad[j], VIJAND)) j++;
     if (j >= pad.length) {
+      if (!doelB) {   // een machine van rood: de burcht is geen doel, dus hier valt niets te breken
+        k.bouw = null;
+        return;
+      }
       // De weg is vrij, maar naast de burcht is geen plek meer: wacht vlakbij.
       k.bouw = doelB;
       const wacht = plekRond(e, wachtBij, 3);
@@ -1596,6 +1656,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       return;
     }
     k.doelwit = kiesDoelwit(e, k, anderen);
+    // Tijdens verzamelen en opmars jaagt rood niemand ver na: hij blijft bij zijn leger.
+    if (k.doelwit && e.team === VIJAND && k.tak && (k.tak.mars || k.tak.verzamel >= 0) && Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > Math.max(bereikVan(e, k), 1.5) + 1.5) k.doelwit = null;
     if (k.doelwit) {
       k.bouw = null;
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k) || !kanRaken(e, k, k.doelwit)) {
@@ -1653,6 +1715,12 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     if (k.def.verborgen) e.verborgen = stapNr >= (k.gezienTot || 0);
     if (k.ladder >= 0) {
+      // In de opmars (veldheer) wacht ook een ladderdrager op de rest; hij is zijn plek niet kwijt.
+      if (e.team === VIJAND && k.tak && (k.tak.rem || k.tak.verzamel >= 0) && !e.klimt) {
+        if (e.pad) zetPad(e, null);
+        if (k.tak.verzamel >= 0) k.ladder = -1;
+        return;
+      }
       ladderStap(e, k);
       return;
     }
@@ -1996,8 +2064,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const isVanRood = (vak) => vak >= 0 && vak < B * H && kaart.eigenaar[vak] === ROOD && !inBurcht(vak, rood);
 
   // Deze soldaten vallen het bouwwerk van rood op dat vak aan: zijn muur,
-  // zijn poort of zijn burcht. Geeft terug hoeveel er gaan.
-  function valBouwAan(lijst, vak) {
+  // zijn poort of zijn burcht. Geeft terug hoeveel er gaan. uit (mag ontbreken): hier komen de eenheden in die het bevel kregen.
+  function valBouwAan(lijst, vak, uit = null) {
     if (!isVanRood(vak)) return 0;
     const doel = inBurcht(vak, rood) ? rood.doel : bouwDoel(vak);
     let aantal = 0;
@@ -2015,6 +2083,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       k.denk = DENK;
       k.ladder = -1;
       aantal++;
+      if (uit) uit.push(e);
     }
     return aantal;
   }

@@ -55,7 +55,7 @@ async function aankomst(synchroon) {
     const vijanden = s.strijd.vijanden();
     const keep = s.strijd.burcht();
     const eerste = new Map();
-    const hold = vijanden.map((e) => [e.vijand, e.krijg.tak ? e.krijg.tak.houdTot : -1]);
+    const hold = vijanden.map((e) => [e.vijand, e.krijg.tak ? (e.krijg.tak.verzamel >= 0 ? 1 : 0) : -1]);
     for (let i = 0; i < 1800; i++) {
       s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap();
       for (const e of vijanden) if (!eerste.has(e) && Math.hypot(e.x - keep.x, e.y - keep.y) <= 6.5) eerste.set(e, i / 10);
@@ -72,7 +72,7 @@ check('zonder plan komen ze ver uit elkaar aan (ram veel later)', spreiding(zond
 check('met plan komen ridders, ram en ladder binnen 10 s van elkaar aan', spreiding(met) <= 10, spreiding(met));
 check('het plan verkleint de spreiding sterk', spreiding(met) < spreiding(zonder) / 2, `${spreiding(met)} vs ${spreiding(zonder)}`);
 check('met plan: bijna iedereen komt aan', met.tijden.filter((x) => x[1] !== null).length >= 6, JSON.stringify(met.tijden));
-check('de ram wacht niet, de ridders wel', met.hold.find((h) => h[0] === 'ram')[1] === 0 && met.hold.find((h) => h[0] === 'ridder')[1] > 0, JSON.stringify(met.hold));
+check('met plan verzamelen ram, ladder en ridders eerst (0.71.0)', met.hold.filter((h) => h[0] !== 'boogschutter').every((h) => h[1] === 1), JSON.stringify(met.hold));
 
 // ---- Laag 2: verkenners, tweede lijn, thuiswacht (level 2, niveau 2) ------------------------
 await start(2);
@@ -81,14 +81,18 @@ const l2 = await p.evaluate(() => {
   s.strijd.stuurLeger({ ridder: 8, boogschutter: 6 }, true);
   const v = s.strijd.vijanden();
   const nu = s.strijd.stapNr();
-  const wacht = v.map((e) => e.krijg.tak.houdTot - nu).sort((a, b) => a - b);
+  const wacht = v.map((e) => e.krijg.tak.houdTot - nu).sort((a, b) => a - b); void wacht;
+  // Sinds 0.71.0: verkenners vertrekken meteen (geen verzamelpunt), de rest verzamelt; de tweede lijn is een eigen groep.
+  const gr = s.veld.groepen();
+  const verkenners = v.filter((e) => !(e.krijg.tak.verzamel >= 0)).length;
+  const verzamelaars = v.filter((e) => e.krijg.tak.verzamel >= 0).length;
   const behoud = s.veld.behoud({ ridder: 10, boogschutter: 4, ram: 1 }, 2);
   const kleine = s.veld.behoud({ ridder: 3 }, 2);
-  return { n: v.length, wacht, groepen: s.veld.groepen(), behoud, kleine, niveau2: s.veld.niveau(1) };
+  return { n: v.length, verkenners, verzamelaars, aantalGroepen: gr.length, groepen: gr, behoud, kleine, niveau2: s.veld.niveau(1) };
 });
 check('niveau 2 in level 2', l2.niveau2 === 2, l2.niveau2);
-check('verkenners vertrekken eerst (1 tot 3 met kortste wacht)', l2.wacht[0] < l2.wacht[l2.wacht.length - 1], JSON.stringify(l2.wacht));
-check('er zijn meer wachttijden dan een: tweede lijn komt later', new Set(l2.wacht).size >= 3, JSON.stringify([...new Set(l2.wacht)]));
+check('verkenners (1 tot 3) vertrekken meteen, de rest verzamelt', l2.verkenners >= 1 && l2.verkenners <= 3 && l2.verzamelaars >= 8, JSON.stringify([l2.verkenners, l2.verzamelaars]));
+check('hoofdmacht, verkenners en tweede lijn zijn aparte groepen', l2.aantalGroepen >= 3, JSON.stringify(l2.groepen));
 check('thuiswacht: schutters blijven thuis, geen machines', l2.behoud.boogschutter > 0 && !l2.behoud.ram && Object.values(l2.behoud).reduce((a, c) => a + c, 0) <= 6, JSON.stringify(l2.behoud));
 check('thuiswacht: kleine aanval blijft compleet', Object.keys(l2.kleine).length === 0, JSON.stringify(l2.kleine));
 
@@ -122,7 +126,7 @@ const l3 = await p.evaluate(() => {
   const tweede = A2.sort((p, q) => q[1] - p[1])[0][0];
   const soort = (v) => kaart.object[v];
   return { A, eerste, tweede, ver: Math.hypot((tweede % B) - x, Math.floor(tweede / B) - y), eigenaar: kaart.eigenaar[eerste], soort: soort(eerste), gezet: gezet.length,
-    log: window.spel.ui.logboek().map((r) => r.tekst).filter((t) => /Red masses/.test(t)).length };
+    log: window.spel.ui.logboek().map((r) => r.tekst).filter((t) => /Red (masses|gathers)/.test(t)).length };
 });
 check('bres is een muur of poort van jou', l3.eigenaar === 1 && (l3.soort === 5 || l3.soort === 4 || l3.soort === 6 || l3.soort >= 0), JSON.stringify([l3.eigenaar, l3.soort]));
 check('flank: de aanval gaat naar twee bressen', l3.A.length >= 2, JSON.stringify(l3.A));
@@ -191,7 +195,10 @@ const l4 = await p.evaluate(() => {
   const s = window.spel;
   s.strijd.stuurLeger({ sluipmoordenaar: 2, boogschutter: 2, ridder: 6 }, true);
   const v = s.strijd.vijanden();
-  return { via: v.filter((e) => e.krijg.tak && e.krijg.tak.via >= 0).length, n: v.length, hut: !!s.strijd.hut() };
+  // Sinds 0.71.0 verzamelt de flank op het omwegpunt zelf (een eigen verzamelpunt aan de andere kant van de hut).
+  const gr = s.veld.groepen(); const hoofd = gr.find((g) => g.hoofd);
+  const omweg = (e) => { const t = e.krijg.tak; if (!t) return false; if (t.via >= 0) return true; const g = gr.find((x) => x.id === t.groep); return !!g && !g.hoofd && g.rally >= 0 && hoofd && g.rally !== hoofd.rally; };
+  return { via: v.filter(omweg).length, n: v.length, hut: !!s.strijd.hut() };
 });
 check('level 4: een deel van de jagers neemt een omweg', l4.hut && l4.via >= 2 && l4.via < l4.n, JSON.stringify(l4));
 

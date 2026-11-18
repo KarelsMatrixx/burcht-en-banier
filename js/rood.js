@@ -79,7 +79,9 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
   const staand = () => werken.filter((w) => kaart.eigenaar[w.vak] === 2 && kaart.object[w.vak] === w.soort);
   // Elke derde aanval is een piek (veldheer, niveau 3): dan is zijn doel hoger, en daarna rust hij langer.
   const piek = () => (veld ? veld.piek(aanvallen + 1) : 1);
-  const doel = () => Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen) * piek() + (groei ? groei.doelBonus() : 0);
+  // Per level kan een vaste verzwaring gelden (heer.doelVanaf): vanaf aanval X is zijn doel zoveel keer zo groot.
+  const zwaarder = () => (H.doelVanaf && aanvallen + 1 >= H.doelVanaf.aanval ? H.doelVanaf.factor : 1);
+  const doel = () => Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen) * piek() * zwaarder() + (groei ? groei.doelBonus() : 0);
   const wachtTijd = () => (aanvallen === 0 ? H.eersteAanval : H.tussen * (veld ? veld.rust(aanvallen) : 1));
   const sterkte = () => sterkteVan(reserve);
   const aantal = () => Object.values(reserve).reduce((a, b) => a + b, 0);
@@ -96,8 +98,9 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
   // Rood maakt geen planken: wat planken kost, betaalt hij met hout.
   // Eén plank kost hem twee hout, net als de verhouding in de bouwkosten.
   // Koper heeft hij ook niet: dat betaalt hij met goud (koperPrijs per stuk).
-  const g = (k) => (k === 'planken' ? 'hout' : k === 'koper' || k === 'tarwe' ? 'goud' : k);
-  const keer = (k) => (k === 'planken' ? 2 : k === 'koper' ? H.koperPrijs || 2 : k === 'tarwe' ? H.tarwePrijs || 1 : 1);
+  // Brood en tarwe heeft hij ook niet (de heler kost brood, de ruiter tarwe): dat betaalt hij met goud (broodPrijs, tarwePrijs per stuk).
+  const g = (k) => (k === 'planken' ? 'hout' : k === 'koper' || k === 'brood' || k === 'tarwe' ? 'goud' : k);
+  const keer = (k) => (k === 'planken' ? 2 : k === 'koper' ? H.koperPrijs || 2 : k === 'brood' ? H.broodPrijs || 1 : k === 'tarwe' ? H.tarwePrijs || 1 : 1);
   const omzet = (kosten) => {
     const u = {};
     for (const [k, n] of Object.entries(kosten || {})) u[g(k)] = (u[g(k)] || 0) + n * keer(k);

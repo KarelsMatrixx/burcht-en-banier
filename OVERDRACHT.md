@@ -1,4 +1,13 @@
-# Overdracht Aldervale (versie 0.60.0, 15 november 2026)
+# Overdracht Aldervale (versie 0.68.0, 17 november 2026)
+
+**Update 17 november 2026 (0.68.0).** Wat hieronder staat over 0.60.0 is verouderd: de versies 0.61 tot en met 0.67.1 staan in `WIJZIGINGEN.md` (kazernes en torens, leger van 150, grafische laag met schaduw en wind, enz.). Nieuw in 0.68.0, na Karels feedback:
+- **Siege-meldingen:** elke siege-eenheid (ladder, ram, toren, katapult) geeft een bevestiging zodra het bevel is ontvangen; soldaten niet (main.js `meldSiege`).
+- **Vaste regel voor de campagne:** wat je als beloning van level N krijgt, zet rood in level N tegen jou in, later in het level. Bij elke nieuwe beloning (levels 7 tot 10!) hoort dus meteen een regel in het leger van rood (`rood.leger` met `vanaf`, `rood.extra_soorten`, of `doel.golven.leger` / `doel.druk.golven`). `tests/siege52.mjs` bewaakt dit. Zie de `_uitleg` onderaan data/campagne.json.
+- **Siege Workshop** (`belegeringswerkplaats`, OBJECT 33): aparte barak voor ram, katapult, belegeringstoren en alles wat later bij siege komt (`"kazerne": "belegering"` in economie.json). De ladderdrager blijft in de gewone kazerne. Eigen ontwerp in kunst.js. Beloning van de proloog; 40 legerplekken zoals een kazerne.
+- Na te lezen: alle nieuwe Engelse meldingen, de kosten van de werkplaats (20 planken, 10 steen), gewicht steenwachter 3. Niet gezien op de iPhone: ontwerp op het scherm en de balans van de nieuwe aanvallen.
+- Tests: bekend wisselvallig test_stap15 ("bewaren: reserve terug", timing van de uitval); campagne30 stond al rood (zie hieronder); test_stap16 faalt op de controle "rode katapult doet iets" (niet nader onderzocht, lijkt los van deze wijziging).
+
+---
 
 Plak in de nieuwe chat: "Lees claude/overdracht.md in het project Stronghold en ga verder." Lees dit eerst. Repo: github.com/KarelsMatrixx/burcht-en-banier, branch main (laatste commit e83aa1a). Project "Stronghold".
 

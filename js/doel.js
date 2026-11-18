@@ -100,7 +100,13 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, leger, kijk
   // Een golf jagers: begin + erbij per golf, verdeeld naar aandeel.
   function stuurGolf() {
     const n = Math.min(g.max || 12, (g.begin || 4) + (g.erbij || 1) * s.golven);
-    const leger = g.leger || { ridder: 1 };
+    // Een aandeel is een getal, of { aandeel, vanaf }: die soort komt pas mee vanaf golf `vanaf` (begint bij 0).
+    const leger = {};
+    for (const [k, w] of Object.entries(g.leger || { ridder: 1 })) {
+      const aandeel = typeof w === 'number' ? w : w.aandeel;
+      const vanaf = typeof w === 'number' ? 0 : w.vanaf || 0;
+      if (s.golven >= vanaf && aandeel > 0) leger[k] = aandeel;
+    }
     const som = Object.values(leger).reduce((a, b) => a + b, 0) || 1;
     const inhoud = {};
     let over = n;
