@@ -427,6 +427,7 @@
    "naam": "Siege Tower",
    "meervoud": "Siege Towers",
    "soort": "TOREN",
+   "hoog": true,
    "kosten": {
     "goud": 40,
     "planken": 30

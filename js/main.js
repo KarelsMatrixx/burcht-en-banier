@@ -1096,7 +1096,7 @@ async function start() {
       if (leger.aantalGekozen()) {
         if (!binnenKaart(kaart, x, y)) return;
         if (leger.stuur(x, y)) staat.doel = { x, y, duur: 900, tot: performance.now() + 900 };
-        else ui.toonMelding('Your soldiers cannot get there.', { soort: 'leger' });
+        else ui.toonMelding(leger.gekozenHoog() ? 'The siege tower is taller than the gate and cannot pass through it.' : 'Your soldiers cannot get there.', { soort: 'leger' });
         return;
       }
       // Je eigen poort aantikken (geen soldaten gekozen): dicht of open

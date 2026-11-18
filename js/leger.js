@@ -13,6 +13,7 @@
 import { CONFIG } from './config.js';
 import { SOORT } from './eenheden.js';
 import { OBJECT } from './kaart.js';
+import { HOOG } from './wegvinden.js';
 import { SPELER as EIGENAAR_SPELER } from './bouwen.js';
 
 const TEAM = 0;   // de speler
@@ -200,7 +201,16 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   function leidOp(sleutel, kazerneVak) {
     const reden = waaromNiet(sleutel);
     if (reden) return reden;
-    const vak = plekBij(kazerneVak, 4);
+    let vak = -1;
+    if (soorten[sleutel].hoog) {
+      // Te hoog voor een poort: hij moet buiten de muren kunnen staan, anders zit hij vast.
+      for (const kandidaat of rond(kazerneVak, 6)) {
+        if (isVrij(kandidaat) && !bezet(kandidaat) && wegvinder.inHetVeld(kandidaat, HOOG + TEAM)) { vak = kandidaat; break; }
+      }
+      if (vak < 0) return 'a siege tower is taller than the gate: build the siege workshop outside your walls';
+    } else {
+      vak = plekBij(kazerneVak, 4);
+    }
     if (vak < 0) return 'there is no room next to this building';
     economie.betaal(soorten[sleutel].kosten);
     for (let i = soorten[sleutel].boeren || 1; i > 0; i--) economie.boerWeg();
@@ -240,6 +250,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // Soldaten in drie groepen: wie van dichtbij vecht, wie van verre schiet
   // en de belegeringsmachines (ram, katapult, toren, ladderdrager).
   // Steun (banierdrager, heler) staat bij Afstand: die blijven achter de linie.
+  // Te hoog voor een poort (de belegeringstoren): hij kan er niet door.
+  const isHoog = (e) => !!(soorten[e.soldaat.sleutel] && soorten[e.soldaat.sleutel].hoog);
   const isBelegering = (sleutel) => !!(soorten[sleutel] && (soorten[sleutel].alleenBouw || soorten[sleutel].ladder));
   const groepVan = (def) => (def.alleenBouw || def.ladder ? 'belegering' : def.bereik > 2 || def.steun ? 'afstand' : 'melee');
   // De koning valt buiten de groepen en buiten Alle: die stuur je bewust, met zijn eigen knop of een tik.
@@ -293,12 +305,13 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     // Kan het gewoon over de grond, dan loopt hij over de grond. Anders
     // zoeken we ook over de muur (een toren of een ladder is ook een
     // doorgang). Een stormram blijft altijd op de grond.
-    const grond = van < N && naar < N && wegvinder.verbonden(van, naar, TEAM);
+    const beeld = isHoog(e) ? HOOG + TEAM : TEAM;   // een hoge toren ziet alle poorten als dicht
+    const grond = van < N && naar < N && wegvinder.verbonden(van, naar, beeld);
     // Belegeringstroepen (ram, katapult, ladder, toren) blijven op de grond: nooit een muur, toren of kasteel op.
     if (!grond && isBelegering(e.soldaat.sleutel)) return false;
     const pad = grond
-      ? wegvinder.zoekPad(van % B, Math.floor(van / B), naar % B, Math.floor(naar / B), TEAM)
-      : wegvinder.zoekPadLagen(van, naar, TEAM);
+      ? wegvinder.zoekPad(van % B, Math.floor(van / B), naar % B, Math.floor(naar / B), beeld)
+      : wegvinder.zoekPadLagen(van, naar, beeld);
     if (!pad) return false;
     e.pad = eerst >= 0 ? [eerst, ...pad] : pad;
     e.stap = 0;
@@ -548,6 +561,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   }
 
   return {
+    gekozenHoog: () => gekozen().some(isHoog),
     soorten, get max() { return legerMax(); }, waaromNiet, leidOp, vind, kies, stuur, stap,
     kiesAlles: () => kies(soldaten.filter((e) => !isKoning(e))),
     zetKoning,

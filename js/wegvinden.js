@@ -12,6 +12,8 @@
 import { GROND, OBJECT } from './kaart.js';
 
 export const BREEK = 2;   // zie hieronder bij "beeld"
+// Te hoog voor een poort (belegeringstoren): beeld + HOOG is hetzelfde beeld, maar poorten zijn dan dicht.
+export const HOOG = 3;
 
 const SCHUIN = Math.SQRT2;
 const TRAP = 2;           // de muur op of af kost zoveel als twee tegels lopen
@@ -29,10 +31,10 @@ export function maakWegvinder(kaart) {
   // vijand. Beeld 2 (BREEK) is de kaart zoals de vijand hem ziet als hij
   // door de bouwwerken van de speler heen zou breken: zo vindt hij de plek
   // waar hij moet beuken als je burcht helemaal is ommuurd.
-  const BEELDEN = 3;
-  const vrijVan = [new Uint8Array(N), new Uint8Array(N), new Uint8Array(N)];       // 1 = hier kun je lopen
-  const gebiedVan = [new Int32Array(N), new Int32Array(N), new Int32Array(N)];     // nummer van het aaneengesloten stuk, 0 = geen
-  const grootsteVan = [0, 0, 0];
+  const BEELDEN = 6;   // 0 speler, 1 vijand, 2 breek, 3 tot 5 dezelfde drie voor wie te hoog is voor een poort
+  const vrijVan = Array.from({ length: BEELDEN }, () => new Uint8Array(N));       // 1 = hier kun je lopen
+  const gebiedVan = Array.from({ length: BEELDEN }, () => new Int32Array(N));     // nummer van het aaneengesloten stuk, 0 = geen
+  const grootsteVan = new Array(BEELDEN).fill(0);
   // De muur als tweede verdieping, per team. Over je eigen muren, torens
   // en poorten kun je lopen; omhoog en omlaag gaat via een toren, een
   // wachttoren of een poort (daar zit een trap in).
@@ -166,16 +168,18 @@ export function maakWegvinder(kaart) {
   let poortenOpen = false;   // proloog: de poort van de speler staat open voor rood
   function herberekenVoor(beeld) {
     kiesTeam(beeld);
-    const team = beeld === BREEK ? 1 : beeld;
+    const hoog = beeld >= HOOG;
+    const basis = hoog ? beeld - HOOG : beeld;
+    const team = basis === BREEK ? 1 : basis;
     for (let i = 0; i < N; i++) {
       const land = kaart.grond[i] !== GROND.WATER;
       // Een poort die open staat is een doorgang, ook voor de vijand: doe je hem niet dicht, dan lopen
       // de soldaten van rood er gewoon doorheen. Een poort die dicht is (dicht) is een muur, voor iedereen.
       // De poorten van rood zelf zijn voor jou geen doorgang.
       // (poortenOpen: in de proloog staat jouw poort vast open voor rood.)
-      const eigenPoort = kaart.object[i] === OBJECT.POORT && !dicht.has(i) && (kaart.eigenaar[i] === team + 1 || (team === 1 && kaart.eigenaar[i] === 1));
+      const eigenPoort = !hoog && kaart.object[i] === OBJECT.POORT && !dicht.has(i) && (kaart.eigenaar[i] === team + 1 || (team === 1 && kaart.eigenaar[i] === 1));
       // Wat de speler heeft gebouwd, kan de vijand kapotmaken.
-      const breekbaar = beeld === BREEK && kaart.eigenaar[i] === 1;
+      const breekbaar = basis === BREEK && kaart.eigenaar[i] === 1 && !(hoog && kaart.object[i] === OBJECT.POORT);
       vrij[i] = land && (kaart.object[i] === OBJECT.GEEN || kaart.object[i] === OBJECT.BOOM || eigenPoort || breekbaar) ? 1 : 0;
     }
     gebied.fill(0);
@@ -266,6 +270,11 @@ export function maakWegvinder(kaart) {
   // begin, met het doel), of null als er geen route is.
   function zoekPadLagen(van, naar, team = 0) {
     kiesTeam(team);
+    // Wie te hoog is voor een poort klimt ook niet: alleen de grond.
+    if (team >= HOOG) {
+      if (van >= N || naar >= N) return null;
+      return zoekPad(van % B, Math.floor(van / B), naar % B, Math.floor(naar / B), team);
+    }
     const muur = muurVan[team];
     const opgang = opgangVan[team];
     const kan = (knoop) => (knoop >= N ? muur[knoop - N] === 1 : vrij[knoop] === 1);
@@ -379,6 +388,8 @@ export function maakWegvinder(kaart) {
     willekeurigVak,
     isVrij: (x, y, team = 0) => x >= 0 && y >= 0 && x < B && y < H && vrijVan[team][y * B + x] === 1,
     zoekPadLagen,
+    // Ligt dit vak in het grote open stuk (niet opgesloten achter muren en poorten)? Voor wie een poort ziet als dicht.
+    inHetVeld: (vak, team = 0) => vak >= 0 && vak < N && vrijVan[team][vak] === 1 && gebiedVan[team][vak] === grootsteVan[team],
     // Kun je hier over de muur lopen, en kun je hier de muur op en af?
     isMuur: (x, y, team = 0) => x >= 0 && y >= 0 && x < B && y < H && muurVan[team][y * B + x] === 1,
     isOpgang: (x, y, team = 0) => x >= 0 && y >= 0 && x < B && y < H && opgangVan[team][y * B + x] === 1,

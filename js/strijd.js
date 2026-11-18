@@ -20,7 +20,7 @@
 import { CONFIG } from './config.js';
 import { OBJECT, GROND } from './kaart.js';
 import { SOORT } from './eenheden.js';
-import { BREEK } from './wegvinden.js';
+import { BREEK, HOOG } from './wegvinden.js';
 import { maakToeval } from './toeval.js';
 
 const SPELER = 0;
@@ -264,9 +264,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     return false;
   }
 
+  // Te hoog voor een poort (de belegeringstoren): hij ziet elke poort als dicht.
+  const hoogBeeld = (e, beeld) => (e.krijg && e.krijg.def.hoog ? beeld + HOOG : beeld);
   function zoekPad(e, naar, beeld = e.team) {
     const van = vakVan(e);
-    return wegvinder.zoekPad(van % B, Math.floor(van / B), naar % B, Math.floor(naar / B), beeld);
+    return wegvinder.zoekPad(van % B, Math.floor(van / B), naar % B, Math.floor(naar / B), hoogBeeld(e, beeld));
   }
 
   function zetPad(e, pad) {
@@ -1281,7 +1283,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function breekDoor(e, k, hier, plekken, doelB = burchtDoel, wachtBij = thuisVak) {   // doelB null: een machine van rood (geen burcht als doel)
     let pad = null;
     for (const vak of plekken) {
-      if (!wegvinder.verbonden(hier, vak, BREEK)) continue;
+      if (!wegvinder.verbonden(hier, vak, hoogBeeld(e, BREEK))) continue;
       pad = zoekPad(e, vak, BREEK);
       if (pad) break;
     }
@@ -1765,7 +1767,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       for (let i = 0; i < hoeveel && vijanden.length < maxVijanden(); i++) {
         let vak = -1;
         for (let poging = 0; poging < 6; poging++) {
-          vak = wegvinder.willekeurigVak(toeval, rond, straal, VIJAND);
+          // Een toren is te hoog voor een poort: hij komt buiten de muren te staan, in het open veld.
+          const hoog = !!soorten[sleutel].hoog;
+          vak = wegvinder.willekeurigVak(toeval, rond, hoog ? straal + 8 : straal, hoog ? VIJAND + HOOG : VIJAND);
           const ver = vak < 0 ? 0 : Math.max(Math.abs((vak % B) - rond.x), Math.abs(Math.floor(vak / B) - rond.y));
           if (vak >= 0 && !bezet.has(vak) && ver >= binnen) break;
           vak = -1;

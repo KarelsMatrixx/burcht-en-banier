@@ -1,3 +1,8 @@
+## 0.70.4
+- De belegeringstoren is hoger dan een poort en kan er niet doorheen (economie.json: toren.hoog). Hij ziet elke poort als dicht, klimt niet en breekt geen poort (wegvinden.js: beelden 3 tot 5, HOOG).
+- Rode torens verschijnen buiten de muren, in het open veld. Jouw toren wordt alleen opgeleid als hij buiten je muren kan staan; anders meldt de werkplaats dat hij buiten je muren moet staan.
+- Tik je een toren naar een plek achter een poort, dan zegt het spel dat hij te hoog is voor de poort. Ram en katapult kunnen er nog wel door (tests/hoog70.mjs).
+
 ## 0.70.3
 - Stillwater (level 5): rond het kasteel van de rode koning staan nu paardenstallen als decor (kastelen.json, abdij.decor; nieuw decorsoort 'stal' in kaart.js).
 
