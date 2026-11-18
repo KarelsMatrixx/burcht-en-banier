@@ -100,7 +100,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
   let loopt = false;
   let reinout = null;
   let kijk = 0;
-  let keuzeWas = false;   // bevel-les: was er de vorige keer al een soldaat gekozen?
+  let keuzeWas = false;
+  let nGroep = [];        // nachtles: de soldaten die het laatste goede bevel kregen   // bevel-les: was er de vorige keer al een soldaat gekozen?
 
   function nieuw() {
     return { fase: 'bouw', taak: 0, tijd: 0, fasetijd: 0, basis: null, golven: 0, gemeld: {}, klaar: false, gestuurd: false, deel: '', nTaak: 0, nKlaar: false, nBegonnen: false };
@@ -135,7 +136,12 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       const [x, y, opMuur] = a;
       const groep = leger.gekozen();
       const soortOk = !t.stuurSoort || groep.some((e) => e.soldaat.sleutel === t.stuurSoort) || !heeftSoort(t.stuurSoort);
-      if (p && soortOk && Math.hypot(x - p.x, y - p.y) <= 6 && (!t.opMuur || opMuur || leger.isMuur(x, y))) s.nBevel = s.nTaak + 1;
+      if (p && soortOk && Math.hypot(x - p.x, y - p.y) <= 6 && (!t.opMuur || opMuur || leger.isMuur(x, y))) {
+        s.nBevel = s.nTaak + 1;
+        // Wie dit bevel kreeg: de les is pas klaar als zij er staan (nachtKlaar)
+        nGroep = groep.filter((e) => !t.stuurSoort || e.soldaat.sleutel === t.stuurSoort || !heeftSoort(t.stuurSoort));
+        toonTaak(`${t.taak}: on their way...`);
+      }
     }
     return gelukt;
   };
@@ -276,21 +282,39 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     const st = kaart.start[0];
     const x = st.x + t.doelPlek[0];
     const y = st.y + t.doelPlek[1];
-    if (t.gids.soort === 'muur') return leger.isMuur(x, y) ? { x, y } : null;
+    if (t.gids.soort === 'muur') {
+      // Een stuk muur waar de soldaat van de les echt kan komen (na de grondles staat hij soms achter een ring)
+      const sol = nieuweSoldaat();
+      const B = kaart.breedte, N = B * kaart.hoogte;
+      const kan = (mx, my) => leger.isMuur(mx, my) && (!sol || !!wegvinder.zoekPadLagen(Math.floor(sol.y) * B + Math.floor(sol.x) + (sol.opMuur ? N : 0), N + my * B + mx, 0));
+      for (let r = 0; r <= 10; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) === r && kan(x + dx, y + dy)) return { x: x + dx, y: y + dy };
+      }
+      return leger.isMuur(x, y) ? { x, y } : null;
+    }
     return vrijeGrondplek(x, y) || (wegvinder.isVrij(x, y, 0) ? { x, y } : null);
   }
   // Grondles: een open stuk grond (minstens 7 van de 8 buren vrij) waar niemand binnen 2,5 tegels staat,
   // zo dicht mogelijk bij (x, y). Anders staat er al iemand op de plek waar de soldaat heen moet.
-  function plekIsVrij(x, y, zonder) {
+  function plekIsVrij(x, y, zonder, ruim = false) {
     if (!wegvinder.isVrij(x, y, 0)) return false;
+    // Buiten het stuk rond de burcht waar Karel en Reinout rondlopen (4 tegels), achter de eerste ring
+    const st = kaart.start[0];
+    if (!ruim && Math.max(Math.abs(x - st.x), Math.abs(y - st.y)) < 6) return false;
+    // Bereikbaar voor de soldaat van de les (anders lukt geen enkel bevel, bijvoorbeeld achter een dichte poort)
+    const bron = zonder || nieuweSoldaat();
+    if (bron && !wegvinder.verbonden(Math.floor(bron.y) * kaart.breedte + Math.floor(bron.x), y * kaart.breedte + x, 0)) return false;
     let buren = 0;
     for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && wegvinder.isVrij(x + dx, y + dy, 0)) buren++;
     if (buren < 7) return false;
     return !eenheden.lijst.some((e) => e !== zonder && !e.dood && Math.hypot(e.x - x - 0.5, e.y - y - 0.5) < 2.5);
   }
   function vrijeGrondplek(x, y, zonder = null) {
-    for (let r = 0; r <= 7; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
-      if (Math.max(Math.abs(dx), Math.abs(dy)) === r && plekIsVrij(x + dx, y + dy, zonder)) return { x: x + dx, y: y + dy };
+    // Eerst buiten het loopgebied van Karel; lukt dat niet (de soldaat kan er niet komen), dan dichterbij
+    for (const ruim of [false, true]) {
+      for (let r = 0; r <= 9; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) === r && plekIsVrij(x + dx, y + dy, zonder, ruim)) return { x: x + dx, y: y + dy };
+      }
     }
     return null;
   }
@@ -413,8 +437,17 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       if (!soldaten().some((x) => x.soldaat.sleutel === sleutel)) return true;
       return groep.every((e) => e.soldaat.sleutel === sleutel);
     }
-    // Sturen: alleen een bevel in deze les naar (de buurt van) de gouden plek telt
-    return s.nBevel === s.nTaak + 1;
+    // Sturen: eerst een bevel in deze les naar (de buurt van) de gouden plek. Klaar pas als de gestuurde
+    // groep stilstaat en er minstens één op de plek staat (bij de muurles: op de muur). Naar Karel: het leger
+    // valt pas aan, en de poortles komt pas, als de boogschutters en ridders op hun plek staan.
+    if (s.nBevel !== s.nTaak + 1) return false;
+    const p = nachtPlek(t);
+    if (!p) return true;
+    let groep = nGroep.filter((e) => !e.dood);
+    if (!groep.length) groep = soldaten().filter((e) => e.soldaat.sleutel === sleutel && e.soldaat.doel >= 0);   // na herladen
+    if (!groep.length) return true;
+    if (groep.some((e) => e.pad || e.klimt)) return false;
+    return groep.some((e) => Math.hypot(e.x - p.x - 0.5, e.y - p.y - 0.5) <= 4 && (!t.opMuur || e.opMuur));
   };
   // Staat of loopt er een soldaat van de speler naar deze plek? (muur: de bovenkant van het stuk muur)
   function bijPlek(t, past) {

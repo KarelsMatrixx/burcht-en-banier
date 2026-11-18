@@ -61,6 +61,7 @@ await p.evaluate(() => { const s = window.spel; s.leger.kiesSoort('boogschutter'
 let m = await bevel();
 check('plek in beeld', !m[2], JSON.stringify(m));
 await p.touchscreen.tap(m[0], m[1]); await p.waitForTimeout(800);
+await p.waitForFunction(() => window.spel.proloog.stand().nKlaar, null, { timeout: 60000 }).catch(() => {});   // 0.76.4: klaar als ze er staan
 check('les 2 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 await kaartTik(); await kaartTik();
 console.log('DBG', await p.evaluate(() => ({ g: !document.getElementById('leger-groepen').hidden, btn: [...document.querySelectorAll('#leger-groepen button')].map((b) => b.textContent + ':' + (b.offsetParent ? 'v' : 'h')), zin: document.getElementById('gids-zin').textContent, pan: !!document.querySelector('#legerpaneel:not([hidden])') })));
@@ -71,6 +72,7 @@ check('les 3 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 await kaartTik(); await kaartTik();
 m = await bevel();
 await p.touchscreen.tap(m[0], m[1]); await p.waitForTimeout(800);
+await p.waitForFunction(() => window.spel.proloog.stand().nKlaar, null, { timeout: 60000 }).catch(() => {});   // 0.76.4: klaar als ze er staan
 check('les 4 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 check('na de laatste stuurles: niemand gekozen, geen hint', await p.evaluate(() => window.spel.leger.aantalGekozen() === 0 && document.getElementById('legerhint').hidden));
 const voor = await kijk();
@@ -104,10 +106,11 @@ check('poorten open', await p.evaluate(() => { const s = window.spel; const st =
 // 0.76.2: staat Karel op de helft, dan begint de ontvoering en trekt het leger zich terug. Dus: meten op het
 // hoogste punt binnen, of tot de ontvoering begint.
 let na = await kijk(), hoogst = na.binnen, fase = 'nacht';
-let sec = 0;
-for (let i = 0; i < 150; i++) { await p.waitForTimeout(1000); sec = i + 1; na = await kijk(); hoogst = Math.max(hoogst, na.binnen); fase = (await nS()).fase; if (fase !== 'nacht') break; if (i % 10 === 9) console.log('na', sec, 's: lijfwacht', await p.evaluate(() => window.spel.leger.lijst.filter((e) => !e.dood && e.karelWacht !== undefined && e.soldaat.sleutel !== 'koning').length), 'Karel', await p.evaluate(() => Math.round(window.spel.strijd.koning(0).leven))); }
+let sec = 0, verst = 0;
+for (let i = 0; i < 150; i++) { await p.waitForTimeout(1000); sec = i + 1; verst = Math.max(verst, await p.evaluate(() => { const s = window.spel; const B = s.kaart.breedte; return Math.max(0, ...s.leger.lijst.filter((e) => !e.dood && e.karelWacht !== undefined && e.soldaat.sleutel !== 'koning').map((e) => Math.hypot(e.x - (e.karelWacht % B) - 0.5, e.y - Math.floor(e.karelWacht / B) - 0.5))); })); na = await kijk(); hoogst = Math.max(hoogst, na.binnen); fase = (await nS()).fase; if (fase !== 'nacht') break; if (i % 10 === 9) console.log('na', sec, 's: lijfwacht', await p.evaluate(() => window.spel.leger.lijst.filter((e) => !e.dood && e.karelWacht !== undefined && e.soldaat.sleutel !== 'koning').length), 'Karel', await p.evaluate(() => Math.round(window.spel.strijd.koning(0).leven))); }
 console.log('ontvoering na storm (s):', sec, fase, 'reden:', (await nS()).reden, 'burcht:', await p.evaluate(() => { const s = window.spel.strijd.stand(); return Math.round(100 * s.burcht / s.burchtMax); }), 'hoogst binnen:', hoogst);
 check('het leger stroomt naar binnen', hoogst >= 8, JSON.stringify(na));
+check('lijfwacht blijft binnen 3,5 tegel van zijn post', verst <= 3.5, verst.toFixed(2));
 await p.screenshot({ path: '/tmp/s/p43.png' });
 check('geen scriptfouten', fouten.length === 0, fouten.join('|'));
 console.log('ok', ok, 'fout', fout);

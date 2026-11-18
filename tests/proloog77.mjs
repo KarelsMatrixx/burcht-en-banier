@@ -23,9 +23,15 @@ const st = () => p.evaluate(() => window.spel.proloog.stand());
 // --- Oog: zet het oog vooraf aan; de grondles moet er toch naar vragen
 await p.tap('#knop-oog'); await p.waitForTimeout(200);
 check('oog staat aan voor de test', await p.evaluate(() => document.getElementById('knop-oog').getAttribute('aria-pressed') === 'true'));
-await p.evaluate(() => { const s = window.spel; s.leger.zetStand([['ridder', s.kaart.start[0].x - 3, s.kaart.start[0].y + 3, 100, 0]]); });
+// De testsoldaat op een goed bereikbaar vak (zoals een soldaat uit de kazerne), niet in een ingesloten hoekje
+await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; const B = s.kaart.breedte; let best = null, bestN = -1;
+  for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { const x = st.x + dx, y = st.y + dy; if (Math.max(Math.abs(dx), Math.abs(dy)) < 6 || !s.wegvinder.isVrij(x, y, 0)) continue;
+    let n = 0; for (let ey = -9; ey <= 9; ey += 3) for (let ex = -9; ex <= 9; ex += 3) { const vx = st.x + 4 + ex, vy = st.y + 3 + ey; if (s.wegvinder.isVrij(vx, vy, 0) && s.wegvinder.verbonden(y * B + x, vy * B + vx, 0)) n++; }
+    if (n > bestN) { bestN = n; best = [x, y]; } }
+  s.leger.zetStand([['ridder', best[0], best[1], 100, 0]]); });
 // Spring naar de grondles (index 9) via de opslag van de proloog
 await p.evaluate(() => { const r = JSON.parse(localStorage.getItem('burcht-banier.proloog') || '{}'); r.taak = 9; r.basis = false; r.klaar = false; r.fase = 'bouw'; localStorage.setItem('burcht-banier.proloog', JSON.stringify(r)); });
+await p.waitForTimeout(11000);   // het spel bewaart elke 10 s: zo komen de soldaten mee door het herladen
 await p.evaluate(() => window.spel.proloog.stop());
 await p.evaluate(() => sessionStorage.setItem('burcht-banier.geenTitel', '1'));
 await p.reload(); await wacht(); await p.waitForTimeout(800);
@@ -43,6 +49,7 @@ check('stap 1: nog geen gouden plek', await p.isHidden('#gids-plek'));
 await p.tap('#knop-oog'); await p.waitForTimeout(800);
 zin = await p.textContent('#gids-zin');
 check('stap 2: na het oog de soldaat kiezen', /soldier/i.test(zin), zin);
+if (!/soldier/i.test(zin)) console.log('DBG soldaten', await p.evaluate(() => JSON.stringify(window.spel.leger.soldaten().filter((e) => e.soldaat.sleutel !== 'koning').slice(-6).map((e) => [e.soldaat.sleutel, e.x.toFixed(1), e.y.toFixed(1), !!e.wachter, !!e.garnizoen, e.opMuur, e.soldaat.doel]))), await p.evaluate(() => JSON.stringify(window.spel.gids.doel() && window.spel.gids.doel().soldaat && window.spel.gids.doel().soldaat())));
 for (let k = 0; k < 6 && (await p.evaluate(() => window.spel.leger.aantalGekozen())) === 0; k++) {
   const r = await p.evaluate(() => { const e = document.getElementById('gids-plek'); const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, buiten: e.classList.contains('buiten'), hid: e.hidden }; });
   if (r.hid) { await p.waitForTimeout(500); continue; }

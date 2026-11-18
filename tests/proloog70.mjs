@@ -85,7 +85,12 @@ while (Date.now() < tEind) {
   if (s.fase !== 'bouw') break;
   if (s.taak !== lesNu) { if (lesNu >= 0) duur[lesNu] = Math.round((Date.now() - tLes) / 1000); lesNu = s.taak; tLes = Date.now(); }
   if (await kaartOpen()) { await leesKaart(); continue; }
-  if (!s.basis || s.klaar) { await p.waitForTimeout(300); continue; }
+  if (!s.basis || s.klaar) {
+    // Ligt er een bericht over het kaartje (de gids is dan bedekt), dan tikt de speler het weg
+    if (!s.basis && await p.isVisible('#verhaal')) { console.log('bericht weggetikt bij les', s.taak, (await p.textContent('#verhaal')).slice(0, 60)); await p.tap('#verhaal').catch(() => {}); await p.waitForTimeout(300); continue; }
+    if (!s.basis && Math.random() < 0.05) console.log('WACHT', s.taak, await p.evaluate(() => JSON.stringify({ body: document.body.className, kaartHid: document.getElementById('gids-kaart').hidden, open: ['verhaal', 'logboek', 'volkpaneel', 'legerpaneel', 'bouwpaneel', 'instellingen', 'titelscherm', 'verhaalbeeld', 'missie', 'scene', 'einde'].filter((id) => { const e = document.getElementById(id); return e && !e.hidden; }) })));
+    await p.waitForTimeout(300); continue;
+  }
   if (!takenGezien.includes(s.taak)) takenGezien.push(s.taak);
   const melding = await p.evaluate(() => [...document.querySelectorAll('#meldingen *, #bouwhint, #gids-zin')].map((e) => e.textContent).join('|'));
   if (/not enough|need .* wood|more wood/i.test(melding)) wachtenOpHout++;
@@ -119,8 +124,12 @@ await p.locator('#leger-groepen button', { hasText: /^Archer/ }).tap(); await p.
 check('kiesles: boogschutters kiezen telt', (await st()).nKlaar, JSON.stringify(await st()));
 await leesKaart(); await leesKaart();   // Good, intro les 2
 // Les 2: boogschutters naar de muur bij de poort (de gids volgen)
-for (let k = 0; k < 12 && !(await st()).nKlaar; k++) { if (await kaartOpen()) break; await tikGids(); }
-check('les 2: boogschutters naar de poortmuur', (await st()).nKlaar, JSON.stringify(await st()));
+for (let k = 0; k < 12 && (await st()).nBevel !== 2; k++) { if (await kaartOpen()) break; await tikGids(); }
+check('les 2: bevel gegeven', (await st()).nBevel === 2, JSON.stringify(await st()));
+const onderweg2 = await p.evaluate(() => window.spel.leger.gekozen().some((e) => e.pad || e.klimt));
+check('les 2: niet klaar zolang ze lopen', !onderweg2 || !(await st()).nKlaar);
+await p.waitForFunction(() => window.spel.proloog.stand().nKlaar, null, { timeout: 60000 }).catch(() => {});
+check('les 2: klaar als de boogschutters op de muur staan', (await st()).nKlaar && await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; return s.leger.soldaten().some((e) => e.soldaat.sleutel === 'boogschutter' && e.opMuur && !e.pad && Math.hypot(e.x - st.x - 17.5, e.y - st.y + 0.5) <= 4.5); }), JSON.stringify(await st()));
 // Iedereen op zijn wachtplek, de boogschutters op de muur; dan treuzelt de speler 200 s zonder kaartje open
 await leesKaart();   // "Good."
 await p.waitForSelector('#gids-kaart:not([hidden]) button');   // intro les 3 staat open: eerst dicht, dan treuzelen
@@ -145,8 +154,13 @@ if (!(await p.isVisible('#leger-groepen button'))) { await p.tap('#knop-zwaard')
 await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap(); await p.waitForTimeout(1200);
 check('les 3: ridders gekozen', (await st()).nKlaar, JSON.stringify(await st()));
 await leesKaart(); await leesKaart();
-for (let k = 0; k < 12 && !(await st()).nKlaar; k++) { if (await kaartOpen()) break; await tikGids(); }
-check('les 4: ridders achter de poort', (await st()).nKlaar, JSON.stringify(await st()));
+for (let k = 0; k < 12 && (await st()).nBevel !== 4; k++) { if (await kaartOpen()) break; await tikGids(); }
+check('les 4: bevel gegeven', (await st()).nBevel === 4, JSON.stringify(await st()));
+const onderweg4 = await p.evaluate(() => window.spel.leger.gekozen().some((e) => e.pad));
+check('les 4: niet klaar zolang ze lopen', onderweg4 && !(await st()).nKlaar, JSON.stringify({ onderweg4, k: (await st()).nKlaar }));
+check('les 4: taakregel zegt onderweg', /on their way/i.test(await p.evaluate(() => document.body.textContent)));
+await p.waitForFunction(() => window.spel.proloog.stand().nKlaar, null, { timeout: 60000 }).catch(() => {});
+check('les 4: klaar als de ridders achter de poort staan', (await st()).nKlaar && await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; return s.leger.soldaten().some((e) => e.soldaat.sleutel === 'ridder' && !e.pad && Math.hypot(e.x - st.x - 14.5, e.y - st.y - 2.5) <= 4.5); }), JSON.stringify(await st()));
 await leesKaart(); await leesKaart();
 // Les 5: de poort dicht. Tot hier geen aanval.
 check('voor de poortles: nog opmars', (await st()).deel === 'opmars', JSON.stringify(await st()));

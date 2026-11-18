@@ -867,3 +867,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Ruiter: zit in het zadel (bovenbeen naar voren, onderbeen langs de flank, heup op het zadel), 20% kleiner; bij een poort vervaagt hij geleidelijk (ook de fakkelgloed) in plaats van ineens weg te springen.
 - Lijfwacht van Karel: bij het begin van de nacht staat Karel aan de oostkant van de burcht met 20 zwaardvechters op vaste posten om zich heen (proloog.js `zetLijfwacht`, strijd.js `karelWachtDenk`). Niet te kiezen of te besturen (leger.js `kies`); ze vechten alleen met wie binnen 2,5 tegels van hun post komt en lopen daarna terug. Karel houdt zelf ook zijn plek. Zolang er nog 5 of meer leven, raakt Karel geen leven kwijt. Gemeten in proloog43: van de storm tot de ruiter ongeveer 50 s (was 16 tot 21 s). Na herladen worden de wachten opnieuw gemarkeerd via `s.lijfwacht`.
 - Tests: proloog77 (volgorde oogles, vrije plek, pauze, lijfwacht), proloog35 en proloog43 bijgewerkt.
+
+## 0.76.4: nachtlessen pas klaar als het leger er staat, lijfwacht blijft op zijn post (Karels feedback van 18 november)
+
+- Nachtles 2 (boogschutters naar de poortmuur) en 4 (ridders achter de poort) zijn pas klaar als de gestuurde groep stilstaat en er minstens één op de plek staat (boogschutters: op de muur). Onderweg staat in de taakregel "...: on their way...". Pas daarna komt de poortles, en pas na "Hold" valt het leger aan.
+- Lijfwacht van Karel: geen wraak en geen bevelen meer; een wacht vecht alleen binnen 3 tegels van zijn post, breekt een achtervolging af en loopt terug. Gemeten: verst 3,5 tegel van de post.
+- Grondles: de gouden plek ligt buiten het loopgebied van Karel en Reinout (minstens 6 tegels van de burcht) en moet bereikbaar zijn voor de soldaat van de les; lukt dat niet, dan een bereikbare plek dichterbij. Eerst kon de plek achter een dichte poort liggen, en dan lukte geen enkel bevel.
+- Muurles: kiest een stuk muur waar de soldaat van de les echt kan komen.
+- Tests: proloog70 (wacht op aankomst in de nachtlessen), proloog43 (afstand lijfwacht), proloog77 (testsoldaat op een bereikbare plek).

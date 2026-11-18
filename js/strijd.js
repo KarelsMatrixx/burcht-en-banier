@@ -1670,13 +1670,21 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const post = e.karelWacht;
     const px = (post % B) + 0.5;
     const py = Math.floor(post / B) + 0.5;
+    // Geen wraak en geen bevelen: hij laat zich niet weglokken van zijn post (naar Karel)
+    k.wraak = null;
+    k.bevel = null;
+    const vanPost = Math.hypot(px - e.x, py - e.y);
     const dichtbij = anderen.filter((a) => Math.hypot(a.x - px, a.y - py) <= 2.5);
-    k.doelwit = dichtbij.length ? kiesDoelwit(e, k, dichtbij) : null;
+    k.doelwit = dichtbij.length && vanPost <= 3 ? kiesDoelwit(e, k, dichtbij) : null;
+    if (k.doelwit && Math.hypot(k.doelwit.x - px, k.doelwit.y - py) > 3) k.doelwit = null;
     if (k.doelwit) {
+      e.karelTerug = false;
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) jaag(e, k);
       return;
     }
-    if (Math.hypot(px - e.x, py - e.y) <= 0.7) { if (e.pad) e.pad = null; zetHouding(e, null); return; }
+    if (vanPost <= 0.7) { if (e.pad) e.pad = null; e.karelTerug = false; zetHouding(e, null); return; }
+    // Terug naar de post; een lopende achtervolging eerst afbreken
+    if (!e.karelTerug) { e.pad = null; e.karelTerug = true; }
     if (!e.pad) { const pad = zoekPad(e, post); if (pad) zetPad(e, pad); }
   }
 
