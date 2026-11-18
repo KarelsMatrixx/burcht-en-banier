@@ -3,7 +3,7 @@
 // van de code hoeft te zijn.
 
 export const CONFIG = {
-  versie: '0.72.0',
+  versie: '0.72.1',
   stap: 41,
   verhaalbeeldSeconden: 20,   // zo lang staat het verhaalbeeld voor een level in beeld
 

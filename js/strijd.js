@@ -532,9 +532,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (a.dood || a.klimt || (a === k.negeer && stapNr < k.negeerTot)) continue;
       if (!kanRaken(e, k, a) && !klimtNaar(e, k, a)) continue;
       const d = Math.hypot(a.x - e.x, a.y - e.y);
-      if (d >= min || verborgenVoor(a, d)) continue;
+      // De windzanger kiest het liefst iemand boven op een muur of toren (die blaast ze eraf).
+      const score = k.def.windstoot && a.opMuur && d <= bereik ? d - 5 : d;
+      if (score >= min || d > ver + 0.001 || verborgenVoor(a, d)) continue;
       if (d > bereik && !kanBij(e, a)) continue;   // hij kan er niet bij en niet op schieten
-      min = d;
+      min = score;
       beste = a;
     }
     if (beste) return beste;
@@ -639,6 +641,17 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       const sl = doel.soldaat ? doel.soldaat.sleutel : doel.vijand;
       if (sl && k.def.bonusTegen[sl]) schade = Math.max(1, Math.round(schade * k.def.bonusTegen[sl]));
     }
+    if (k.def.windstoot) {
+      // De windzanger: een windvlaag. Wie op een muur of toren staat, waait eraf.
+      const ver = Math.hypot(doel.x - e.x, doel.y - e.y);
+      effect({ soort: 'pijl', wind: true, x1: e.x, y1: e.y, h1: 22 + (e.hoogte || 0), x2: doel.x, y2: doel.y, h2: 16 + (doel.hoogte || 0), duur: 250 + 40 * ver });
+      if (doel.opMuur && !doel.klimt && blaasVanMuur(doel, e, k.def.windstoot)) {
+        raak(doel, Math.max(1, Math.round(k.def.windstoot.val * sterkteVan(e, k))), e);
+        return;
+      }
+      raak(doel, schade, e);
+      return;
+    }
     if (k.def.gebied !== undefined) {
       vuurbal(e, doel.x, doel.y, 16 + (doel.hoogte || 0));
       if (doel.opMuur) schade = Math.max(1, Math.round(schade * R.muurDekking));
@@ -663,6 +676,51 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       const naast = lijstVan(doel.team).filter((a) => a !== doel && !a.dood && !!a.opMuur === !!doel.opMuur && Math.hypot(a.x - doel.x, a.y - doel.y) <= 1.3);
       for (const a of naast.slice(0, k.def.zwaaiAantal || 1)) raak(a, Math.max(1, Math.round(k.def.schade * k.def.zwaai * sterkteVan(e, k))), e);
     }
+  }
+
+  // Blaas een soldaat van de muur naar een vrije tegel op de grond ernaast, aan de kant
+  // van de windzanger af. Niet van het dak van een hoofdkasteel (daar staat de koning).
+  // Geeft true als het lukte.
+  function blaasVanMuur(a, door, stoot) {
+    const vx = Math.floor(a.x);
+    const vy = Math.floor(a.y);
+    if (kaart.object[vy * B + vx] === OBJECT.BURCHT) return false;
+    const rx = a.x - door.x;
+    const ry = a.y - door.y;
+    const lang = Math.hypot(rx, ry) || 1;
+    const plekken = [];
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const x = vx + dx;
+        const y = vy + dy;
+        if (x < 0 || y < 0 || x >= B || y >= H) continue;
+        if (wegvinder.isMuur(x, y, a.team) || wegvinder.isMuur(x, y, door.team)) continue;
+        if (!wegvinder.isVrij(x, y, a.team) && !wegvinder.isVrij(x, y, door.team)) continue;
+        plekken.push({ x, y, s: (dx * rx + dy * ry) / lang / Math.hypot(dx, dy) });
+      }
+    }
+    if (!plekken.length) return false;
+    plekken.sort((p, q) => q.s - p.s);
+    const p = plekken[0];
+    a.x = p.x + 0.5;
+    a.y = p.y + 0.5;
+    a.opMuur = false;
+    a.klimt = false;
+    a.hoogte = 0;
+    a.pad = null;
+    a.ronde = null;
+    const ka = krijgVan(a);
+    if (a.wachter !== undefined) {
+      delete a.wachter;
+      a.snelheid = ka.def.snelheid;
+    }
+    ka.bouw = null;
+    ka.doelwit = null;
+    ka.afkoel = Math.max(ka.afkoel || 0, stappen(stoot.verdoofd || 2));
+    ka.denk = stappen(stoot.verdoofd || 2);
+    rook(a.x, a.y);
+    return true;
   }
 
   // --- De vijand en je burcht -----------------------------------------------------------

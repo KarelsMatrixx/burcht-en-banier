@@ -191,6 +191,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     [assets.haal('eenheid.ruiter_blauw'), assets.haal('eenheid.ruiter_rood')],
     [assets.haal('eenheid.paardenboer_blauw'), assets.haal('eenheid.paardenboer_rood')],
     [assets.haal('eenheid.paard_blauw'), assets.haal('eenheid.paard_rood')],
+    [assets.haal('eenheid.wind_blauw'), assets.haal('eenheid.wind_rood')],
   ];
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
@@ -891,6 +892,20 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
         };
         const kop = punt(t);
         const staart = punt(Math.max(0, t - 0.16));
+        if (f.wind) {
+          // Een windvlaag (de windzanger): drie witte krullen die meedraaien
+          ctx.strokeStyle = 'rgba(240, 250, 255, 0.85)';
+          ctx.lineWidth = 1.3;
+          for (let s = 0; s < 3; s++) {
+            const q = punt(Math.max(0, t - s * 0.07));
+            const r = 3.2 - s * 0.7;
+            const draai = t * 14 + s * 2;
+            ctx.beginPath();
+            ctx.arc(q[0], q[1] - s * 1.5, r, draai, draai + Math.PI * 1.4);
+            ctx.stroke();
+          }
+          continue;
+        }
         if (f.vuur) {
           // Een vuurbal met een gloeiende staart
           for (let s = 4; s >= 1; s--) {
@@ -1045,15 +1060,15 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
 
     nabewerking.toepassen(ctx, canvas);
 
-    // Weer en waas van het landschap van dit level (stof, mist, sneeuw, storm).
+    // Weer en waas van het landschap van dit level. Het weer hangt in de wereld
+    // (beweegt niet mee met de camera); de waas ligt over het hele scherm.
     if (sfeerAan && profiel) {
-      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-      if (!sfeerLicht || profiel.deeltjes === 'geen') sfeer.tekenWeer(ctx, canvas.width / pixelRatio, canvas.height / pixelRatio, t);
-      else if (profiel.waas) {
-        const w = profiel.waas;
-        ctx.fillStyle = `rgba(${w[0]}, ${w[1]}, ${w[2]}, ${w[3]})`;
-        ctx.fillRect(0, 0, canvas.width / pixelRatio, canvas.height / pixelRatio);
+      if (!sfeerLicht && profiel.deeltjes !== 'geen') {
+        ctx.setTransform(basis[0], 0, 0, basis[3], basis[4], basis[5]);
+        sfeer.tekenWeer(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t);
       }
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      sfeer.tekenWaas(ctx, canvas.width / pixelRatio, canvas.height / pixelRatio, t);
     }
 
     // De nacht (proloog): een donkerblauwe waas over de wereld, 0 tot 1.

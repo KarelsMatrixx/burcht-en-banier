@@ -764,3 +764,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - **Level 10: kerk met begraafplaats** op een open plek in het dode bos rechts van Mournkeep: nieuw decorobject GRAF (41, `dorp.graf`, vier varianten met grafstenen, kruisen, grafheuvels, kaarsjes). Decor `kerk` en `graf` mogen bomen wegkappen (kaart.js).
 - Nieuwe test `tests/landschap71.mjs` (32 controles; zet levels 7 tot 10 voor de proef open). Groen gebleven: kasteel33, kasteeldecor53, hut70, kaartvorm34, siege52, kaarten24, stillwater40, proloog35, test_stap17.
 - Niet gezien op de iPhone: snelheid met sneeuw (110 vlokjes) en regen (120 strepen), en of de bliksemflits prettig is. Levels 7 tot 10 zijn nog niet speelbaar; hun landschap staat klaar.
+
+## 0.72.1: het weer hangt in de wereld (Karels feedback van 18 november)
+- Mist, sneeuw, regen, as, stof en windstrepen bewogen mee met de camera (ze stonden in schermmaat). Nu staan ze in de wereld, in tegels van 1100 bij 640 wereldpixels die zich over de kaart herhalen: schuif je de kaart, dan blijft de mist hangen waar hij hangt (sfeer.js `tekenWeer`). Alleen de kleurwaas, de stofvlaag en de bliksemflits liggen nog over het hele scherm (`tekenWaas`).
+- Alvast in de code, nog niet vrijgegeven: de windzanger (soort WIND 34, mystieke kazerne). Een windvlaag blaast een soldaat van een muur of toren naar de grond ernaast (18 schade, 2,5 s verdoofd), niet van het dak van een hoofdkasteel. Wordt de beloning van level 7.
+- Bekend rood, los van deze wijziging: mystiek27 (vindt de knop van de sluipmoordenaar niet; ook rood zonder deze wijziging).

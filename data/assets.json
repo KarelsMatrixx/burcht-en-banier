@@ -78,6 +78,8 @@
     "eenheid.ruiter_blauw":        { "vorm": "ruiter", "kleur": "#2f5fc4", "sprite": "" },
     "eenheid.ruiter_rood":         { "vorm": "ruiter", "kleur": "#c23a2e", "sprite": "" },
     "eenheid.paard_blauw":         { "vorm": "paard", "kleur": "#2f5fc4", "sprite": "" },
+    "eenheid.wind_blauw":          { "vorm": "windzanger", "kleur": "#2f5fc4", "sprite": "" },
+    "eenheid.wind_rood":           { "vorm": "windzanger", "kleur": "#c23a2e", "sprite": "" },
     "eenheid.paard_rood":          { "vorm": "paard", "kleur": "#c23a2e", "sprite": "" },
     "eenheid.paardenboer_blauw":   { "vorm": "werker", "kleur": "#2f5fc4", "kiel": "#a08a5a", "gereedschap": "geen", "vracht": "hooi", "sprite": "" },
     "eenheid.paardenboer_rood":    { "vorm": "werker", "kleur": "#c23a2e", "kiel": "#a08a5a", "gereedschap": "geen", "vracht": "hooi", "sprite": "" },
