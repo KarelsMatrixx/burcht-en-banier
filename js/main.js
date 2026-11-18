@@ -207,7 +207,11 @@ async function start() {
   }
   if (gevangene && strijd.uitslag() === 'gewonnen') gevangene.bevrijd();   // de cel staat open als je het level al won
   // Jouw koning: hij staat altijd bij de burcht als hij er nog niet is.
-  if (!strijd.uitslag()) leger.zetKoning((kaart.start[0].y + 2) * kaart.breedte + kaart.start[0].x + 2);   // voor de burcht, zodat je hem ziet
+  const koningVak = (kaart.start[0].y + 2) * kaart.breedte + kaart.start[0].x + 2;   // voor de burcht, zodat je hem ziet
+  // Het thuisvak ook onthouden als het level al beslist was (bewaarde winst): zonder dat komt de koning bij
+  // "Start over" niet terug en verlies je meteen weer ("Your king fell during attack 0").
+  leger.zetKoningThuis(koningVak);
+  if (!strijd.uitslag()) leger.zetKoning(koningVak);
   bewaren = true;
 
   // Alles wat de tekenlaag moet weten. doel = waar je soldaten heen stuurt

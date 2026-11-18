@@ -551,6 +551,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     soorten, get max() { return legerMax(); }, waaromNiet, leidOp, vind, kies, stuur, stap,
     kiesAlles: () => kies(soldaten.filter((e) => !isKoning(e))),
     zetKoning,
+    // Alleen onthouden waar de koning thuishoort, zonder hem neer te zetten (voor een bewaarde, al beslechte stand).
+    zetKoningThuis: (burchtVak) => { koningThuis = burchtVak; },
     groepVan, kiesGroep, kiesSoort, kiesKader, kiesDeel, telling,
     kiesGeen: () => kies([]),
     // Een wandelingetje op de grond (voor de koning in de proloog); telt niet als bevel van de speler.

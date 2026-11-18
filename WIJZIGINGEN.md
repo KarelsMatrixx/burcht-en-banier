@@ -722,3 +722,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 
 ## 0.70.1 (deel 4): sjamaanhut hoger
 - De muren van de Mystic Lodge zijn hoger, het dak lager, de deur groter, de tekens hoger op de wand en de rook staat naast het gewei in plaats van erdoorheen.
+
+## 0.70.4: een gewonnen level opnieuw spelen gaf meteen weer "Defeat"
+- **Klacht van Karel (18 november):** bij level 4 (The Fen, de hut bewaken) kwam bij opnieuw spelen het scherm "Your king fell during attack 0", terwijl de koning niet gevallen was, en "Start over" bracht hem steeds op hetzelfde scherm terug.
+- **Oorzaak:** na een gewonnen level wordt de stand bewaard. Bij herladen (opnieuw spelen) is het level dan al beslist, en main.js zette de koning alleen neer als er nog geen uitslag was (`if (!strijd.uitslag()) leger.zetKoning(...)`). Daardoor kende leger.js het thuisvak van de koning niet (`koningThuis` bleef -1). "Start over" (`leger.herstel()`) haalde alle soldaten weg en zette de koning niet terug; de volgende rekenstap zag dat je koning ontbrak en gaf meteen verloren, elke keer opnieuw. De tekst "attack 0" komt doordat er dan nog geen golf was.
+- **Fix:** nieuwe `leger.zetKoningThuis(vak)` onthoudt het thuisvak altijd (main.js), ook bij een beslechte bewaarde stand. De koning zelf wordt nog steeds alleen neergezet als het level nog loopt.
+- **Test:** `tests/opnieuw_na_winst71.mjs` (12 punten): level 4 winnen, herladen, Start over, koning terug, hut heel, klok loopt, nog een keer. Zonder de fix faalt de test met exact de melding van Karel.
+- Versie op 0.70.4 in config.js, sw.js, test_stap15 en test_stap17.
+- **Niet nagegaan:** of dezelfde lus ook in andere levels met een eigen doel (6 loodsen, 8 sluis) optreedt na een bewaarde winst. De oorzaak zit in gedeelde code (leger.js, main.js), dus de fix geldt daar ook, maar alleen level 4 is getest.
