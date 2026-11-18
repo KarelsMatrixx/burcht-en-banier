@@ -94,11 +94,14 @@ check('laatste 15 s: klok weg', laat.hidden, JSON.stringify(laat));
 const taak2 = await el('#taak');
 check('laatste 15 s: hut-tijd er nog', taak2 && !taak2.hidden, JSON.stringify(taak2));
 await p.screenshot({ path: '/tmp/s/hut70_laat.png' });
-// Winst: klok weg
+// Tijd om (0.71.0): niet meteen winst, maar het Stille Volk komt. Klok weg.
 await p.evaluate(() => window.spel.doel.zetTijd(479));
-await p.waitForFunction(() => window.spel.strijd.uitslag() === 'gewonnen', null, { timeout: 6000 }).catch(() => {});
-check('gewonnen', (await p.evaluate(() => window.spel.strijd.uitslag())) === 'gewonnen');
-check('klok weg na winst', (await el('#aanvalklok')).hidden);
+await p.waitForFunction(() => window.spel.doel.fase() === 1, null, { timeout: 6000 }).catch(() => {});
+check('tijd om: tweede fase, nog niet gewonnen', (await p.evaluate(() => window.spel.doel.fase() === 1 && window.spel.strijd.uitslag() === null)));
+check('klok weg na het ritueel', (await el('#aanvalklok')).hidden);
+// De winst komt pas als de rode heer verslagen is (hier met de testknop)
+await p.evaluate(() => window.spel.strijd.beslis('gewonnen'));
+await p.waitForTimeout(500);
 // Opnieuw: klok terug op het begin
 await p.tap('#einde-opnieuw').catch(() => {}); await p.waitForTimeout(1200);
 const opn = await el('#aanvalklok');

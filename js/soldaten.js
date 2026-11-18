@@ -859,10 +859,60 @@ function ruiter(def, zonder = false) {
   return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
 }
 
+// ------------------------------------------------------------------ windzanger
+// Een zangeres van Zevenwind (level 7): lange grijsgroene mantel met windvlaag,
+// kap in teamkleur, een gebogen hoorn aan de lippen; bij het blazen waait een krul uit de hoorn.
+function windzanger(def) {
+  const K = def.kleur;
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const blaas = houding === 'los';
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const zwier = vecht ? -1.2 : [0, 1, 0, -1][beeld];
+    const mx = 13;
+    // mantel die naar achteren waait
+    vlak(ctx, [[mx - 4.6, 17.4 + wip], [mx + 4.6, 17.4 + wip], [mx + 6 + zwier, 33.6], [mx - 8 + zwier, 33.6], [mx - 9.5 + zwier, 30]], '#5f7466');
+    vlak(ctx, [[mx - 4.6, 17.4 + wip], [mx - 1.4, 17.6 + wip], [mx - 3 + zwier, 33.6], [mx - 8 + zwier, 33.6], [mx - 9.5 + zwier, 30]], '#47584d');
+    vlak(ctx, [[mx + 0.6, 17.6 + wip], [mx + 4.6, 17.4 + wip], [mx + 6 + zwier, 33.6], [mx + 2 + zwier, 33.6]], '#7e937f');
+    // windvlaag op de mantel
+    ctx.strokeStyle = '#d8e4dc'; ctx.lineWidth = 0.7;
+    ctx.beginPath(); ctx.moveTo(mx - 3, 27 + wip); ctx.quadraticCurveTo(mx + 1, 24.5 + wip, mx + 3.6, 27.2 + wip); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mx - 2, 29.6 + wip); ctx.quadraticCurveTo(mx + 1.4, 27.6 + wip, mx + 4.4, 30 + wip); ctx.stroke();
+    // riem en sjerp in teamkleur
+    vlak(ctx, [[mx - 4.6, 18 + wip], [mx - 2.4, 17.4 + wip], [mx + 4.6, 24.6 + wip], [mx + 2.6, 26 + wip]], K);
+    blok(ctx, mx - 4.6, 23.6 + wip, 9.2, 1.1, '#3a2a1a');
+    // gezicht, lange grijze vlecht, kap in teamkleur
+    gezichtje(ctx, mx + 0.6, 12.6 + wip, { haar: '#9a9a90', rx: 2.8, ry: 3.1 });
+    lijn(ctx, mx - 3, 13 + wip, mx - 5 + zwier * 0.5, 22 + wip, '#a8a89e', 1.6);
+    vlak(ctx, [[mx - 4.2, 13 + wip], [mx + 4.4, 11 + wip], [mx + 3.6, 7 + wip], [mx + 0.4, 6.2 + wip], [mx - 3.6, 7.6 + wip]], K);
+    vlak(ctx, [[mx + 0.8, 6.4 + wip], [mx + 3.6, 7 + wip], [mx + 4.4, 11 + wip], [mx + 2.4, 10.6 + wip]], tint(K, 0.22));
+    vlak(ctx, [[mx - 4.2, 13 + wip], [mx - 3.6, 7.6 + wip], [mx - 2.2, 11.6 + wip]], tint(K, -0.3));
+    if (!vecht) {
+      lijn(ctx, mx - 3, 19 + wip, mx - 5.6, 24 + wip, '#47584d', 2.3);
+      hand(ctx, mx - 5.8, 24.4 + wip, HUID, 1.3);
+      // hoorn aan de riem
+      vlak(ctx, [[mx + 3, 22 + wip], [mx + 7, 24 + wip], [mx + 8.4, 21.6 + wip], [mx + 7.4, 25.8 + wip], [mx + 3, 23.4 + wip]], '#d9c9a0');
+      lijn(ctx, mx + 3, 19 + wip, mx + 4.6, 24 + wip, '#5f7466', 2.3);
+    } else {
+      // de hoorn aan de mond, met twee handen
+      lijn(ctx, mx - 2.6, 19, mx + 3, 15, '#47584d', 2.3);
+      lijn(ctx, mx + 3, 19, mx + 6, 16, '#5f7466', 2.3);
+      vlak(ctx, [[mx + 3.2, 13.4], [mx + 9, 12], [mx + 11.6, 9], [mx + 12.4, 13.6], [mx + 9.4, 14.6], [mx + 3.4, 14.8]], '#e2d3aa');
+      ovaal(ctx, mx + 12, 11.3, 1.1, 2.3, '#9a8456');
+      hand(ctx, mx + 3.4, 14.8, HUID, 1.2); hand(ctx, mx + 6.6, 15.6, HUID, 1.2);
+      if (blaas) {
+        ctx.strokeStyle = 'rgba(245,252,255,0.95)'; ctx.lineWidth = 1;
+        for (const [r, dx] of [[2, 15], [3, 19], [3.8, 23.5]]) { ctx.beginPath(); ctx.arc(mx + dx, 11.2, r, -1.2, 1.6); ctx.stroke(); }
+      }
+    }
+  };
+  return pakket(teken, { schiet: [['aan', 0], ['los', 0]] });
+}
+
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
-  zwaardvechter, banierdrager, heler, steenwachter, ruiter, paard: (def) => ruiter(def, true),
+  zwaardvechter, banierdrager, heler, steenwachter, windzanger, ruiter, paard: (def) => ruiter(def, true),
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

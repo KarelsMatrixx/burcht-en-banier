@@ -663,6 +663,8 @@ Aanvulling 0.69.0: eigen plaatjes van Karel (Gemini) voor level 3. Twee smederij
 - Bartholts uitleg over je volk noemt de echte getallen uit de balk (`{volk}/{ruimte}`) in plaats van vaste 4/6.
 - Test: tests/proloog69.mjs.
 
+## 0.70.1: de Mage Tower heet overal Mystic Lodge (bouwmenu, melding "Unlocked", tegelinfo)
+
 ## 0.70.0: level 4 (The Fen): klok voor de volgende aanval en een tentenkamp (naar Karels wens van 17 november)
 
 - **Aanvalsklok linksboven.** Onder de adviseur staat nu een klein paneel "Next attack" met de tijd tot de volgende golf van Brandts jagers en "Wave 1 of 5". Vanaf 15 seconden voor de golf kleurt hij rood en pulseert hij. Na de laatste golf (er komt er geen meer in de laatste 15 s) verdwijnt hij; ook bij winst of verlies. De tijd die je de hut moet houden staat ongewijzigd rechtsboven ("Hold Gesina's hut: 7:57 left"). Code: `doel.js` (`volgende()`, `toonKlok`), `ui.toonAanvalKlok`, `#aanvalklok` in index.html en stijl.css. Hij is smal (64 px) zodat de meldingslinten rechts van de adviseur er niet overheen komen.
@@ -765,9 +767,24 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Nieuwe test `tests/landschap71.mjs` (32 controles; zet levels 7 tot 10 voor de proef open). Groen gebleven: kasteel33, kasteeldecor53, hut70, kaartvorm34, siege52, kaarten24, stillwater40, proloog35, test_stap17.
 - Niet gezien op de iPhone: snelheid met sneeuw (110 vlokjes) en regen (120 strepen), en of de bliksemflits prettig is. Levels 7 tot 10 zijn nog niet speelbaar; hun landschap staat klaar.
 
-## 0.72.1: opnieuw spelen werkt in de hele game (geen defeat-lus meer)
+## 0.72.3: opnieuw spelen werkt in de hele game (geen defeat-lus meer)
 - **Aanleiding (Karel, 18 november):** niet alleen level 4: ook in andere levels kwam je na opnieuw spelen op "Defeat" terecht en kwam je er niet uit.
 - **Gemeten:** met de fix van 0.71.1 tijdelijk uit ging het in alle zes speelbare levels en in vrij spel (rustig, normaal, zwaar) fout na een winst en herladen: "Start over" gaf meteen weer "Your king fell during attack 0". Het was dus één oorzaak in gedeelde code, niet per level.
 - **Extra beveiliging in `opnieuw()` (main.js):** na `leger.herstel()` wordt de koning altijd neergezet (`leger.zetKoning`), wat de bewaarde stand ook was. Samen met `leger.zetKoningThuis` (0.71.1) kan "Start over" niet meer in een defeat-lus eindigen.
 - **Test:** `tests/opnieuw_alle_levels71.mjs` (167 punten): level 1 tot 6 en vrij spel (rustig, normaal, zwaar, vrede), elk met winst en verlies, direct en na herladen. Daarna "Start over", koning terug, geen uitslag, 3,5 s later nog steeds geen defeat. Het verhaalbeeld van 20 s wordt in de test ingekort.
 - **Niet gedekt:** de proloog (level 0) heeft een eigen herstart (herladen met schone kaart) en is niet meegenomen. Niet op de iPhone gezien.
+
+## 0.72.1: het weer hangt in de wereld (Karels feedback van 18 november)
+- Mist, sneeuw, regen, as, stof en windstrepen bewogen mee met de camera (ze stonden in schermmaat). Nu staan ze in de wereld, in tegels van 1100 bij 640 wereldpixels die zich over de kaart herhalen: schuif je de kaart, dan blijft de mist hangen waar hij hangt (sfeer.js `tekenWeer`). Alleen de kleurwaas, de stofvlaag en de bliksemflits liggen nog over het hele scherm (`tekenWaas`).
+- Alvast in de code, nog niet vrijgegeven: de windzanger (soort WIND 34, mystieke kazerne). Een windvlaag blaast een soldaat van een muur of toren naar de grond ernaast (18 schade, 2,5 s verdoofd), niet van het dak van een hoofdkasteel. Wordt de beloning van level 7.
+- Bekend rood, los van deze wijziging: mystiek27 (vindt de knop van de sluipmoordenaar niet; ook rood zonder deze wijziging).
+
+## 0.72.2: level 4 (The Fen): garnizoen in het kamp en het Stille Volk komt na de acht minuten (naar Karels wens van 17 november)
+
+- **Garnizoen.** Het tentenkamp staat vol soldaten: 40 man, waarvan 20 rode ninja's (sluipmoordenaars), 12 boogschutters en 8 ridders (`rood.garnizoen` in campagne.json, maximaal 60). Ze staan verspreid tussen de tenten en bomen, bereikbaar vanaf de ingang van de commandotent, en blijven op hun post. Komt er iets van jou in zicht, dan gaan ze erop af, maar niet verder dan 9 tegels van hun post; daarna lopen ze terug. Ze tellen niet als aanvaller (komen dus niet op je hut of burcht af) en worden apart bewaard (`strijd.garnizoen()`, `bewaarStand().garnizoen`). Bij opnieuw beginnen staan ze er weer. De ninja's zijn voor jou half doorzichtig tot je dichtbij komt: dat is de gewone regel van de sluipmoordenaar.
+- **Na de acht minuten wint je niet meer.** Is de hut-tijd om, dan komen er vanuit de linkerbovenhoek van de kaart 80 vlammenwevers tevoorschijn (8 batches van 10, om de 0,6 s), die van jou zijn: je kiest ze en stuurt ze zoals je eigen leger. De camera kijkt naar de hoek en Gesina vertelt wat er gebeurt. De hut hoeft dan niet meer te blijven staan (`strijd.hutVrij()`), de aanvalsklok verdwijnt en rechtsboven staat "Defeat Huntmaster Brandt: 40 guards left". Je wint door Brandt in zijn kamp te verslaan; verlies je koning, dan verlies je. Instelling: `doel.versterking` in campagne.json (soort, aantal, hoek als deel van de kaart, perBatch, tussen).
+- De wevers tellen mee in je leger maar de grens houdt ze niet tegen (`leger.geef`); level 4 heeft `legerMax` 250 zodat ze ook na herladen terugkomen. Herladen in de tweede fase werkt: de wevers, het garnizoen en de fase blijven, er komen er geen bij. Na de winst begint de klok van dit level de volgende keer opnieuw (`doel.klaar()`).
+- Maximum aantal rode soldaten tegelijk van 60 naar 90, zodat het garnizoen de golven van de jagers niet blokkeert.
+- Teksten: intro, `uit` (winst) en de doelrol rechtsonder zijn aangepast aan de tweede fase.
+- Nieuwe test: `tests/versterking71.mjs` (35 controles: garnizoen 40 met 20/12/8, blijft staan, ritueel-einde geeft geen winst, 80 wevers links boven en van jou, herladen, het level is met de wevers te winnen, opnieuw beginnen, doorspelen). `hut70` en `hut36` kennen nu de tweede fase.
+- Niet gezien op de iPhone: snelheid met 80 wevers en 40 vijanden tegelijk. In de simulatie wint het Stille Volk vrij gemakkelijk (het garnizoen is na ongeveer 30 seconden vechten weg en er blijven zo'n 45 wevers over): de getallen zijn makkelijk bij te stellen als dat te snel gaat.

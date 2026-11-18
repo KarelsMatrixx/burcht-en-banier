@@ -27,7 +27,7 @@ const SPELER = 0;
 const VIJAND = 1;
 const DENK = 5;             // om de zoveel rekenstappen kiest een krijger opnieuw wat hij doet
 const MAX_EFFECTEN = 260;    // pijlen en gevallenen die tegelijk in beeld kunnen zijn
-const MAX_VIJANDEN = 60;
+const MAX_VIJANDEN = 90;   // aanvallers (en het garnizoen van het tentenkamp, level 4)
 const MAX_VIJANDEN_PROLOOG = 200;   // de overmacht van de proloog: 80 ineens (naar Karel)
 const WRAAK_VER = 12;       // zo ver loopt iemand achter een schutter aan die hem raakte
 
@@ -164,6 +164,81 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
           gemaakt++;
         }
       }
+    }
+  }
+  // --- Het garnizoen van rood (level 4: het tentenkamp) -------------------------------
+  // Soldaten die in het kamp blijven staan. Komt er iets van jou in zicht, dan gaan ze erop af,
+  // maar niet ver van hun post; is het voorbij, dan lopen ze terug. Het garnizoen telt niet
+  // mee als aanvaller en komt dus ook niet op je burcht af.
+  const GARNIZOEN_KETTING = 9;   // zo ver gaan ze van hun post
+  function maakGarnizoen(lijst) {
+    if (R.proloog || !koningSleutel) return 0;
+    const nieuwMaken = !Array.isArray(lijst);
+    const m = kaart.start[VIJAND];
+    let gemaakt = 0;
+    if (!nieuwMaken) {
+      for (const regel of lijst) {
+        if (!Array.isArray(regel)) continue;
+        const [sleutel, x, y, leven, post] = regel;
+        if (!Object.prototype.hasOwnProperty.call(soorten, sleutel) || !Number.isInteger(x) || !Number.isInteger(y)) continue;
+        const vak = vrijBij(y * B + x);
+        if (vak < 0) continue;
+        const e = maakVijand(sleutel, vak, leven);
+        e.garnizoen = true;
+        e.post = Number.isInteger(post) && post >= 0 && post < B * H ? post : vak;
+        gemaakt++;
+      }
+      return gemaakt;
+    }
+    const wens = R.garnizoen;
+    if (!wens) return 0;
+    const sleutels = [];
+    for (const [sleutel, aantal] of Object.entries(wens)) if (soorten[sleutel]) for (let i = 0; i < aantal; i++) sleutels.push(sleutel);
+    if (!sleutels.length) return 0;
+    // Alle vrije vakken in het kamp die te voet bereikbaar zijn vanaf de ingang van de commandotent.
+    const ingang = vrijBij(m.y * B + m.x + 2);
+    const plekken = [];
+    for (let ver = 8; ver <= 14 && plekken.length < sleutels.length * 2; ver += 3) {
+      plekken.length = 0;
+      for (let dy = -ver; dy <= ver; dy++) {
+        for (let dx = -ver; dx <= ver; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) < 2) continue;
+          const x = m.x + dx;
+          const y = m.y + dy;
+          if (x < 1 || y < 1 || x >= B - 1 || y >= H - 1 || !wegvinder.isVrij(x, y, VIJAND)) continue;
+          if (ingang >= 0 && !wegvinder.verbonden(ingang, y * B + x, VIJAND)) continue;
+          plekken.push(y * B + x);
+        }
+      }
+    }
+    const schud = (rij) => { for (let i = rij.length - 1; i > 0; i--) { const j = Math.floor(toeval() * (i + 1)); [rij[i], rij[j]] = [rij[j], rij[i]]; } return rij; };
+    schud(plekken);
+    schud(sleutels);
+    for (let i = 0; i < sleutels.length && i < plekken.length; i++) {
+      const e = maakVijand(sleutels[i], plekken[i]);
+      e.garnizoen = true;
+      e.post = plekken[i];
+      gemaakt++;
+    }
+    opStand();
+    return gemaakt;
+  }
+  const garnizoenLijst = () => vijanden.filter((e) => e.garnizoen && !e.dood);
+  // Een man van het garnizoen: vecht wat in zicht komt, binnen de ketting, en gaat daarna naar zijn post.
+  function garnizoenDenk(e, k, anderen) {
+    const px = (e.post % B) + 0.5;
+    const py = Math.floor(e.post / B) + 0.5;
+    const ver = Math.hypot(e.x - px, e.y - py);
+    k.doelwit = kiesDoelwit(e, k, anderen);
+    if (k.doelwit) {
+      const d = Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y);
+      if (d <= bereikVan(e, k) && kanRaken(e, k, k.doelwit)) return;   // binnen bereik: slaan of schieten
+      if (ver <= GARNIZOEN_KETTING) { jaag(e, k); return; }
+      k.doelwit = null;
+    }
+    if (ver > 1.2 && !e.pad) {
+      const pad = zoekPad(e, e.post);
+      if (pad) zetPad(e, pad);
     }
   }
   const inBurcht = (vak, b) => Math.abs((vak % B) - b.vx) <= 1 && Math.abs(Math.floor(vak / B) - b.vy) <= 1 && isBurcht(kaart.object[vak]);
@@ -532,9 +607,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (a.dood || a.klimt || (a === k.negeer && stapNr < k.negeerTot)) continue;
       if (!kanRaken(e, k, a) && !klimtNaar(e, k, a)) continue;
       const d = Math.hypot(a.x - e.x, a.y - e.y);
-      if (d >= min || verborgenVoor(a, d)) continue;
+      // De windzanger kiest het liefst iemand boven op een muur of toren (die blaast ze eraf).
+      const score = k.def.windstoot && a.opMuur && d <= bereik ? d - 5 : d;
+      if (score >= min || d > ver + 0.001 || verborgenVoor(a, d)) continue;
       if (d > bereik && !kanBij(e, a)) continue;   // hij kan er niet bij en niet op schieten
-      min = d;
+      min = score;
       beste = a;
     }
     if (beste) return beste;
@@ -639,6 +716,17 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       const sl = doel.soldaat ? doel.soldaat.sleutel : doel.vijand;
       if (sl && k.def.bonusTegen[sl]) schade = Math.max(1, Math.round(schade * k.def.bonusTegen[sl]));
     }
+    if (k.def.windstoot) {
+      // De windzanger: een windvlaag. Wie op een muur of toren staat, waait eraf.
+      const ver = Math.hypot(doel.x - e.x, doel.y - e.y);
+      effect({ soort: 'pijl', wind: true, x1: e.x, y1: e.y, h1: 22 + (e.hoogte || 0), x2: doel.x, y2: doel.y, h2: 16 + (doel.hoogte || 0), duur: 250 + 40 * ver });
+      if (doel.opMuur && !doel.klimt && blaasVanMuur(doel, e, k.def.windstoot)) {
+        raak(doel, Math.max(1, Math.round(k.def.windstoot.val * sterkteVan(e, k))), e);
+        return;
+      }
+      raak(doel, schade, e);
+      return;
+    }
     if (k.def.gebied !== undefined) {
       vuurbal(e, doel.x, doel.y, 16 + (doel.hoogte || 0));
       if (doel.opMuur) schade = Math.max(1, Math.round(schade * R.muurDekking));
@@ -663,6 +751,51 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       const naast = lijstVan(doel.team).filter((a) => a !== doel && !a.dood && !!a.opMuur === !!doel.opMuur && Math.hypot(a.x - doel.x, a.y - doel.y) <= 1.3);
       for (const a of naast.slice(0, k.def.zwaaiAantal || 1)) raak(a, Math.max(1, Math.round(k.def.schade * k.def.zwaai * sterkteVan(e, k))), e);
     }
+  }
+
+  // Blaas een soldaat van de muur naar een vrije tegel op de grond ernaast, aan de kant
+  // van de windzanger af. Niet van het dak van een hoofdkasteel (daar staat de koning).
+  // Geeft true als het lukte.
+  function blaasVanMuur(a, door, stoot) {
+    const vx = Math.floor(a.x);
+    const vy = Math.floor(a.y);
+    if (kaart.object[vy * B + vx] === OBJECT.BURCHT) return false;
+    const rx = a.x - door.x;
+    const ry = a.y - door.y;
+    const lang = Math.hypot(rx, ry) || 1;
+    const plekken = [];
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const x = vx + dx;
+        const y = vy + dy;
+        if (x < 0 || y < 0 || x >= B || y >= H) continue;
+        if (wegvinder.isMuur(x, y, a.team) || wegvinder.isMuur(x, y, door.team)) continue;
+        if (!wegvinder.isVrij(x, y, a.team) && !wegvinder.isVrij(x, y, door.team)) continue;
+        plekken.push({ x, y, s: (dx * rx + dy * ry) / lang / Math.hypot(dx, dy) });
+      }
+    }
+    if (!plekken.length) return false;
+    plekken.sort((p, q) => q.s - p.s);
+    const p = plekken[0];
+    a.x = p.x + 0.5;
+    a.y = p.y + 0.5;
+    a.opMuur = false;
+    a.klimt = false;
+    a.hoogte = 0;
+    a.pad = null;
+    a.ronde = null;
+    const ka = krijgVan(a);
+    if (a.wachter !== undefined) {
+      delete a.wachter;
+      a.snelheid = ka.def.snelheid;
+    }
+    ka.bouw = null;
+    ka.doelwit = null;
+    ka.afkoel = Math.max(ka.afkoel || 0, stappen(stoot.verdoofd || 2));
+    ka.denk = stappen(stoot.verdoofd || 2);
+    rook(a.x, a.y);
+    return true;
   }
 
   // --- De vijand en je burcht -----------------------------------------------------------
@@ -1561,6 +1694,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       schuifOp(e, k);
       return;
     }
+    if (e.garnizoen && e.team === VIJAND) {
+      garnizoenDenk(e, k, anderen);
+      schuifOp(e, k);
+      return;
+    }
     if (e.koning && e.team === VIJAND) {
       koningDenk(e, k, anderen);
       schuifOp(e, k);
@@ -1760,10 +1898,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // Wie er op je af komt: alle vijanden behalve de wachters op de muur van rood.
-  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning && !e.lijfwacht);
+  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning && !e.lijfwacht && !e.garnizoen);
   function aantalAanvallers() {
     let n = 0;
-    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning && !vijanden[i].lijfwacht) n++;
+    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning && !vijanden[i].lijfwacht && !vijanden[i].garnizoen) n++;
     return n;
   }
 
@@ -2067,6 +2205,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     koningRood: koningSleutel ? (koningVan(VIJAND) ? Math.max(1, Math.round(roodKoning.leven)) : 0) : undefined,
     schade: [...schade].map(([vak, s]) => [vak, Math.max(1, Math.round(s.leven))]),
     vijanden: aanvallers().map((e) => [e.vijand, Math.floor(e.x), Math.floor(e.y), Math.max(1, Math.round(e.leven))]),
+    garnizoen: garnizoenLijst().map((e) => [e.vijand, Math.floor(e.x), Math.floor(e.y), Math.max(1, Math.round(e.leven)), e.post]),
     // Het kasteel van rood: zijn burcht, wat er vernield is en wie er nog op de muur loopt.
     rood: {
       burcht: Math.round(rood.leven),
@@ -2142,6 +2281,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         if (vak >= 0) maakVijand(sleutel, vak, leven);
       }
     }
+    // Het garnizoen van het kamp: zoals bewaard (ook als het al is verslagen), of nieuw bij een oudere bewaarde stand.
+    if (Array.isArray(s.garnizoen)) maakGarnizoen(s.garnizoen);
+    else if (!(s.vrede === 1 || s.vrede === true) && s.koningRood !== 0) maakGarnizoen();
     balkenBij();
     opStand();
     // De koning van rood: met zijn bewaarde leven, of nieuw.
@@ -2182,6 +2324,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (heer) heer.herstel();
     if (veld) veld.herstel();
     maakRoodKoning();
+    maakGarnizoen();
     for (const b of burchten) {
       b.leven = b.max;
       b.gemeldKapot = false;
@@ -2356,6 +2499,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       ruimOp();
       einde(wat);
     },
+    // Level 4: het ritueel van Gesina is af. De hut hoeft niet meer te blijven staan en de jagers
+    // gaan niet meer op de hut af; de rode heer verslaan is nu het doel.
+    hutVrij() { hutVak = -1; hutGevallen = false; },
+    maakGarnizoen,
+    garnizoen: garnizoenLijst,
     zetBurcht(leven) {
       burcht.leven = klem(leven, 0, burcht.max);
       balkenBij();

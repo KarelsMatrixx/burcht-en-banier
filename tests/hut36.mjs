@@ -54,10 +54,13 @@ const h3 = await p.evaluate(() => window.spel.strijd.hut());
 check('opnieuw: hut terug', h3.staat && h3.leven === h3.max && h3.vak === hut.vak, JSON.stringify(h3));
 check('opnieuw: geen uitslag', (await p.evaluate(() => window.spel.strijd.uitslag())) === null);
 check('opnieuw: klok terug', (await p.evaluate(() => window.spel.doel.stand().tijd)) < 5);
-// Tijd om: gewonnen
+// Tijd om (0.71.0): het Stille Volk komt; je wint pas als de rode heer verslagen is (hier met de testknop)
 await p.evaluate(() => window.spel.doel.zetTijd(479));
+await p.waitForFunction(() => window.spel.doel.fase() === 1, null, { timeout: 6000 }).catch(() => {});
+check('tijd om: nog niet gewonnen, tweede fase', (await p.evaluate(() => window.spel.doel.fase() === 1 && window.spel.strijd.uitslag() === null)));
+await p.evaluate(() => window.spel.strijd.beslis('gewonnen'));
 await p.waitForFunction(() => window.spel.strijd.uitslag() === 'gewonnen', null, { timeout: 6000 }).catch(() => {});
-check('tijd om: gewonnen', (await p.evaluate(() => window.spel.strijd.uitslag())) === 'gewonnen');
+check('rode heer verslagen: gewonnen', (await p.evaluate(() => window.spel.strijd.uitslag())) === 'gewonnen');
 check('overwinning bij The Fen', /The Fen/.test(await p.textContent('#einde-titel')), await p.textContent('#einde-titel'));
 check('Gesina zegt het', /grieving/.test(await p.textContent('#einde-tekst')));
 check('level 4 gewonnen', (await p.evaluate(() => JSON.parse(localStorage.getItem('burcht-banier.campagne')).klaar)).includes(4));
