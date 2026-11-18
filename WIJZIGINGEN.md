@@ -787,3 +787,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Beloning: de windzanger (Mystic Lodge, 24 goud en 6 brood). Haar windvlaag blaast een soldaat van een muur of toren naar de grond (18 schade, 2,5 s verdoofd); op de grond doet ze maar 4 schade. Ze kiest bij voorkeur iemand op een muur. Niet van het dak van een hoofdkasteel.
 - Nieuwe Engelse teksten (intro, uitkomst, vier berichten): door Claude geschreven, na te lezen.
 - Test: `tests/level7_72.mjs` (9 controles). test_stap17 telt het aantal levels in het menu niet meer vast.
+
+## 0.73.1: zachter weer (Karels feedback van 18 november)
+- De mist had een harde rechte rand: het mistplaatje werd aan de bovenkant afgesneden. Een mistbank is nu een onregelmatige wolk van 18 zachte bollen die elk geleidelijk uitlopen naar doorzichtig.
+- Ook de rest zachter: stofkorrels zijn ronde stipjes, windstrepen zijn dunner, doorzichtiger en golven, regen is dunner en lichter, en de stofvlaag over de grond loopt geleidelijk in plaats van met een rechte rand.
+- Alles blijft in de wereld hangen (sinds 0.72.1): schuiven met de kaart beweegt het weer niet mee.

@@ -245,19 +245,32 @@ export function maakSfeer(kaart, landschap, profiel = null) {
   // storm. Vaste aantallen, posities volgen uit de tijd, dus geen geheugen.
   let mistVlek = null;
   function maakMistVlek() {
+    // Een onregelmatige mistbank uit veel zachte bollen, zonder harde randen:
+    // elke bol loopt geleidelijk uit naar volledig doorzichtig.
     const d = document.createElement('canvas');
-    d.width = 256;
-    d.height = 128;
+    d.width = 384;
+    d.height = 192;
     const c = d.getContext('2d');
-    const g = c.createRadialGradient(128, 64, 4, 128, 64, 126);
-    g.addColorStop(0, 'rgba(235,240,236,0.55)');
-    g.addColorStop(0.6, 'rgba(235,240,236,0.22)');
-    g.addColorStop(1, 'rgba(235,240,236,0)');
-    c.setTransform(1, 0, 0, 0.5, 0, 32);
-    c.fillStyle = g;
-    c.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 18; i++) {
+      const z = hash(i * 9.1 + 4);
+      const x = 70 + hash(i * 2.7 + 1) * 244;
+      const y = 70 + hash(i * 4.3 + 7) * 52 - Math.abs(x - 192) * 0.08;
+      const r = 34 + z * 30;
+      const g = c.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(232,238,234,0.30)');
+      g.addColorStop(0.5, 'rgba(232,238,234,0.14)');
+      g.addColorStop(1, 'rgba(232,238,234,0)');
+      c.fillStyle = g;
+      c.save();
+      c.translate(x, y);
+      c.scale(1.6, 0.8);
+      c.translate(-x, -y);
+      c.fillRect(x - r, y - r, r * 2, r * 2);
+      c.restore();
+    }
     return d;
   }
+
   // Het weer hangt in de wereld, niet op het scherm: als je de camera beweegt,
   // blijft de mist liggen waar hij ligt. De deeltjes staan in tegels van
   // TW bij TH wereldpixels die zich herhalen over de hele kaart.
@@ -294,13 +307,17 @@ export function maakSfeer(kaart, landschap, profiel = null) {
           continue;
         }
         if (deeltjes === 'stof') {
-          ctx.fillStyle = 'rgba(224, 196, 140, 0.45)';
+          ctx.fillStyle = 'rgba(224, 196, 140, 0.32)';
+          ctx.beginPath();
           for (let i = 0; i < 46; i++) {
             const z = hash(i * 7.3 + 4);
             const x = ox + rond(z * TW + t * (24 + z * 30), TW);
             const y = oy + rond(hash(i * 2.9) * TH + Math.sin(t * 0.9 + i) * 10, TH);
-            ctx.fillRect(x, y, 1.4 + z * 1.2, 1);
+            const rr = 0.6 + z * 0.8;
+            ctx.moveTo(x + rr, y);
+            ctx.ellipse(x, y, rr, rr * 0.7, 0, 0, Math.PI * 2);
           }
+          ctx.fill();
           continue;
         }
         if (deeltjes === 'wind' || deeltjes === 'storm') {
@@ -316,8 +333,9 @@ export function maakSfeer(kaart, landschap, profiel = null) {
             } else {
               const x = ox + rond(z * TW + t * (220 + z * 120), TW);
               const y = oy + hash(i * 6.3) * TH + Math.sin(t * 2 + i) * 4;
+              const golf = Math.sin(t * 1.5 + i) * 3;
               ctx.moveTo(x, y);
-              ctx.quadraticCurveTo(x + 18, y - 2.5, x + 36 + z * 24, y + 1);
+              ctx.bezierCurveTo(x + 10, y - 3 + golf, x + 22, y + 3 - golf, x + 30 + z * 18, y + golf * 0.5);
               if (i < 7) blaadjes.push(ox + rond(z * 777 + t * (130 + z * 50), TW), oy + hash(i * 3.3) * TH + Math.sin(t * 3 + i) * 10, i);
             }
           }
@@ -340,8 +358,9 @@ export function maakSfeer(kaart, landschap, profiel = null) {
     }
     ctx.globalAlpha = 1;
     if (deeltjes === 'wind' || deeltjes === 'storm') {
-      ctx.lineWidth = deeltjes === 'storm' ? 0.9 : 1;
-      ctx.strokeStyle = deeltjes === 'storm' ? 'rgba(190, 200, 220, 0.32)' : 'rgba(255, 255, 255, 0.30)';
+      ctx.lineCap = 'round';
+      ctx.lineWidth = deeltjes === 'storm' ? 0.7 : 0.8;
+      ctx.strokeStyle = deeltjes === 'storm' ? 'rgba(190, 200, 220, 0.2)' : 'rgba(255, 255, 255, 0.16)';
       ctx.stroke();
       ctx.fillStyle = 'rgba(150, 140, 70, 0.8)';
       for (let i = 0; i < blaadjes.length; i += 3) {
@@ -366,8 +385,11 @@ export function maakSfeer(kaart, landschap, profiel = null) {
     if (deeltjes === 'stof') {
       const vlaag = Math.max(0, Math.sin(t * 0.13));
       if (vlaag > 0.6) {
-        ctx.fillStyle = `rgba(214, 180, 120, ${(vlaag - 0.6) * 0.25})`;
-        ctx.fillRect(0, h * 0.55, b, h * 0.45);
+        const g = ctx.createLinearGradient(0, h * 0.4, 0, h);
+        g.addColorStop(0, 'rgba(214, 180, 120, 0)');
+        g.addColorStop(1, `rgba(214, 180, 120, ${(vlaag - 0.6) * 0.25})`);
+        ctx.fillStyle = g;
+        ctx.fillRect(0, h * 0.4, b, h * 0.6);
       }
     }
     if (deeltjes === 'storm') {
