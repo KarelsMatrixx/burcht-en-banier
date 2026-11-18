@@ -577,7 +577,27 @@
    "zicht": 5,
    "pijlDekking": 0.25,
    "tip": "A mystic giant of living stone. Slow and very tough, arrows barely scratch him. Takes two army places and cannot climb ladders. Axe knights hurt him most."
+  },  "windzanger": {
+   "naam": "Wind Singer",
+   "meervoud": "Wind Singers",
+   "soort": "WIND",
+   "kazerne": "mystiek",
+   "boeren": 2,
+   "kosten": {
+    "goud": 24,
+    "brood": 6
+   },
+   "snelheid": 1.9,
+   "leven": 48,
+   "schade": 4,
+   "schadeBouw": 1,
+   "slagTijd": 4.0,
+   "bereik": 6,
+   "zicht": 8,
+   "windstoot": { "val": 18, "verdoofd": 2.5 },
+   "tip": "Blows a gust from her horn. A soldier on a wall or tower is blown off and falls down, hurt and dazed. Weak against soldiers on the ground."
   },
+
   "ruiter": {
    "naam": "Mounted Knight",
    "meervoud": "Mounted Knights",
@@ -728,7 +748,8 @@
    "banierdrager": 1,
    "heler": 1,
    "steenwachter": 3,
-   "ruiter": 1.8
+   "ruiter": 1.8,
+   "windzanger": 1.3
   },
   "ridderPerSchutter": 2,
   "rammenVanaf": 3,

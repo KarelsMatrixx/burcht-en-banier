@@ -258,105 +258,127 @@ export function maakSfeer(kaart, landschap, profiel = null) {
     c.fillRect(0, 0, 256, 256);
     return d;
   }
-  // b, h: schermmaat in CSS-pixels; de aanroeper zet de transformatie.
-  function tekenWeer(ctx, b, h, t) {
+  // Het weer hangt in de wereld, niet op het scherm: als je de camera beweegt,
+  // blijft de mist liggen waar hij ligt. De deeltjes staan in tegels van
+  // TW bij TH wereldpixels die zich herhalen over de hele kaart.
+  // l, b, r, o: wat er van de wereld in beeld is (wereldmaat, transformatie gezet).
+  const TW = 1100;
+  const TH = 640;
+  function tekenWeer(ctx, l, b, r, o, t) {
+    if (deeltjes === 'geen') return;
+    const rond = (v, m) => ((v % m) + m) % m;
+    const marge = deeltjes === 'mist' ? 420 : 40;
+    const tx0 = Math.floor((l - marge) / TW);
+    const tx1 = Math.floor((r + marge) / TW);
+    const ty0 = Math.floor((b - marge) / TH);
+    const ty1 = Math.floor((o + marge) / TH);
+    if (deeltjes === 'mist') mistVlek = mistVlek || maakMistVlek();
+    if (deeltjes === 'wind' || deeltjes === 'storm') ctx.beginPath();
+    else if (deeltjes !== 'mist' && deeltjes !== 'stof') ctx.beginPath();
+    const blaadjes = [];
+    for (let ty = ty0; ty <= ty1; ty++) {
+      for (let tx = tx0; tx <= tx1; tx++) {
+        const ox = tx * TW;
+        const oy = ty * TH;
+        if (deeltjes === 'mist') {
+          // Grote zachte mistbanken die heel langzaam drijven en ademen.
+          for (let i = 0; i < 4; i++) {
+            const z = hash(i * 3.7 + 1);
+            const w = 520 + z * 360;
+            const x = ox + rond(z * TW + t * (3 + z * 3), TW);
+            const y = oy + hash(i * 5.1 + 2) * TH + Math.sin(t * 0.1 + i) * 8;
+            if (x + w / 2 < l || x - w / 2 > r || y + w / 4 < b || y - w / 4 > o) continue;
+            ctx.globalAlpha = 0.5 + 0.22 * Math.sin(t * 0.15 + i * 2);
+            ctx.drawImage(mistVlek, x - w / 2, y - w / 4, w, w / 2);
+          }
+          continue;
+        }
+        if (deeltjes === 'stof') {
+          ctx.fillStyle = 'rgba(224, 196, 140, 0.45)';
+          for (let i = 0; i < 46; i++) {
+            const z = hash(i * 7.3 + 4);
+            const x = ox + rond(z * TW + t * (24 + z * 30), TW);
+            const y = oy + rond(hash(i * 2.9) * TH + Math.sin(t * 0.9 + i) * 10, TH);
+            ctx.fillRect(x, y, 1.4 + z * 1.2, 1);
+          }
+          continue;
+        }
+        if (deeltjes === 'wind' || deeltjes === 'storm') {
+          const storm = deeltjes === 'storm';
+          const n = storm ? 130 : 22;
+          for (let i = 0; i < n; i++) {
+            const z = hash(i * 4.1 + 9);
+            if (storm) {
+              const y = oy + rond(z * TH + t * (420 + z * 140), TH);
+              const x = ox + rond(hash(i * 1.7) * TW - (y - oy) * 0.25, TW);
+              ctx.moveTo(x, y);
+              ctx.lineTo(x - 3.5, y + 12);
+            } else {
+              const x = ox + rond(z * TW + t * (220 + z * 120), TW);
+              const y = oy + hash(i * 6.3) * TH + Math.sin(t * 2 + i) * 4;
+              ctx.moveTo(x, y);
+              ctx.quadraticCurveTo(x + 18, y - 2.5, x + 36 + z * 24, y + 1);
+              if (i < 7) blaadjes.push(ox + rond(z * 777 + t * (130 + z * 50), TW), oy + hash(i * 3.3) * TH + Math.sin(t * 3 + i) * 10, i);
+            }
+          }
+          continue;
+        }
+        // Vallende of zwevende deeltjes: as, pluis, sneeuw
+        const sneeuw = deeltjes === 'sneeuw';
+        const pluis = deeltjes === 'pluis';
+        const n = sneeuw ? 120 : pluis ? 22 : 60;
+        for (let i = 0; i < n; i++) {
+          const z = hash(i * 5.7 + 2);
+          const val = sneeuw ? 30 + z * 26 : pluis ? 5 + z * 5 : 10 + z * 9;
+          const y = oy + rond(z * TH + t * val * (pluis ? (i % 2 ? 1 : -1) : 1), TH);
+          const x = ox + rond(hash(i * 2.3) * TW + t * (sneeuw ? 12 : 7) + Math.sin(t * (0.6 + z) + i) * (pluis ? 16 : 9), TW);
+          const rr = sneeuw ? 0.8 + z * 1.3 : pluis ? 1.1 : 0.7 + z * 0.8;
+          ctx.moveTo(x + rr, y);
+          ctx.arc(x, y, rr, 0, Math.PI * 2);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (deeltjes === 'wind' || deeltjes === 'storm') {
+      ctx.lineWidth = deeltjes === 'storm' ? 0.9 : 1;
+      ctx.strokeStyle = deeltjes === 'storm' ? 'rgba(190, 200, 220, 0.32)' : 'rgba(255, 255, 255, 0.30)';
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(150, 140, 70, 0.8)';
+      for (let i = 0; i < blaadjes.length; i += 3) {
+        ctx.save();
+        ctx.translate(blaadjes[i], blaadjes[i + 1]);
+        ctx.rotate(t * 4 + blaadjes[i + 2]);
+        ctx.fillRect(-2, -1, 4, 2);
+        ctx.restore();
+      }
+    } else if (deeltjes !== 'mist' && deeltjes !== 'stof') {
+      ctx.fillStyle = deeltjes === 'sneeuw' ? 'rgba(255, 255, 255, 0.85)' : deeltjes === 'pluis' ? 'rgba(255, 255, 248, 0.75)' : 'rgba(70, 66, 64, 0.55)';
+      ctx.fill();
+    }
+  }
+
+  // Over het hele scherm (schermmaat): de kleurwaas, een stofvlaag en de bliksem.
+  function tekenWaas(ctx, b, h, t) {
     if (waas) {
       ctx.fillStyle = `rgba(${waas[0]}, ${waas[1]}, ${waas[2]}, ${waas[3]})`;
       ctx.fillRect(0, 0, b, h);
     }
-    if (deeltjes === 'geen') return;
-    const rond = (v, m) => ((v % m) + m) % m;
-    if (deeltjes === 'mist') {
-      mistVlek = mistVlek || maakMistVlek();
-      for (let i = 0; i < 7; i++) {
-        const z = hash(i * 3.7 + 1);
-        const w = b * (0.55 + z * 0.4);
-        const x = rond(z * b * 1.6 + t * (6 + z * 6), b + w * 1.2) - w * 0.6;
-        const y = h * (0.12 + hash(i * 5.1 + 2) * 0.8) + Math.sin(t * 0.1 + i) * 8 - w * 0.25;
-        ctx.globalAlpha = 0.55 + 0.25 * Math.sin(t * 0.15 + i * 2);
-        ctx.drawImage(mistVlek, x - w / 2, y, w, w / 2);
-      }
-      ctx.globalAlpha = 1;
-      return;
-    }
     if (deeltjes === 'stof') {
-      ctx.fillStyle = 'rgba(224, 196, 140, 0.45)';
-      for (let i = 0; i < 46; i++) {
-        const z = hash(i * 7.3 + 4);
-        const x = rond(z * 3000 + t * (24 + z * 30), b + 40) - 20;
-        const y = rond(hash(i * 2.9) * h + Math.sin(t * 0.9 + i) * 10, h);
-        ctx.fillRect(x, y, 1.6 + z * 1.4, 1.2);
-      }
-      // Af en toe een zachte stofvlaag over de grond
       const vlaag = Math.max(0, Math.sin(t * 0.13));
       if (vlaag > 0.6) {
         ctx.fillStyle = `rgba(214, 180, 120, ${(vlaag - 0.6) * 0.25})`;
         ctx.fillRect(0, h * 0.55, b, h * 0.45);
       }
-      return;
     }
-    if (deeltjes === 'wind' || deeltjes === 'storm') {
-      const storm = deeltjes === 'storm';
-      const n = storm ? 120 : 24;
-      ctx.lineWidth = storm ? 1 : 1.1;
-      ctx.strokeStyle = storm ? 'rgba(190, 200, 220, 0.32)' : 'rgba(255, 255, 255, 0.30)';
-      ctx.beginPath();
-      for (let i = 0; i < n; i++) {
-        const z = hash(i * 4.1 + 9);
-        if (storm) {
-          // Regen die schuin naar links valt
-          const y = rond(z * 900 + t * (520 + z * 160), h + 40) - 20;
-          const x = rond(hash(i * 1.7) * b * 1.3 - y * 0.25, b + 20) - 10;
-          ctx.moveTo(x, y);
-          ctx.lineTo(x - 4, y + 14);
-        } else {
-          // Windstrepen die over het scherm schieten
-          const x = rond(z * 4000 + t * (260 + z * 140), b + 160) - 80;
-          const y = hash(i * 6.3) * h + Math.sin(t * 2 + i) * 4;
-          ctx.moveTo(x, y);
-          ctx.quadraticCurveTo(x + 22, y - 3, x + 44 + z * 30, y + 1);
-        }
+    if (deeltjes === 'storm') {
+      // Bliksem: ongeveer elke 17 seconden een korte, zachte flits
+      const fase = ((t % 17) + 17) % 17;
+      if (fase < 0.25) {
+        ctx.fillStyle = `rgba(220, 225, 255, ${0.16 * (1 - fase / 0.25)})`;
+        ctx.fillRect(0, 0, b, h);
       }
-      ctx.stroke();
-      if (!storm) {
-        ctx.fillStyle = 'rgba(150, 140, 70, 0.8)';
-        for (let i = 0; i < 8; i++) {
-          const z = hash(i * 9.7 + 3);
-          const x = rond(z * 2000 + t * (150 + z * 60), b + 40) - 20;
-          const y = hash(i * 3.3) * h + Math.sin(t * 3 + i) * 12;
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate(t * 4 + i);
-          ctx.fillRect(-2, -1, 4, 2);
-          ctx.restore();
-        }
-      } else {
-        // Bliksem: ongeveer elke 17 seconden een korte, zachte flits
-        const fase = rond(t, 17);
-        if (fase < 0.25) {
-          ctx.fillStyle = `rgba(220, 225, 255, ${0.16 * (1 - fase / 0.25)})`;
-          ctx.fillRect(0, 0, b, h);
-        }
-      }
-      return;
     }
-    // Vallende of zwevende deeltjes: as, pluis, sneeuw
-    const sneeuw = deeltjes === 'sneeuw';
-    const pluis = deeltjes === 'pluis';
-    const n = sneeuw ? 110 : pluis ? 22 : 60;
-    ctx.fillStyle = sneeuw ? 'rgba(255, 255, 255, 0.85)' : pluis ? 'rgba(255, 255, 248, 0.75)' : 'rgba(70, 66, 64, 0.55)';
-    ctx.beginPath();
-    for (let i = 0; i < n; i++) {
-      const z = hash(i * 5.7 + 2);
-      const val = sneeuw ? 34 + z * 30 : pluis ? 5 + z * 5 : 12 + z * 10;
-      const y = rond(z * 1700 + t * val * (pluis ? (i % 2 ? 1 : -1) : 1), h + 20) - 10;
-      const x = rond(hash(i * 2.3) * b + t * (sneeuw ? 14 : 8) + Math.sin(t * (0.6 + z) + i) * (pluis ? 18 : 10), b + 20) - 10;
-      const r = sneeuw ? 0.9 + z * 1.5 : pluis ? 1.2 : 0.8 + z * 0.9;
-      ctx.moveTo(x + r, y);
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-    }
-    ctx.fill();
   }
 
-  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenWimpel, tekenHamer, tekenWeer };
+  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenWimpel, tekenHamer, tekenWeer, tekenWaas };
 }
