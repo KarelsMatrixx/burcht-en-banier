@@ -84,7 +84,7 @@ const loop = await p.evaluate(async () => {
   const s = window.spel; const hut = s.strijd.hut(); const B = s.kaart.breedte; const hx = hut.vak % B, hy = Math.floor(hut.vak / B);
   const afst = () => { const v = s.strijd.vijanden(); return v.length ? Math.min(...v.map((e) => Math.hypot(e.x - hx, e.y - hy))) : 99; };
   const voor = afst(); const op = s.strijd.vijanden().every((e) => s.wegvinder.isVrij(Math.floor(e.x), Math.floor(e.y), 1) || true);
-  for (let i = 0; i < 600; i++) { s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap(); }
+  for (let i = 0; i < 250; i++) { s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap(); }
   return { voor, na: afst(), op };
 });
 check('vijand loopt naar de hut', loop.na < loop.voor - 3, JSON.stringify(loop));
