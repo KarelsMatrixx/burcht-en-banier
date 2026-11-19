@@ -983,3 +983,9 @@ Naar aanleiding van Karels feedback (17 november 2026).
 
 - `doel.versterking.aantal` van 80 naar 120 (data/campagne.json). Ze lopen nog steeds in groepjes van 5 binnen, nu ongeveer 40 s lang. Gesina's tekst en de melding noemen het getal zelf.
 - Lost het open punt van 0.77.9 op: in versterking71 wint de speler het kamp van 60 nu met ongeveer 40 wevers over (eerder 120 wevers: 56 over; 80 wevers: meestal verloren). Test: 42 controles groen. NIET op de iPhone gespeeld.
+
+## 0.77.11: level 4: golven van 12, 20 en 25 man (Karels wens van 19 november)
+
+- Golven van Brandt (`doel.golven` in data/campagne.json): begin 12, erbij 8, max 25, laatste 25. Dus 12, 20 en 25 man op 240, 360 en 480 s. Test golven77 (5 controles) groen, hut70 groen.
+- `MAX_VIJANDEN` in strijd.js van 110 naar 130 (kamp 60 plus overgebleven golven van 12, 20 en 25).
+- NIET gemeten met de bot en NIET op de iPhone gespeeld. Mijn zuinige bot verloor al tegen 8 man op 240 s; dit is drie keer zo zwaar voor wie weinig soldaten heeft. De winnende opstelling hangt van jouw economie en muren af. Mijn schatting is dat een speler zonder kazerne en muren dit niet haalt.

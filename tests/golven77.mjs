@@ -1,4 +1,4 @@
-// Level 4 (0.77.9): golven van 8, 12 en een laatste van 20 man, en 60 soldaten in het kamp.
+// Level 4 (0.77.9): golven van 12, 20 en 25 man, en 60 soldaten in het kamp.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
 import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
@@ -31,9 +31,9 @@ for (const t of [240.5, 360.5, 480.5]) {
 const tel = await p.evaluate(() => window.__golven);
 console.log('golven', JSON.stringify(tel));
 check('drie golven', tel.length === 3, JSON.stringify(tel));
-check('golf 1 is 8 man', tel[0] === 8, tel[0]);
-check('golf 2 is 12 man', tel[1] === 12, tel[1]);
-check('laatste golf is 20 man', tel[2] === 20, tel[2]);
+check('golf 1 is 12 man', tel[0] === 12, tel[0]);
+check('golf 2 is 20 man', tel[1] === 20, tel[1]);
+check('laatste golf is 25 man', tel[2] === 25, tel[2]);
 console.log(`golven77: ${ok} ok, ${fout} fout`);
 await b.close(); srv.kill();
 process.exit(fout ? 1 : 0);

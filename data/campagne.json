@@ -459,10 +459,10 @@
     "golven": {
      "eerste": 240,
      "tussen": 120,
-     "begin": 8,
-     "erbij": 4,
-     "max": 12,
-     "laatste": 20,
+     "begin": 12,
+     "erbij": 8,
+     "max": 25,
+     "laatste": 25,
      "leger": {
       "sluipmoordenaar": 2,
       "boogschutter": 2,
