@@ -18,7 +18,7 @@ const g = await p.evaluate(() => { const s = window.spel; const t = s.kaart.star
   const dichtbij = s.bouwer.waaromNiet ? null : 'n.v.t.';
   return { t, regels: s.regels.bouwStraal, golven: s.missies.campagne[4].doel.golven }; });
 check('bouwStraal 14 geladen', g.regels === 14, JSON.stringify(g));
-check('golven zachter', g.golven.eerste === 150 && g.golven.begin === 3 && g.golven.max === 8, JSON.stringify(g.golven));
+check('golven zachter', g.golven.eerste === 240 && g.golven.begin === 2 && g.golven.max === 3, JSON.stringify(g.golven));
 // Bouwen: binnen en buiten de straal
 const r = await p.evaluate(() => { const s = window.spel; const t = s.kaart.start[0]; s.economie.voorraad.steen = 500; s.economie.voorraad.hout = 500;
   const vrij = (x, y) => s.kaart.object[y * s.kaart.breedte + x] === 0 && s.kaart.grond[y * s.kaart.breedte + x] !== 3;

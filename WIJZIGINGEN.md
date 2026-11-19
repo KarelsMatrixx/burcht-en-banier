@@ -936,3 +936,12 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Bij heropenen van het spel verschijnt het wachtscherm niet nog eens voor hetzelfde level (localStorage `burcht-banier.beeldGezien`); kies je een level op de kaart, dan komt het wel.
 - Tests: tests/hulp_beeld.mjs (`autoVerder`) tikt de knop automatisch; toegevoegd aan de tests die het beeld passeren. beeld59 aangepast (14 controles groen). hut36 faalt op "briefing door Gesina", ook zonder deze wijziging.
 - NIET op de iPhone gezien: de plek van de knop boven het blauwe lint, ook in de gedraaide stand.
+
+## 0.77.5: level 4 (The Fen) later en rustiger, zodat je tijd hebt om voor te bereiden (Karels feedback van 19 november)
+
+- Probleem: de eerste aanval kwam al na 150 s, terwijl je maar 1 soldaat, 30 goud en 4 boeren hebt. Gemeten met een bot die zuinig speelt (kazerne, daarna boogschutters en ridders zodra er goud is, alles naar de hut): hij had op 150 s 6 tot 8 soldaten en verloor rond 320 s, omdat golf 3 (5 man met 2 sluipmoordenaars) zijn hele leger in ongeveer 12 s wegveegde.
+- Nu (data/campagne.json, level 4, `doel.golven`): eerste golf na 240 s (was 150), 90 s tussen golven (was 70), begin 2 man (was 3), 1 erbij per golf, hooguit 3 (was 8). Dat zijn drie golven: 2, 3 en 3 man (op 240, 330 en 420 s).
+- Gemeten met dezelfde bot (belasting Geen, Low en High, versneld 8x): alle drie de keren de 8 minuten gehaald, hut op 879 tot 896 van 900. Daarvoor testte ik 3 en 4 golven van 2 tot 6 man: bij golven van 4 of meer man verloor de bot.
+- Tests aangepast: hut70 (klok 3:5x of 4:00, "Wave 1 of 3", 29 controles groen), bouwstraal38 (nieuwe golfwaarden).
+- Aannames, NIET op de iPhone gespeeld: de bot is een ondergrens (geen huizen, geen eigen economie), een echte speler met meer boeren heeft meer soldaten. Of drie golven nog spannend genoeg zijn moet Karel beoordelen; dit is eenvoudig op te schroeven via `max` en `erbij`.
+- Niet aangepast, wel opgemerkt: het garnizoen van het tentenkamp (`rood.garnizoen`, 40 soldaten) stond bij mijn meting op 0 vijanden aan het begin van het level. Nog uitzoeken of dat zo hoort.

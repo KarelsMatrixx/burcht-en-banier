@@ -457,11 +457,11 @@
     "duur": 480,
     "leven": 900,
     "golven": {
-     "eerste": 150,
-     "tussen": 70,
-     "begin": 3,
+     "eerste": 240,
+     "tussen": 90,
+     "begin": 2,
      "erbij": 1,
-     "max": 8,
+     "max": 3,
      "leger": {
       "sluipmoordenaar": 2,
       "boogschutter": 2,

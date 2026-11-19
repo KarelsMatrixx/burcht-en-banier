@@ -57,7 +57,7 @@ check('klok zichtbaar', klok && !klok.hidden, JSON.stringify(klok));
 check('klok linksboven', klok && klok.x < 40 && klok.y < 140 && klok.x + klok.b < 100, JSON.stringify(klok));
 const adv = await el('#adviseur');
 check('klok onder de adviseur', klok && adv && klok.y >= adv.y + adv.h - 2, JSON.stringify([klok, adv]));
-check('klok toont tijd en golf', /Next attack/.test(klok.tekst) && /2:[23]\d/.test(klok.tekst) && /Wave 1 of 5/.test(klok.tekst), klok && klok.tekst);
+check('klok toont tijd en golf', /Next attack/.test(klok.tekst) && /3:[56]\d|4:00/.test(klok.tekst) && /Wave 1 of 3/.test(klok.tekst), klok && klok.tekst);
 const taak = await el('#taak');
 check('tijd van de hut blijft zichtbaar', taak && !taak.hidden && /Hold Gesina's hut: \d:\d\d left/.test(taak.tekst), JSON.stringify(taak));
 const t1 = await p.textContent('#aanvalklok-tijd');
@@ -67,18 +67,18 @@ const sec = (t) => { const [m, s] = t.split(':').map(Number); return m * 60 + s;
 check('klok loopt terug', sec(t2) < sec(t1), `${t1} -> ${t2}`);
 check('niet rood aan het begin', !(await p.evaluate(() => document.querySelector('#aanvalklok').classList.contains('dichtbij'))));
 // Vlak voor de golf: rode klok
-await p.evaluate(() => window.spel.doel.zetTijd(140));
+await p.evaluate(() => window.spel.doel.zetTijd(230));
 await p.waitForTimeout(900);
 check('klok wordt rood vlak voor de golf', await p.evaluate(() => document.querySelector('#aanvalklok').classList.contains('dichtbij')));
 // De golf komt, de klok springt naar de volgende
-await p.evaluate(() => window.spel.doel.zetTijd(149.2));
+await p.evaluate(() => window.spel.doel.zetTijd(239.2));
 await p.waitForFunction(() => window.spel.doel.stand().golven >= 1, null, { timeout: 5000 }).catch(() => {});
 await p.waitForTimeout(800);
 const na = await el('#aanvalklok');
-check('na de golf: ongeveer 70 s en golf 2', /1:[01]\d/.test(na.tekst) && /Wave 2 of 5/.test(na.tekst), na.tekst);
+check('na de golf: ongeveer 90 s en golf 2', /1:[23]\d/.test(na.tekst) && /Wave 2 of 3/.test(na.tekst), na.tekst);
 check('na de golf niet meer rood', !(await p.evaluate(() => document.querySelector('#aanvalklok').classList.contains('dichtbij'))));
 const vijanden = await p.evaluate(() => window.spel.strijd.vijanden().length);
-check('golf is gekomen', vijanden >= 3, vijanden);
+check('golf is gekomen', vijanden >= 2, vijanden);
 // De vijand staat op vrije grond en komt dichter bij de hut
 const loop = await p.evaluate(async () => {
   const s = window.spel; const hut = s.strijd.hut(); const B = s.kaart.breedte; const hx = hut.vak % B, hy = Math.floor(hut.vak / B);
@@ -107,7 +107,7 @@ await p.waitForTimeout(500);
 // Opnieuw: klok terug op het begin
 await p.tap('#einde-opnieuw').catch(() => {}); await p.waitForTimeout(1200);
 const opn = await el('#aanvalklok');
-check('opnieuw: klok terug', opn && !opn.hidden && /2:[23]\d/.test(opn.tekst) && /Wave 1 of 5/.test(opn.tekst), JSON.stringify(opn));
+check('opnieuw: klok terug', opn && !opn.hidden && /3:[56]\d|4:00/.test(opn.tekst) && /Wave 1 of 3/.test(opn.tekst), JSON.stringify(opn));
 check('geen scriptfouten', fouten.length === 0, fouten.join('|'));
 console.log('ok', ok, 'fout', fout);
 await b.close(); srv.kill();
