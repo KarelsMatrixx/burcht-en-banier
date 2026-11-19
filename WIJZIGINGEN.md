@@ -978,3 +978,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Tests: nieuw golven77 (5 controles: 60 in het kamp, golven 8, 12 en 20), versterking71 aangepast aan 60 (42 groen), hut70 groen. In de test van het kamp innemen houdt de speler met alle 80 wevers nog ongeveer 11 over (was 39 tot 43 bij 40 kampsoldaten), dus het kamp is nu aanzienlijk zwaarder. NIET op de iPhone gespeeld.
 - Open punt 0.77.9 (balans, NIET opgelost): met 60 kampsoldaten verliezen de 80 vlammenwevers in versterking71 ("het level is te winnen met de wevers" faalt, 3 van 4 runs; één run won met 11 wevers over). Een proef met 120 wevers won schoon (56 over). De test stuurt alle wevers als één blok en gebruikt geen eigen soldaten, dus een speler die slimmer speelt doet het beter. Keuze aan Karel: 120 wevers (`doel.versterking.aantal`), of minder kampsoldaten (`rood.garnizoen`), of laten zoals het is.
 - versterking71: de controle "ieder op een eigen tegel" van het garnizoen is losgelaten naar "minstens 55 van 60", omdat een enkeling al loopt als de test meet.
+
+## 0.77.10: level 4: 120 vlammenwevers (Karels keuze van 19 november)
+
+- `doel.versterking.aantal` van 80 naar 120 (data/campagne.json). Ze lopen nog steeds in groepjes van 5 binnen, nu ongeveer 40 s lang. Gesina's tekst en de melding noemen het getal zelf.
+- Lost het open punt van 0.77.9 op: in versterking71 wint de speler het kamp van 60 nu met ongeveer 40 wevers over (eerder 120 wevers: 56 over; 80 wevers: meestal verloren). Test: 42 controles groen. NIET op de iPhone gespeeld.

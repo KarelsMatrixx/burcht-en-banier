@@ -1,5 +1,5 @@
 // Level 4 The Fen (0.71.0, nu 60 soldaten): 40 soldaten in het tentenkamp (de helft ninja's), en na de acht minuten komen
-// 80 vlammenwevers uit de linkerbovenhoek die van jou zijn. Je wint door de rode heer te verslaan.
+// 120 vlammenwevers uit de linkerbovenhoek die van jou zijn. Je wint door de rode heer te verslaan.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
 import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
@@ -91,16 +91,16 @@ check('de hut hoeft niet meer te staan', na0.hut === null, JSON.stringify(na0.hu
 check('nieuwe opdracht in beeld', /Defeat Huntmaster Brandt/.test(na0.taak), na0.taak);
 check('aanvalsklok is weg', na0.klokWeg);
 check('camera kijkt naar de linkerbovenhoek', na0.cam[0] < -200 && na0.cam[0] > -1200 && na0.cam[1] < 900, JSON.stringify(na0.cam));
-// Ze komen aanlopen: eerst een paar aan de rand van de kaart, die naar binnen lopen, en pas na een tijd alle 80.
+// Ze komen aanlopen: eerst een paar aan de rand van de kaart, die naar binnen lopen, en pas na een tijd alle 120.
 const eerst = await p.evaluate(() => { const w = window.spel.leger.soldaten().filter((e) => e.soldaat.sleutel === 'vlammenwever'); return { n: w.length, xMax: Math.max(...w.map((e) => e.x)), lopend: w.filter((e) => e.pad && e.pad.length).length }; });
 console.log('eerste groepje', JSON.stringify(eerst));
-check('eerst maar een groepje, niet alle 80 in een keer', eerst.n > 0 && eerst.n <= 10, JSON.stringify(eerst));
+check('eerst maar een groepje, niet alle 120 in een keer', eerst.n > 0 && eerst.n <= 10, JSON.stringify(eerst));
 check('ze staan aan de rand van de kaart', eerst.xMax < 4, JSON.stringify(eerst));
 check('en ze lopen naar binnen', eerst.lopend >= 1, JSON.stringify(eerst));
 await p.evaluate(() => window.ga(8));
-check('na 8 s nog niet allemaal', (await wevers()) < 80, await wevers());
+check('na 8 s nog niet allemaal', (await wevers()) < 120, await wevers());
 await p.evaluate(() => window.ga(40));
-check('80 vlammenwevers erbij', (await wevers()) === 80, await wevers());
+check('120 vlammenwevers erbij', (await wevers()) === 120, await wevers());
 await p.evaluate(() => window.ga(30));   // laat ze eerst op hun plek aankomen
 const pos = await p.evaluate(() => {
   const s = window.spel; const w = s.leger.soldaten().filter((e) => e.soldaat.sleutel === 'vlammenwever');
@@ -112,9 +112,9 @@ const pos = await p.evaluate(() => {
 console.log('wevers', JSON.stringify(pos));
 check('de wevers zijn van jou', pos.team === true);
 check('ze staan verzameld links op de kaart', pos.boven && pos.x[1] < 24 && pos.y[0] > 5 && pos.y[1] < 40, JSON.stringify(pos));
-check('ieder op een eigen tegel', pos.uniek === 80, pos.uniek);
+check('ieder op een eigen tegel', pos.uniek === 120, pos.uniek);
 const bestuur = await p.evaluate(() => { const s = window.spel; s.leger.kiesAlles(); return { gekozen: s.leger.aantalGekozen() }; });
-check('je kunt ze allemaal kiezen', bestuur.gekozen >= 80, bestuur.gekozen);
+check('je kunt ze allemaal kiezen', bestuur.gekozen >= 120, bestuur.gekozen);
 await p.screenshot({ path: '/tmp/s/v71_komen.png' });
 
 // Herladen midden in de tweede fase: de wevers en het garnizoen blijven, er komen er geen bij
@@ -124,11 +124,11 @@ await p.reload(); await wacht(); await p.waitForTimeout(800); await installeer()
 const her = await p.evaluate(() => { const s = window.spel; return { fase: s.doel.fase(), wevers: s.leger.soldaten().filter((e) => e.soldaat.sleutel === 'vlammenwever').length, garnizoen: s.strijd.garnizoen().length, hut: s.strijd.hut() }; });
 console.log('herladen', JSON.stringify(her));
 check('herladen: nog in fase 2', her.fase === 1, JSON.stringify(her));
-check('herladen: de 80 wevers zijn er nog', her.wevers === 80, her.wevers);
+check('herladen: de 120 wevers zijn er nog', her.wevers === 120, her.wevers);
 check('herladen: het garnizoen is er nog', her.garnizoen === 60, her.garnizoen);
 check('herladen: de hut telt niet meer', her.hut === null);
 await p.evaluate(() => window.ga(8));
-check('herladen: er komen er geen bij', (await wevers()) === 80, await wevers());
+check('herladen: er komen er geen bij', (await wevers()) === 120, await wevers());
 
 // --- Het kamp innemen ---
 await p.evaluate(() => {
