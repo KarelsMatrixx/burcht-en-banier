@@ -465,11 +465,7 @@
      "leger": {
       "sluipmoordenaar": 2,
       "boogschutter": 2,
-      "ridder": 1,
-      "vlammenwever": {
-       "aandeel": 1,
-       "vanaf": 2
-      }
+      "ridder": 1
      }
     },
     "versterking": {

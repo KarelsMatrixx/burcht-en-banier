@@ -953,3 +953,9 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Gemeten met de bot (versneld 8x): belasting Geen en Low halen de 10 minuten met de hut op 897 en 899 van 900. Belasting High verloor een keer: zijn leger sneuvelde in golf 2 en met hoge belasting kreeg hij geen goud meer voor nieuwe soldaten. Dat is een eigenschap van de bot, geen bewijs dat het level te zwaar is; een speler koopt wel nieuwe soldaten.
 - Tests: hut70 (29 controles, 4 minuten naar 10), hut36 (tijd om op 599 s). NIET op de iPhone gespeeld.
 - Nog te doen in de projectdocs: campagne-verhaal.md noemt nog "8 minuten" als voorstel.
+
+## 0.77.7: level 4: de vijand komt niet meer met vlammenwevers (Karels wens van 19 november)
+
+- De golven van Brandt (`doel.golven.leger` in data/campagne.json) bestaan alleen nog uit sluipmoordenaars, boogschutters en ridders. De vlammenwever die vanaf de derde golf meekwam is eruit.
+- Het garnizoen en `rood.leger` van level 4 hadden al geen vlammenwevers. De 80 vlammenwevers na het ritueel blijven van jou.
+- Gecontroleerd: hut70 (29 controles). Niet opnieuw gemeten met de bot; zonder vlammenwever wordt de derde golf zwakker.
