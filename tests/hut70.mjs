@@ -75,7 +75,7 @@ await p.evaluate(() => window.spel.doel.zetTijd(239.2));
 await p.waitForFunction(() => window.spel.doel.stand().golven >= 1, null, { timeout: 5000 }).catch(() => {});
 await p.waitForTimeout(800);
 const na = await el('#aanvalklok');
-check('na de golf: ongeveer 90 s en golf 2', /1:[23]\d/.test(na.tekst) && /Wave 2 of 3/.test(na.tekst), na.tekst);
+check('na de golf: ongeveer 2:00 en golf 2', /1:[5]\d|2:00/.test(na.tekst) && /Wave 2 of 3/.test(na.tekst), na.tekst);
 check('na de golf niet meer rood', !(await p.evaluate(() => document.querySelector('#aanvalklok').classList.contains('dichtbij'))));
 const vijanden = await p.evaluate(() => window.spel.strijd.vijanden().length);
 check('golf is gekomen', vijanden >= 2, vijanden);
@@ -89,7 +89,7 @@ const loop = await p.evaluate(async () => {
 });
 check('vijand loopt naar de hut', loop.na < loop.voor - 3, JSON.stringify(loop));
 // Geen nieuwe golven in de laatste 15 s: klok weg, hut-tijd blijft
-await p.evaluate(() => window.spel.doel.zetTijd(470));
+await p.evaluate(() => window.spel.doel.zetTijd(590));
 await p.waitForTimeout(900);
 const laat = await el('#aanvalklok');
 check('laatste 15 s: klok weg', laat.hidden, JSON.stringify(laat));
@@ -97,7 +97,7 @@ const taak2 = await el('#taak');
 check('laatste 15 s: hut-tijd er nog', taak2 && !taak2.hidden, JSON.stringify(taak2));
 await p.screenshot({ path: '/tmp/s/hut70_laat.png' });
 // Tijd om (0.71.0): niet meteen winst, maar het Stille Volk komt. Klok weg.
-await p.evaluate(() => window.spel.doel.zetTijd(479));
+await p.evaluate(() => window.spel.doel.zetTijd(599));
 await p.waitForFunction(() => window.spel.doel.fase() === 1, null, { timeout: 6000 }).catch(() => {});
 check('tijd om: tweede fase, nog niet gewonnen', (await p.evaluate(() => window.spel.doel.fase() === 1 && window.spel.strijd.uitslag() === null)));
 check('klok weg na het ritueel', (await el('#aanvalklok')).hidden);

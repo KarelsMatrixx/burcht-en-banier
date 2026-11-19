@@ -945,3 +945,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Tests aangepast: hut70 (klok 3:5x of 4:00, "Wave 1 of 3", 29 controles groen), bouwstraal38 (nieuwe golfwaarden).
 - Aannames, NIET op de iPhone gespeeld: de bot is een ondergrens (geen huizen, geen eigen economie), een echte speler met meer boeren heeft meer soldaten. Of drie golven nog spannend genoeg zijn moet Karel beoordelen; dit is eenvoudig op te schroeven via `max` en `erbij`.
 - Niet aangepast, wel opgemerkt: het garnizoen van het tentenkamp (`rood.garnizoen`, 40 soldaten) stond bij mijn meting op 0 vijanden aan het begin van het level. Nog uitzoeken of dat zo hoort.
+
+## 0.77.6: level 4 duurt 10 minuten (Karels wens van 19 november)
+
+- Hut houden: 600 s (was 480 s; `doel.duur` in data/campagne.json). De intro zegt nu "ten minutes"; de melding van Gesina rekent het zelf uit.
+- Met 600 s en 90 s tussen golven kwam er een vierde golf bij (op 510 s). Dat brak mijn zuinige testbot twee van de drie keer bijna (hut op 365 en 240 van 900). Daarom nu 120 s tussen golven: nog steeds drie golven van 2, 3 en 3 man, op 240, 360 en 480 s, en daarna 2 minuten zonder nieuwe golf.
+- Gemeten met de bot (versneld 8x): belasting Geen en Low halen de 10 minuten met de hut op 897 en 899 van 900. Belasting High verloor een keer: zijn leger sneuvelde in golf 2 en met hoge belasting kreeg hij geen goud meer voor nieuwe soldaten. Dat is een eigenschap van de bot, geen bewijs dat het level te zwaar is; een speler koopt wel nieuwe soldaten.
+- Tests: hut70 (29 controles, 4 minuten naar 10), hut36 (tijd om op 599 s). NIET op de iPhone gespeeld.
+- Nog te doen in de projectdocs: campagne-verhaal.md noemt nog "8 minuten" als voorstel.
