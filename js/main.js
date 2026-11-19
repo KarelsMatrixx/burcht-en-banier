@@ -873,6 +873,8 @@ async function start() {
   let geenTitel = false;
   try { geenTitel = window.sessionStorage.getItem(GEEN_TITEL) === '1'; window.sessionStorage.removeItem(GEEN_TITEL); } catch (fout) { /* geen geheugen: dan toon je het gewoon */ }
   if (!geenTitel) toonTitel();
+  // De afdekking van het laden weg (index.html): het beginscherm of het spel staat er nu.
+  { const laden = document.getElementById('laden'); if (laden) { laden.classList.add('weg'); setTimeout(() => laden.remove(), 400); } }
   ui.opMenuKeuze(kiesModus);
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.

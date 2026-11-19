@@ -16,6 +16,7 @@
   <link rel="icon" type="image/png" href="icons/icon-192.png">
 
   <link rel="stylesheet" href="css/stijl.css">
+  <link rel="preload" as="image" href="beelden/startscherm.webp">
 
   <script>
     // Schermmaat (0.65.2). Op een iPhone, vooral bij het opstarten als app van het beginscherm, klopt de hoogte
@@ -119,6 +120,9 @@
   </script>
 </head>
 <body>
+  <!-- Dekt het scherm af tot het spel klaar is, zodat je niet eerst de knoppen op een leeg veld ziet (0.77.1).
+       Dezelfde achtergrond als het beginscherm; main.js haalt hem weg zodra het beginscherm of het spel er staat. -->
+  <div id="laden" aria-hidden="true"><img src="beelden/startscherm.webp" alt=""></div>
   <canvas id="spel"></canvas>
 
   <div id="hud">
@@ -338,6 +342,10 @@
   <div id="draai">Turn your phone sideways.<br>Aldervale is played in landscape.</div>
   <pre id="fout" hidden></pre>
 
+  <script>
+    // Vangnet: blijft het laden hangen, dan verdwijnt de afdekking na 20 seconden toch.
+    setTimeout(function () { var l = document.getElementById('laden'); if (l) l.remove(); }, 20000);
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -68,6 +68,16 @@ if (c0) {
 } else check('camera bereikbaar via window.spel', false);
 await ctx.close();
 
+// 2b. tijdens het laden is het spel afgedekt (0.77.2), daarna weg
+({ ctx, p } = await nieuw({ width: 390, height: 844 }));
+await p.route('**/js/assets.js', async (r) => { await new Promise((x) => setTimeout(x, 2500)); r.continue(); });
+await p.goto('http://localhost:8331/', { waitUntil: 'commit' }); await p.waitForTimeout(1200);
+const dek = await p.evaluate(() => { const a = document.getElementById('adviseur').getBoundingClientRect(); const e = document.elementFromPoint(a.x + a.width / 2, a.y + a.height / 2); return { laden: !!document.getElementById('laden'), boven: e && (e.id === 'laden' || (e.parentElement && e.parentElement.id === 'laden')) }; });
+check('tijdens het laden dekt #laden de knoppen af', dek.laden && dek.boven, JSON.stringify(dek));
+await p.waitForTimeout(5000);
+check('na het laden is #laden weg', await p.evaluate(() => !document.getElementById('laden')));
+await ctx.close();
+
 // 3. omdraaien van de telefoon: staand naar liggend naar staand
 ({ ctx, p } = await nieuw({ width: 390, height: 844 }));
 await p.goto('http://localhost:8331/'); await p.waitForTimeout(1200);

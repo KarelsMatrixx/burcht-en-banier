@@ -621,6 +621,11 @@ body:has(#handelpaneel:not([hidden])) #legerhint { display: none !important; }
   overflow: hidden;
 }
 #titelscherm[hidden] { display: none; }
+/* Afdekking tijdens het laden (0.77.1): zelfde schilderij als het beginscherm, daarna vervaagt hij. */
+#laden { position: fixed; inset: 0; z-index: 90; background: #14130f; transition: opacity 0.3s; }
+#laden img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 85% 50%; }
+#laden::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8, 10, 7, 0.82) 0%, rgba(8, 10, 7, 0.55) 26%, rgba(8, 10, 7, 0) 54%); }
+#laden.weg { opacity: 0; pointer-events: none; }
 /* Het schilderij vult het hele scherm; de rechterkant (het kasteel) blijft het langst in beeld. */
 #titel-beeld {
   position: absolute;

@@ -916,3 +916,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Bij "Hold" gaan alle poorten van de burcht op slot (proloog.js `sluitAllePoorten`, ook na herladen in het beleg). Rood heeft dan geen route, loopt niet meer om naar een andere poort maar slaat op de oostmuur en de poort. Bij het verraad gaan alle poorten open. Gemeten: rood bleef tijdens het beleg minstens 18,5 tegel oostelijk van de burcht.
 - Lijfwacht van Karel: blijft stilstaan en slaat alleen wie binnen zijn bereik komt, tot Karel zelf een rode soldaat aanvalt; dan gaat de hele lijfwacht los en vecht vrij (strijd.js `lijfwachtLos`).
 - Tests: proloog77 (tik op de soldaat voor het oog), proloog43 (poorten op slot, rood blijft oost, lijfwacht los), proloog70, proloog35, proloog40 groen.
+
+## 0.77.2: geen leeg veld met knoppen meer vóór het beginscherm
+
+- Probleem (Karels screenshot, 19 november): bij het opstarten stonden eerst alleen de knoppen (adviseur, hamer, zwaard, tandwiel) op een donker veld, en pas daarna kwam het beginscherm. De knoppen staan al in index.html; het beginscherm komt pas als main.js klaar is met laden.
+- Nu: `#laden` in index.html dekt alles af met hetzelfde schilderij en dezelfde donkere rand als het beginscherm (css/stijl.css). main.js laat hem vervagen en haalt hem weg direct na `toonTitel()` (of meteen als het spel zonder beginscherm start). Vangnet: na 20 s verdwijnt hij hoe dan ook; een foutmelding (`#fout`) ligt erboven. Het schilderij wordt vooraf geladen (`<link rel="preload">`).
+- Test: tests/gedraaid77.mjs controleert dat `#laden` tijdens het laden de knoppen afdekt en daarna weg is (21 controles). schermmaat48, hud35 en proloog35 groen.
+- NIET op de iPhone gezien: Karel, kijk of het opstarten nu direct het schilderij toont.
