@@ -106,7 +106,7 @@ check('lijfwacht: blijft bij de posten (hooguit 3 man ver weg)', lw2.ver <= 3, J
 await p.evaluate(() => { const k = window.spel.strijd.koning(0); k.leven = Math.ceil(k.levenMax / 2); });
 await p.waitForTimeout(1500);
 check('Karel op de helft: de ontvoering begint', (await st()).fase === 'ontvoering', JSON.stringify({ fase: (await st()).fase }));
-// 0.76.7: eerst het gesprek (kaartjes), de ruiter pas daarna
+// 0.77.0: eerst het gesprek (kaartjes), de ruiter pas daarna
 check('eerst het gesprek: kaartje open, nog geen ruiter', await p.isVisible('#gids-kaart') && !(await p.evaluate(() => window.spel.strijd.effecten.some((f) => f.soort === 'ruiter'))));
 const regels = [];
 while (await p.isVisible('#gids-kaart')) { regels.push((await p.textContent('#gids-kaart')).slice(0, 30)); await p.tap('#gids-kaart button'); await p.waitForTimeout(300); }

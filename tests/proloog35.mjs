@@ -89,7 +89,7 @@ await kaartTik(); await kaartTik(); await totTaak(6);
 check('taak 7: belasting', (await st()).taak === 6 && /purse|people/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
 await p.tap('#knop-buidel'); await p.waitForTimeout(500);
 check('gids wijst een belastingknop aan', /tax level/i.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
-// 0.76.7: alleen de omcirkelde stand telt; de andere knoppen zijn dicht
+// 0.77.0: alleen de omcirkelde stand telt; de andere knoppen zijn dicht
 const bel = await p.evaluate(() => { const ks = [...document.querySelectorAll('#volk-belasting button')]; const open = ks.filter((k) => !k.classList.contains('tut-dicht')); return { n: ks.length, open: open.length, doelNietActief: open.length === 1 && !open[0].classList.contains('actief') }; });
 check('belasting: alleen de omcirkelde knop open', bel.open === 1 && bel.doelNietActief, JSON.stringify(bel));
 await p.evaluate(() => { const k = [...document.querySelectorAll('#volk-belasting button')].find((x) => x.classList.contains('tut-dicht')); k.click(); });
@@ -212,7 +212,7 @@ check('nog steeds geen uitslag', (await p.evaluate(() => window.spel.strijd.uits
 // Burcht onder 40%: de scène
 await p.evaluate(() => { const b = window.spel.strijd.burcht(); window.spel.strijd.zetBurcht(Math.floor(b.max * 0.35)); });
 await p.waitForFunction(() => window.spel.proloog.stand().fase === 'ontvoering', null, { timeout: 5000 }).catch(() => {});
-// 0.76.7: eerst vier gesprekskaartjes, dan de ruiter
+// 0.77.0: eerst vier gesprekskaartjes, dan de ruiter
 await p.waitForTimeout(500);   // de gids kijkt elke 150 ms of hij bedekt is
 let voorRit = 0;
 while (await p.isVisible('#gids-kaart') && voorRit < 8) { voorRit++; await p.tap('#gids-kaart button'); await p.waitForTimeout(300); }

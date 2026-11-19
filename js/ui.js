@@ -2,6 +2,7 @@
 
 import { CONFIG } from './config.js';
 import { maakVlaggen } from './vlaggen.js';
+import { naarSpel } from './scherm.js';
 
 const komma = (getal) => getal.toFixed(1).replace('.', ',');
 
@@ -169,13 +170,15 @@ export function maakUi() {
     let start = null;
     let geveegd = false;
     doos.addEventListener('pointerdown', (e) => {
-      start = { x: e.clientX, y: e.clientY, links: doos.scrollLeft, boven: doos.scrollTop, id: e.pointerId };
+      const v = naarSpel(e.clientX, e.clientY);
+      start = { x: v.x, y: v.y, links: doos.scrollLeft, boven: doos.scrollTop, id: e.pointerId };
       geveegd = false;
     });
     doos.addEventListener('pointermove', (e) => {
       if (!start || e.pointerId !== start.id) return;
-      const dx = e.clientX - start.x;
-      const dy = e.clientY - start.y;
+      const v = naarSpel(e.clientX, e.clientY);
+      const dx = v.x - start.x;
+      const dy = v.y - start.y;
       if (!geveegd && Math.abs(as === 'x' ? dx : dy) > 8) {
         geveegd = true;
         try { doos.setPointerCapture(e.pointerId); } catch (fout) { /* niet erg */ }

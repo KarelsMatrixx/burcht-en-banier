@@ -25,6 +25,9 @@
     (function () {
       var root = document.documentElement;
       var laatste = '';
+      // Draait het spel ingesloten in een andere pagina (een voorbeeld), dan blijft het zoals het is.
+      var ingesloten = false;
+      try { ingesloten = window.self !== window.top; } catch (fout) { ingesloten = true; }
       function meet() {
         var w = window.innerWidth, h = window.innerHeight;
         var vv = window.visualViewport;
@@ -38,16 +41,43 @@
           // Alleen als de gemeten maat in dezelfde stand zit: anders wacht hij op de draai.
           if (liggend) { w = lang; h = kort; } else { w = kort; h = lang; }
         }
-        var sleutel = w + 'x' + h;
+        // Staand (0.77.0): een iPhone laat een webapp niet vastzetten in liggende stand, dus draaien
+        // we het spel zelf 90 graden. De opmaak rekent dan in de liggende maat (--app-w lang, --app-h kort).
+        var gedraaid = !ingesloten && h > w;
+        var sleutel = w + 'x' + h + (gedraaid ? 'g' : '');
         if (sleutel === laatste) return;
         laatste = sleutel;
-        root.style.setProperty('--app-w', w + 'px');
-        root.style.setProperty('--app-h', h + 'px');
+        window.__scherm = { gedraaid: gedraaid, w: w, h: h };
+        root.classList.toggle('gedraaid', gedraaid);
+        if (gedraaid) {
+          root.style.setProperty('--scherm-w', w + 'px');
+          root.style.setProperty('--scherm-h', h + 'px');
+          root.style.setProperty('--app-w', h + 'px');
+          root.style.setProperty('--app-h', w + 'px');
+          root.style.setProperty('--vw', (h / 100) + 'px');
+          root.style.setProperty('--vh', (w / 100) + 'px');
+        } else {
+          root.style.removeProperty('--scherm-w');
+          root.style.removeProperty('--scherm-h');
+          root.style.removeProperty('--vw');
+          root.style.removeProperty('--vh');
+          root.style.setProperty('--app-w', w + 'px');
+          root.style.setProperty('--app-h', h + 'px');
+        }
         // Laat het spel (canvas) zijn maat opnieuw opnemen.
         try { window.dispatchEvent(new Event('resize')); } catch (fout) {}
       }
       window.__meetScherm = meet;
       meet();
+      // Waar de browser het toestaat (Android, als app) vergrendelen we de stand liggend. Op een iPhone
+      // bestaat dit niet; daar zorgt de draaiing hierboven ervoor.
+      try {
+        if (!ingesloten && window.screen && screen.orientation && screen.orientation.lock) {
+          var vergrendel = function () { screen.orientation.lock('landscape').catch(function () {}); };
+          vergrendel();
+          document.addEventListener('pointerdown', vergrendel, { once: true });
+        }
+      } catch (fout) {}
       window.addEventListener('resize', meet);
       window.addEventListener('orientationchange', function () { [0, 150, 400, 900].forEach(function (t) { setTimeout(meet, t); }); });
       window.addEventListener('pageshow', meet);

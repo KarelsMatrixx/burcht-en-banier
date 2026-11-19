@@ -8,6 +8,7 @@
 // functies aan die main.js meegeeft.
 
 import { CONFIG } from './config.js';
+import { naarSpel, vak } from './scherm.js';
 
 export function koppelInvoer(element, acties) {
   const vingers = new Map();   // id van de vinger -> laatste plek
@@ -17,8 +18,10 @@ export function koppelInvoer(element, acties) {
   let vorigeTik = null;        // waar en wanneer er het laatst is getikt
 
   const plek = (e) => {
-    const vak = element.getBoundingClientRect();
-    return { x: e.clientX - vak.left, y: e.clientY - vak.top };
+    // Staat de telefoon rechtop, dan draait het spel mee (js/scherm.js): vingers omzetten naar de liggende ruimte.
+    const doos = vak(element);
+    const p = naarSpel(e.clientX, e.clientY);
+    return { x: p.x - doos.left, y: p.y - doos.top };
   };
 
   element.addEventListener('pointerdown', (e) => {

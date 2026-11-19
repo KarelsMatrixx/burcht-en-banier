@@ -1,3 +1,4 @@
+import { vak, spelBreedte, spelHoogte } from './scherm.js';
 // GIDS: stap voor stap begeleiding in de proloog (naar Karel: een nieuwkomer
 // mag niet te snel door de knoppen heen).
 //
@@ -105,8 +106,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       const knop = [...groepen.querySelectorAll('button')].find((b) => b.textContent.startsWith(doel.groep));
       if (knop && zichtbaar(knop)) {
         // Valt de knop (deels) buiten de rij, dan eerst de rij verschuiven (naar Karel: Knight stond buiten beeld)
-        const r = knop.getBoundingClientRect();
-        const rij = groepen.getBoundingClientRect();
+        const r = vak(knop);
+        const rij = vak(groepen);
         if (r.left < rij.left - 1 || r.right > rij.right + 1) return { e: groepen, tekst: `Swipe the row of groups sideways to find ${doel.groep}, then tap it.` };
         return { e: knop, tekst: `Tap ${doel.groep}.` };
       }
@@ -159,7 +160,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     const breed = tegelMaat.breedte * z * 1.1;
     const hoog = tegelMaat.hoogte * z * 1.1;
     const veilig = 34;
-    const buiten = sc.x < veilig || sc.y < veilig || sc.x > window.innerWidth - veilig || sc.y > window.innerHeight - veilig;
+    const buiten = sc.x < veilig || sc.y < veilig || sc.x > spelBreedte() - veilig || sc.y > spelHoogte() - veilig;
     plek.hidden = false;
     plek.classList.toggle('buiten', buiten);
     if (!buiten) {
@@ -175,15 +176,15 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       // De straal van het midden naar de plek wordt afgekapt op de rand van een
       // veilig vak (onder de bovenbalk, boven de knoppen): zo staat de pijl op de
       // lijn naar de plek en niet in een hoek.
-      const mx = window.innerWidth / 2;
-      const my = window.innerHeight / 2;
+      const mx = spelBreedte() / 2;
+      const my = spelHoogte() / 2;
       const dx = sc.x - mx;
       const dy = sc.y - my;
       const hoek = Math.atan2(dy, dx);
       const links = veilig;
-      const rechts = window.innerWidth - veilig;
+      const rechts = spelBreedte() - veilig;
       const boven = veilig + 40;
-      const onder = window.innerHeight - veilig - 20;
+      const onder = spelHoogte() - veilig - 20;
       const tx = dx > 0 ? (rechts - mx) / dx : dx < 0 ? (links - mx) / dx : Infinity;
       const ty = dy > 0 ? (onder - my) / dy : dy < 0 ? (boven - my) / dy : Infinity;
       const t = Math.min(tx, ty);
@@ -211,7 +212,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     zin.textContent = tekst;
     zin.hidden = false;
     if (r.e && zichtbaar(r.e)) {
-      const b = r.e.getBoundingClientRect();
+      const b = vak(r.e);
       const pad = 6;
       ring.style.left = `${b.left - pad}px`;
       ring.style.top = `${b.top - pad}px`;
@@ -219,37 +220,37 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       ring.style.height = `${b.height + 2 * pad}px`;
       ring.hidden = false;
       // De zin boven of onder de knop, binnen het scherm
-      const vrijOnder = window.innerHeight - b.bottom;
+      const vrijOnder = spelHoogte() - b.bottom;
       zin.style.top = vrijOnder > 70 ? `${b.bottom + 10}px` : '';
-      zin.style.bottom = vrijOnder > 70 ? '' : `${window.innerHeight - b.top + 10}px`;
+      zin.style.bottom = vrijOnder > 70 ? '' : `${spelHoogte() - b.top + 10}px`;
       const midden = b.left + b.width / 2;
       // Staat de knop aan de rechterrand, dan staat de zin links ervan (niet over de andere knoppen)
-      if (b.left > window.innerWidth - 130) {
-        zin.style.top = `${Math.max(8, Math.min(window.innerHeight - 70, b.top + b.height / 2 - 24))}px`;
+      if (b.left > spelBreedte() - 130) {
+        zin.style.top = `${Math.max(8, Math.min(spelHoogte() - 70, b.top + b.height / 2 - 24))}px`;
         zin.style.bottom = '';
         zin.style.left = `${Math.max(8, b.left - 276)}px`;
-      } else zin.style.left = `${Math.max(8, Math.min(window.innerWidth - 268, midden - 130))}px`;
+      } else zin.style.left = `${Math.max(8, Math.min(spelBreedte() - 268, midden - 130))}px`;
     } else {
       ring.hidden = true;
       zin.style.top = '';
       zin.style.bottom = '90px';
-      zin.style.left = `${Math.max(8, window.innerWidth / 2 - 130)}px`;
+      zin.style.left = `${Math.max(8, spelBreedte() / 2 - 130)}px`;
     }
     // Niet over de hint van het leger linksonder: dan erboven
     const hint = el('legerhint');
     if (hint && zichtbaar(hint)) {
-      const h = hint.getBoundingClientRect();
-      const z = zin.getBoundingClientRect();
+      const h = vak(hint);
+      const z = vak(zin);
       if (z.left < h.right && z.right > h.left && z.top < h.bottom && z.bottom > h.top) {
         zin.style.top = '';
-        zin.style.bottom = `${window.innerHeight - h.top + 8}px`;
+        zin.style.bottom = `${spelHoogte() - h.top + 8}px`;
       }
     }
     // Niet over het taaklabel rechtsboven: valt de zin erover, dan schuift hij eronder
     const taak = el('taak');
     if (taak && zichtbaar(taak) && taak.textContent.trim()) {
-      const t = taak.getBoundingClientRect();
-      const z = zin.getBoundingClientRect();
+      const t = vak(taak);
+      const z = vak(zin);
       if (z.left < t.right && z.right > t.left && z.top < t.bottom && z.bottom > t.top) {
         zin.style.bottom = '';
         zin.style.top = `${t.bottom + 8}px`;

@@ -897,3 +897,14 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Einde: eerst een gesprek van vier kaartjes (Bartholt ziet de ruiter, Wessel, Karel, Bartholt houdt hem tegen), daarna rijdt de ruiter weg, dan de scène (nu negen kaarten). De camera glijdt mee. Open berichten worden eerst weggehaald, anders verbergen ze de kaartjes.
 - Gemeten in proloog43: storm tot ruiter 27 tot 83 s (wisselt per keer).
 - Tests: proloog35 (82), proloog43 (33), proloog70 (43), proloog77 (31), proloog40 (22).
+
+## 0.77.0: het spel blijft liggend, ook als de telefoon rechtop staat
+
+- Probleem: een iPhone negeert `orientation` in het manifest en laat een webapp niet vastzetten in liggende stand (`screen.orientation.lock` bestaat in Safari niet). Wie de telefoon rechtop hield, kreeg de melding "Turn your phone sideways".
+- Nu: staat de telefoon rechtop, dan draait het spel zelf 90 graden en blijft het liggend. Het meetscript in index.html zet de klasse `gedraaid` op `<html>` en rekent de opmaak in de liggende maat (`--app-w` lang, `--app-h` kort, `--scherm-w/h` de echte schermmaat). css/stijl.css draait `body` (`translateX(--scherm-w) rotate(90deg)`); de bovenkant van het spel staat dan rechts op het scherm, dus draai de telefoon tegen de klok in om hem goed te lezen.
+- Nieuw: js/scherm.js (`naarSpel`, `deltaNaarSpel`, `vak`, `spelBreedte`, `spelHoogte`) zet vingerplekken en schermmaten om. Gebruikt in invoer.js (kaart schuiven, knijpen, tikken, kader), ui.js (rijen knoppen schuiven) en gids.js (ringen, pijlen en zinnen van de gids).
+- CSS: `vw` en `vh` zijn vervangen door `--vw` en `--vh` (meegedraaid), en `env(safe-area-inset-*)` door `--sa-*`, die bij een gedraaid scherm van kant wisselen (de uitsparing van de iPhone zit dan links in het spel).
+- De melding "Turn your phone sideways" verschijnt niet meer. Ingesloten in een andere pagina (het artifact) blijft alles zoals het was.
+- Waar de browser het toestaat (Android als app) wordt de stand bovendien echt vergrendeld (`screen.orientation.lock('landscape')`).
+- Tests: tests/gedraaid77.mjs (19 controles: staand en liggend, omrekening van vingerplekken, tik op de hamer, veeg, draaien van de telefoon, app op het beginscherm, ingesloten). Bestaande tests schermmaat48, hud35, beeld59, proloog35 (82) en proloog77 (31) groen. aanraking.mjs faalde al voor deze wijziging ("doel kreeg schade (katapult)"), zonder verband met het scherm.
+- NIET op een echte iPhone getest. Te controleren door Karel: of de veilige randen kloppen (uitsparing en onderbalk), of tikken precies landen, en of het opstarten als app van het beginscherm direct liggend is.
