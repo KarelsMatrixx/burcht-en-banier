@@ -1666,8 +1666,20 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // dan verdedigt hij de burcht zoals de heer dat deed.
   // De lijfwacht van Karel (proloog): elke man heeft een vaste post rond de koning. Hij vecht alleen
   // met wie binnen 2,5 tegels van zijn post komt en loopt daarna terug naar zijn post.
+  let lijfwachtLos = false;   // proloog: zodra Karel zelf aanvalt, vecht zijn hele lijfwacht vrij
   function karelWachtDenk(e, k, anderen) {
     const post = e.karelWacht !== undefined ? e.karelWacht : e.post;   // lijfwacht van Karel, of een soldaat met een vaste post (proloog)
+    // Lijfwacht (niet Karel zelf) zolang Karel niet vecht: blijft staan, slaat alleen wie binnen zijn bereik staat
+    if (e.karelWacht !== undefined && !(k.def && k.def.koning) && !lijfwachtLos) {
+      k.wraak = null;
+      k.bevel = null;
+      const bereik = bereikVan(e, k);
+      const naast = anderen.filter((a) => Math.hypot(a.x - e.x, a.y - e.y) <= bereik + 0.2);
+      k.doelwit = naast.length ? kiesDoelwit(e, k, naast) : null;
+      if (e.pad) e.pad = null;
+      if (!k.doelwit) zetHouding(e, null);
+      return;
+    }
     const px = (post % B) + 0.5;
     const py = Math.floor(post / B) + 0.5;
     // Geen wraak en geen bevelen: hij laat zich niet weglokken van zijn post (naar Karel)
@@ -1679,6 +1691,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (k.doelwit && Math.hypot(k.doelwit.x - px, k.doelwit.y - py) > 3) k.doelwit = null;
     if (k.doelwit) {
       e.karelTerug = false;
+      if (k.def && k.def.koning && e.karelWacht !== undefined) lijfwachtLos = true;   // Karel valt aan: de lijfwacht gaat los
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k)) jaag(e, k);
       return;
     }
@@ -1774,7 +1787,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       schuifOp(e, k);
       return;
     }
-    if (e.team === SPELER && (e.karelWacht !== undefined || (e.post !== undefined && !e.opMuur))) {
+    // Lijfwacht van Karel die los is (Karel vecht zelf): gewone soldatenlogica, ze gaan vechten
+    const losWacht = e.karelWacht !== undefined && lijfwachtLos && !(k.def && k.def.koning);
+    if (e.team === SPELER && !losWacht && (e.karelWacht !== undefined || (e.post !== undefined && !e.opMuur))) {
       karelWachtDenk(e, k, anderen);
       schuifOp(e, k);
       return;
@@ -2506,6 +2521,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         k.doelwit = null; k.wraak = null; k.bevel = null;
       }
     },
+    lijfwachtLos: () => lijfwachtLos,
     staak() {
       gestaakt = true;
       for (const e of [...vijanden, ...leger.lijst]) {

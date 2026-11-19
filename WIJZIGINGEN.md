@@ -908,3 +908,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Waar de browser het toestaat (Android als app) wordt de stand bovendien echt vergrendeld (`screen.orientation.lock('landscape')`).
 - Tests: tests/gedraaid77.mjs (19 controles: staand en liggend, omrekening van vingerplekken, tik op de hamer, veeg, draaien van de telefoon, app op het beginscherm, ingesloten). Bestaande tests schermmaat48, hud35, beeld59, proloog35 (82) en proloog77 (31) groen. aanraking.mjs faalde al voor deze wijziging ("doel kreeg schade (katapult)"), zonder verband met het scherm.
 - NIET op een echte iPhone getest. Te controleren door Karel: of de veilige randen kloppen (uitsparing en onderbalk), of tikken precies landen, en of het opstarten als app van het beginscherm direct liggend is.
+
+## 0.77.1: tutorial, oogles, rood bij de oostmuur, lijfwacht (Karels feedback van 19 november)
+
+- Grondles: zolang het oog niet is aangetikt, is de soldaat niet te kiezen, ook niet met een tik precies op hem (proloog.js `magKiezen`). Volgorde: oog, dan soldaat (gouden plek op hem), dan de plek.
+- Nachtlessen: zolang het leger buiten wacht, kiest een tik op de kaart geen soldaat (`magTikKiezen`); kiezen gaat via het zwaard en de groepen. Eerst verving één aangetikte soldaat de hele groep.
+- Bij "Hold" gaan alle poorten van de burcht op slot (proloog.js `sluitAllePoorten`, ook na herladen in het beleg). Rood heeft dan geen route, loopt niet meer om naar een andere poort maar slaat op de oostmuur en de poort. Bij het verraad gaan alle poorten open. Gemeten: rood bleef tijdens het beleg minstens 18,5 tegel oostelijk van de burcht.
+- Lijfwacht van Karel: blijft stilstaan en slaat alleen wie binnen zijn bereik komt, tot Karel zelf een rode soldaat aanvalt; dan gaat de hele lijfwacht los en vecht vrij (strijd.js `lijfwachtLos`).
+- Tests: proloog77 (tik op de soldaat voor het oog), proloog43 (poorten op slot, rood blijft oost, lijfwacht los), proloog70, proloog35, proloog40 groen.

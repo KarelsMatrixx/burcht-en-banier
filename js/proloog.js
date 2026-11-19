@@ -1,3 +1,4 @@
+import { OBJECT } from './kaart.js';
 // PROLOOG: de laatste vredige dag (campagne-verhaal.md, stap 35 van het campagneplan).
 //
 // Wessel wordt negen. Bartholt leert je bouwen met een korte lijst taken.
@@ -547,6 +548,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     gids.verbergKaart();
     toonTaak('Night: hold the walls');
     strijd.laatOpmarsLos();
+    sluitAllePoorten();
     // Iedereen op de grond houdt zijn plek (naar Karel: de ridders liepen om om te gaan vechten).
     // Een nieuw bevel van de speler heft de post op (leger.js stuur).
     const B = kaart.breedte;
@@ -561,6 +563,14 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     bewaar();
   }
   // Dan gaat de poort van binnenuit open en stroomt het leger naar binnen.
+  // Bij "Hold" gaan alle poorten van de burcht op slot (naar Karel: rood liep om naar een andere poort).
+  // Zonder route slaat rood op de oostmuur en de poort; bij het verraad gaan ze open (poortGaatOpen).
+  function sluitAllePoorten() {
+    const vakken = [];
+    for (let i = 0; i < kaart.object.length; i++) if (kaart.object[i] === OBJECT.POORT && kaart.eigenaar[i] === 1) vakken.push(i);
+    wegvinder.zetPoortDicht(vakken, true);
+    kaartGewijzigd(new Set(vakken));
+  }
   function poortGaatOpen() {
     if (s.deel === 'storm') return;
     s.deel = 'storm';
@@ -697,6 +707,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       } else if (s.fase === 'avond') { toonTaak('Evening: the feast is over'); if (!s.gemeld.avond) avondKaart(); }
       else if (s.fase === 'nacht') {
         zetLijfwacht();
+        if (s.deel === 'beleg') sluitAllePoorten();
         if (s.deel === 'opmars') {
           // Na het herladen is het leger er niet meer: opnieuw laten marcheren, de les gaat verder
           if (strijd.opmarsStand().totaal < 10) stuurOvermacht();
@@ -807,6 +818,12 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       if (wat === 'kazerne') return !!les.kazernePlek;
       return false;   // zwaard, handel, poort: overdag nooit
     },
+    // Een soldaat kiezen door hem op de kaart aan te tikken. In de nachtlessen niet: daar kies je via het zwaard en
+    // de groepen (een tik op één soldaat verving anders de hele groep).
+    magTikKiezen(e) {
+      if (s.fase === 'nacht' && s.deel === 'opmars') return false;
+      return this.magKiezen(e);
+    },
     // Welke soldaten mag de speler kiezen? Overdag alleen de soldaat van de bevel-les, 's nachts iedereen behalve de lijfwacht.
     magKiezen(e) {
       if (s.fase === 'nacht') {
@@ -816,6 +833,8 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       }
       if (s.fase !== 'bouw' || !s.basis || s.klaar) return false;
       const les = TAKEN[s.taak];
+      // Grondles: eerst het oog, pas daarna de soldaat (naar Karel: niets anders dan de stap)
+      if (les.sturen && !gids.oogGezien()) return false;
       return !!(les.sturen || les.opMuur) && e === nieuweSoldaat();
     },
     // Welk bouwwerk mag de speler nu kiezen? Alleen dat van de les die bezig is (en pas na

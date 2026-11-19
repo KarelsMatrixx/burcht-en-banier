@@ -1016,7 +1016,7 @@ async function start() {
       // Een eigen soldaat aangetikt: die kies je.
       const soldaat = leger.vind(wereld.x, wereld.y, 8 / camera.zoom);
       // Tutorial: een soldaat die nu niet te kiezen is (niet die van de les, of de poortles) telt niet als tik op een soldaat
-      if (soldaat && !erachter(soldaat) && (!proloog || proloog.magKiezen(soldaat))) {
+      if (soldaat && !erachter(soldaat) && (!proloog || proloog.magTikKiezen(soldaat))) {
         kaderAan = false;
         leger.kies([soldaat]);
         return;

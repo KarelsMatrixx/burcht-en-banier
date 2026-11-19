@@ -46,6 +46,11 @@ await p.waitForTimeout(800);
 let zin = await p.textContent('#gids-zin');
 check('stap 1: de gids vraagt eerst naar het oog', /eye/i.test(zin) && await p.isVisible('#gids-ring'), zin);
 check('stap 1: nog geen gouden plek', await p.isHidden('#gids-plek'));
+// 0.77.1: voor het oog is de soldaat niet te kiezen, ook niet met een tik precies op hem
+const sp = await p.evaluate(() => { const s = window.spel; const e = s.gids.doel().soldaat(); const T = s.CONFIG.tegel; s.camera.kijkNaar((e.x - e.y) * T.breedte / 2, (e.x + e.y) * T.hoogte / 2); const w = { x: (e.x - e.y) * T.breedte / 2, y: (e.x + e.y) * T.hoogte / 2 - 14 }; return s.camera.wereldNaarScherm(w.x, w.y); });
+await p.waitForTimeout(200);
+await p.touchscreen.tap(sp.x, sp.y); await p.waitForTimeout(400);
+check('voor het oog: tik op de soldaat kiest niets', (await p.evaluate(() => window.spel.leger.aantalGekozen())) === 0);
 // Een bevel zonder oog telt niet
 await p.tap('#knop-oog'); await p.waitForTimeout(800);
 zin = await p.textContent('#gids-zin');
