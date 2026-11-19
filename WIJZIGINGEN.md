@@ -989,3 +989,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Golven van Brandt (`doel.golven` in data/campagne.json): begin 12, erbij 8, max 25, laatste 25. Dus 12, 20 en 25 man op 240, 360 en 480 s. Test golven77 (5 controles) groen, hut70 groen.
 - `MAX_VIJANDEN` in strijd.js van 110 naar 130 (kamp 60 plus overgebleven golven van 12, 20 en 25).
 - NIET gemeten met de bot en NIET op de iPhone gespeeld. Mijn zuinige bot verloor al tegen 8 man op 240 s; dit is drie keer zo zwaar voor wie weinig soldaten heeft. De winnende opstelling hangt van jouw economie en muren af. Mijn schatting is dat een speler zonder kazerne en muren dit niet haalt.
+
+## 0.77.12: fout bij een huis neerzetten naast een ander huis (Karels schermafbeelding, level 4)
+
+- Foutmelding: "TypeError: undefined is not an object (evaluating 't.beeld.beeld')" in tekenaar.js. Oorzaak: `maakSchim` koos het plaatje van de groene schim voor ieder gebouw met varianten op zijn buren (bedoeld voor muren). Een huis heeft drie losse varianten (op toeval); met een huis ernaast kwam er een nummer buiten de lijst uit en was het plaatje leeg. Een gebouw met `kies: 'toeval'` kiest nu net als het echte gebouw (`tegelToeval(x, y, 4)`), plus een terugval op variant 0 en een vangnet bij het tekenen.
+- Test: nieuw schim77 (alle 17 bouwwerken, los en naast buren). hut70 groen. Zoals bij elke melding van Karel: niet op de iPhone nagespeeld, wel de fout in de browser nagebootst en weg.

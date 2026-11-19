@@ -471,9 +471,15 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       let beeld = null;
       if (!sloop && t.ok) {
         const asset = objecten[soort];
-        beeld = asset.varianten
-          ? asset.varianten[variantBijBuren(asset, aansluiting(kaart, t.x, t.y, soort, (bx, by) => inSchim.has(by * kaart.breedte + bx)))]
-          : asset;
+        // Een gebouw met losse varianten (huis, hut) kiest op toeval, net als het echte gebouw; alleen
+        // muren, torens en poorten kiezen op hun buren. Zonder dit gaf een huis naast een ander huis
+        // een nummer buiten de lijst en dus een foutmelding bij het tekenen van de schim.
+        if (asset.varianten) {
+          const nummer = asset.kies === 'toeval'
+            ? Math.floor(tegelToeval(t.x, t.y, 4) * asset.varianten.length)
+            : variantBijBuren(asset, aansluiting(kaart, t.x, t.y, soort, (bx, by) => inSchim.has(by * kaart.breedte + bx)));
+          beeld = asset.varianten[nummer] || asset.varianten[0];
+        } else beeld = asset;
       }
       return { x: t.x, y: t.y, ok: t.ok, beeld };
     });
@@ -860,7 +866,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
           const staand = objectOp(t.y * kaart.breedte + t.x);
           const hoog = t.ok && staand ? staand.hoogte : 0;
           ruit(wx, wy - hoog, t.ok ? 'rgba(235, 70, 50, 0.6)' : 'rgba(150, 150, 150, 0.45)', '#ffd6cf');
-        } else if (t.ok) {
+        } else if (t.ok && t.beeld) {
           ctx.globalAlpha = 0.62;
           ctx.drawImage(t.beeld.beeld, wx - t.beeld.ax, wy + TEGEL_HOOGTE - t.beeld.ay, t.beeld.b, t.beeld.h);
           ctx.globalAlpha = 1;
