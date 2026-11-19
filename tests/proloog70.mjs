@@ -4,6 +4,7 @@
 // wachtende vijanden vechten niet (ook niet met boogschutters op de muur), de kiesles telt alleen de juiste soort.
 // Daarna: in level 1 is Bartholts raad over de eerste gebouwen het eerste bericht (en in de proloog niet).
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
 const poort = 8270;
 const LEES = 4000;   // zo lang leest de speler elk kaartje (ms)
@@ -11,6 +12,7 @@ const srv = spawn('python3', ['-m', 'http.server', String(poort)], { cwd: new UR
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true })).newPage();
+await autoVerder(p);
 const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
 let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
 const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 20000 });

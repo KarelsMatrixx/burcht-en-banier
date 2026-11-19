@@ -1,4 +1,4 @@
-// 0.59.4: verhaalbeeld 20 s met zandloper, ook als je via de levelkaart een bewaard level kiest.
+// 0.59.4 / 0.77.4: verhaalbeeld 10 s met zandloper, dan de knop "Continue to level"; ook als je via de levelkaart een bewaard level kiest.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
 import { spawn } from 'child_process';
 const poort = 8259;
@@ -16,15 +16,26 @@ await zet(1, false); await p.reload(); await wacht(); await p.waitForTimeout(600
 const z = () => p.evaluate(() => ({ beeld: !document.getElementById('verhaalbeeld').hidden, missie: !document.getElementById('missie').hidden, balk: getComputedStyle(document.querySelector('#verhaalbeeld-balk i')).animationDuration, zand: !!document.getElementById('verhaalbeeld-zand') && getComputedStyle(document.getElementById('verhaalbeeld-zand')).animationName, tekst: document.getElementById('verhaalbeeld-tekst').textContent.length }));
 let s = await z();
 check('nieuw level: beeld eerst, geen briefing', s.beeld && !s.missie, JSON.stringify(s));
-check('duur 20 s', s.balk === '20s', s.balk);
+check('duur 10 s', s.balk === '10s', s.balk);
 check('zandloper draait', s.zand === 'zandloper', s.zand);
 check('tekst aanwezig', s.tekst > 40);
 await p.screenshot({ path: '/home/claude/beeld59.png' });
-await p.waitForTimeout(18000);
-s = await z(); check('na 18 s nog beeld', s.beeld, JSON.stringify(s));
-await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 8000 });
-s = await z(); check('daarna de briefing', !s.beeld && s.missie, JSON.stringify(s));
-await p.tap('#missie-begin'); await p.waitForTimeout(3000);
+const knop = () => p.evaluate(() => { const k = document.getElementById('verhaalbeeld-verder'); return { er: !!k, zichtbaar: !!k && !k.hidden && k.offsetParent !== null, tekst: k ? k.textContent : '' }; });
+await p.waitForTimeout(8000);
+s = await z(); let k = await knop(); check('na 8 s nog beeld, nog geen knop', s.beeld && !k.zichtbaar, JSON.stringify([s, k]));
+await p.waitForFunction(() => { const k = document.getElementById('verhaalbeeld-verder'); return k && !k.hidden; }, null, { timeout: 6000 });
+await p.waitForTimeout(500);
+s = await z(); k = await knop(); check('na 10 s: beeld blijft, knop erbij', s.beeld && k.zichtbaar && k.tekst === 'Continue to level', JSON.stringify([s, k]));
+check('zandloper stil na 10 s', (await p.evaluate(() => getComputedStyle(document.getElementById('verhaalbeeld-zand')).animationName)) === 'none');
+await p.screenshot({ path: '/home/claude/beeld77_knop.png' });
+await p.waitForTimeout(3000);
+s = await z(); check('zonder tik blijft het beeld staan', s.beeld && !s.missie, JSON.stringify(s));
+await p.tap('#verhaalbeeld-verder');
+s = await z(); check('na de tik de briefing', !s.beeld && s.missie, JSON.stringify(s));
+// Heropenen zonder een bewaard spel (briefing nog niet gesloten): het beeld komt niet nog eens
+await p.reload(); await wacht(); await p.waitForTimeout(600);
+s = await z(); check('heropenen: geen verhaalbeeld', !s.beeld, JSON.stringify(s));
+await p.waitForTimeout(3000);
 await p.evaluate(() => window.spel.bewaar && window.spel.bewaar());
 // Bewaard spel, gewoon herladen (Continue): geen beeld
 await zet(null, false); await p.reload(); await wacht(); await p.waitForTimeout(600);
@@ -32,7 +43,8 @@ s = await z(); check('bewaard spel zonder kaart: direct het spel', !s.beeld && !
 // Bewaard spel, gekozen via de kaart: wel het beeld
 await zet(null, true); await p.reload(); await wacht(); await p.waitForTimeout(600);
 s = await z(); check('bewaard spel via kaart: beeld', s.beeld, JSON.stringify(s));
-await p.waitForFunction(() => document.getElementById('verhaalbeeld').hidden, null, { timeout: 25000 });
+await p.waitForFunction(() => { const k = document.getElementById('verhaalbeeld-verder'); return k && !k.hidden; }, null, { timeout: 15000 });
+await p.tap('#verhaalbeeld-verder');
 s = await z(); check('daarna gewoon verder (geen briefing)', !s.beeld && !s.missie, JSON.stringify(s));
 check('geen paginafouten', fouten.length === 0, fouten.join(' | '));
 console.log(`ok ${ok}, fout ${fout}`);

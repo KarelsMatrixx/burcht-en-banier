@@ -1,11 +1,13 @@
 // 0.64: muren en torens op alleen via een open poort; de rode koning vlucht naar het dak van zijn hoofdkasteel.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
 const poort = 8246;
 const srv = spawn('python3', ['-m', 'http.server', String(poort)], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true })).newPage();
+await autoVerder(p);
 const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
 let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
 await p.goto(`http://localhost:${poort}/`); await p.waitForFunction(() => window.spel && window.spel.strijd);

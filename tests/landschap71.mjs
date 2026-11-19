@@ -2,6 +2,7 @@
 // zonder scriptfouten; level 10 heeft een kerk met begraafplaats. Schermafdrukken in /tmp/s.
 // Gebruik: node tests/landschap71.mjs [levels, bijvoorbeeld 1,4,9]
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
 import { readFileSync, mkdirSync } from 'fs';
 mkdirSync('/tmp/s', { recursive: true });
@@ -17,6 +18,7 @@ const levels = (process.argv[2] || '1,2,3,4,5,6,7,8,9,10').split(',').map(Number
 for (const level of levels) {
   const verwacht = campagne.find((c) => c.id === level).landschap;
   const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, deviceScaleFactor: 2, serviceWorkers: 'block' })).newPage();
+  await autoVerder(p);
   const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
   // Levels 7 tot 10 zijn nog niet speelbaar: voor deze proef zetten we ze open.
   await p.route('**/data/campagne.json', async (route) => { const d = JSON.parse(readFileSync(map + 'data/campagne.json', 'utf8'));

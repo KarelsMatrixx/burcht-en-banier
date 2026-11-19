@@ -1,5 +1,6 @@
 // Decor in het kasteel van rood (detailronde): level 1 heeft een tent, hooibergen, vaten en een put in de binnenplaats.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
 const poort = 8254;
 const srv = spawn('python3', ['-m', 'http.server', String(poort)], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
@@ -9,6 +10,7 @@ let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout
 const levels = (process.argv[2] || '1').split(',').map(Number);
 for (const level of levels) {
   const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, deviceScaleFactor: 2 })).newPage();
+  await autoVerder(p);
   const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
   const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 20000 });
   await p.goto(`http://localhost:${poort}/`); await wacht();

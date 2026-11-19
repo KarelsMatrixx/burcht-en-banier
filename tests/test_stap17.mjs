@@ -1,8 +1,10 @@
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 const url = process.argv[2];
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const ctx = await b.newContext({ viewport: { width: 844, height: 390 } });
 const p = await ctx.newPage();
+await autoVerder(p);
 await p.addInitScript(() => { try { sessionStorage.setItem('burcht-banier.geenTitel', '1'); sessionStorage.setItem('burcht-banier.paneel', 'bouw'); } catch (e) {} });
 const fouten = [];
 p.on('pageerror', (e) => fouten.push(String(e)));

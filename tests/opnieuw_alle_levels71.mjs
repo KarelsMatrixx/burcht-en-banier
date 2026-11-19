@@ -1,6 +1,7 @@
 // 0.71.1: in de hele game moet "Start over" werken na winst of nederlaag, ook na herladen. Nooit een defeat-lus.
 // Per modus (campagne 1 tot 6, vrij spel) vier scenario's: winst of verlies, met of zonder herladen.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
 const wortel = new URL('..', import.meta.url).pathname;
 const modi = [
@@ -14,9 +15,10 @@ const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:
 async function scenario(b, poort, m, uitkomst, herlaad) {
   const naam = `${m.naam} / ${uitkomst} / ${herlaad ? 'na herladen' : 'direct'}`;
   const p = await (await b.newContext({ viewport: { width: 859, height: 396 }, hasTouch: true })).newPage();
+  await autoVerder(p);
   const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
-  // Het verhaalbeeld van 20 s is bewust niet over te slaan; in de test duurt het 50 ms.
-  await p.addInitScript(() => { const st = window.setTimeout; window.setTimeout = (f, d, ...a) => st(f, d === 20000 ? 50 : d, ...a); });
+  // Het verhaalbeeld wacht 10 s voor de knop; in de test duurt dat 50 ms.
+  await p.addInitScript(() => { const st = window.setTimeout; window.setTimeout = (f, d, ...a) => st(f, d === 10000 ? 50 : d, ...a); });
   const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 25000 });
   const stand = () => p.evaluate(() => {
     const s = window.spel; const e = document.getElementById('einde');

@@ -949,8 +949,10 @@ async function start() {
     toonVerhaal: (tekst) => ui.toonVerhaal({ naam: missie.heer, portret: missie.portret, tekst }),
   }) : null;
   let beeldOpen = false;   // het verhaalbeeld staat in beeld: het spel wacht
+  const GEZIEN = 'burcht-banier.beeldGezien';   // welk level zijn verhaalbeeld al heeft gehad: bij heropenen niet nog eens
   const toonLevelBeeld = () => {
     beeldOpen = true;
+    try { window.localStorage.setItem(GEZIEN, String(missie.id)); } catch (fout) { /* dan zien we het soms nog eens */ }
     return ui.toonVerhaalbeeld({ beeld: missie.beeld, tekst: missie.verhaal, seconden: CONFIG.verhaalbeeldSeconden })
       .then(() => { beeldOpen = false; });
   };
@@ -960,6 +962,8 @@ async function start() {
   let viaKaart = false;
   try { viaKaart = window.sessionStorage.getItem(TOON_BEELD) === '1'; window.sessionStorage.removeItem(TOON_BEELD); } catch (fout) { /* geen beeld */ }
   const heeftBeeld = !!(missie && missie.beeld && missie.verhaal);
+  let alGezien = false;
+  try { alGezien = window.localStorage.getItem(GEZIEN) === String(missie && missie.id); } catch (fout) { /* niet bekend */ }
   if (missie && !bewaard && !strijd.uitslag()) {
     const verteller = missies.figuren[missie.verteller || 'bartholt'];
     const toonBriefing = () => ui.toonMissie({
@@ -971,7 +975,7 @@ async function start() {
       extra: [nieuwHier().trim(), kaart.naam ? `Map: ${kaart.naam}.` : ''].filter(Boolean),
     });
     // Eerst het verhaalbeeld, dan de briefing.
-    if (heeftBeeld) toonLevelBeeld().then(toonBriefing);
+    if (heeftBeeld && (viaKaart || !alGezien)) toonLevelBeeld().then(toonBriefing);
     else toonBriefing();
   } else if (heeftBeeld && viaKaart && !strijd.uitslag()) {
     toonLevelBeeld().then(beginLevel);

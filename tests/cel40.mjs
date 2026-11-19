@@ -1,10 +1,12 @@
 // Stap 40: Broeder Ludolf zit in een cel op het binnenplein van rood (level 5) en komt vrij als de burcht valt.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
 const srv = spawn('python3', ['-m', 'http.server', '8286'], { cwd: '/home/claude/burcht-en-banier', stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 } })).newPage();
+await autoVerder(p);
 const fouten = []; p.on('pageerror', (e) => fouten.push(String(e))); p.on('console', (m) => { if (m.type() === 'error' && !/404/.test(m.text())) fouten.push(m.text()); });   // 404: de verhaalbeelden van 0.51.0 ontbreken nog
 let ok = 0, fout = 0;
 const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };

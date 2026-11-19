@@ -929,3 +929,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Nieuw: 15 kruisboogschutters op de muur van de binnenste ring, gelijk verdeeld rondom (proloog.js `zetMuurwacht`, `s.muurwacht`). Ze houden hun plek (`e.vastePost`): niet te kiezen, lopen nooit weg, schieten alleen op wat binnen hun bereik komt (strijd.js). Na herladen opnieuw gemarkeerd.
 - Gemeten in proloog43: verraad tot ruiter 29 tot 34 s.
 - Tests: proloog77 (35, met muurwacht), proloog43, proloog70, proloog35, proloog40 groen.
+
+## 0.77.4: wachtscherm 10 seconden met knop "Continue to level" (Karels wens van 19 november)
+
+- Het verhaalbeeld voor een level staat nu 10 seconden (was 20; `CONFIG.verhaalbeeldSeconden`). Daarna stopt de zandloper, verdwijnt de balk en komt de knop "Continue to level"; pas na een tik begint de briefing (of het level). Wie nog niet klaar is met lezen, kan dus doorlezen.
+- Bij heropenen van het spel verschijnt het wachtscherm niet nog eens voor hetzelfde level (localStorage `burcht-banier.beeldGezien`); kies je een level op de kaart, dan komt het wel.
+- Tests: tests/hulp_beeld.mjs (`autoVerder`) tikt de knop automatisch; toegevoegd aan de tests die het beeld passeren. beeld59 aangepast (14 controles groen). hut36 faalt op "briefing door Gesina", ook zonder deze wijziging.
+- NIET op de iPhone gezien: de plek van de knop boven het blauwe lint, ook in de gedraaide stand.

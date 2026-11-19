@@ -4,12 +4,14 @@
 // - het leger van Ottger trekt zich tegelijk terug en vecht niet meer
 // - de grondles vraagt altijd naar het oog, ook als het eerder aan is geweest
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
 const poort = 8277;
 const srv = spawn('python3', ['-m', 'http.server', String(poort)], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, serviceWorkers: 'block' })).newPage();
+await autoVerder(p);
 const fouten = []; p.on('pageerror', (e) => fouten.push(String(e) + ' ' + (e.stack || '').split('\n').slice(0, 4).join(' | ')));
 let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
 const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 20000 });

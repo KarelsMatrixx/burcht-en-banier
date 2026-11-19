@@ -638,11 +638,14 @@ export function maakUi() {
       });
     },
     // Het verhaalbeeld voor een level: een schilderij met onderin de tekst.
-    // Het blijft altijd zoveel seconden staan (geen overslaan) en geeft dan
-    // een belofte terug. Ontbreekt het beeld, dan blijft de tekst op donker.
-    toonVerhaalbeeld({ beeld = '', tekst = '', seconden = 12 }) {
+    // Het blijft eerst altijd zoveel seconden staan (geen overslaan). Daarna
+    // verschijnt de knop "Continue to level": wie nog niet klaar is met lezen,
+    // tikt pas als hij zover is. Dan pas geeft de belofte terug.
+    // Ontbreekt het beeld, dan blijft de tekst op donker.
+    toonVerhaalbeeld({ beeld = '', tekst = '', seconden = 10 }) {
       return new Promise((klaar) => {
         const plaat = el('verhaalbeeld-plaat');
+        const verder = el('verhaalbeeld-verder');
         // Eerst los laden: een ontbrekend bestand mag de foutmelding niet oproepen.
         plaat.hidden = true;
         if (beeld) {
@@ -655,8 +658,21 @@ export function maakUi() {
         balk.style.animation = 'none';
         void balk.offsetWidth;
         balk.style.animation = `verhaalbalk ${seconden}s linear forwards`;
+        verder.hidden = true;
+        el('verhaalbeeld').classList.remove('klaar');
         el('verhaalbeeld').hidden = false;
-        setTimeout(() => { el('verhaalbeeld').hidden = true; klaar(); }, seconden * 1000);
+        const sluit = () => {
+          verder.removeEventListener('click', sluit);
+          verder.hidden = true;
+          el('verhaalbeeld').hidden = true;
+          klaar();
+        };
+        setTimeout(() => {
+          // Het laden is "klaar": zandloper stil, balk weg, knop erbij.
+          el('verhaalbeeld').classList.add('klaar');
+          verder.hidden = false;
+          verder.addEventListener('click', sluit);
+        }, seconden * 1000);
       });
     },
     // De intro van een missie.

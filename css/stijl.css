@@ -1271,6 +1271,28 @@ body:has(#handelpaneel:not([hidden])) #legerhint { display: none !important; }
   background: #e0b94a;
 }
 @keyframes verhaalbalk { from { width: 0; } to { width: 100%; } }
+/* Na de wachttijd: de knop om door te gaan, boven het blauwe lint. */
+#verhaalbeeld-verder {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(max(16px, var(--sa-bottom)) + 74px);
+  min-height: 40px;
+  padding: 6px 26px;
+  font: 700 15px Georgia, serif;
+  color: #3b2a10;
+  background: linear-gradient(#f3d37a, #e0b94a);
+  border: 2px solid #b8843f;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px #000a;
+  animation: verderKomt 0.4s ease-out;
+}
+#verhaalbeeld-verder:active { transform: translateX(-50%) scale(0.96); }
+#verhaalbeeld-verder[hidden] { display: none; }
+@keyframes verderKomt { from { opacity: 0; margin-bottom: -8px; } to { opacity: 1; margin-bottom: 0; } }
+#verhaalbeeld.klaar #verhaalbeeld-zand { animation: none; }
+#verhaalbeeld.klaar #verhaalbeeld-balk { display: none; }
 
 /* Proloog: de gids (js/gids.js): ring om de volgende knop, een korte zin, en het kaartje met knop. */
 #gids-ring {

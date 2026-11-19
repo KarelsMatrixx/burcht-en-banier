@@ -1,12 +1,14 @@
 // Proloog 0.58: het leger van Ottger verschijnt aan de rand van de kaart, marcheert naar het kasteel,
 // wacht buiten de muren; de speler leert zijn leger besturen; dan gaat de poort open.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
 const poort = 8243;
 const srv = spawn('python3', ['-m', 'http.server', String(poort)], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true })).newPage();
+await autoVerder(p);
 const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
 let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
 const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 20000 });

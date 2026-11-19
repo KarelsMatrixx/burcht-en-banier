@@ -3,12 +3,14 @@
 // er is een weg tussen de kastelen, de werken van rood staan er en er zijn
 // looproutes voor de wachters. Plus schermafbeeldingen van level 1 tot 3.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
 import { spawn } from 'child_process';
 const poort = 8234;
 const srv = spawn('python3', ['-m', 'http.server', String(poort)], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
 await new Promise((r) => setTimeout(r, 800));
 const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const p = await (await b.newContext({ viewport: { width: 844, height: 390 } })).newPage();
+await autoVerder(p);
 const fouten = [];
 p.on('pageerror', (e) => fouten.push(String(e)));
 let ok = 0, fout = 0;
