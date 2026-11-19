@@ -1,4 +1,4 @@
-// Level 4 The Fen (0.71.0): 40 soldaten in het tentenkamp (de helft ninja's), en na de acht minuten komen
+// Level 4 The Fen (0.71.0, nu 60 soldaten): 40 soldaten in het tentenkamp (de helft ninja's), en na de acht minuten komen
 // 80 vlammenwevers uit de linkerbovenhoek die van jou zijn. Je wint door de rode heer te verslaan.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
 import { autoVerder } from './hulp_beeld.mjs';
@@ -50,10 +50,10 @@ const g = await p.evaluate(() => {
   return { n: lijst.length, tel, uniek: vakken.size, max: Math.max(...ver), aanvallers: s.strijd.stand().vijanden, koning: s.strijd.vijanden().length };
 });
 console.log('garnizoen', JSON.stringify(g));
-check('40 soldaten in het kamp', g.n === 40, g.n);
-check('de helft is een rode ninja', g.tel.sluipmoordenaar === 20, JSON.stringify(g.tel));
-check('ook schutters en ridders', g.tel.boogschutter === 12 && g.tel.ridder === 8, JSON.stringify(g.tel));
-check('ieder op een eigen tegel', g.uniek === 40, g.uniek);
+check('60 soldaten in het kamp', g.n === 60, g.n);
+check('de helft is een rode ninja', g.tel.sluipmoordenaar === 30, JSON.stringify(g.tel));
+check('ook schutters en ridders', g.tel.boogschutter === 18 && g.tel.ridder === 12, JSON.stringify(g.tel));
+check('ieder op een eigen tegel', g.uniek === 60, g.uniek);
 check('allemaal in en rond het kamp', g.max <= 14, g.max);
 check('het garnizoen telt niet als aanvaller', g.aanvallers === 0, g.aanvallers);
 
@@ -67,7 +67,7 @@ const blijf = await p.evaluate(() => {
   return { n: l.length, max: Math.max(...l.map((e) => Math.max(Math.abs(e.x - m.x), Math.abs(e.y - m.y)))), verplaatst, postVer, beweegt: window.beweegt };
 });
 console.log('slenteren', JSON.stringify(blijf));
-check('na 40 seconden staat iedereen nog in het kamp', blijf.n === 40 && blijf.max <= 15, JSON.stringify(blijf));
+check('na 40 seconden staat iedereen nog in het kamp', blijf.n === 60 && blijf.max <= 15, JSON.stringify(blijf));
 check('er wordt rondgelopen: minstens 10 soldaten staan ergens anders', blijf.verplaatst >= 10, blijf.verplaatst);
 check('er lopen er tegelijk een paar, niet allemaal', blijf.beweegt >= 2 && blijf.beweegt < 40, blijf.beweegt);
 check('ze blijven bij hun post (hooguit 4,5 tegels)', blijf.postVer <= 4.5, blijf.postVer);
@@ -124,7 +124,7 @@ const her = await p.evaluate(() => { const s = window.spel; return { fase: s.doe
 console.log('herladen', JSON.stringify(her));
 check('herladen: nog in fase 2', her.fase === 1, JSON.stringify(her));
 check('herladen: de 80 wevers zijn er nog', her.wevers === 80, her.wevers);
-check('herladen: het garnizoen is er nog', her.garnizoen === 40, her.garnizoen);
+check('herladen: het garnizoen is er nog', her.garnizoen === 60, her.garnizoen);
 check('herladen: de hut telt niet meer', her.hut === null);
 await p.evaluate(() => window.ga(8));
 check('herladen: er komen er geen bij', (await wevers()) === 80, await wevers());
@@ -156,7 +156,7 @@ const opn = await p.evaluate(() => {
 console.log('opnieuw', JSON.stringify(opn));
 check('opnieuw: weer fase 1 (hut houden)', opn.fase === 0 && opn.hut === true && opn.uitslag === null, JSON.stringify(opn));
 check('opnieuw: geen wevers meer', opn.wevers === 0, opn.wevers);
-check('opnieuw: het garnizoen is er weer', opn.garnizoen === 40, opn.garnizoen);
+check('opnieuw: het garnizoen is er weer', opn.garnizoen === 60, opn.garnizoen);
 check('opnieuw: aanvalsklok terug', opn.klok);
 
 // Doorspelen na de winst (Keep playing): geen opdracht meer in beeld, het level blijft rustig

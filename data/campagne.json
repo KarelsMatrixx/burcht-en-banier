@@ -439,9 +439,9 @@
     },
     "eersteAanval": 99999,
     "garnizoen": {
-     "sluipmoordenaar": 20,
-     "boogschutter": 12,
-     "ridder": 8
+     "sluipmoordenaar": 30,
+     "boogschutter": 18,
+     "ridder": 12
     },
     "legerMax": 250,
     "aanval": {
@@ -462,6 +462,7 @@
      "begin": 8,
      "erbij": 4,
      "max": 12,
+     "laatste": 20,
      "leger": {
       "sluipmoordenaar": 2,
       "boogschutter": 2,

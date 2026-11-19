@@ -969,3 +969,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Meting met de zuinige bot (zonder huizen of eigen economie, 7 soldaten op 240 s): verliest nu op 320 s tegen de eerste golf van 8 man. Dat is een ondergrens; een speler met meer boeren, kazernes en muren heeft meer. NIET op de iPhone gespeeld. Wil Karel het milder: `begin`, `erbij` en `max` in campagne.json.
 - Het garnizoen van het kamp (40) bestaat wel: mijn eerdere melding dat het op 0 stond was een fout in mijn meetfilter.
 - hut70: de aanloop-simulatie is van 60 naar 25 s, want een golf van 8 man sloopt de onverdedigde hut anders al tijdens de test (29 controles groen).
+
+## 0.77.9: level 4: laatste golf 20 man, 60 soldaten in het kamp (Karels wens van 19 november)
+
+- Golven van Brandt: 8, 12 en een laatste golf van 20 man (nieuwe instelling `doel.golven.laatste` in data/campagne.json, js/doel.js `stuurGolf`). Nog steeds op 240, 360 en 480 s.
+- Het tentenkamp heeft 60 soldaten (was 40): 30 sluipmoordenaars, 18 boogschutters, 12 ridders (`rood.garnizoen`, zelfde verdeling als eerst).
+- `MAX_VIJANDEN` in strijd.js van 90 naar 110, anders kon de laatste golf worden afgekapt als het kamp (60) en overgebleven golven samen boven de 90 kwamen.
+- Tests: nieuw golven77 (5 controles: 60 in het kamp, golven 8, 12 en 20), versterking71 aangepast aan 60 (42 groen), hut70 groen. In de test van het kamp innemen houdt de speler met alle 80 wevers nog ongeveer 11 over (was 39 tot 43 bij 40 kampsoldaten), dus het kamp is nu aanzienlijk zwaarder. NIET op de iPhone gespeeld.

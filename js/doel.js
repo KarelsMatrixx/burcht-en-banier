@@ -10,7 +10,7 @@
 //   doel: { soort: 'hut', duur: seconden, leven: leven van de hut,
 //           golven: { eerste, tussen, begin, erbij, max, leger: { soort: aandeel } } }
 // eerste = seconden tot de eerste golf, tussen = seconden tussen golven,
-// begin = mannen in de eerste golf, erbij = zoveel meer per golf, max = hooguit.
+// begin = mannen in de eerste golf, erbij = zoveel meer per golf, max = hooguit, laatste = grootte van de laatste golf.
 //
 // Is de tijd om, dan wint je niet meteen: Gesina roept het Stille Volk. Vanuit de linkerbovenhoek
 // van de kaart komen vlammenwevers tevoorschijn (doel.versterking), die van jou zijn. De hut hoeft
@@ -99,7 +99,9 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, leger, kijk
 
   // Een golf jagers: begin + erbij per golf, verdeeld naar aandeel.
   function stuurGolf() {
-    const n = Math.min(g.max || 12, (g.begin || 4) + (g.erbij || 1) * s.golven);
+    let n = Math.min(g.max || 12, (g.begin || 4) + (g.erbij || 1) * s.golven);
+    // De laatste golf van het level mag een eigen grootte hebben (g.laatste).
+    if (g.laatste && s.golven === aantalGolven - 1) n = g.laatste;
     // Een aandeel is een getal, of { aandeel, vanaf }: die soort komt pas mee vanaf golf `vanaf` (begint bij 0).
     const leger = {};
     for (const [k, w] of Object.entries(g.leger || { ridder: 1 })) {
