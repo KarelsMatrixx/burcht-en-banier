@@ -1787,6 +1787,17 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       schuifOp(e, k);
       return;
     }
+    // Vaste post (proloog: kruisboogschutters op de binnenmuur): nooit lopen, alleen raken wat binnen bereik is
+    if (e.team === SPELER && e.vastePost) {
+      k.wraak = null;
+      k.bevel = null;
+      const bereik = bereikVan(e, k);
+      const binnen = anderen.filter((a) => Math.hypot(a.x - e.x, a.y - e.y) <= bereik + 0.2);
+      k.doelwit = binnen.length ? kiesDoelwit(e, k, binnen) : null;
+      if (e.pad) e.pad = null;
+      if (!k.doelwit) zetHouding(e, null);
+      return;
+    }
     // Lijfwacht van Karel die los is (Karel vecht zelf): gewone soldatenlogica, ze gaan vechten
     const losWacht = e.karelWacht !== undefined && lijfwachtLos && !(k.def && k.def.koning);
     if (e.team === SPELER && !losWacht && (e.karelWacht !== undefined || (e.post !== undefined && !e.opMuur))) {

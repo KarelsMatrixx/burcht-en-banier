@@ -923,3 +923,9 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Nu: `#laden` in index.html dekt alles af met hetzelfde schilderij en dezelfde donkere rand als het beginscherm (css/stijl.css). main.js laat hem vervagen en haalt hem weg direct na `toonTitel()` (of meteen als het spel zonder beginscherm start). Vangnet: na 20 s verdwijnt hij hoe dan ook; een foutmelding (`#fout`) ligt erboven. Het schilderij wordt vooraf geladen (`<link rel="preload">`).
 - Test: tests/gedraaid77.mjs controleert dat `#laden` tijdens het laden de knoppen afdekt en daarna weg is (21 controles). schermmaat48, hud35 en proloog35 groen.
 - NIET op de iPhone gezien: Karel, kijk of het opstarten nu direct het schilderij toont.
+## 0.77.3: grotere lijfwacht en kruisboogschutters op de binnenmuur (Karels wens van 19 november)
+
+- Lijfwacht van Karel: 30 zwaardvechters (was 20).
+- Nieuw: 15 kruisboogschutters op de muur van de binnenste ring, gelijk verdeeld rondom (proloog.js `zetMuurwacht`, `s.muurwacht`). Ze houden hun plek (`e.vastePost`): niet te kiezen, lopen nooit weg, schieten alleen op wat binnen hun bereik komt (strijd.js). Na herladen opnieuw gemarkeerd.
+- Gemeten in proloog43: verraad tot ruiter 29 tot 34 s.
+- Tests: proloog77 (35, met muurwacht), proloog43, proloog70, proloog35, proloog40 groen.

@@ -95,10 +95,17 @@ check('storm', (await st()).deel === 'storm', JSON.stringify(await st()));
 // Lijfwacht van Karel: 20 zwaardvechters, niet te kiezen, Karel blijft staan
 const lw = await p.evaluate(() => { const s = window.spel; const w = s.leger.lijst.filter((e) => !e.dood && e.karelWacht !== undefined && e.soldaat.sleutel !== 'koning'); const k = s.leger.lijst.find((e) => e.soldaat && e.soldaat.sleutel === 'koning');
   s.leger.kiesAlles(); const gek = w.filter((e) => e.soldaat.sleutel !== 'koning').filter((e) => e.gekozen).length; s.leger.kiesGeen();
-  return { n: w.length, soort: [...new Set(w.map((e) => e.soldaat.sleutel))], gek, blijf: !!k.blijf, bij: w.filter((e) => Math.hypot(e.x - k.x, e.y - k.y) < 5).length }; });
-check('lijfwacht: 20 zwaardvechters', lw.n === 20 && lw.soort.join() === 'zwaardvechter', JSON.stringify(lw));
+  return { n: w.length, soort: [...new Set(w.map((e) => e.soldaat.sleutel))], gek, blijf: !!k.blijf, bij: w.filter((e) => Math.hypot(e.x - k.x, e.y - k.y) < 6).length }; });
+check('lijfwacht: 30 zwaardvechters', lw.n === 30 && lw.soort.join() === 'zwaardvechter', JSON.stringify(lw));
 check('lijfwacht: niet te kiezen', lw.gek === 0, JSON.stringify(lw));
-check('lijfwacht: rond Karel, Karel blijft staan', lw.bij >= 18 && lw.blijf, JSON.stringify(lw));
+check('lijfwacht: rond Karel, Karel blijft staan', lw.bij >= 27 && lw.blijf, JSON.stringify(lw));
+// Kruisboogschutters op de binnenmuur (0.77.2)
+const mw = await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; const w = s.leger.lijst.filter((e) => !e.dood && e.vastePost);
+  s.leger.kiesAlles(); const gek = w.filter((e) => e.gekozen).length; s.leger.kiesGeen();
+  window._mw = w.map((e) => [e.x, e.y]);
+  return { n: w.length, soort: [...new Set(w.map((e) => e.soldaat.sleutel))], muur: w.filter((e) => e.opMuur).length, ring: w.filter((e) => Math.max(Math.abs(Math.floor(e.x) - st.x), Math.abs(Math.floor(e.y) - st.y)) === 5).length, gek }; });
+check('muurwacht: 15 kruisboogschutters op de binnenmuur', mw.n === 15 && mw.soort.join() === 'kruisboog' && mw.muur === 15 && mw.ring === 15, JSON.stringify(mw));
+check('muurwacht: niet te kiezen', mw.gek === 0, JSON.stringify(mw));
 // Zoals in het echte spel: het leger staat binnen, bij de burcht
 await p.evaluate(() => { const s = window.spel; const st = s.kaart.start[0]; const vrij = [];
   for (let dy = -7; dy <= 7; dy++) for (let dx = 2; dx <= 8; dx++) if (s.wegvinder.isVrij(st.x + dx, st.y + dy, 1)) vrij.push([st.x + dx, st.y + dy]);
@@ -108,6 +115,8 @@ const lw2 = await p.evaluate(() => { const s = window.spel; const B = s.kaart.br
   const af = w.map((e) => Math.hypot(e.x - (e.karelWacht % B) - 0.5, e.y - Math.floor(e.karelWacht / B) - 0.5)); return { n: w.length, ver: af.filter((d) => d > 3).length, vecht: w.filter((e) => e.krijg && e.krijg.doelwit).length, fase: s.proloog.stand().fase }; });
 console.log('lijfwacht na 6 s storm:', JSON.stringify(lw2));
 check('lijfwacht: blijft bij de posten (hooguit 3 man ver weg)', lw2.ver <= 3, JSON.stringify(lw2));
+const mwVer = await p.evaluate(() => { const w = window.spel.leger.lijst.filter((e) => !e.dood && e.vastePost); return Math.max(0, ...w.map((e) => Math.min(...window._mw.map(([x, y]) => Math.hypot(e.x - x, e.y - y))))); });
+check('muurwacht: blijft op zijn plek', mwVer < 0.6, mwVer);
 await p.evaluate(() => { const k = window.spel.strijd.koning(0); k.leven = Math.ceil(k.levenMax / 2); });
 await p.waitForTimeout(1500);
 check('Karel op de helft: de ontvoering begint', (await st()).fase === 'ontvoering', JSON.stringify({ fase: (await st()).fase }));

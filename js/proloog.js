@@ -41,7 +41,8 @@ const TAKEN = [
 ];
 
 const LOF = ['Well done, Sire.', 'Good work.', 'Splendid. The people see their king at work.', 'That will do nicely.', 'Very good.'];
-const LIJFWACHT = 20;          // zwaardvechters rond Karel in de nacht
+const LIJFWACHT = 30;          // zwaardvechters rond Karel in de nacht (naar Karel: 1,5 keer de eerste 20)
+const MUURWACHT = 15;           // kruisboogschutters op de muur van de binnenburcht in de nacht (naar Karel)
 const LIJFWACHT_SCHILD = 5;     // zolang er zoveel van leven, raakt Karel geen leven kwijt
 const EXTRA_HOUT = 60;         // extra hout bij het begin van de proloog
 const AVOND = 8;               // seconden schemering na het avondkaartje, dan de nacht
@@ -241,6 +242,34 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       let best = null, bestD = 3;
       for (const e of vrijeMannen) { if (e.karelWacht !== undefined) continue; const d = Math.hypot(e.x - x - 0.5, e.y - y - 0.5); if (d < bestD) { bestD = d; best = e; } }
       if (best) { best.karelWacht = y * B + x; best.wachter = true; best.gekozen = false; }
+    }
+  }
+
+  // Kruisboogschutters op de muur van de binnenste ring (naar Karel): ze houden hun plek, zijn niet te
+  // kiezen en schieten alleen op wat binnen hun bereik komt (strijd.js: e.vastePost).
+  function zetMuurwacht() {
+    const st = kaart.start[0];
+    if (!s.muurwacht) {
+      const kandidaten = [];
+      for (let dy = -5; dy <= 5; dy++) for (let dx = -5; dx <= 5; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== 5) continue;
+        const x = st.x + dx, y = st.y + dy;
+        if (!leger.isMuur(x, y)) continue;
+        if (leger.lijst.some((e) => !e.dood && e.opMuur && Math.floor(e.x) === x && Math.floor(e.y) === y)) continue;
+        kandidaten.push([x, y, Math.atan2(dy, dx)]);
+      }
+      kandidaten.sort((a, b) => a[2] - b[2]);
+      const stap = Math.max(1, kandidaten.length / MUURWACHT);
+      const posten = [];
+      for (let i = 0; i < MUURWACHT && Math.floor(i * stap) < kandidaten.length; i++) posten.push(kandidaten[Math.floor(i * stap)].slice(0, 2));
+      leger.zetStand(posten.map(([x, y]) => ['kruisboog', x, y, 100, 1]));
+      s.muurwacht = posten;
+      bewaar();
+    }
+    // Markeren (ook na herladen): de kruisboogschutter op de muur bij elke post
+    for (const [x, y] of s.muurwacht) {
+      const e = leger.lijst.find((m) => !m.dood && m.opMuur && m.soldaat && m.soldaat.sleutel === 'kruisboog' && !m.vastePost && Math.hypot(m.x - x - 0.5, m.y - y - 0.5) < 1.5);
+      if (e) { e.vastePost = true; e.wachter = true; e.gekozen = false; }
     }
   }
 
@@ -596,6 +625,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     if (kiesGeen) kiesGeen();
     stuurOvermacht();
     zetLijfwacht();
+    zetMuurwacht();
     toonMelding('Torches on the eastern road! A great army is marching on Aldervale.');
     // De camera glijdt rustig naar het aanvallende leger (naar Karel: niet in één keer)
     const v = strijd.vijanden ? strijd.vijanden().filter((e) => !e.dood) : [];
@@ -707,6 +737,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       } else if (s.fase === 'avond') { toonTaak('Evening: the feast is over'); if (!s.gemeld.avond) avondKaart(); }
       else if (s.fase === 'nacht') {
         zetLijfwacht();
+        zetMuurwacht();
         if (s.deel === 'beleg') sluitAllePoorten();
         if (s.deel === 'opmars') {
           // Na het herladen is het leger er niet meer: opnieuw laten marcheren, de les gaat verder
@@ -829,7 +860,7 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
       if (s.fase === 'nacht') {
         // Poortles: een tik bij de poort is voor de poort, niet voor de soldaten die ernaast staan
         if (s.deel === 'opmars' && NACHT_TAKEN[s.nTaak].poort && s.nBegonnen && !s.nKlaar) return false;
-        return e.karelWacht === undefined;
+        return e.karelWacht === undefined && !e.vastePost;
       }
       if (s.fase !== 'bouw' || !s.basis || s.klaar) return false;
       const les = TAKEN[s.taak];

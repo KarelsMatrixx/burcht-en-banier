@@ -256,7 +256,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   function kies(lijst, erbij = false, bewaarDeel = false) {
     if (!bewaarDeel) deelset = null;
     if (!erbij) for (const e of soldaten) e.gekozen = false;
-    for (const e of lijst) if (e.karelWacht === undefined && (!kiesFilter || kiesFilter(e))) e.gekozen = true;   // de lijfwacht van Karel (proloog) bestuur je niet
+    for (const e of lijst) if (e.karelWacht === undefined && !e.vastePost && (!kiesFilter || kiesFilter(e))) e.gekozen = true;   // de lijfwacht van Karel (proloog) bestuur je niet
     opLeger();
   }
 
