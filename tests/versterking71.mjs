@@ -77,8 +77,8 @@ check('nog geen wevers van jou', (await wevers()) === 0);
 check('fase 0: hut telt (strijd.hut aanwezig)', await p.evaluate(() => !!window.spel.strijd.hut() && window.spel.doel.fase() === 0));
 check('fase 0: klok zichtbaar', await p.evaluate(() => !document.querySelector('#aanvalklok').hidden && getComputedStyle(document.querySelector('#aanvalklok')).display !== 'none'));
 
-// --- De acht minuten zijn om ---
-await p.evaluate(() => window.spel.doel.zetTijd(479.5));
+// --- De tien minuten zijn om ---
+await p.evaluate(() => window.spel.doel.zetTijd(599.5));
 await p.evaluate(() => window.ga(1.5));
 const na0 = await p.evaluate(() => {
   const s = window.spel; const taak = document.querySelector('#taak');
@@ -91,7 +91,15 @@ check('de hut hoeft niet meer te staan', na0.hut === null, JSON.stringify(na0.hu
 check('nieuwe opdracht in beeld', /Defeat Huntmaster Brandt/.test(na0.taak), na0.taak);
 check('aanvalsklok is weg', na0.klokWeg);
 check('camera kijkt naar de linkerbovenhoek', na0.cam[0] < -200 && na0.cam[0] > -1200 && na0.cam[1] < 900, JSON.stringify(na0.cam));
+// Ze komen aanlopen: eerst een paar aan de rand van de kaart, die naar binnen lopen, en pas na een tijd alle 80.
+const eerst = await p.evaluate(() => { const w = window.spel.leger.soldaten().filter((e) => e.soldaat.sleutel === 'vlammenwever'); return { n: w.length, xMax: Math.max(...w.map((e) => e.x)), lopend: w.filter((e) => e.pad && e.pad.length).length }; });
+console.log('eerste groepje', JSON.stringify(eerst));
+check('eerst maar een groepje, niet alle 80 in een keer', eerst.n > 0 && eerst.n <= 10, JSON.stringify(eerst));
+check('ze staan aan de rand van de kaart', eerst.xMax < 4, JSON.stringify(eerst));
+check('en ze lopen naar binnen', eerst.lopend >= 1, JSON.stringify(eerst));
 await p.evaluate(() => window.ga(8));
+check('na 8 s nog niet allemaal', (await wevers()) < 80, await wevers());
+await p.evaluate(() => window.ga(40));
 check('80 vlammenwevers erbij', (await wevers()) === 80, await wevers());
 const pos = await p.evaluate(() => {
   const s = window.spel; const w = s.leger.soldaten().filter((e) => e.soldaat.sleutel === 'vlammenwever');
@@ -102,7 +110,7 @@ const pos = await p.evaluate(() => {
 });
 console.log('wevers', JSON.stringify(pos));
 check('de wevers zijn van jou', pos.team === true);
-check('ze staan links boven op het scherm', pos.links && pos.boven && pos.x[1] < 20 && pos.y[0] > 5 && pos.y[1] < 40, JSON.stringify(pos));
+check('ze staan verzameld links op de kaart', pos.boven && pos.x[1] < 24 && pos.y[0] > 5 && pos.y[1] < 40, JSON.stringify(pos));
 check('ieder op een eigen tegel', pos.uniek === 80, pos.uniek);
 const bestuur = await p.evaluate(() => { const s = window.spel; s.leger.kiesAlles(); return { gekozen: s.leger.aantalGekozen() }; });
 check('je kunt ze allemaal kiezen', bestuur.gekozen >= 80, bestuur.gekozen);
@@ -124,7 +132,7 @@ check('herladen: er komen er geen bij', (await wevers()) === 80, await wevers())
 // --- Het kamp innemen ---
 await p.evaluate(() => {
   const s = window.spel; const m = s.kaart.start[1];
-  window.stuurKamp = () => { s.leger.kiesAlles(); s.leger.stuur(m.x - 4, m.y + 4); };
+  window.stuurKamp = () => { s.leger.kies(s.leger.soldaten().filter((e) => e.soldaat.sleutel === 'vlammenwever')); s.leger.stuur(m.x - 4, m.y + 4); };
   window.stuurKamp();
 });
 let eind = null;
@@ -152,16 +160,12 @@ check('opnieuw: het garnizoen is er weer', opn.garnizoen === 40, opn.garnizoen);
 check('opnieuw: aanvalsklok terug', opn.klok);
 
 // Doorspelen na de winst (Keep playing): geen opdracht meer in beeld, het level blijft rustig
-await p.evaluate(() => window.spel.doel.zetTijd(479.5));
-await p.evaluate(() => window.ga(10));
-await p.evaluate(() => {
-  const s = window.spel; const m = s.kaart.start[1]; s.leger.kiesAlles(); s.leger.stuur(m.x - 4, m.y + 4);
-});
-let uit2 = null;
-for (let t = 0; t < 400 && !uit2; t += 10) {
-  uit2 = await p.evaluate(() => { window.ga(10); if (!window.spel.strijd.uitslag()) { const s = window.spel; const m = s.kaart.start[1]; if (Math.round(performance.now()) % 3 === 0) { s.leger.kiesAlles(); s.leger.stuur(m.x - 4, m.y + 4); } } return window.spel.strijd.uitslag(); });
-}
-check('tweede keer ook te winnen', uit2 === 'gewonnen', uit2);
+// (Een tijdsprong laat in een keer alle golven los, en het spel doorspelen is al hierboven getest: de winst komt hier met de testknop.)
+await p.evaluate(() => window.spel.doel.zetTijd(599.5));
+await p.evaluate(() => window.ga(2));
+check('tweede keer: ook nu komt het Stille Volk', await p.evaluate(() => window.spel.doel.fase() === 1 && window.spel.leger.soldaten().some((e) => e.soldaat.sleutel === 'vlammenwever')));
+await p.evaluate(() => window.spel.strijd.beslis('gewonnen'));
+await p.waitForTimeout(500);
 await p.tap('#einde-verder'); await p.waitForTimeout(600);
 await p.evaluate(() => window.ga(2));
 const door = await p.evaluate(() => ({ taak: document.querySelector('#taak').textContent.trim(), uitslag: window.spel.strijd.uitslag() }));

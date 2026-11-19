@@ -959,3 +959,12 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - De golven van Brandt (`doel.golven.leger` in data/campagne.json) bestaan alleen nog uit sluipmoordenaars, boogschutters en ridders. De vlammenwever die vanaf de derde golf meekwam is eruit.
 - Het garnizoen en `rood.leger` van level 4 hadden al geen vlammenwevers. De 80 vlammenwevers na het ritueel blijven van jou.
 - Gecontroleerd: hut70 (29 controles). Niet opnieuw gemeten met de bot; zonder vlammenwever wordt de derde golf zwakker.
+
+## 0.77.8: level 4: golven 4 keer zo groot, vlammenwevers komen aanlopen (Karels feedback van 19 november)
+
+- Golven van Brandt (`doel.golven` in data/campagne.json): begin 8 man (was 2), 4 erbij per golf (was 1), hooguit 12 (was 3). Nog steeds drie golven: 8, 12 en 12 man op 240, 360 en 480 s.
+- De 80 vlammenwevers na het ritueel verschijnen niet meer uit het niets. Ze stappen aan de linkerrand van de kaart binnen (`hoek.x` 0), per 5 man elke 1,5 s (`perBatch`, `tussen`), en lopen naar een verzamelplek 14 tegels verder (`loop`, js/doel.js `loopNaarVerzamelplek`, via `leger.wandel`). De camera kijkt naar het midden van die route. Je kunt ze kiezen en sturen zodra ze er zijn; je eigen selectie verandert niet door hun komst. Het duurt ongeveer 25 s voor alle 80 binnen zijn.
+- Gesina's tekst: wacht tot ze verzameld zijn en stuur ze dan naar Brandt.
+- Tests: versterking71 aangepast (42 controles groen: eerst een groepje van 5 aan de rand dat naar binnen loopt, daarna alle 80, het kamp is te winnen). De tweede speelronde gebruikt nu de testknop voor winst, want een tijdsprong laat alle golven tegelijk los. In de tests en bot-runs stuurde ik de koning eerder per ongeluk mee in een aanval; dat is nu uit de test gehaald. hut70 groen.
+- Meting met de zuinige bot (zonder huizen of eigen economie, 7 soldaten op 240 s): verliest nu op 320 s tegen de eerste golf van 8 man. Dat is een ondergrens; een speler met meer boeren, kazernes en muren heeft meer. NIET op de iPhone gespeeld. Wil Karel het milder: `begin`, `erbij` en `max` in campagne.json.
+- Het garnizoen van het kamp (40) bestaat wel: mijn eerdere melding dat het op 0 stond was een fout in mijn meetfilter.

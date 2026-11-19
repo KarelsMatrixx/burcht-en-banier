@@ -15,7 +15,7 @@
 // Is de tijd om, dan wint je niet meteen: Gesina roept het Stille Volk. Vanuit de linkerbovenhoek
 // van de kaart komen vlammenwevers tevoorschijn (doel.versterking), die van jou zijn. De hut hoeft
 // dan niet meer te blijven staan. Je wint pas als de rode heer in zijn tentenkamp is verslagen.
-//   versterking: { soort, aantal, hoek: { x, y } (deel van de kaart, 0 tot 1), perBatch, tussen (seconden) }
+//   versterking: { soort, aantal, hoek: { x, y } (instaprand, deel van de kaart 0 tot 1), perBatch, tussen (seconden), loop (tegels naar binnen) }
 //
 // De klok staat in localStorage, zodat herladen verder telt.
 
@@ -160,23 +160,46 @@ export function maakDoel({ missie, kaart, bouwer, strijd, wegvinder, leger, kijk
     if (toonAanvalKlok) toonAanvalKlok(null);
     strijd.hutVrij();
     const h = hoek();
-    if (kijkNaar) kijkNaar(h.x, h.y);
-    gesina(`It is done, Karel! The Silent Folk rise out of the reeds, ${totaal()} flameweavers, and they are yours. Tap them and send them at Brandt's camp. Do not let him leave my fen alive.`);
+    if (kijkNaar) { const g = verzamelPlek(); kijkNaar(Math.round((h.x + g.x) / 2), h.y); }
+    gesina(`It is done, Karel! The Silent Folk come out of the reeds, ${totaal()} flameweavers, and they are yours. Wait until they have gathered, then tap them and send them at Brandt's camp. Do not let him leave my fen alive.`);
     toonMelding(`The Silent Folk have come: ${totaal()} Flameweavers join you. Defeat Huntmaster Brandt!`);
     bewaar();
   }
 
-  // Elke batch tevoorschijn uit de hoek: perBatch tegelijk, daarna even wachten.
+  // De Silent Folk komen aanlopen: elke batch stapt aan de rand van de kaart binnen en loopt naar een
+  // verzamelplek een stuk verderop (v.loop tegels naar rechts). Daar wachten ze op jouw bevelen.
+  // Ze lopen met leger.wandel (telt niet als bevel van de speler), dus jouw keuze blijft zoals die was.
+  const verzamelPlek = () => {
+    const h = hoek();
+    return { x: Math.min(kaart.breedte - 2, h.x + ((v && v.loop) || 14)), y: h.y };
+  };
+  function loopNaarVerzamelplek(e) {
+    const g = verzamelPlek();
+    for (let r = 0; r <= 9; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          if (leger.wandel && leger.wandel(e, g.x + dx, g.y + dy)) return true;
+        }
+      }
+    }
+    return false;
+  }
   function versterkingStap(dt) {
     if (s.gekomen >= totaal() || !leger) return;
     batchKlok -= dt;
     if (batchKlok > 0) return;
-    batchKlok = (v && v.tussen) || 0.6;
+    batchKlok = (v && v.tussen) || 1.5;
     const h = hoek();
     const vak = h.y * B + h.x;
-    const n = Math.min((v && v.perBatch) || 10, totaal() - s.gekomen);
+    const n = Math.min((v && v.perBatch) || 5, totaal() - s.gekomen);
     let gelukt = 0;
-    for (let i = 0; i < n; i++) if (leger.geef(v.soort, vak, 18)) gelukt++;
+    for (let i = 0; i < n; i++) {
+      const e = leger.geef(v.soort, vak, 18);
+      if (!e) continue;
+      gelukt++;
+      loopNaarVerzamelplek(e);
+    }
     s.gekomen += gelukt;
     // Is er geen plek meer (bijvoorbeeld door bomen), dan houden we het hierbij.
     if (!gelukt && ++mislukt >= 3) s.gekomen = totaal();
