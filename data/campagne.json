@@ -717,6 +717,10 @@
     },
     "muur": 150,
     "postGarnizoen": {"ridder": 4, "zwaardvechter": 2, "boogschutter": 6, "kruisboog": 4},
+    "slotGarnizoen": {"zwaardvechter": 8, "ridder": 3, "boogschutter": 5, "kruisboog": 4},
+    "torens": {"ballista": 0.5, "kruisboog": 0.25, "bereik": 6, "schade": 0.6},
+    "wachters": 16,
+    "groei": {"burgersMax": 14, "werkvolk": 40},
     "aanval": {
      "niveau": 4,
      "max": 5

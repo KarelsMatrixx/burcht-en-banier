@@ -196,10 +196,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       return gemaakt;
     }
     const wens = R.garnizoen;
-    if (!wens) return maakPostGarnizoen();
+    if (!wens) return maakExtraGarnizoen();
     const sleutels = [];
     for (const [sleutel, aantal] of Object.entries(wens)) if (soorten[sleutel]) for (let i = 0; i < aantal; i++) sleutels.push(sleutel);
-    if (!sleutels.length) return maakPostGarnizoen();
+    if (!sleutels.length) return maakExtraGarnizoen();
     // Alle vrije vakken in het kamp die te voet bereikbaar zijn vanaf de ingang van de commandotent.
     const ingang = vrijBij(m.y * B + m.x + 2);
     const plekken = [];
@@ -226,7 +226,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       gemaakt++;
     }
     opStand();
-    return gemaakt + maakPostGarnizoen();
+    return gemaakt + maakExtraGarnizoen();
   }
   // Het garnizoen van de buitenposten (kaart.posten, level 6): per post dezelfde samenstelling
   // (rood.postGarnizoen: { soort: aantal }). Wie dicht bij de poort staat, vecht met het zwaard;
@@ -269,6 +269,97 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (gemaakt) opStand();
     return gemaakt;
   }
+  // Het slotplein (level 6): soldaten op het erf van het grote kasteel (rood.slotGarnizoen: { soort: aantal }).
+  // Ze staan tussen de binnenmuur en het slot en gedragen zich als het garnizoen van het kamp.
+  function maakSlotGarnizoen() {
+    const wens = R.slotGarnizoen;
+    if (R.proloog || !wens || !koningSleutel) return 0;
+    const sleutels = [];
+    for (const [sleutel, aantal] of Object.entries(wens)) if (soorten[sleutel]) for (let i = 0; i < aantal; i++) sleutels.push(sleutel);
+    if (!sleutels.length) return 0;
+    sleutels.sort((a, b) => (MELEE.has(b) ? 1 : 0) - (MELEE.has(a) ? 1 : 0));   // zwaardvolk dichtbij de poort, schutters naar het slot
+    const m = kaart.start[VIJAND];
+    const binnen = (kaart.ringen && kaart.ringen.length ? Math.min(...kaart.ringen.map((r) => r.maat)) : 6) - 1;
+    const tegels = [];
+    for (let dy = -binnen; dy <= binnen; dy++) {
+      for (let dx = -binnen; dx <= binnen; dx++) {
+        const rand = Math.hypot(dx, dy);
+        if (rand < 2.4 || rand > binnen + 0.2) continue;
+        const x = m.x + dx;
+        const y = m.y + dy;
+        if (x < 1 || y < 1 || x >= B - 1 || y >= H - 1 || !wegvinder.isVrij(x, y, VIJAND)) continue;
+        tegels.push(y * B + x);
+      }
+    }
+    // Gelijkmatig over het erf verspreid: om en om uit de gesorteerde lijst, zodat ze niet in een hoop staan.
+    tegels.sort((a, b) => Math.atan2(Math.floor(a / B) - m.y, (a % B) - m.x) - Math.atan2(Math.floor(b / B) - m.y, (b % B) - m.x));
+    const stap = Math.max(1, Math.floor(tegels.length / sleutels.length));
+    let gemaakt = 0;
+    for (let i = 0; i < sleutels.length && i * stap < tegels.length; i++) {
+      const vak = tegels[i * stap];
+      if (vijanden.some((a) => !a.dood && vakVan(a) === vak)) continue;
+      const e = maakVijand(sleutels[i], vak);
+      e.garnizoen = true;
+      e.post = vak;
+      gemaakt++;
+    }
+    if (gemaakt) opStand();
+    return gemaakt;
+  }
+  // De torens van rood (level 6): op de helft een ballista, op een kwart een kruisboogschutter.
+  // rood.torens: { ballista: deel, kruisboog: deel } (delen tussen 0 en 1). Ze staan vast op hun toren,
+  // schieten alleen op wat binnen bereik komt en hebben geen ingenieur nodig. Valt de toren, dan vallen zij ook.
+  // Een schutter of ballista op een rode toren richt minder schade aan dan zijn soortgenoot op de grond (schatting van Claude, na te lezen).
+  const TOREN_SCHADE = R.torens && Number.isFinite(R.torens.schade) ? R.torens.schade : 0.6;
+  function roodTorenVakken() {
+    const m = kaart.start[VIJAND];
+    const lijst = [];
+    for (let i = 0; i < kaart.object.length; i++) {
+      if (kaart.eigenaar[i] !== ROOD || roodWeg.has(i)) continue;
+      if (kaart.object[i] !== OBJECT.TOREN && kaart.object[i] !== OBJECT.WACHTTOREN) continue;
+      lijst.push(i);
+    }
+    // Rond het slot gesorteerd, buitenste ring eerst bij gelijke hoek: zo wisselen ze netjes af.
+    lijst.sort((a, b) => Math.atan2(Math.floor(a / B) - m.y, (a % B) - m.x) - Math.atan2(Math.floor(b / B) - m.y, (b % B) - m.x));
+    return lijst;
+  }
+  function zetTorenPost(sleutel, vak, leven) {
+    const e = maakVijand(sleutel, vak, leven);
+    e.torenPost = true;
+    e.lagen = false;
+    e.opMuur = true;
+    e.hoogte = eenheden.hoogteOp(vak);
+    e.snelheid = 0;
+    return e;
+  }
+  function maakTorenPosten() {
+    const w = R.torens;
+    if (R.proloog || !w || typeof w !== 'object' || !koningSleutel) return 0;
+    const torens = roodTorenVakken();
+    let gemaakt = 0;
+    const deelBallista = soorten.ballista ? klem(Number(w.ballista) || 0, 0, 1) : 0;
+    const deelKruisboog = soorten.kruisboog ? klem(Number(w.kruisboog) || 0, 0, 1) : 0;
+    let balans = 0;
+    let balansK = 0;
+    for (const vak of torens) {
+      balans += deelBallista;
+      if (balans >= 1 - 1e-9) {
+        balans -= 1;
+        zetTorenPost('ballista', vak);
+        gemaakt++;
+        continue;
+      }
+      balansK += deelKruisboog / Math.max(0.01, 1 - deelBallista);
+      if (balansK >= 1 - 1e-9) {
+        balansK -= 1;
+        zetTorenPost('kruisboog', vak);
+        gemaakt++;
+      }
+    }
+    if (gemaakt) opStand();
+    return gemaakt;
+  }
+  const maakExtraGarnizoen = () => maakSlotGarnizoen() + maakPostGarnizoen() + maakTorenPosten();
   const garnizoenLijst = () => vijanden.filter((e) => e.garnizoen && !e.dood);
   // Een man van het garnizoen: vecht wat in zicht komt, binnen de ketting, en gaat daarna naar zijn post.
   function garnizoenDenk(e, k, anderen) {
@@ -336,7 +427,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const houdingVan = (def) => (def.bereik > 2 ? 'schiet' : 'sla');
   const isSchutter = (k) => k.def.bereik > 2;
   // Hoe ver iemand raakt: een schutter op de muur komt verder.
-  const bereikVan = (e, k) => k.def.bereik + ((e.opMuur || e.hinderlaag) && isSchutter(k) ? R.muurBereik : 0);   // hoog in de rotsen schiet ook verder
+  // Een ballista op een rode toren reikt korter dan die van jou (R.torens.bereik, schatting van Claude, na te lezen): anders bestrijken 15 ballista's heel de omgeving van het kasteel.
+  const bereikVan = (e, k) => (e.torenPost && k.def.geschut && R.torens && Number.isFinite(R.torens.bereik) ? Math.min(k.def.bereik, R.torens.bereik) : k.def.bereik) + ((e.opMuur || e.hinderlaag) && isSchutter(k) ? R.muurBereik : 0);   // hoog in de rotsen schiet ook verder
   // Een ridder kan alleen iemand raken die op dezelfde hoogte staat.
   const kanRaken = (e, k, a) => isSchutter(k) || !!a.opMuur === !!e.opMuur;
   // Een soldaat van de speler op de grond mag een vijand op het dak van zijn hoofdkasteel als doel houden: hij klimt erheen.
@@ -518,6 +610,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     // voortaan mee met de aanval. Is alleen zijn route korter geworden,
     // dan loopt hij het stuk dat er nog staat.
     for (const e of vijanden) {
+      if (e.torenPost && !e.dood && !isRodeMuur(vakVan(e))) {
+        delete e.torenPost;   // zijn toren is weg: hij staat op de grond
+        e.snelheid = e.krijg.def.snelheid;
+      }
       if (e.wachter === undefined && e.opMuur && !e.dood && !wegvinder.isMuur(Math.floor(e.x), Math.floor(e.y), VIJAND)) {
         // Hij stond op jouw muur en die is weg (of zijn ladder): hij staat weer op de grond.
         e.opMuur = false;
@@ -848,7 +944,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       }
       k.afgelegd = 0;
     }
-    schade = Math.max(1, Math.round(schade * sterkteVan(e, k)));
+    schade = Math.max(1, Math.round(schade * sterkteVan(e, k) * (e.torenPost ? TOREN_SCHADE : 1)));
     // Sommige wapens doen extra schade tegen een bepaalde soort (bijl tegen steen).
     if (k.def.bonusTegen) {
       const sl = doel.soldaat ? doel.soldaat.sleutel : doel.vijand;
@@ -2275,7 +2371,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const trebuchetStand = (team = SPELER) => ({ n: aantalStaand(team), max: STAAND_MAX() });
 
   function denk(e, k, anderen) {
-    if (k.def.geschut && !heeftBediener(e)) {
+    if (k.def.geschut && !e.torenPost && !heeftBediener(e)) {
       // Een ballista schiet alleen zolang zijn ingenieur erbij is.
       k.doelwit = null;
       k.bevel = null;
@@ -2294,6 +2390,16 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (e.lijfwacht && e.team === VIJAND) {
       lijfwachtDenk(e, k, anderen);
       schuifOp(e, k);
+      return;
+    }
+    if (e.torenPost && e.team === VIJAND) {
+      // Een schutter of ballista op een rode toren: nooit lopen, alleen raken wat binnen bereik komt.
+      k.bevel = null;
+      if (e.pad) zetPad(e, null);
+      const bereik = bereikVan(e, k);
+      const binnen = anderen.filter((a) => Math.hypot(a.x - e.x, a.y - e.y) <= bereik + 0.2);
+      k.doelwit = binnen.length ? kiesDoelwit(e, k, binnen) : null;
+      if (!k.doelwit) zetHouding(e, null);
       return;
     }
     if (e.garnizoen && e.team === VIJAND) {
@@ -2520,10 +2626,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // Wie er op je af komt: alle vijanden behalve de wachters op de muur van rood.
-  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning && !e.lijfwacht && !e.garnizoen && !e.reserveWacht);
+  const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning && !e.lijfwacht && !e.garnizoen && !e.torenPost && !e.reserveWacht);
   function aantalAanvallers() {
     let n = 0;
-    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning && !vijanden[i].lijfwacht && !vijanden[i].garnizoen && !vijanden[i].reserveWacht && !staandVan(vijanden[i])) n++;
+    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning && !vijanden[i].lijfwacht && !vijanden[i].garnizoen && !vijanden[i].torenPost && !vijanden[i].reserveWacht && !staandVan(vijanden[i])) n++;
     return n;
   }
 
@@ -2914,6 +3020,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     koningRood: koningSleutel ? (koningVan(VIJAND) ? Math.max(1, Math.round(roodKoning.leven)) : 0) : undefined,
     schade: [...schade].map(([vak, s]) => [vak, Math.max(1, Math.round(s.leven))]),
     vijanden: aanvallers().map((e) => [e.vijand, Math.floor(e.x), Math.floor(e.y), Math.max(1, Math.round(e.leven))]),
+    torenPosten: vijanden.filter((e) => e.torenPost && !e.dood).map((e) => [e.vijand, vakVan(e), Math.max(1, Math.round(e.leven))]),
     garnizoen: garnizoenLijst().map((e) => [e.vijand, Math.floor(e.x), Math.floor(e.y), Math.max(1, Math.round(e.leven)), e.post]),
     // Het kasteel van rood: zijn burcht, wat er vernield is en wie er nog op de muur loopt.
     rood: {
@@ -2991,6 +3098,14 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       }
     }
     // Het garnizoen van het kamp: zoals bewaard (ook als het al is verslagen), of nieuw bij een oudere bewaarde stand.
+    if (Array.isArray(s.torenPosten)) {
+      for (const regel of s.torenPosten) {
+        if (!Array.isArray(regel)) continue;
+        const [sleutel, vak, leven] = regel;
+        if (!Object.prototype.hasOwnProperty.call(soorten, sleutel) || !Number.isInteger(vak) || vak < 0 || vak >= N || !isRodeMuur(vak)) continue;
+        zetTorenPost(sleutel, vak, leven);
+      }
+    }
     if (Array.isArray(s.garnizoen)) maakGarnizoen(s.garnizoen);
     else if (!(s.vrede === 1 || s.vrede === true) && s.koningRood !== 0) maakGarnizoen();
     balkenBij();
@@ -3134,6 +3249,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     aantalVijanden: aantalAanvallers,
     vijanden: aanvallers,
     wachters: () => vijanden.filter((e) => e.wachter !== undefined),
+    torenPosten: () => vijanden.filter((e) => e.torenPost && !e.dood),
     lijfwachten: () => vijanden.filter((e) => e.lijfwacht && !e.dood),
     roodKoning: () => roodKoning,
     rood: () => ({ leven: rood.leven, max: rood.max, x: rood.vx, y: rood.vy, plekken: rood.plekken.slice(), weg: [...roodWeg] }),

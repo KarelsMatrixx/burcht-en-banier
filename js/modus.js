@@ -162,6 +162,20 @@ function pasRoodToe(regels, rood) {
     regels.strijd.garnizoen = {};
     for (const [soort, aantal] of Object.entries(rood.garnizoen)) if (Number.isFinite(aantal) && aantal > 0) regels.strijd.garnizoen[soort] = Math.min(60, Math.round(aantal));
   }
+  // slotGarnizoen: { soort: aantal }: soldaten op het erf van het grote kasteel (level 6).
+  if (rood.slotGarnizoen && typeof rood.slotGarnizoen === 'object') {
+    regels.strijd.slotGarnizoen = {};
+    for (const [soort, aantal] of Object.entries(rood.slotGarnizoen)) if (Number.isFinite(aantal) && aantal > 0) regels.strijd.slotGarnizoen[soort] = Math.min(40, Math.round(aantal));
+  }
+  // torens: { ballista: deel, kruisboog: deel }: welk deel van de rode torens een ballista of een kruisboogschutter krijgt (0 tot 1).
+  if (rood.torens && typeof rood.torens === 'object') {
+    regels.strijd.torens = {
+      ballista: Math.max(0, Math.min(1, Number(rood.torens.ballista) || 0)),
+      kruisboog: Math.max(0, Math.min(1, Number(rood.torens.kruisboog) || 0)),
+      bereik: Number.isFinite(rood.torens.bereik) ? Math.max(2, Math.min(12, rood.torens.bereik)) : undefined,
+      schade: Number.isFinite(rood.torens.schade) ? Math.max(0.1, Math.min(2, rood.torens.schade)) : undefined,
+    };
+  }
   // postGarnizoen: { soort: aantal }: soldaten in elke buitenpost van rood (level 6, ontwerp.posten).
   if (rood.postGarnizoen && typeof rood.postGarnizoen === 'object') {
     regels.strijd.postGarnizoen = {};

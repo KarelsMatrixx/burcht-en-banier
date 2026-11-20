@@ -15,6 +15,7 @@
 //   doelPerStap   erbij op zijn aanvalsdoel per stap    (0,2 plus 0,06 per level)
 //   wachtersMax   extra wachters op zijn muren          (1 plus een per twee levels)
 //   burgersMax    burgers van rood op de kaart          (6 plus 2 per level)
+//   werkvolk      rode ingenieurs die tussen de werven en het decor lopen en met de hamer werken (standaard 0; level 6)
 
 import { OBJECT, GROND } from './kaart.js';
 import { SOORT } from './eenheden.js';
@@ -29,6 +30,7 @@ export function maakGroei({ kaart, strijd, eenheden, wegvinder, niveau = 3, conf
     doelPerStap: 0.2 + 0.06 * n,
     wachtersMax: 1 + Math.floor(n / 2),
     burgersMax: 6 + 2 * n,
+    werkvolk: 0,
     ...(config || {}),
   };
   const B = kaart.breedte;
@@ -39,6 +41,8 @@ export function maakGroei({ kaart, strijd, eenheden, wegvinder, niveau = 3, conf
   let herstelKlok = 0;
   const gebouwen = [];     // { vak, soort }
   const burgers = [];      // { e, thuis, wacht }
+  const volk = [];         // { e, spots, tot, werkt, slag }: ingenieurs die tussen de werkplekken lopen en werken
+  let volkGemaakt = false;
   let rng = 1;
   const toeval = () => { rng = (rng * 1664525 + 1013904223) >>> 0; return rng / 4294967296; };
 
@@ -134,10 +138,97 @@ export function maakGroei({ kaart, strijd, eenheden, wegvinder, niveau = 3, conf
     }
   }
 
+
+  // --- Werkvolk (level 6): ingenieurs die rondlopen en werken -----------------------------------
+  const WERKPLEK = new Set([OBJECT.KRAAN, OBJECT.WERKBANK, OBJECT.HOUTSTAPEL, OBJECT.RAMGERAAMTE, OBJECT.STEENHOUWER, OBJECT.KAMPVUUR, OBJECT.VATEN]);
+  const volkPlekken = () => {
+    const lijst = [];
+    for (let i = 0; i < kaart.object.length; i++) {
+      if (!WERKPLEK.has(kaart.object[i])) continue;
+      const x = i % B;
+      const y = Math.floor(i / B);
+      if (Math.max(Math.abs(x - midden.x), Math.abs(y - midden.y)) > 36) continue;
+      for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, -1]]) {
+        if (!wegvinder.isVrij(x + dx, y + dy, 1)) continue;
+        lijst.push({ vak: (y + dy) * B + x + dx, kijk: -dx || 1 });
+        break;
+      }
+    }
+    return lijst;
+  };
+  function maakVolk() {
+    volkGemaakt = true;
+    const aantal = Math.max(0, Math.min(80, Math.round(c.werkvolk) || 0));
+    if (!aantal) return;
+    const spots = volkPlekken();
+    if (!spots.length) return;
+    rng = (kaart.zaad * 17 + 5) >>> 0;
+    for (let i = 0; i < aantal; i++) {
+      const sp = spots[Math.floor(toeval() * spots.length)];
+      let vak = -1;
+      for (let poging = 0; poging < 10 && vak < 0; poging++) {
+        const x = (sp.vak % B) + Math.round((toeval() * 2 - 1) * 3);
+        const y = Math.floor(sp.vak / B) + Math.round((toeval() * 2 - 1) * 3);
+        if (wegvinder.isVrij(x, y, 1)) vak = y * B + x;
+      }
+      if (vak < 0) continue;
+      const e = eenheden.maakWerker(vak, 1, SOORT.INGENIEUR, 0.5 + toeval() * 0.25);
+      e.burgerVanRood = true;
+      volk.push({ e, spots, tot: toeval() * 4, werkt: false, slag: 0 });
+    }
+  }
+  function volkStap(dt) {
+    let budget = 3;
+    for (const f of volk) {
+      const e = f.e;
+      if (e.pad) continue;
+      if (f.werkt) {
+        f.tot -= dt;
+        f.slag -= dt;
+        if (f.slag <= 0) { e.pose = e.pose ? 0 : 1; f.slag = 0.38; }
+        if (f.tot > 0) continue;
+        f.werkt = false;
+        e.houding = null;
+        e.pose = 0;
+        f.tot = 0.3 + toeval() * 2;
+        continue;
+      }
+      f.tot -= dt;
+      if (f.tot > 0 || budget <= 0) continue;
+      budget--;
+      const dichtbij = f.spots.filter((q) => Math.hypot((q.vak % B) - e.x, Math.floor(q.vak / B) - e.y) <= 12);
+      const keuze = dichtbij.length ? dichtbij : f.spots;
+      const sp = keuze[Math.floor(toeval() * keuze.length)];
+      const pad = wegvinder.zoekPad(Math.floor(e.x), Math.floor(e.y), sp.vak % B, Math.floor(sp.vak / B), 1);
+      if (pad && pad.length && pad.length <= 30) {
+        e.pad = pad;
+        e.stap = 0;
+        f.komtAan = sp;
+      } else if (Math.floor(e.x) === sp.vak % B && Math.floor(e.y) === Math.floor(sp.vak / B)) {
+        f.komtAan = sp;
+      } else { f.tot = 1 + toeval() * 2; continue; }
+      f.tot = 0;
+      f.naarPlek = true;
+    }
+    // Wie aangekomen is, gaat aan het werk.
+    for (const f of volk) {
+      if (f.e.pad || f.werkt || !f.naarPlek) continue;
+      f.naarPlek = false;
+      f.werkt = true;
+      f.tot = 4 + toeval() * 6;
+      f.slag = 0;
+      if (f.komtAan) f.e.kijkt = f.komtAan.kijk;
+      f.e.houding = 'sla';
+    }
+  }
+  const volkWeg = (i) => { eenheden.verwijder(volk[i].e); volk.splice(i, 1); };
+
   return {
     stap(dt) {
       if (strijd.rood().leven <= 0) return;
       klok += dt;
+      if (!volkGemaakt && c.werkvolk > 0) maakVolk();
+      volkStap(dt);
       if (klok >= c.elke && stappen < c.max) { klok -= c.elke; groeiStap(); }
       // De wachters: zakt het aantal (gesneuveld), dan komt er elke 45 seconden één bij
       herstelKlok += dt;
@@ -159,11 +250,14 @@ export function maakGroei({ kaart, strijd, eenheden, wegvinder, niveau = 3, conf
     // Het erbij op zijn aanvalsdoel.
     doelBonus: () => stappen * c.doelPerStap,
     stappen: () => stappen,
-    burgers: () => burgers.map((f) => f.e),
+    burgers: () => burgers.map((f) => f.e).concat(volk.map((f) => f.e)),
+    werkvolk: () => volk.map((f) => f.e),
     // Een burger is gedood.
     burgerWeg(e) {
       const i = burgers.findIndex((f) => f.e === e);
       if (i >= 0) wegBurger(i);
+      const j = volk.findIndex((f) => f.e === e);
+      if (j >= 0) volkWeg(j);
     },
     config: () => ({ ...c }),
     // Terugzetten van een bewaard spel: dezelfde stappen opnieuw (de plekken liggen vast).
@@ -178,6 +272,8 @@ export function maakGroei({ kaart, strijd, eenheden, wegvinder, niveau = 3, conf
       for (const g of gebouwen) strijd.haalRoodBouwWeg(g.vak);
       gebouwen.length = 0;
       while (burgers.length) wegBurger(0);
+      while (volk.length) volkWeg(0);
+      volkGemaakt = false;
       stappen = 0;
       klok = 0;
       herstelKlok = 0;
