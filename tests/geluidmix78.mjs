@@ -31,6 +31,17 @@ check('geluid in beeld klinkt', inBeeld[0] === 1, JSON.stringify(inBeeld));
 // Zoomsterkte: helemaal uit 0, start ergens tussen, ver in 1
 const z = await g(() => { const s = window.spel; const r = []; for (const zoom of [0.45, 1.0, 1.2, 1.6, 2.5]) { s.camera.zoom = zoom; r.push(Math.round(s.geluid.stand().zoom * 100) / 100); } return r; });
 check('zoom: uit 0, in 1, ertussen oplopend', z[0] === 0 && z[3] === 1 && z[4] === 1 && z[1] > 0 && z[2] > z[1], JSON.stringify(z));
+// Een geluid dat al klinkt, wordt zachter als je uitzoomt (geleidelijk, niet afgekapt)
+const volg = await p.evaluate(async () => {
+  const s = window.spel; const c = s.camera; c.zoom = 2; await new Promise((r) => setTimeout(r, 1200));
+  const m = c.schermNaarWereld(c.breedte / 2, c.hoogte / 2); const x = (m.x / 32 + m.y / 16) / 2, y = (m.y / 16 - m.x / 32) / 2;
+  s.geluid.speel('amb_battle_far', { x, y });
+  await new Promise((r) => setTimeout(r, 400)); const voor = Math.max(...s.geluid.stand().volumes);
+  c.zoom = 0.45; await new Promise((r) => setTimeout(r, 120)); const even = Math.max(...s.geluid.stand().volumes);
+  await new Promise((r) => setTimeout(r, 900)); const na = Math.max(0, ...s.geluid.stand().volumes);
+  return { voor, even, na };
+});
+check('klinkend geluid zakt geleidelijk weg bij uitzoomen', volg.voor > 0.1 && volg.even > 0.01 && volg.even < volg.voor && volg.na < 0.02, JSON.stringify(volg));
 // Helemaal uitgezoomd: niets uit de wereld, wel knoppen
 const uit = await g(() => { const s = window.spel; s.camera.zoom = 0.45; s.geluid.nulMeting(); s.geluid.speel('death_civilian', { x: 20, y: 40 }); s.geluid.speel('ui_confirm'); return s.geluid.stand().gestart; });
 check('uitgezoomd: wereld stil, knop klinkt', uit === 1, uit);

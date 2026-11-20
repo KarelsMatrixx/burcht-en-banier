@@ -72,6 +72,7 @@ function maakGeluid() {
         });
         setInterval(tik, 1000);
         setInterval(zoomOmgeving, 200);
+        setInterval(volgCamera, 100);
       }
       if (ctx.state === 'suspended') ctx.resume();
       // iOS: een heel kort stil geluid zet de audio echt aan.
@@ -92,7 +93,7 @@ function maakGeluid() {
   // niets, vanaf zoom.vol (data/geluiden.json) alles. Daartussen loopt het op.
   function zoomSterkte(zoom) {
     if (zoom === undefined || !lijst) return 1;
-    const z = lijst.zoom || { stil: 0.45, vol: 1.6 };
+    const z = lijst.zoom || { stil: 0.6, vol: 1.6 };
     return Math.max(0, Math.min(1, (zoom - z.stil) / (z.vol - z.stil)));
   }
 
@@ -102,9 +103,12 @@ function maakGeluid() {
     if (!plek || x === undefined) return 1;
     const p = plek(x, y);
     if (!p) return 1;
-    const rand = 30;   // pixels: wat net op de rand staat, telt mee
-    if (p.sx < -rand || p.sy < -rand || p.sx > p.b + rand || p.sy > p.h + rand) return 0;
-    return zoomSterkte(p.zoom);
+    // Net buiten beeld loopt het geleidelijk af tot stil (geen harde grens).
+    const rand = 80;   // pixels
+    const dx = p.sx < 0 ? -p.sx : p.sx > p.b ? p.sx - p.b : 0;
+    const dy = p.sy < 0 ? -p.sy : p.sy > p.h ? p.sy - p.h : 0;
+    const buiten = Math.max(0, 1 - Math.hypot(dx, dy) / rand);
+    return buiten * zoomSterkte(p.zoom);
   }
 
   // Wat er nu klinkt: { prio, gevecht, bron, v, eind }. Hooguit maxTegelijk
@@ -119,8 +123,8 @@ function maakGeluid() {
   function stopZacht(k) {
     klinkt.delete(k);
     try {
-      k.v.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
-      k.bron.stop(ctx.currentTime + 0.15);
+      k.v.gain.setTargetAtTime(0, ctx.currentTime, 0.12);
+      k.bron.stop(ctx.currentTime + 0.6);
     } catch (e) { /* al gestopt */ }
   }
   function zwaksteVan(alleenGewoon) {
@@ -177,7 +181,8 @@ function maakGeluid() {
       bron.connect(v);
       v.connect(effecten);
       const wacht = Math.max(0, (opt.wacht || 0) / 1000);
-      const k = { prio, gevecht: !!g.gevecht, bron, v, start: nu, eind: nu + (wacht + buf.duration / snel) * 1000 };
+      const basis = (g.volume === undefined ? 1 : g.volume) * (opt.volume === undefined ? 1 : opt.volume);
+      const k = { prio, gevecht: !!g.gevecht, bron, v, basis, x: opt.x, y: opt.y, start: nu, eind: nu + (wacht + buf.duration / snel) * 1000 };
       klinkt.add(k);
       gestart++;
       maxKlonk = Math.max(maxKlonk, klinkt.size);
@@ -185,6 +190,16 @@ function maakGeluid() {
       bron.onended = () => { spelend--; klinkt.delete(k); v.disconnect(); };
       bron.start(ctx.currentTime + wacht);
     } catch (e) { /* een geluid minder */ }
+  }
+
+  // Wat al klinkt, volgt de camera: zoom je uit of schuif je weg, dan wordt
+  // het geleidelijk zachter (en weer harder als je terugkomt).
+  function volgCamera() {
+    if (!ctx) return;
+    for (const k of klinkt) {
+      if (k.x === undefined) continue;
+      try { k.v.gain.setTargetAtTime(k.basis * sterkteOp(k.x, k.y), ctx.currentTime, 0.1); } catch (e) { /* weg */ }
+    }
   }
 
   // Het omgevingsgeluid volgt de zoom: uitgezoomd stil, ingezoomd vol.
@@ -309,7 +324,7 @@ function maakGeluid() {
     zetAan(a) { stand.aan = !!a; bewaar(); zetVolume(); },
     zetVolumeNiveau(v) { stand.volume = Math.max(0, Math.min(1, v)); bewaar(); zetVolume(); },
     // Voor tests
-    stand: () => ({ omgeving: lus ? lus.naam : null, gehoord: [...laatst.keys()], ctx: ctx ? ctx.state : 'geen', geladen: [...buffers.values()].filter((b) => b && !(b instanceof Promise)).length, spelend, klinkt: klinkt.size, gestart, maxKlonk, zoom: plek && plek(0, 0) ? zoomSterkte(plek(0, 0).zoom) : null, lusVolume: lus ? lus.v.gain.value : null, aan: stand.aan, volume: stand.volume }),
+    stand: () => ({ omgeving: lus ? lus.naam : null, gehoord: [...laatst.keys()], ctx: ctx ? ctx.state : 'geen', geladen: [...buffers.values()].filter((b) => b && !(b instanceof Promise)).length, spelend, klinkt: klinkt.size, volumes: [...klinkt].map((k) => Math.round(k.v.gain.value * 100) / 100), gestart, maxKlonk, zoom: plek && plek(0, 0) ? zoomSterkte(plek(0, 0).zoom) : null, lusVolume: lus ? lus.v.gain.value : null, aan: stand.aan, volume: stand.volume }),
   };
 }
 

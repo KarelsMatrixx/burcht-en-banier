@@ -1012,3 +1012,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 
 - Het water (of ander omgevingsgeluid) klonk ook op het startscherm. Nu draait de omgevingslus zacht naar nul zolang het startscherm of de levelkaart open is (`geluid.zetStil`, main.js: `titelOpen` of `#titelscherm` zichtbaar), en komt terug in het spel. Knoppen klinken wel.
 - Test geluidmix78 uitgebreid (12 controles).
+
+## 0.78.3: geluid zakt geleidelijk weg (Karels melding van 20 november)
+
+- Wat al klinkt volgt de camera (elke 0,1 s): uitzoomen of wegschuiven maakt het geleidelijk zachter, terugkomen weer harder. Eerst bleef een geluid op zijn beginvolume tot het af was.
+- Rand van het scherm: geen harde grens meer; tot 80 pixels buiten beeld loopt het volume af naar stil.
+- Zoom: stil vanaf 0,6 (was 0,45), vol vanaf 1,6. Het laatste stuk uitzoomen is dus helemaal stil; bij de startzoom 1,2 ongeveer 60 procent.
+- Een verdrongen geluid draait in ongeveer een halve seconde weg in plaats van in 0,15 s.
+- Test geluidmix78: 13 controles groen; geluid46 groen.
