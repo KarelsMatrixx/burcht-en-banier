@@ -25,6 +25,7 @@ import { maakVerhaal } from './verhaal.js';
 import { maakProloog } from './proloog.js';
 import { maakHinderlaag } from './hinderlaag.js';
 import { maakReserve } from './reserve.js';
+import { maakSluipers } from './sluipers.js';
 import { maakPoortwacht } from './poortwacht.js';
 import { maakGids } from './gids.js';
 import { maakFiguranten } from './figuranten.js';
@@ -671,6 +672,7 @@ async function start() {
     strijd.herstel();
     if (hinderlaag) hinderlaag.wis();   // level 2: de nissen in de rotsen dicht, de hinderlaag komt weer
     if (reserve) reserve.wis();   // level 9: de verborgen reserve staat weer klaar
+    if (sluipers) sluipers.wis();   // level 4: alle dertig plekken staan weer klaar
     sluitKazerne();
     ui.toonEinde({ open: false });
     ui.verbergVerhaal();
@@ -967,6 +969,11 @@ async function start() {
     missie, kaart, strijd, leger, wegvinder,
     toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
     toonVerhaal: (tekst) => ui.toonVerhaal({ naam: missie.heer, portret: missie.portret, tekst }),
+  }) : null;
+  // Level 4: ongeveer dertig plekken waar uit het niets een sluipmoordenaar opduikt (js/sluipers.js)
+  const sluipers = missie && missie.sluipers ? maakSluipers({
+    missie, kaart, eenheden, leger, strijd, wegvinder,
+    toonMelding: (t) => ui.toonMelding(t, { soort: 'vijand' }),
   }) : null;
   let beeldOpen = false;   // het verhaalbeeld staat in beeld: het spel wacht
   const GEZIEN = 'burcht-banier.beeldGezien';   // welk level zijn verhaalbeeld al heeft gehad: bij heropenen niet nog eens
@@ -1289,6 +1296,7 @@ async function start() {
       if (doel) doel.stap(dt);
       if (hinderlaag && !strijd.uitslag()) hinderlaag.stap(dt);
       if (reserve) reserve.stap(dt);
+      if (sluipers) sluipers.stap(dt);
       slachting.stap(dt);
     },
     teken: (tussenstand) => tekenaar.teken(staat, tussenstand),
@@ -1337,7 +1345,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { gids, hinderlaag, reserve, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
+  window.spel = { gids, hinderlaag, reserve, sluipers, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

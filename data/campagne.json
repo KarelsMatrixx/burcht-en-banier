@@ -396,6 +396,14 @@
    "profiel": "normaal",
    "kaart": "veen",
    "landschap": "veen",
+   "sluipers": {
+    "aantal": 30,
+    "soort": "sluipmoordenaar",
+    "straal": 1.3,
+    "mijdKasteel": 13,
+    "mijdHut": 6,
+    "zaad": 404
+   },
    "punt": {
     "x": 44.7,
     "y": 38.4

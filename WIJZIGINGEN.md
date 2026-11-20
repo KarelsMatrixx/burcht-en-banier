@@ -1020,3 +1020,12 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Zoom: stil vanaf 0,6 (was 0,45), vol vanaf 1,6. Het laatste stuk uitzoomen is dus helemaal stil; bij de startzoom 1,2 ongeveer 60 procent.
 - Een verdrongen geluid draait in ongeveer een halve seconde weg in plaats van in 0,15 s.
 - Test geluidmix78: 13 controles groen; geluid46 groen.
+
+## 0.78.4: dertig hinderlagen met een sluipmoordenaar in level 4 (Karels wens van 20 november)
+
+- Nieuw: `js/sluipers.js`. Op de kaart van The Fen liggen 30 onzichtbare plekken, verspreid over de hele kaart (raster over de kaart, vast zaad 404, dus elke keer dezelfde plekken). Loopt een werker of soldaat van jou binnen 1,3 tegel van zo'n plek, dan duikt er uit het niets precies één rode sluipmoordenaar naast hem op, en die valt aan. Elke plek werkt één keer. Rood zelf lost niets uit.
+- De plekken liggen op droog land dat begaanbaar is, minstens 13 tegels van jouw kasteel, minstens 6 van de hut en minstens 4 van elkaar. Zo komt er niet meteen een sluipmoordenaar bij je eerste werkers.
+- De stand (welke plekken al gebruikt zijn) staat in localStorage, dus herladen geeft ze niet opnieuw. Bij "Start over" staan alle 30 weer klaar.
+- Instelling: `sluipers` bij level 4 in `data/campagne.json` (aantal, soort, straal, mijdKasteel, mijdHut, zaad). Nieuw in strijd.js: `duikOp(soort, vak)`.
+- Test: nieuw sluipers78 (22 controles: 30 plekken, verspreid over vier kwarten, werker en soldaat lossen uit, één keer per plek, rood niet, herstart). 
+- Let op: de plekken liggen verspreid, dus werkers die ver weg hout halen kunnen er ook op lopen. De aantallen en afstanden zijn schattingen en niet op de iPhone gespeeld. Balans met de 60 rode soldaten en de golven van 12, 20 en 25 niet opnieuw uitgeprobeerd.

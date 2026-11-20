@@ -2119,6 +2119,15 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     return e;
   }
 
+  // Een vijand die uit het niets opduikt (level 4, js/sluipers.js): gewoon een aanvaller, geen vaste post.
+  function duikOp(sleutel, vak) {
+    if (!soorten[sleutel] || vak < 0) return null;
+    const e = maakVijand(sleutel, vak);
+    opVerandering();
+    opStand();
+    return e;
+  }
+
   // De verborgen reserve van rood (level 9, js/reserve.js): wacht onzichtbaar op een vaste plek.
   // Je ziet ze pas van heel dichtbij, of als er een ziener van jou in de buurt is.
   function reserveSoldaat(sleutel, vak) {
@@ -2590,7 +2599,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     reserveSoldaat, laatReserveLos, reserveZicht,
     reserve: () => vijanden.filter((e) => e.reserveWacht && !e.dood),
     koningBeschermd: () => koningBeschermd,
-    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, ruiter, laatOpmarsLos, opmarsDirect, opmarsStand, hinderlaag,
+    stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, ruiter, laatOpmarsLos, opmarsDirect, opmarsStand, hinderlaag, duikOp,
     vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),
