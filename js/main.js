@@ -101,6 +101,7 @@ async function start() {
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
   // Geluid (stap 46): klinkt zachter naarmate het verder buiten beeld is.
   if (!window.__geluidGekoppeld) { window.__geluidGekoppeld = true; geluid.koppel(); }
+  geluid.zetLandschap(missie && missie.proloog ? 'proloog' : (missie && missie.landschap) || 'vrij');
   geluid.zetPlek((x, y) => { const w = rasterNaarWereld(x, y); const sc = camera.wereldNaarScherm(w.x, w.y); return { sx: sc.x, sy: sc.y, b: camera.breedte, h: camera.hoogte, zoom: camera.zoom }; });
   const tekenaar = maakTekenaar(canvas, kaart, camera, assets, landschapProfiel);
   tekenaar.zetWimpels(!!(ontwerp && ontwerp.wimpels));
@@ -441,6 +442,7 @@ async function start() {
   // doel = wat het bevel aanwees ('wall', 'gate', ...).
   function meldSiege(ontvangen, doel) {
     if (ontvangen.length) geluid.speel('siege_confirm');
+    if (ontvangen.some((e) => leger.soorten[e.soldaat.sleutel].vast)) geluid.speel('siege_tower_roll', { wacht: 300 });
     const aantal = {};
     for (const e of ontvangen) {
       const def = leger.soorten[e.soldaat.sleutel];
@@ -1133,6 +1135,8 @@ async function start() {
           const opWeg = leger.stuur(vanRood.x, vanRood.y, true);
           leger.kies(groep);
           if (opWeg) {
+            geluid.speel('order_attack');
+            geluid.speel('ladder_climb', { wacht: 300 });
             staat.doel = { x: vanRood.x, y: vanRood.y, duur: 900, tot: performance.now() + 900, hoogte: hoogteOp(vanRood.vak) };
             return;
           }
@@ -1163,6 +1167,7 @@ async function start() {
       if (muur) {
         if (leger.stuur(muur.x, muur.y, true)) {
           geluid.speel('order_move');
+          geluid.speel('steps_stone', { wacht: 250 });
           staat.doel = { x: muur.x, y: muur.y, duur: 900, tot: performance.now() + 900, hoogte: hoogteOp(muur.y * kaart.breedte + muur.x) };
         } else if (!leger.heeftTrap(muur.x, muur.y)) {
           ui.toonMelding('Your soldiers cannot get onto this wall yet. They can only climb up through an open gate: build a gate in this wall, or open it.', { soort: 'leger' });
@@ -1174,7 +1179,7 @@ async function start() {
       // Zijn er soldaten gekozen, dan stuur je ze naar deze tegel.
       if (leger.aantalGekozen()) {
         if (!binnenKaart(kaart, x, y)) return;
-        if (leger.stuur(x, y)) { staat.doel = { x, y, duur: 900, tot: performance.now() + 900 }; geluid.speel('order_move'); }
+        if (leger.stuur(x, y)) { staat.doel = { x, y, duur: 900, tot: performance.now() + 900 }; geluid.speel('order_move'); geluid.speel('steps_grass', { wacht: 250 }); }
         else ui.toonMelding(leger.gekozenHoog() ? 'The siege tower is taller than the gate and cannot pass through it.' : 'Your soldiers cannot get there.', { soort: 'leger' });
         return;
       }
@@ -1186,6 +1191,7 @@ async function start() {
         const nuDicht = !wegvinder.isPoortDicht(poort[0]);
         wegvinder.zetPoortDicht(poort, nuDicht);
         poortwacht.handmatig(poort, nuDicht);
+        geluid.speel(nuDicht ? 'gate_close' : 'gate_open', { x: poort[0] % kaart.breedte + 0.5, y: Math.floor(poort[0] / kaart.breedte) + 0.5 });
         kaartGewijzigd(new Set(poort));
         ui.toonMelding(nuDicht ? 'Gate closed. Nobody can pass, not even your own men.' : 'Gate open. Your men can pass, the enemy cannot.', { soort: 'leger' });
         return;

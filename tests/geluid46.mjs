@@ -22,10 +22,11 @@ await p.evaluate(() => {
 await p.reload(); await wacht(); await p.waitForTimeout(300);
 const voor = await p.evaluate(() => window.spel.geluid.stand());
 check('voor de eerste tik: geen audio', voor.ctx === 'geen', JSON.stringify(voor));
-await p.tap('#missie-begin'); await p.waitForTimeout(2500);
+await p.tap('#missie-begin'); await p.waitForTimeout(4000);
 const na = await p.evaluate(() => window.spel.geluid.stand());
 check('na de eerste tik: audio aan', na.ctx === 'running', JSON.stringify(na));
-check('alle 54 bestanden geladen', na.geladen === 54, JSON.stringify(na));
+check('alle 88 bestanden geladen', na.geladen === 88, JSON.stringify(na));
+check('omgeving proloog: dorp', na.omgeving === 'amb_village', JSON.stringify(na));
 // Tellen wat er klinkt
 await p.evaluate(() => {
   const g = window.spel.geluid; const echt = g.speel; window.__gehoord = {};
@@ -40,6 +41,7 @@ const st0 = await p.evaluate(() => window.spel.geluid.stand().gehoord);
 check('knop tikt', st0.includes('ui_click') || st0.includes('ui_back'), JSON.stringify(st0));
 check('zwaarden in het gevecht', (gehoord.sword_hit || 0) + (gehoord.axe_hit || 0) >= 5);
 check('sneuvelen klinkt', (gehoord.death_soldier || 0) + (gehoord.death_civilian || 0) >= 1);
+check('hoorn bij de aanval of ladder', (gehoord.horn_attack || 0) + (gehoord.ladder_place || 0) >= 1);
 check('pijlen of kruisbogen', (gehoord.arrow_release || 0) + (gehoord.crossbow_shot || 0) >= 1);
 const st = await p.evaluate(() => window.spel.geluid.stand());
 check('nooit meer dan 14 tegelijk', st.spelend <= 14, JSON.stringify(st));
@@ -53,6 +55,12 @@ await p.fill('#geluid-volume', '40');
 s2 = await p.evaluate(() => [window.spel.geluid.aan(), window.spel.geluid.volume()]);
 check('geluid weer aan, volume 0,4', s2[0] === true && Math.abs(s2[1] - 0.4) < 0.01, JSON.stringify(s2));
 await p.screenshot({ path: '/home/claude/geluid-menu.png' });
+// Level 4 (veen): moerasgeluid
+await p.evaluate(() => { localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [0, 1, 2, 3] })); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 4 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); });
+await p.reload(); await wacht(); await p.waitForTimeout(500);
+await p.mouse.click(5, 380); await p.waitForTimeout(3000);
+const veen = await p.evaluate(() => window.spel.geluid.stand());
+check('omgeving level 4: moeras', veen.omgeving === 'amb_swamp', JSON.stringify(veen));
 check('geen ontbrekende bestanden', mis.length === 0, mis.join(' '));
 check('geen paginafouten', fouten.length === 0, fouten.join(' | '));
 console.log('ok', ok, 'fout', fout);

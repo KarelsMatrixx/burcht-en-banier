@@ -525,8 +525,16 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const sl = k.def.sleutel || '';
     const plek = { x: doel.x, y: doel.y };
     if (k.def.gebied !== undefined) return geluid.speel('fire_cast', { x: e.x, y: e.y });
-    if (k.def.windstoot || k.def.alleenBouw) return;
+    if (k.def.windstoot) return;
+    if (sl === 'katapult') {
+      geluid.speel('catapult_launch', { x: e.x, y: e.y });
+      return geluid.speel('catapult_impact', { x: doel.x, y: doel.y, wacht: 400 + 45 * Math.hypot(doel.x - e.x, doel.y - e.y) });
+    }
+    if (sl === 'ram') return geluid.speel('ram_hit', plek);
+    if (k.def.alleenBouw && !KLAP_GELUID[sl]) return;
     if (isSchutter(k)) return geluid.speel(PIJL_GELUID[sl] || 'arrow_release', { x: e.x, y: e.y });
+    // Een zwaard of bijl op een muur of gebouw klinkt als een klap op hout en steen.
+    if ((doel.vak !== undefined || doel.burcht) && !KLAP_GELUID[sl]) return geluid.speel('building_hit', plek);
     if (k.def.koning && e.team === SPELER) return geluid.speel('sword_heavy', plek);
     geluid.speel(KLAP_GELUID[sl] || 'sword_hit', plek);
   }
@@ -570,7 +578,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const kd = krijgVan(doel);
     kd.rust = 0;
     if (doel.leven <= 0) {
-      if (!doel.dood) geluid.speel('death_soldier', { x: doel.x, y: doel.y });
+      if (!doel.dood) geluid.speel(kd.def.koning ? 'king_falls' : 'death_soldier', { x: doel.x, y: doel.y });
       doel.dood = true;
       return;
     }
@@ -610,7 +618,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     s.leven -= hoeveel;
     if (s.leven <= 0) {
-      geluid.speel(STEEN_GELUID.has(b.soort) ? 'wall_collapse' : 'build_demolish', { x: b.x, y: b.y });
+      geluid.speel(b.soort === OBJECT.POORT ? 'gate_break' : STEEN_GELUID.has(b.soort) ? 'wall_collapse' : 'build_demolish', { x: b.x, y: b.y });
       schade.delete(b.vak);
       if (b.van === ROOD && roodOrigineel.has(b.vak)) roodWeg.add(b.vak);   // een bouwloods komt niet terug
       const werk = bouwer.verwoest(b.vak % B, Math.floor(b.vak / B));
@@ -927,6 +935,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
   function zetBrand(b, brand) {
     branden.set(b.vak, { b, tot: stapNr + stappen(brand.duur), per: brand.perSeconde });
+    geluid.speel('fire_burning', { x: b.x, y: b.y });
     effect({ soort: 'brand', x: b.x, y: b.y, duur: brand.duur * 1000 });
   }
   function brandStap() {
@@ -2085,6 +2094,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       }
     }
     if (telAls) {
+      if (aantal) geluid.speel('horn_attack');
       golf++;
       burchtGemeld = false;
       if (!heer && !R.proloog) opMelding(`Attack ${golf}! ${aantal} ${aantal === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`);

@@ -1,6 +1,7 @@
 // UI: de tekst en knoppen bovenop het spel (gewone HTML, geen canvas).
 
 import { CONFIG } from './config.js';
+import { geluid } from './geluid.js';
 import { maakVlaggen } from './vlaggen.js';
 import { naarSpel } from './scherm.js';
 
@@ -591,6 +592,8 @@ export function maakUi() {
       if (!klok) { vak.hidden = true; return; }
       const m = Math.floor(klok.seconden / 60);
       const sec = String(klok.seconden % 60).padStart(2, '0');
+      // De laatste tien seconden tikt de klok.
+      if (klok.seconden <= 10 && klok.seconden > 0 && el('aanvalklok-tijd').textContent !== `${m}:${sec}`) geluid.speel('countdown_tick');
       el('aanvalklok-tijd').textContent = `${m}:${sec}`;
       el('aanvalklok-golf').textContent = `Wave ${klok.golf} of ${klok.totaal}`;
       vak.classList.toggle('dichtbij', klok.seconden <= 15);
@@ -661,6 +664,7 @@ export function maakUi() {
         verder.hidden = true;
         el('verhaalbeeld').classList.remove('klaar');
         el('verhaalbeeld').hidden = false;
+        geluid.speel('hourglass');
         const sluit = () => {
           verder.removeEventListener('click', sluit);
           verder.hidden = true;
@@ -699,6 +703,7 @@ export function maakUi() {
     // Een bericht in de verhaalbalk: portret, naam en tekst. Komen er meer
     // tegelijk, dan wachten ze op hun beurt. Tik om het weg te halen.
     toonVerhaal({ naam, portret, tekst }) {
+      geluid.speel('dialogue_blip');
       logboek.push({ tekst, soort: 'verhaal', tijd: speeltijd(), wie: naam });
       if (!el('logboek').hidden) tekenLogboek();
       else { ongelezen++; zetTeller(); }
@@ -723,6 +728,7 @@ export function maakUi() {
     toonEinde({ open, titel = '', tekst = '', verder = false, verloren = false, volgende = false, portret = null, wessel = '', erbij = '' }) {
       el('einde').hidden = !open;
       if (!open) return;
+      if (erbij && !verloren) geluid.speel('unit_unlocked', { wacht: 600 });
       el('einde').classList.toggle('verloren', verloren);
       el('einde-titel').textContent = titel;
       el('einde-tekst').textContent = tekst;

@@ -3,6 +3,7 @@
 // rook uit schoorstenen, glinsterend water en vogels.
 // Puur beeld: niets hiervan verandert de spelregels.
 
+import { geluid } from './geluid.js';
 import { HALVE_BREEDTE, HALVE_HOOGTE } from './iso.js';
 import { GROND } from './kaart.js';
 
@@ -376,6 +377,7 @@ export function maakSfeer(kaart, landschap, profiel = null) {
     }
   }
 
+  let laatsteFlits = -1;   // welke flits al donder kreeg
   // Over het hele scherm (schermmaat): de kleurwaas, een stofvlaag en de bliksem.
   function tekenWaas(ctx, b, h, t) {
     if (waas) {
@@ -395,6 +397,12 @@ export function maakSfeer(kaart, landschap, profiel = null) {
     if (deeltjes === 'storm') {
       // Bliksem: ongeveer elke 17 seconden een korte, zachte flits
       const fase = ((t % 17) + 17) % 17;
+      // Donder bij elke flits, iets later (het geluid komt na het licht).
+      const flits = Math.floor(t / 17);
+      if (fase < 0.25 && flits !== laatsteFlits) {
+        laatsteFlits = flits;
+        geluid.speel('thunder', { wacht: 700 + Math.random() * 900 });
+      }
       if (fase < 0.25) {
         ctx.fillStyle = `rgba(220, 225, 255, ${0.16 * (1 - fase / 0.25)})`;
         ctx.fillRect(0, 0, b, h);

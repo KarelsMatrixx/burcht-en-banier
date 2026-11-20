@@ -1,5 +1,5 @@
 {
- "uitleg": "Geluidseffecten (stap 46). bestanden: varianten, het spel kiest er willekeurig een en verandert de toonhoogte een beetje. volume 0 tot 1. tussen: minimaal zoveel ms tussen twee keer hetzelfde geluid. Gemaakt met ElevenLabs, door Karel gekozen op 20 november 2026.",
+ "uitleg": "Geluidseffecten (stap 46). bestanden: varianten, het spel kiest er willekeurig een en verandert de toonhoogte een beetje. volume 0 tot 1. tussen: minimaal zoveel ms tussen twee keer hetzelfde geluid. Gemaakt met ElevenLabs, door Karel gekozen op 20 november 2026 (ronde 1 en 2).",
  "maxTegelijk": 14,
  "toonhoogte": 0.07,
  "geluiden": {
@@ -27,7 +27,8 @@
   },
   "arrow_release": {
    "bestanden": [
-    "arrow_release_4.mp3"
+    "arrow_release_4.mp3",
+    "arrow_release_7.mp3"
    ],
    "volume": 0.35,
    "tussen": 90
@@ -41,7 +42,9 @@
   },
   "axe_chop": {
    "bestanden": [
-    "axe_chop_3.mp3"
+    "axe_chop_3.mp3",
+    "axe_chop_6.mp3",
+    "axe_chop_7.mp3"
    ],
    "volume": 0.35,
    "tussen": 220
@@ -254,7 +257,8 @@
   },
   "stone_chisel": {
    "bestanden": [
-    "stone_chisel_3.mp3"
+    "stone_chisel_3.mp3",
+    "stone_chisel_6.mp3"
    ],
    "volume": 0.3,
    "tussen": 260
@@ -297,7 +301,8 @@
   },
   "ui_click": {
    "bestanden": [
-    "ui_click_3.mp3"
+    "ui_click_3.mp3",
+    "ui_click_4.mp3"
    ],
    "volume": 0.5,
    "tussen": 40
@@ -338,6 +343,229 @@
    ],
    "volume": 0.75,
    "tussen": 400
+  },
+  "amb_battle_far": {
+   "bestanden": [
+    "amb_battle_far_1.mp3"
+   ],
+   "volume": 0.2,
+   "tussen": 0
+  },
+  "amb_forest": {
+   "bestanden": [
+    "amb_forest_1.mp3"
+   ],
+   "volume": 0.25,
+   "tussen": 0
+  },
+  "amb_rain": {
+   "bestanden": [
+    "amb_rain_1.mp3"
+   ],
+   "volume": 0.3,
+   "tussen": 0
+  },
+  "amb_river": {
+   "bestanden": [
+    "amb_river_1.mp3"
+   ],
+   "volume": 0.22,
+   "tussen": 0
+  },
+  "amb_swamp": {
+   "bestanden": [
+    "amb_swamp_1.mp3"
+   ],
+   "volume": 0.25,
+   "tussen": 0
+  },
+  "amb_village": {
+   "bestanden": [
+    "amb_village_1.mp3"
+   ],
+   "volume": 0.22,
+   "tussen": 0
+  },
+  "amb_wind": {
+   "bestanden": [
+    "amb_wind_1.mp3"
+   ],
+   "volume": 0.22,
+   "tussen": 0
+  },
+  "building_hit": {
+   "bestanden": [
+    "building_hit_3.mp3"
+   ],
+   "volume": 0.45,
+   "tussen": 140
+  },
+  "catapult_impact": {
+   "bestanden": [
+    "catapult_impact_3.mp3"
+   ],
+   "volume": 0.8,
+   "tussen": 200
+  },
+  "catapult_launch": {
+   "bestanden": [
+    "catapult_launch_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 300
+  },
+  "church_bell": {
+   "bestanden": [
+    "church_bell_2.mp3"
+   ],
+   "volume": 0.45,
+   "tussen": 5000
+  },
+  "countdown_tick": {
+   "bestanden": [
+    "countdown_tick_2.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 300
+  },
+  "dialogue_blip": {
+   "bestanden": [
+    "dialogue_blip_2.mp3"
+   ],
+   "volume": 0.45,
+   "tussen": 300
+  },
+  "drawbridge": {
+   "bestanden": [
+    "drawbridge_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 1000
+  },
+  "fire_burning": {
+   "bestanden": [
+    "fire_burning_1.mp3"
+   ],
+   "volume": 0.4,
+   "tussen": 3000
+  },
+  "gate_break": {
+   "bestanden": [
+    "gate_break_2.mp3"
+   ],
+   "volume": 0.8,
+   "tussen": 500
+  },
+  "gate_close": {
+   "bestanden": [
+    "gate_close_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 400
+  },
+  "gate_open": {
+   "bestanden": [
+    "gate_open_2.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 400
+  },
+  "horn_attack": {
+   "bestanden": [
+    "horn_attack_2.mp3"
+   ],
+   "volume": 0.8,
+   "tussen": 4000
+  },
+  "hourglass": {
+   "bestanden": [
+    "hourglass_1.mp3"
+   ],
+   "volume": 0.35,
+   "tussen": 3000
+  },
+  "king_falls": {
+   "bestanden": [
+    "king_falls_2.mp3"
+   ],
+   "volume": 0.9,
+   "tussen": 1000
+  },
+  "ladder_climb": {
+   "bestanden": [
+    "ladder_climb_2.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 500
+  },
+  "ram_hit": {
+   "bestanden": [
+    "ram_hit_3.mp3"
+   ],
+   "volume": 0.75,
+   "tussen": 300
+  },
+  "siege_tower_roll": {
+   "bestanden": [
+    "siege_tower_roll_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 3000
+  },
+  "steps_grass": {
+   "bestanden": [
+    "steps_grass_3.mp3"
+   ],
+   "volume": 0.35,
+   "tussen": 400
+  },
+  "steps_stone": {
+   "bestanden": [
+    "steps_stone_2.mp3"
+   ],
+   "volume": 0.4,
+   "tussen": 400
+  },
+  "thunder": {
+   "bestanden": [
+    "thunder_1.mp3",
+    "thunder_2.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 3000
+  },
+  "unit_unlocked": {
+   "bestanden": [
+    "unit_unlocked_1.mp3"
+   ],
+   "volume": 0.7,
+   "tussen": 1000
   }
+ },
+ "omgeving": {
+  "_uitleg": "Omgevingslus per landschap (missie.landschap); proloog en vrij spel apart. afEnToe: een geluid dat af en toe klinkt, met gemiddeld zoveel seconden ertussen.",
+  "proloog": "amb_village",
+  "vrij": "amb_forest",
+  "groen": "amb_forest",
+  "heide": "amb_wind",
+  "wind": "amb_wind",
+  "kool": "amb_wind",
+  "veen": "amb_swamp",
+  "meer": "amb_river",
+  "rug": "amb_wind",
+  "kloof": "amb_river",
+  "polder": "amb_river",
+  "sneeuw": "amb_wind",
+  "rouw": "amb_rain"
+ },
+ "afEnToe": {
+  "proloog": [
+   "church_bell",
+   75
+  ],
+  "rouw": [
+   "church_bell",
+   90
+  ]
  }
 }

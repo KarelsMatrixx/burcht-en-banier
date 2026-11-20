@@ -26,6 +26,9 @@ function maakGeluid() {
   let spelend = 0;               // hoeveel er nu klinken
   let plek = null;               // (x, y) -> { sx, sy, b, h }: waar dat op het scherm is
   let stand = { aan: true, volume: 0.8 };
+  let wens = null;               // het omgevingsgeluid dat moet klinken: { naam }
+  let lus = null;                // het omgevingsgeluid dat nu klinkt: { naam, bron, v }
+  const klokken = [];            // af en toe een geluid (kerkklok): { naam, elke, volgende }
   try { Object.assign(stand, JSON.parse(localStorage.getItem(OPSLAG) || '{}')); } catch (e) { /* geen opslag: standaard */ }
 
   function bewaar() {
@@ -64,7 +67,9 @@ function maakGeluid() {
         laadLijst().then((d) => {
           if (!d) return;
           for (const g of Object.values(d.geluiden)) for (const f of g.bestanden) buffer(f);
+          startLus();
         });
+        setInterval(tik, 1000);
       }
       if (ctx.state === 'suspended') ctx.resume();
       // iOS: een heel kort stil geluid zet de audio echt aan.
@@ -125,6 +130,65 @@ function maakGeluid() {
     } catch (e) { /* een geluid minder */ }
   }
 
+  // Omgevingsgeluid: een lus die blijft doorklinken (wind, bos, moeras). Zacht in en uit.
+  function stopLus(over = 1.5) {
+    if (!lus) return;
+    const oud = lus;
+    lus = null;
+    try {
+      oud.v.gain.setTargetAtTime(0, ctx.currentTime, over / 3);
+      setTimeout(() => { try { oud.bron.stop(); oud.v.disconnect(); } catch (e) { /* al weg */ } }, over * 1000 + 200);
+    } catch (e) { /* al weg */ }
+  }
+  function startLus() {
+    if (!ctx || !lijst) return;
+    const naam = wens && wens.naam;
+    if (lus && lus.naam === naam) return;
+    stopLus();
+    const g = naam && lijst.geluiden[naam];
+    if (!g || !g.bestanden.length) return;
+    const bestand = g.bestanden[0];
+    const buf = buffers.get(bestand);
+    if (!buf || buf instanceof Promise) { buffer(bestand).then(() => startLus()); return; }
+    try {
+      const bron = ctx.createBufferSource();
+      bron.buffer = buf;
+      bron.loop = true;
+      const v = ctx.createGain();
+      v.gain.value = 0;
+      v.gain.setTargetAtTime(g.volume === undefined ? 0.3 : g.volume, ctx.currentTime, 0.8);
+      bron.connect(v);
+      v.connect(hoofd);
+      bron.start();
+      lus = { naam, bron, v };
+    } catch (e) { /* geen omgeving */ }
+  }
+  function omgeving(naam) {
+    wens = naam ? { naam } : null;
+    startLus();
+  }
+  // Het landschap van dit level (data/geluiden.json, omgeving en afEnToe).
+  function zetLandschap(sleutel) {
+    laadLijst().then((d) => {
+      if (!d) return;
+      omgeving((d.omgeving || {})[sleutel] || (d.omgeving || {}).vrij || null);
+      const a = (d.afEnToe || {})[sleutel];
+      afEnToe(a ? a[0] : null, a ? a[1] : 0);
+    });
+  }
+  // Af en toe een geluid, zoals een kerkklok in de verte. elke = gemiddeld zoveel seconden.
+  function afEnToe(naam, elke) {
+    klokken.length = 0;
+    if (naam) klokken.push({ naam, elke, volgende: elke * (0.3 + Math.random() * 0.7) });
+  }
+  function tik() {
+    for (const k of klokken) {
+      if (--k.volgende > 0) continue;
+      k.volgende = k.elke * (0.6 + Math.random() * 0.8);
+      speel(k.naam, { volume: 0.7 });
+    }
+  }
+
   // Overal: de eerste aanraking zet het geluid aan, en elke knop tikt.
   function koppel() {
     laadLijst();
@@ -153,7 +217,12 @@ function maakGeluid() {
     }
     toon();
     // Komt de app terug uit de achtergrond, dan staat de audio soms stil.
-    document.addEventListener('visibilitychange', () => { if (!document.hidden && ctx && ctx.state === 'suspended') ctx.resume().catch(() => {}); });
+    // In de achtergrond is het stil (ook het omgevingsgeluid).
+    document.addEventListener('visibilitychange', () => {
+      if (!ctx) return;
+      if (document.hidden) ctx.suspend().catch(() => {});
+      else if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    });
   }
 
   return {
@@ -162,12 +231,15 @@ function maakGeluid() {
     ontgrendel,
     // main.js vertelt hoe een tegel op het scherm uitkomt.
     zetPlek(f) { plek = f; },
+    omgeving,
+    afEnToe,
+    zetLandschap,
     aan: () => stand.aan,
     volume: () => stand.volume,
     zetAan(a) { stand.aan = !!a; bewaar(); zetVolume(); },
     zetVolumeNiveau(v) { stand.volume = Math.max(0, Math.min(1, v)); bewaar(); zetVolume(); },
     // Voor tests
-    stand: () => ({ gehoord: [...laatst.keys()], ctx: ctx ? ctx.state : 'geen', geladen: [...buffers.values()].filter((b) => b && !(b instanceof Promise)).length, spelend, aan: stand.aan, volume: stand.volume }),
+    stand: () => ({ omgeving: lus ? lus.naam : null, gehoord: [...laatst.keys()], ctx: ctx ? ctx.state : 'geen', geladen: [...buffers.values()].filter((b) => b && !(b instanceof Promise)).length, spelend, aan: stand.aan, volume: stand.volume }),
   };
 }
 
