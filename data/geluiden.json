@@ -1,6 +1,6 @@
 {
- "uitleg": "Geluidseffecten (stap 46). bestanden: varianten, het spel kiest er willekeurig een en verandert de toonhoogte een beetje. volume 0 tot 1. tussen: minimaal zoveel ms tussen twee keer hetzelfde geluid. Gemaakt met ElevenLabs, door Karel gekozen op 20 november 2026 (ronde 1 en 2).",
- "maxTegelijk": 14,
+ "uitleg": "Geluidseffecten (stap 46). bestanden: varianten, het spel kiest er willekeurig een en verandert de toonhoogte een beetje. volume 0 tot 1. tussen: minimaal zoveel ms tussen twee keer hetzelfde geluid. Gemaakt met ElevenLabs, door Karel gekozen op 20 november 2026 (ronde 1 en 2). Sinds 0.78.1: alleen geluid van wat in beeld is; hoe verder uitgezoomd hoe zachter (zoom.stil: niets, zoom.vol: alles). Hooguit maxTegelijk geluiden tegelijk, vechtgeluiden (gevecht: true) tot maxGevecht. prio 1 tot 5: bij een volle mix verdringt een hoger geluid het laagste (5 hoorn en koning, 4 knoppen en bevelen, 3 klappen en sneuvelen, 2 pijlen en bloed, 1 werk en voetstappen).",
+ "maxTegelijk": 3,
  "toonhoogte": 0.07,
  "geluiden": {
   "arrow_hit_flesh": {
@@ -9,21 +9,27 @@
     "arrow_hit_flesh_2.mp3"
    ],
    "volume": 0.4,
-   "tussen": 90
+   "tussen": 90,
+   "prio": 2,
+   "gevecht": true
   },
   "arrow_hit_shield": {
    "bestanden": [
     "arrow_hit_shield_1.mp3"
    ],
    "volume": 0.4,
-   "tussen": 110
+   "tussen": 110,
+   "prio": 2,
+   "gevecht": true
   },
   "arrow_hit_stone": {
    "bestanden": [
     "arrow_hit_stone_3.mp3"
    ],
    "volume": 0.35,
-   "tussen": 140
+   "tussen": 140,
+   "prio": 2,
+   "gevecht": true
   },
   "arrow_release": {
    "bestanden": [
@@ -31,14 +37,18 @@
     "arrow_release_7.mp3"
    ],
    "volume": 0.35,
-   "tussen": 90
+   "tussen": 90,
+   "prio": 2,
+   "gevecht": true
   },
   "assassin_stab": {
    "bestanden": [
     "assassin_stab_2.mp3"
    ],
    "volume": 0.6,
-   "tussen": 150
+   "tussen": 150,
+   "prio": 3,
+   "gevecht": true
   },
   "axe_chop": {
    "bestanden": [
@@ -47,28 +57,33 @@
     "axe_chop_7.mp3"
    ],
    "volume": 0.35,
-   "tussen": 220
+   "tussen": 220,
+   "prio": 1
   },
   "axe_hit": {
    "bestanden": [
     "axe_hit_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 90
+   "tussen": 90,
+   "prio": 3,
+   "gevecht": true
   },
   "bakery_oven": {
    "bestanden": [
     "bakery_oven_1.mp3"
    ],
    "volume": 0.4,
-   "tussen": 4000
+   "tussen": 4000,
+   "prio": 1
   },
   "barracks_ready": {
    "bestanden": [
     "barracks_ready_2.mp3"
    ],
    "volume": 0.6,
-   "tussen": 200
+   "tussen": 200,
+   "prio": 4
   },
   "blood_splat": {
    "bestanden": [
@@ -76,63 +91,76 @@
     "blood_splat_2.mp3"
    ],
    "volume": 0.3,
-   "tussen": 120
+   "tussen": 120,
+   "prio": 2,
+   "gevecht": true
   },
   "build_demolish": {
    "bestanden": [
     "build_demolish_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 250
+   "tussen": 250,
+   "prio": 4
   },
   "build_done": {
    "bestanden": [
     "build_done_2.mp3"
    ],
    "volume": 0.5,
-   "tussen": 300
+   "tussen": 300,
+   "prio": 1
   },
   "build_place": {
    "bestanden": [
     "build_place_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 120
+   "tussen": 120,
+   "prio": 4
   },
   "build_working": {
    "bestanden": [
     "build_working_1.mp3"
    ],
    "volume": 0.4,
-   "tussen": 2000
+   "tussen": 2000,
+   "prio": 1
   },
   "cavalry_charge": {
    "bestanden": [
     "cavalry_charge_2.mp3"
    ],
    "volume": 0.7,
-   "tussen": 1500
+   "tussen": 1500,
+   "prio": 3,
+   "gevecht": true
   },
   "coins": {
    "bestanden": [
     "coins_3.mp3"
    ],
    "volume": 0.55,
-   "tussen": 200
+   "tussen": 200,
+   "prio": 4
   },
   "crossbow_shot": {
    "bestanden": [
     "crossbow_shot_2.mp3"
    ],
    "volume": 0.45,
-   "tussen": 110
+   "tussen": 110,
+   "prio": 2,
+   "gevecht": true
   },
   "death_civilian": {
    "bestanden": [
     "death_civilian_2.mp3"
    ],
    "volume": 0.6,
-   "tussen": 250
+   "tussen": 250,
+   "prio": 3,
+   "gevecht": true
   },
   "death_soldier": {
    "bestanden": [
@@ -140,35 +168,42 @@
     "death_soldier_4.mp3"
    ],
    "volume": 0.6,
-   "tussen": 180
+   "tussen": 180,
+   "prio": 3,
+   "gevecht": true
   },
   "fire_cast": {
    "bestanden": [
     "fire_cast_1.mp3"
    ],
    "volume": 0.5,
-   "tussen": 150
+   "tussen": 150,
+   "prio": 3,
+   "gevecht": true
   },
   "fruit_pick": {
    "bestanden": [
     "fruit_pick_2.mp3"
    ],
    "volume": 0.35,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 1
   },
   "goods_delivered": {
    "bestanden": [
     "goods_delivered_2.mp3"
    ],
    "volume": 0.3,
-   "tussen": 500
+   "tussen": 500,
+   "prio": 1
   },
   "hay_fork": {
    "bestanden": [
     "hay_fork_2.mp3"
    ],
    "volume": 0.35,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 1
   },
   "heal": {
    "bestanden": [
@@ -176,84 +211,99 @@
     "heal_2.mp3"
    ],
    "volume": 0.35,
-   "tussen": 500
+   "tussen": 500,
+   "prio": 2,
+   "gevecht": true
   },
   "horse_gallop": {
    "bestanden": [
     "horse_gallop_2.mp3"
    ],
    "volume": 0.5,
-   "tussen": 1200
+   "tussen": 1200,
+   "prio": 1
   },
   "horse_neigh": {
    "bestanden": [
     "horse_neigh_1.mp3"
    ],
    "volume": 0.55,
-   "tussen": 600
+   "tussen": 600,
+   "prio": 4
   },
   "ladder_place": {
    "bestanden": [
     "ladder_place_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 300
+   "tussen": 300,
+   "prio": 2,
+   "gevecht": true
   },
   "ladder_push": {
    "bestanden": [
     "ladder_push_2.mp3"
    ],
    "volume": 0.6,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 2,
+   "gevecht": true
   },
   "log_drag": {
    "bestanden": [
     "log_drag_1.mp3"
    ],
    "volume": 0.35,
-   "tussen": 800
+   "tussen": 800,
+   "prio": 1
   },
   "mystic_ready": {
    "bestanden": [
     "mystic_ready_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 200
+   "tussen": 200,
+   "prio": 4
   },
   "order_attack": {
    "bestanden": [
     "order_attack_2.mp3"
    ],
    "volume": 0.55,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 4
   },
   "order_move": {
    "bestanden": [
     "order_move_2.mp3"
    ],
    "volume": 0.45,
-   "tussen": 300
+   "tussen": 300,
+   "prio": 4
   },
   "select_soldier": {
    "bestanden": [
     "select_soldier_3.mp3"
    ],
    "volume": 0.5,
-   "tussen": 150
+   "tussen": 150,
+   "prio": 4
   },
   "siege_confirm": {
    "bestanden": [
     "siege_confirm_2.mp3"
    ],
    "volume": 0.6,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 4
   },
   "siegeworks_ready": {
    "bestanden": [
     "siegeworks_ready_2.mp3"
    ],
    "volume": 0.6,
-   "tussen": 300
+   "tussen": 300,
+   "prio": 4
   },
   "stone_chisel": {
    "bestanden": [
@@ -261,21 +311,25 @@
     "stone_chisel_6.mp3"
    ],
    "volume": 0.3,
-   "tussen": 260
+   "tussen": 260,
+   "prio": 1
   },
   "storage_full": {
    "bestanden": [
     "storage_full_1.mp3"
    ],
    "volume": 0.5,
-   "tussen": 6000
+   "tussen": 6000,
+   "prio": 4
   },
   "sword_heavy": {
    "bestanden": [
     "sword_heavy_3.mp3"
    ],
    "volume": 0.7,
-   "tussen": 120
+   "tussen": 120,
+   "prio": 3,
+   "gevecht": true
   },
   "sword_hit": {
    "bestanden": [
@@ -283,21 +337,25 @@
     "sword_hit_3.mp3"
    ],
    "volume": 0.55,
-   "tussen": 70
+   "tussen": 70,
+   "prio": 3,
+   "gevecht": true
   },
   "tree_fall": {
    "bestanden": [
     "tree_fall_2.mp3"
    ],
    "volume": 0.55,
-   "tussen": 600
+   "tussen": 600,
+   "prio": 1
   },
   "ui_back": {
    "bestanden": [
     "ui_back_1.mp3"
    ],
    "volume": 0.5,
-   "tussen": 60
+   "tussen": 60,
+   "prio": 4
   },
   "ui_click": {
    "bestanden": [
@@ -305,28 +363,32 @@
     "ui_click_4.mp3"
    ],
    "volume": 0.5,
-   "tussen": 40
+   "tussen": 40,
+   "prio": 4
   },
   "ui_confirm": {
    "bestanden": [
     "ui_confirm_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 100
+   "tussen": 100,
+   "prio": 4
   },
   "ui_denied": {
    "bestanden": [
     "ui_denied_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 250
+   "tussen": 250,
+   "prio": 4
   },
   "ui_map_open": {
    "bestanden": [
     "ui_map_open_2.mp3"
    ],
    "volume": 0.6,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 4
   },
   "unit_ready_shout": {
    "bestanden": [
@@ -335,196 +397,228 @@
     "unit_ready_shout_3.mp3"
    ],
    "volume": 0.5,
-   "tussen": 250
+   "tussen": 250,
+   "prio": 4
   },
   "wall_collapse": {
    "bestanden": [
     "wall_collapse_2.mp3"
    ],
    "volume": 0.75,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 5
   },
   "amb_battle_far": {
    "bestanden": [
     "amb_battle_far_1.mp3"
    ],
    "volume": 0.2,
-   "tussen": 0
+   "tussen": 0,
+   "prio": 1
   },
   "amb_forest": {
    "bestanden": [
     "amb_forest_1.mp3"
    ],
    "volume": 0.25,
-   "tussen": 0
+   "tussen": 0,
+   "prio": 1
   },
   "amb_rain": {
    "bestanden": [
     "amb_rain_1.mp3"
    ],
    "volume": 0.3,
-   "tussen": 0
+   "tussen": 0,
+   "prio": 1
   },
   "amb_river": {
    "bestanden": [
     "amb_river_1.mp3"
    ],
    "volume": 0.22,
-   "tussen": 0
+   "tussen": 0,
+   "prio": 1
   },
   "amb_swamp": {
    "bestanden": [
     "amb_swamp_1.mp3"
    ],
    "volume": 0.25,
-   "tussen": 0
+   "tussen": 0,
+   "prio": 1
   },
   "amb_village": {
    "bestanden": [
     "amb_village_1.mp3"
    ],
    "volume": 0.22,
-   "tussen": 0
+   "tussen": 0,
+   "prio": 1
   },
   "amb_wind": {
    "bestanden": [
     "amb_wind_1.mp3"
    ],
    "volume": 0.22,
-   "tussen": 0
+   "tussen": 0,
+   "prio": 1
   },
   "building_hit": {
    "bestanden": [
     "building_hit_3.mp3"
    ],
    "volume": 0.45,
-   "tussen": 140
+   "tussen": 140,
+   "prio": 2,
+   "gevecht": true
   },
   "catapult_impact": {
    "bestanden": [
     "catapult_impact_3.mp3"
    ],
    "volume": 0.8,
-   "tussen": 200
+   "tussen": 200,
+   "prio": 3,
+   "gevecht": true
   },
   "catapult_launch": {
    "bestanden": [
     "catapult_launch_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 300
+   "tussen": 300,
+   "prio": 3,
+   "gevecht": true
   },
   "church_bell": {
    "bestanden": [
     "church_bell_2.mp3"
    ],
    "volume": 0.45,
-   "tussen": 5000
+   "tussen": 5000,
+   "prio": 2
   },
   "countdown_tick": {
    "bestanden": [
     "countdown_tick_2.mp3"
    ],
    "volume": 0.5,
-   "tussen": 300
+   "tussen": 300,
+   "prio": 4
   },
   "dialogue_blip": {
    "bestanden": [
     "dialogue_blip_2.mp3"
    ],
    "volume": 0.45,
-   "tussen": 300
+   "tussen": 300,
+   "prio": 4
   },
   "drawbridge": {
    "bestanden": [
     "drawbridge_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 1000
+   "tussen": 1000,
+   "prio": 1
   },
   "fire_burning": {
    "bestanden": [
     "fire_burning_1.mp3"
    ],
    "volume": 0.4,
-   "tussen": 3000
+   "tussen": 3000,
+   "prio": 2
   },
   "gate_break": {
    "bestanden": [
     "gate_break_2.mp3"
    ],
    "volume": 0.8,
-   "tussen": 500
+   "tussen": 500,
+   "prio": 5
   },
   "gate_close": {
    "bestanden": [
     "gate_close_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 4
   },
   "gate_open": {
    "bestanden": [
     "gate_open_2.mp3"
    ],
    "volume": 0.6,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 4
   },
   "horn_attack": {
    "bestanden": [
     "horn_attack_2.mp3"
    ],
    "volume": 0.8,
-   "tussen": 4000
+   "tussen": 4000,
+   "prio": 5
   },
   "hourglass": {
    "bestanden": [
     "hourglass_1.mp3"
    ],
    "volume": 0.35,
-   "tussen": 3000
+   "tussen": 3000,
+   "prio": 4
   },
   "king_falls": {
    "bestanden": [
     "king_falls_2.mp3"
    ],
    "volume": 0.9,
-   "tussen": 1000
+   "tussen": 1000,
+   "prio": 5
   },
   "ladder_climb": {
    "bestanden": [
     "ladder_climb_2.mp3"
    ],
    "volume": 0.5,
-   "tussen": 500
+   "tussen": 500,
+   "prio": 2
   },
   "ram_hit": {
    "bestanden": [
     "ram_hit_3.mp3"
    ],
    "volume": 0.75,
-   "tussen": 300
+   "tussen": 300,
+   "prio": 3,
+   "gevecht": true
   },
   "siege_tower_roll": {
    "bestanden": [
     "siege_tower_roll_1.mp3"
    ],
    "volume": 0.6,
-   "tussen": 3000
+   "tussen": 3000,
+   "prio": 2
   },
   "steps_grass": {
    "bestanden": [
     "steps_grass_3.mp3"
    ],
    "volume": 0.35,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 1
   },
   "steps_stone": {
    "bestanden": [
     "steps_stone_2.mp3"
    ],
    "volume": 0.4,
-   "tussen": 400
+   "tussen": 400,
+   "prio": 1
   },
   "thunder": {
    "bestanden": [
@@ -532,14 +626,16 @@
     "thunder_2.mp3"
    ],
    "volume": 0.6,
-   "tussen": 3000
+   "tussen": 3000,
+   "prio": 2
   },
   "unit_unlocked": {
    "bestanden": [
     "unit_unlocked_1.mp3"
    ],
    "volume": 0.7,
-   "tussen": 1000
+   "tussen": 1000,
+   "prio": 5
   }
  },
  "omgeving": {
@@ -567,5 +663,10 @@
    "church_bell",
    90
   ]
+ },
+ "maxGevecht": 6,
+ "zoom": {
+  "stil": 0.45,
+  "vol": 1.6
  }
 }

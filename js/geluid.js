@@ -70,6 +70,7 @@ function maakGeluid() {
           startLus();
         });
         setInterval(tik, 1000);
+        setInterval(zoomOmgeving, 200);
       }
       if (ctx.state === 'suspended') ctx.resume();
       // iOS: een heel kort stil geluid zet de audio echt aan.
@@ -86,19 +87,66 @@ function maakGeluid() {
     hoofd.gain.value = stand.aan ? stand.volume : 0;
   }
 
-  // Hoe hard klinkt iets op deze plek? 1 in beeld, zachter tot 0 op een halve
-  // schermbreedte buiten beeld.
+  // Hoe hard klinken geluiden uit de wereld bij deze zoom? Helemaal uitgezoomd
+  // niets, vanaf zoom.vol (data/geluiden.json) alles. Daartussen loopt het op.
+  function zoomSterkte(zoom) {
+    if (zoom === undefined || !lijst) return 1;
+    const z = lijst.zoom || { stil: 0.45, vol: 1.6 };
+    return Math.max(0, Math.min(1, (zoom - z.stil) / (z.vol - z.stil)));
+  }
+
+  // Hoe hard klinkt iets op deze plek? Alleen wat je op je scherm ziet, klinkt.
+  // Knoppen en meldingen (zonder plek) klinken altijd.
   function sterkteOp(x, y) {
     if (!plek || x === undefined) return 1;
     const p = plek(x, y);
     if (!p) return 1;
-    const dx = p.sx < 0 ? -p.sx : p.sx > p.b ? p.sx - p.b : 0;
-    const dy = p.sy < 0 ? -p.sy : p.sy > p.h ? p.sy - p.h : 0;
-    const buiten = Math.hypot(dx, dy) / (p.b * 0.5);
-    let s = Math.max(0, 1 - buiten);
-    // Ver uitgezoomd klinkt alles wat zachter (anders is een groot gevecht een muur van lawaai).
-    if (p.zoom !== undefined && p.zoom < 1) s *= 0.55 + 0.45 * p.zoom;
-    return s;
+    const rand = 30;   // pixels: wat net op de rand staat, telt mee
+    if (p.sx < -rand || p.sy < -rand || p.sx > p.b + rand || p.sy > p.h + rand) return 0;
+    return zoomSterkte(p.zoom);
+  }
+
+  // Wat er nu klinkt: { prio, gevecht, bron, v, eind }. Hooguit maxTegelijk
+  // tegelijk (3); vechtgeluiden mogen erbij tot maxGevecht. Is het vol, dan
+  // verdringt een belangrijker geluid het minst belangrijke dat nu klinkt.
+  const klinkt = new Set();
+  let gestart = 0;     // voor tests: hoeveel geluiden er echt begonnen
+  let maxKlonk = 0;    // voor tests: het hoogste aantal tegelijk
+  function ruimOp(nu) {
+    for (const k of klinkt) if (k.eind <= nu) klinkt.delete(k);
+  }
+  function stopZacht(k) {
+    klinkt.delete(k);
+    try {
+      k.v.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
+      k.bron.stop(ctx.currentTime + 0.15);
+    } catch (e) { /* al gestopt */ }
+  }
+  function zwaksteVan(alleenGewoon) {
+    let z = null;
+    for (const k of klinkt) {
+      if (alleenGewoon && k.gevecht) continue;
+      if (!z || k.prio < z.prio || (k.prio === z.prio && k.start < z.start)) z = k;
+    }
+    return z;
+  }
+  // Gewone geluiden: hooguit maxTegelijk (3) onder elkaar. Vechtgeluiden mogen
+  // erbij, maar alles samen nooit meer dan maxGevecht (6).
+  function maakRuimte(prio, gevecht) {
+    const max = lijst.maxTegelijk || 3;
+    const maxG = Math.max(max, lijst.maxGevecht || max);
+    const gewoon = () => { let n = 0; for (const k of klinkt) if (!k.gevecht) n++; return n; };
+    if (!gevecht && gewoon() >= max) {
+      const z = zwaksteVan(true);
+      if (!z || z.prio >= prio) return false;
+      stopZacht(z);
+    }
+    if (klinkt.size >= maxG) {
+      const z = zwaksteVan(false);
+      if (!z || z.prio >= prio) return false;
+      stopZacht(z);
+    }
+    return klinkt.size < maxG && (gevecht || gewoon() < max);
   }
 
   function speel(naam, opt = {}) {
@@ -107,27 +155,45 @@ function maakGeluid() {
     if (!g || !g.bestanden.length) return;
     const nu = performance.now();
     if (nu - (laatst.get(naam) || -1e9) < (g.tussen || 0)) return;
-    if (spelend >= (lijst.maxTegelijk || 14)) return;
     const sterkte = sterkteOp(opt.x, opt.y) * (opt.volume === undefined ? 1 : opt.volume);
     if (sterkte < 0.04) return;
     const bestand = g.bestanden[Math.floor(Math.random() * g.bestanden.length)];
     const buf = buffers.get(bestand);
     if (!buf || buf instanceof Promise) { if (!buffers.has(bestand)) buffer(bestand); return; }
+    const prio = g.prio || 1;
+    ruimOp(nu);
+    if (!maakRuimte(prio, !!g.gevecht)) return;
     laatst.set(naam, nu);
     try {
       const bron = ctx.createBufferSource();
       bron.buffer = buf;
       // Een beetje hoger of lager, zodat hetzelfde geluid niet als een machine klinkt.
       const t = lijst.toonhoogte || 0;
-      bron.playbackRate.value = 1 + (Math.random() * 2 - 1) * t;
+      const snel = 1 + (Math.random() * 2 - 1) * t;
+      bron.playbackRate.value = snel;
       const v = ctx.createGain();
       v.gain.value = (g.volume === undefined ? 1 : g.volume) * sterkte;
       bron.connect(v);
       v.connect(effecten);
+      const wacht = Math.max(0, (opt.wacht || 0) / 1000);
+      const k = { prio, gevecht: !!g.gevecht, bron, v, start: nu, eind: nu + (wacht + buf.duration / snel) * 1000 };
+      klinkt.add(k);
+      gestart++;
+      maxKlonk = Math.max(maxKlonk, klinkt.size);
       spelend++;
-      bron.onended = () => { spelend--; v.disconnect(); };
-      bron.start(ctx.currentTime + Math.max(0, (opt.wacht || 0) / 1000));
+      bron.onended = () => { spelend--; klinkt.delete(k); v.disconnect(); };
+      bron.start(ctx.currentTime + wacht);
     } catch (e) { /* een geluid minder */ }
+  }
+
+  // Het omgevingsgeluid volgt de zoom: uitgezoomd stil, ingezoomd vol.
+  function zoomOmgeving() {
+    if (!lus || !plek || !lijst) return;
+    const p = plek(0, 0);
+    if (!p) return;
+    const g = lijst.geluiden[lus.naam] || {};
+    const doel = (g.volume === undefined ? 0.3 : g.volume) * zoomSterkte(p.zoom);
+    try { lus.v.gain.setTargetAtTime(doel, ctx.currentTime, 0.25); } catch (e) { /* weg */ }
   }
 
   // Omgevingsgeluid: een lus die blijft doorklinken (wind, bos, moeras). Zacht in en uit.
@@ -156,7 +222,7 @@ function maakGeluid() {
       bron.loop = true;
       const v = ctx.createGain();
       v.gain.value = 0;
-      v.gain.setTargetAtTime(g.volume === undefined ? 0.3 : g.volume, ctx.currentTime, 0.8);
+      v.gain.setTargetAtTime((g.volume === undefined ? 0.3 : g.volume) * (plek && plek(0, 0) ? zoomSterkte(plek(0, 0).zoom) : 1), ctx.currentTime, 0.8);
       bron.connect(v);
       v.connect(hoofd);
       bron.start();
@@ -231,6 +297,7 @@ function maakGeluid() {
     ontgrendel,
     // main.js vertelt hoe een tegel op het scherm uitkomt.
     zetPlek(f) { plek = f; },
+    nulMeting() { maxKlonk = 0; gestart = 0; },
     omgeving,
     afEnToe,
     zetLandschap,
@@ -239,7 +306,7 @@ function maakGeluid() {
     zetAan(a) { stand.aan = !!a; bewaar(); zetVolume(); },
     zetVolumeNiveau(v) { stand.volume = Math.max(0, Math.min(1, v)); bewaar(); zetVolume(); },
     // Voor tests
-    stand: () => ({ omgeving: lus ? lus.naam : null, gehoord: [...laatst.keys()], ctx: ctx ? ctx.state : 'geen', geladen: [...buffers.values()].filter((b) => b && !(b instanceof Promise)).length, spelend, aan: stand.aan, volume: stand.volume }),
+    stand: () => ({ omgeving: lus ? lus.naam : null, gehoord: [...laatst.keys()], ctx: ctx ? ctx.state : 'geen', geladen: [...buffers.values()].filter((b) => b && !(b instanceof Promise)).length, spelend, klinkt: klinkt.size, gestart, maxKlonk, zoom: plek && plek(0, 0) ? zoomSterkte(plek(0, 0).zoom) : null, lusVolume: lus ? lus.v.gain.value : null, aan: stand.aan, volume: stand.volume }),
   };
 }
 
