@@ -266,6 +266,10 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // Te hoog voor een poort (de belegeringstoren): hij kan er niet door.
   const isHoog = (e) => !!(soorten[e.soldaat.sleutel] && soorten[e.soldaat.sleutel].hoog);
   const isBelegering = (sleutel) => !!(soorten[sleutel] && (soorten[sleutel].alleenBouw || soorten[sleutel].ladder));
+  // Wat een ingenieur bouwt staat vast: een trebuchet of een ballista loopt niet.
+  const staatVast = (sleutel) => !!(soorten[sleutel] && (soorten[sleutel].staand || soorten[sleutel].geschut));
+  // Een ingenieur is een belegeringseenheid, maar hij mag wel de muur op (daar bouwt hij een ballista).
+  const magOpMuur = (sleutel) => !isBelegering(sleutel) || !!(soorten[sleutel] && soorten[sleutel].bouwt);
   const groepVan = (def) => (def.alleenBouw || def.ladder ? 'belegering' : def.bereik > 2 || def.steun ? 'afstand' : 'melee');
   // De koning valt buiten de groepen en buiten Alle: die stuur je bewust, met zijn eigen knop of een tik.
   const isKoning = (e) => !!soorten[e.soldaat.sleutel].koning;
@@ -321,7 +325,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const beeld = isHoog(e) ? HOOG + TEAM : TEAM;   // een hoge toren ziet alle poorten als dicht
     const grond = van < N && naar < N && wegvinder.verbonden(van, naar, beeld);
     // Belegeringstroepen (ram, katapult, ladder, toren) blijven op de grond: nooit een muur, toren of kasteel op.
-    if (!grond && isBelegering(e.soldaat.sleutel)) return false;
+    if (!grond && !magOpMuur(e.soldaat.sleutel)) return false;
     const pad = grond
       ? wegvinder.zoekPad(van % B, Math.floor(van / B), naar % B, Math.floor(naar / B), beeld)
       : wegvinder.zoekPadLagen(van, naar, beeld);
@@ -359,7 +363,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // waar die tegel bij hoort. Geeft terug hoeveel er op weg zijn gegaan.
   function stuur(x, y, opMuur = false) {
     // Een stormram kan de muur niet op.
-    let groep = opMuur ? gekozen().filter((e) => !isBelegering(e.soldaat.sleutel)) : gekozen();
+    let groep = (opMuur ? gekozen().filter((e) => magOpMuur(e.soldaat.sleutel)) : gekozen()).filter((e) => !staatVast(e.soldaat.sleutel));   // een trebuchet of ballista staat vast
     if (!groep.length || x < 0 || y < 0 || x >= B || y >= H) return 0;
     for (const e of groep) delete e.post;   // een nieuw bevel: de vaste post (proloog, na Hold) vervalt
     const doel = y * B + x;
@@ -579,6 +583,15 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     soorten, get max() { return legerMax(); }, waaromNiet, leidOp, vind, kies, stuur, stap,
     kiesAlles: () => kies(soldaten.filter((e) => !isKoning(e))),
     zetKoning, geef,
+    // Een soldaat of machine op een exact vak neerzetten (de ingenieur bouwt zo een trebuchet).
+    zetOp: (sleutel, vak, opMuur = false) => { const e = maak(sleutel, vak, undefined, opMuur); opVerandering(); opLeger(); return e; },
+    // Een ingenieur naar een stuk muur of toren sturen (om daar een ballista te bouwen). Geeft true als hij onderweg is.
+    naarMuur: (e, vak) => {
+      if (!isMuur(vak) || !(e.opMuur || muurstuk(vak).trap) || !loopNaar(e, N + vak)) return false;
+      e.soldaat.doel = -1;   // geen bevel van de speler: de ingenieur houdt zijn bouwklus (zie strijd.js, ingenieurDenk)
+      return true;
+    },
+    staatVast,
     // Alleen onthouden waar de koning thuishoort, zonder hem neer te zetten (voor een bewaarde, al beslechte stand).
     zetKoningThuis: (burchtVak) => { koningThuis = burchtVak; },
     groepVan, kiesGroep, kiesSoort, kiesKader, kiesDeel, telling,

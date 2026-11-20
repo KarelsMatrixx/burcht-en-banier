@@ -26,6 +26,12 @@ export const OBJECT = {
   KAMPVUUR: 38,  // kampvuur met driepoot en rook (tentenkamp van Brandt, level 4), decor
   JAGERSTENT: 39,   // olijfgroene jagerstent met gewei (tentenkamp van Brandt, level 4), decor
   BELEGERINGSWERKPLAATS: 40,   // de aparte kazerne voor ram, katapult en belegeringstoren
+  KRAAN: 44,     // houten hijskraan met een stam (werven van level 6), decor
+  WERKBANK: 45,  // werkbank met een stam die wordt gezaagd (level 6), decor
+  HOUTSTAPEL: 46,   // stapel stammen en planken (level 6), decor
+  RAMGERAAMTE: 47,  // half gebouwde stormram op schragen (level 6), decor
+  HAMERVLAG: 48,    // hoge paal met het hamerbanier van Lambrecht (level 6), decor
+  STEIGER: 49,      // houten steiger tegen een muur (level 6), decor
   RAAFTOREN: 43, // de Raaftoren van Mournkeep (level 10): hier zit Wessel; onkwetsbaar, decor
   SLUIS: 42,     // de sluis van de Witte Dijk (level 8): een doel dat je moet slopen
   GRAF: 41,      // grafstenen en kruisen van een begraafplaats (level 10, bij de kerk), decor
@@ -40,13 +46,13 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf', 'werk.sluis', 'dorp.raaftoren',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf', 'werk.sluis', 'dorp.raaftoren', 'dorp.kraan', 'dorp.werkbank', 'dorp.houtstapel', 'dorp.ramgeraamte', 'dorp.hamervlag', 'dorp.steiger',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
 const OBJECT_TEKST = [
   '', 'forest', 'rock', 'copper ore', 'wall', 'watchtower', 'gate', 'keep', 'keep', 'keep', 'tower',
-  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mystic lodge', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church', 'stable', 'coal mine', 'stonemason', 'smithy', 'iron gatehouse', 'campfire', "hunter's tent", 'siege workshop', 'graveyard', 'sluice', 'Raven Tower',
+  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mystic lodge', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church', 'stable', 'coal mine', 'stonemason', 'smithy', 'iron gatehouse', 'campfire', "hunter's tent", 'siege workshop', 'graveyard', 'sluice', 'Raven Tower', 'timber crane', 'workbench', 'timber stack', 'half-built ram', 'hammer banner', 'scaffolding',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.
@@ -441,14 +447,27 @@ export function maakKaart(recept) {
           const [px, py] = POORTPLEK[k] || POORTPLEK.voor;
           for (let t = -1; t <= 1; t++) gaten.add(px ? `${px * M},${t}` : `${t},${py * M}`);
         }
+        // Een ronde ring (ring.rond): de tegels op afstand M van het midden (aaneensluitend, een achthoek in het raster);
+        // de torens staan op 8 (of 4) plekken rondom, tussen de poorten in.
+        const torenTegels = new Set();
+        if (ring.rond) {
+          const n = ring.torens || 8;
+          for (let k = 0; k < n; k++) {
+            const a = ((k + 0.5) * 2 * Math.PI) / n;   // een halve stap verschoven: de poorten liggen op de assen
+            torenTegels.add(`${Math.round(M * Math.cos(a))},${Math.round(M * Math.sin(a))}`);
+          }
+        }
         for (let dy = -M; dy <= M; dy++) {
           for (let dx = -M; dx <= M; dx++) {
-            if (Math.max(Math.abs(dx), Math.abs(dy)) !== M) continue;
+            if (ring.rond) {
+              const d = Math.hypot(dx, dy);
+              if (d < M - 0.62 || d >= M + 0.62) continue;
+            } else if (Math.max(Math.abs(dx), Math.abs(dy)) !== M) continue;
             const i = plek(dx, dy);
             if (i < 0) continue;
             if (gaten.has(`${dx},${dy}`)) { object[i] = OBJECT.GEEN; grond[i] = GROND.AARDE; continue; }
-            const hoek = Math.abs(dx) === M && Math.abs(dy) === M;
-            const midden = dx === 0 || dy === 0;
+            const hoek = ring.rond ? torenTegels.has(`${dx},${dy}`) : Math.abs(dx) === M && Math.abs(dy) === M;
+            const midden = !ring.rond && (dx === 0 || dy === 0);
             let soort = OBJECT.MUUR;
             if (hoek) soort = OBJECT.TOREN;
             else if (poorten.has(`${dx},${dy}`)) soort = OBJECT.POORT;
@@ -458,9 +477,23 @@ export function maakKaart(recept) {
           }
         }
       }
+      // Steigers en hamerbanieren langs de binnenkant van een ring (ring.steigers en ring.vlaggen: hoeken in graden;
+      // 0 is de poort naar jou toe). Alleen op een lege tegel.
+      for (const ring of (ontwerp.kamp ? [] : ringen)) {
+        for (const [lijst, soort] of [[ring.steigers, OBJECT.STEIGER], [ring.vlaggen, OBJECT.HAMERVLAG]]) {
+          for (const gr of lijst || []) {
+            const a = (gr * Math.PI) / 180;
+            const dx = Math.round((ring.maat - 1) * Math.cos(a));
+            const dy = Math.round((ring.maat - 1) * Math.sin(a));
+            const i = plek(dx, dy);
+            if (i < 0 || object[i] !== OBJECT.GEEN || grond[i] === GROND.WATER || Math.max(Math.abs(dx), Math.abs(dy)) <= 1) continue;
+            object[i] = soort;
+          }
+        }
+      }
       // Decor binnen en buiten de muren (detailronde): [naam, dx, dy] in dezelfde maat als de ringen.
       // Alleen op een lege tegel zonder water; het pad naar de poort blijft vrij omdat het ontwerp dat bewaakt.
-      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR, stal: OBJECT.STAL, kerk: OBJECT.KERK, graf: OBJECT.GRAF, raaftoren: OBJECT.RAAFTOREN };
+      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR, kraan: OBJECT.KRAAN, werkbank: OBJECT.WERKBANK, houtstapel: OBJECT.HOUTSTAPEL, ramgeraamte: OBJECT.RAMGERAAMTE, hamervlag: OBJECT.HAMERVLAG, steiger: OBJECT.STEIGER, stal: OBJECT.STAL, kerk: OBJECT.KERK, graf: OBJECT.GRAF, raaftoren: OBJECT.RAAFTOREN };
       // Moerasplekjes midden in het kamp ([dx, dy]): water op een lege tegel buiten de burcht.
       for (const [dx, dy] of ontwerp.water || []) {
         const i = plek(dx, dy);
@@ -826,12 +859,219 @@ export function maakKaart(recept) {
     }
   }
 
+  // 5f. Buitenposten (ontwerp.posten, level 6): kleine versterkte posten van rood ver van zijn burcht,
+  //     elk met een eigen ringmuur, hoektorens, wachttorens en een poort naar jouw kant. In het midden
+  //     staat later de bouwloods (js/loodsen.js); het erf is vrij voor het garnizoen (js/strijd.js).
+  //       aantal: hoeveel posten; afstand: tegels van de burcht van rood; waaier: spreiding (radialen)
+  //       om de richting naar jou; maat: halve zijde van de ring (3 = 7 bij 7 tegels, erf van 5 bij 5);
+  //       binnen: [soort, dx, dy] decor op het erf. Een post staat nooit op water, rots of in de weg
+  //       van het pad tussen de twee burchten, en is voor jou te voet bereikbaar.
+  const posten = [];
+  if (r.kasteel && r.kasteel.posten && !r.zonderRood) {
+    const P = r.kasteel.posten;
+    const M = P.maat || 3;
+    const aantalP = Math.max(1, P.aantal || 2);
+    const m = start[1];
+    const hoek0 = Math.atan2(eigen.y - m.y, eigen.x - m.x);
+    const afst = P.afstand || 20;
+    const van = { x: eigen.x + RING + 1, y: eigen.y };
+    const naar = { x: m.x - omvang - 1, y: m.y };
+    // Afstand van een punt tot het pad tussen de twee poorten.
+    const totPad = (x, y) => {
+      const sx = naar.x - van.x;
+      const sy = naar.y - van.y;
+      const l2 = sx * sx + sy * sy || 1;
+      const t = Math.max(0, Math.min(1, ((x - van.x) * sx + (y - van.y) * sy) / l2));
+      return Math.hypot(x - (van.x + t * sx), y - (van.y + t * sy));
+    };
+    // Waar je te voet kunt komen vanaf jouw poort (bomen tellen niet mee: soldaten lopen door het bos).
+    const bereikbaar = () => {
+      const gezien = new Uint8Array(aantal);
+      const rij = [van.y * breedte + van.x];
+      gezien[rij[0]] = 1;
+      while (rij.length) {
+        const i = rij.pop();
+        const x = i % breedte;
+        const y = (i - x) / breedte;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= breedte || ny >= hoogte) continue;
+          const j = ny * breedte + nx;
+          if (gezien[j] || grond[j] === GROND.WATER || (object[j] !== OBJECT.GEEN && object[j] !== OBJECT.BOOM)) continue;
+          gezien[j] = 1;
+          rij.push(j);
+        }
+      }
+      return gezien;
+    };
+    for (let n = 0; n < aantalP; n++) {
+      const spreiding = aantalP === 1 ? 0 : (n / (aantalP - 1) - 0.5) * 2;
+      const hoek = hoek0 + spreiding * (P.waaier || 0.8);
+      const tx = Math.round(m.x + Math.cos(hoek) * afst);
+      const ty = Math.round(m.y + Math.sin(hoek) * afst);
+      const bereik = bereikbaar();
+      // Een post kijkt naar jou: de poort zit aan de zijde die het dichtst bij jou ligt.
+      const richting = (cx, cy) => {
+        const dx = eigen.x - cx;
+        const dy = eigen.y - cy;
+        return Math.abs(dx) >= Math.abs(dy) ? [Math.sign(dx) || 1, 0] : [0, Math.sign(dy) || 1];
+      };
+      const past = (cx, cy) => {
+        if (cx < M + 4 || cy < M + 4 || cx >= breedte - M - 4 || cy >= hoogte - M - 4) return false;
+        if (Math.max(Math.abs(cx - m.x), Math.abs(cy - m.y)) < omvang + M + 6) return false;
+        if (totPad(cx, cy) < M + 3) return false;
+        if (posten.some((p) => Math.max(Math.abs(p.x - cx), Math.abs(p.y - cy)) < 2 * M + 8)) return false;
+        for (let dy = -M - 1; dy <= M + 1; dy++) {
+          for (let dx = -M - 1; dx <= M + 1; dx++) {
+            const i = (cy + dy) * breedte + cx + dx;
+            if (grond[i] === GROND.WATER || eigenaar[i] || (object[i] !== OBJECT.GEEN && object[i] !== OBJECT.BOOM)) return false;
+          }
+        }
+        const [rx, ry] = richting(cx, cy);
+        // Het stuk vlak voor de poort moet voor jou bereikbaar zijn.
+        return bereik[(cy + ry * (M + 2)) * breedte + cx + rx * (M + 2)] === 1;
+      };
+      let gekozen = null;
+      for (let rad = 0; rad <= 18 && !gekozen; rad++) {
+        for (let dy = -rad; dy <= rad && !gekozen; dy++) {
+          for (let dx = -rad; dx <= rad; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== rad) continue;
+            if (past(tx + dx, ty + dy)) { gekozen = { x: tx + dx, y: ty + dy }; break; }
+          }
+        }
+      }
+      if (!gekozen) continue;
+      const { x: cx, y: cy } = gekozen;
+      const [rx, ry] = richting(cx, cy);
+      for (let dy = -M; dy <= M; dy++) {
+        for (let dx = -M; dx <= M; dx++) {
+          const i = (cy + dy) * breedte + cx + dx;
+          const rand = Math.max(Math.abs(dx), Math.abs(dy)) === M;
+          if (!rand) { object[i] = OBJECT.GEEN; grond[i] = GROND.AARDE; eigenaar[i] = 0; continue; }
+          const hoekPunt = Math.abs(dx) === M && Math.abs(dy) === M;
+          const poort = dx === rx * M && dy === ry * M;
+          let soort = OBJECT.MUUR;
+          if (hoekPunt) soort = OBJECT.TOREN;
+          else if (poort) soort = OBJECT.POORT;
+          else if (dx === 0 || dy === 0) soort = OBJECT.WACHTTOREN;
+          object[i] = soort;
+          eigenaar[i] = 2;
+          grond[i] = GROND.GRAS_DONKER;
+        }
+      }
+      // Een pad van drie tegels vanaf de poort naar buiten, zonder bomen.
+      for (let k = 1; k <= 4; k++) {
+        const i = (cy + ry * (M + k)) * breedte + cx + rx * (M + k);
+        if (object[i] === OBJECT.BOOM) object[i] = OBJECT.GEEN;
+        if (grond[i] !== GROND.WATER) grond[i] = GROND.AARDE;
+      }
+      // Decor op het erf ([soort, dx, dy] ten opzichte van het midden van de post).
+      const DECOR_BINNEN = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, steen: OBJECT.STEEN, houwer: OBJECT.STEENHOUWER, kampvuur: OBJECT.KAMPVUUR, kraan: OBJECT.KRAAN, werkbank: OBJECT.WERKBANK, houtstapel: OBJECT.HOUTSTAPEL, ramgeraamte: OBJECT.RAMGERAAMTE };
+      for (const [naam, dx, dy] of P.binnen || []) {
+        const i = (cy + dy) * breedte + cx + dx;
+        if (!DECOR_BINNEN[naam] || Math.max(Math.abs(dx), Math.abs(dy)) >= M || (dx === 0 && dy === 0) || object[i] !== OBJECT.GEEN) continue;
+        object[i] = DECOR_BINNEN[naam];
+      }
+      posten.push({ vak: cy * breedte + cx, x: cx, y: cy, poort: { x: cx + rx * M, y: cy + ry * M }, maat: M });
+    }
+  }
+
+  // 5g. Werven (ontwerp.werven, level 6): kleine werkplekken verspreid over de kaart, zodat het
+  //     landschap op een werkplaats lijkt: steengroeven langs de rots, smidsen, houtwerven.
+  //     Alleen decor (van niemand, zonder functie), met eigen toeval zodat de rest van de kaart gelijk blijft.
+  //       aantal: hoeveel werven; sjablonen: namen uit WERF_SJABLONEN; naastSteen: liefst naast de rots.
+  //       Een werf staat nooit op water, niet in jouw bouwgebied, niet op het pad tussen de burchten
+  //       en niet vlak bij een post of bij het kasteel van rood.
+  if (r.kasteel && r.kasteel.werven && !r.zonderRood) {
+    const W = r.kasteel.werven;
+    const rng = maakToeval((zaad || 1) + 7717);
+    const SOORT = { houwer: OBJECT.STEENHOUWER, kraan: OBJECT.KRAAN, werkbank: OBJECT.WERKBANK, houtstapel: OBJECT.HOUTSTAPEL, ramgeraamte: OBJECT.RAMGERAAMTE, vaten: OBJECT.VATEN, hooiberg: OBJECT.HOOIBERG, kampvuur: OBJECT.KAMPVUUR, put: OBJECT.PUT, tent: OBJECT.TENT, hut: OBJECT.HUT, steen: OBJECT.STEEN };
+    const SJABLONEN = {
+      steenwerf: [['kraan', 0, 0], ['houwer', 2, 1], ['houwer', 2, -1], ['houtstapel', -2, 1], ['vaten', -1, -2]],
+      zagerij: [['werkbank', 0, 0], ['houtstapel', 2, 1], ['houtstapel', -2, 1], ['vaten', 1, -2], ['kampvuur', -2, -2]],
+      ramwerf: [['ramgeraamte', 0, 0], ['houtstapel', 2, 2], ['werkbank', -2, 1], ['hooiberg', 3, -1], ['kampvuur', 0, 3], ['tent', -2, -2]],
+    };
+    const m = start[1];
+    const naamLijst = (W.sjablonen && W.sjablonen.length ? W.sjablonen : Object.keys(SJABLONEN)).filter((n) => SJABLONEN[n]);
+    const van = { x: eigen.x + RING + 1, y: eigen.y };
+    const naar = { x: m.x - omvang - 1, y: m.y };
+    const totPad = (x, y) => {
+      const sx = naar.x - van.x;
+      const sy = naar.y - van.y;
+      const l2 = sx * sx + sy * sy || 1;
+      const t = Math.max(0, Math.min(1, ((x - van.x) * sx + (y - van.y) * sy) / l2));
+      return Math.hypot(x - (van.x + t * sx), y - (van.y + t * sy));
+    };
+    const naastSteen = (x, y) => {
+      for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < breedte && ny < hoogte && object[ny * breedte + nx] === OBJECT.STEEN) return true;
+      }
+      return false;
+    };
+    const gezet = [];
+    const wens = W.aantal || 8;
+    for (let poging = 0; poging < 900 && gezet.length < wens; poging++) {
+      const cx = 4 + Math.floor(rng() * (breedte - 8));
+      const cy = 4 + Math.floor(rng() * (hoogte - 8));
+      const sjabloon = SJABLONEN[naamLijst[gezet.length % naamLijst.length]];
+      // De eerste helft liefst naast de rots (steengroeven), de rest overal.
+      if (W.naastSteen && gezet.length < wens / 2 && !naastSteen(cx, cy)) continue;
+      if (Math.max(Math.abs(cx - eigen.x), Math.abs(cy - eigen.y)) < (W.vanThuis || 18)) continue;
+      if (Math.max(Math.abs(cx - m.x), Math.abs(cy - m.y)) < omvang + 5) continue;
+      if (totPad(cx, cy) < 4) continue;
+      if (posten.some((p) => Math.max(Math.abs(p.x - cx), Math.abs(p.y - cy)) < p.maat + 6)) continue;
+      if (gezet.some(([gx, gy]) => Math.max(Math.abs(gx - cx), Math.abs(gy - cy)) < (W.afstandTot || 9))) continue;
+      let past = true;
+      for (const [naam, dx, dy] of sjabloon) {
+        const x = cx + dx;
+        const y = cy + dy;
+        const i = y * breedte + x;
+        if (x < 2 || y < 2 || x >= breedte - 2 || y >= hoogte - 2 || grond[i] === GROND.WATER || eigenaar[i] || (object[i] !== OBJECT.GEEN && object[i] !== OBJECT.BOOM)) { past = false; break; }
+      }
+      if (!past) continue;
+      for (const [naam, dx, dy] of sjabloon) {
+        const i = (cy + dy) * breedte + cx + dx;
+        object[i] = SOORT[naam];
+        if (grond[i] !== GROND.WATER) grond[i] = GROND.AARDE;
+      }
+      gezet.push([cx, cy]);
+    }
+  }
+
   // 6. Looproutes voor de wachters op de muur, per kasteel. Elke muur is
   //    in tweeën gedeeld door een wachttoren of de poort.
   //    Bij meer ringen eerst de buitenste: daar staan de wachters het liefst.
-  const routesRond = (m, teken, M) => {
+  const routesRond = (m, teken, M, rond) => {
     const plek = (dx, dy) => (m.y + teken * dy) * breedte + m.x + teken * dx;
     const routes = [];
+    if (rond) {
+      // Een ronde ring: de muurtegels op de ring, op hoek gesorteerd, in stukken tussen de torens en poorten.
+      const tegels = [];
+      for (let dy = -M - 1; dy <= M + 1; dy++) {
+        for (let dx = -M - 1; dx <= M + 1; dx++) {
+          const d = Math.hypot(dx, dy);
+          if (d < M - 0.62 || d >= M + 0.62) continue;
+          const i = plek(dx, dy);
+          if (i >= 0 && i < aantal && object[i] === OBJECT.MUUR) tegels.push({ i, dx, dy, a: Math.atan2(dy, dx) });
+        }
+      }
+      tegels.sort((p, q) => p.a - q.a);
+      let stuk = [];
+      let vorige = null;
+      for (const t of tegels) {
+        if (vorige && Math.max(Math.abs(t.dx - vorige.dx), Math.abs(t.dy - vorige.dy)) > 1) {
+          if (stuk.length > 1) routes.push(stuk);
+          stuk = [];
+        }
+        stuk.push(t.i);
+        vorige = t;
+      }
+      if (stuk.length > 1) routes.push(stuk);
+      return routes;
+    }
     for (const [van, tot] of [[-M + 1, -1], [1, M - 1]]) {
       const stukken = [[], [], [], []];
       for (let k = van; k <= tot; k++) {
@@ -846,10 +1086,10 @@ export function maakKaart(recept) {
   };
   const kastelen = [
     { team: 0, midden: start[0], routes: [] },   // nog geen muren, dus geen wachters
-    { team: 1, midden: start[1], routes: r.zonderRood ? [] : ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat)) },
+    { team: 1, midden: start[1], routes: r.zonderRood ? [] : ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat, ring.rond)) },
   ];
 
-  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, verbonden: padGemaakt === 'ja' };
+  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, verbonden: padGemaakt === 'ja' };
 }
 
 export function binnenKaart(kaart, x, y) {

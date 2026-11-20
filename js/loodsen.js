@@ -25,11 +25,11 @@ import { OBJECT, GROND } from './kaart.js';
 
 const TEKSTEN = {
   naam: 'Lambrecht Kuyper', portret: 'lambrecht', wie: "Lambrecht's",
-  begin: 'Two sheds, Karel, and every beam in them becomes a ram for the duke. Come and take them if you dare. My men will not make it easy.',
+  begin: 'Two sheds, Karel, and every beam in them becomes a ram for the duke. Each has its own wall and towers, and good men behind them. Come and take them if you dare.',
   eerste: 'My shed! Hold the line, men, the other one must not fall!',
   alles: 'Both siege sheds are in ruins!',
   taak: 'Destroy the siege sheds: {over} of {aantal} left',
-  omschrijving: "Your goal: destroy both of Lambrecht's siege sheds, outside his walls. The longer they stand, the more men he sends. If your king falls, you lose.",
+  omschrijving: "Your goal: destroy both of Lambrecht's siege sheds. Each stands inside its own fortified post, far from his keep. The longer they stand, the more men he sends. If your king falls, you lose.",
 };
 
 const SLEUTEL = 'burcht-banier.doel.';
@@ -139,10 +139,20 @@ export function maakLoodsen({ missie, kaart, strijd, wegvinder, toonVerhaal, too
     return uitslag;
   }
 
+  // Heeft het kasteelontwerp buitenposten (kaart.posten, js/kaart.js 5f), dan staat elke loods
+  // in het midden van een versterkte post, ver van de burcht van rood.
+  const postVakken = () => (kaart.posten || []).slice(0, aantal).map((p) => p.vak);
+
   function zetLoodsen() {
-    if (!Array.isArray(s.loodsen) || s.loodsen.length !== aantal || s.loodsen.some((v) => !Number.isInteger(v) || v < 0 || v >= B * kaart.hoogte)) {
+    const posten = postVakken();
+    const metPosten = posten.length === aantal;
+    // Een bewaarde stand met andere plekken (van een oudere versie) wordt niet gebruikt.
+    const klopt = Array.isArray(s.loodsen) && s.loodsen.length === aantal
+      && !s.loodsen.some((v) => !Number.isInteger(v) || v < 0 || v >= B * kaart.hoogte)
+      && (!metPosten || s.loodsen.every((v, i) => v === posten[i]));
+    if (!klopt) {
       s = nieuw();
-      s.loodsen = zoekPlekken();
+      s.loodsen = metPosten ? posten : zoekPlekken();
     }
     const gezet = new Set();
     for (const vak of s.loodsen) {

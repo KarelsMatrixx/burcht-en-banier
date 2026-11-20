@@ -3478,6 +3478,235 @@ export function tekenKampvuur(naam, def) {
   return { beeld: doek, b, h, ax: cx, ay: h - 2, rook: [0, cy - 19 - (h - 2)] };
 }
 
+// --- Werkplaatsdecor van level 6 (De Reuzenrug): houtkraan, werkbank, houtstapel, ramgeraamte ---
+const HOUT_LICHT = '#a07a4c';
+const HOUT_MID = '#7f6040';
+const HOUT_DONKER = '#4a3624';
+
+// Een houten balk als smalle doos tussen twee punten (met een lichte bovenrand).
+function balk(ctx, x1, y1, x2, y2, dikte, kleur = HOUT_MID) {
+  lijn(ctx, x1, y1, x2, y2, HOUT_DONKER, dikte + 1.2);
+  lijn(ctx, x1, y1, x2, y2, kleur, dikte);
+  lijn(ctx, x1, y1 - dikte * 0.25, x2, y2 - dikte * 0.25, 'rgba(255,235,190,0.22)', Math.max(0.5, dikte * 0.3));
+}
+
+// Een houtkraan: een voetplank, twee masten, een giek met touw en een balk die omhoog hangt.
+export function tekenKraan(naam, def) {
+  const b = TB;
+  const h = 118;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - HH;
+  ovaal(ctx, cx, voet + 2, 20, 9, 'rgba(0,0,0,0.26)');
+  // Plankenvloer
+  vlak(ctx, [[cx, voet - 9], [cx + 18, voet], [cx, voet + 9], [cx - 18, voet]], HOUT_MID);
+  lijn(ctx, cx - 9, voet - 4.5, cx + 9, voet + 4.5, 'rgba(0,0,0,0.25)', 0.7);
+  lijn(ctx, cx - 9, voet + 4.5, cx + 9, voet - 4.5, 'rgba(0,0,0,0.25)', 0.7);
+  // Tegengewicht: een kist met stenen links
+  vlak(ctx, [[cx - 17, voet - 6], [cx - 8, voet - 1], [cx - 8, voet - 11], [cx - 17, voet - 16]], '#6d5436');
+  vlak(ctx, [[cx - 8, voet - 1], [cx - 1, voet - 5], [cx - 1, voet - 15], [cx - 8, voet - 11]], '#58422a');
+  ovaal(ctx, cx - 10, voet - 17, 2.6, 1.6, '#8e8a82');
+  ovaal(ctx, cx - 14, voet - 18, 2.2, 1.4, '#a7a298');
+  // Twee masten die naar elkaar toe lopen, met dwarsbalken
+  balk(ctx, cx - 4, voet - 2, cx + 1, voet - 82, 3.2);
+  balk(ctx, cx + 6, voet + 1, cx + 3, voet - 82, 3.2);
+  balk(ctx, cx - 3, voet - 26, cx + 6, voet - 22, 1.8);
+  balk(ctx, cx - 1, voet - 52, cx + 5, voet - 48, 1.8);
+  // Giek naar rechts-boven met een steunbalk
+  balk(ctx, cx + 1, voet - 80, cx + 32, voet - 58, 3);
+  balk(ctx, cx + 2, voet - 40, cx + 25, voet - 63, 1.8);
+  balk(ctx, cx + 1, voet - 80, cx - 14, voet - 70, 2.2);
+  // Katrol op de top en een winde met een wiel
+  ovaal(ctx, cx + 31, voet - 58, 2.8, 2.8, '#2f2a26');
+  ovaal(ctx, cx + 31, voet - 58, 1.2, 1.2, '#8e8a82');
+  ovaal(ctx, cx + 7, voet - 16, 4.2, 4.2, HOUT_DONKER);
+  ovaal(ctx, cx + 7, voet - 16, 3, 3, HOUT_LICHT);
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI;
+    lijn(ctx, cx + 7 - Math.cos(a) * 3.6, voet - 16 - Math.sin(a) * 3.6, cx + 7 + Math.cos(a) * 3.6, voet - 16 + Math.sin(a) * 3.6, HOUT_DONKER, 0.8);
+  }
+  // Touw van de winde langs de mast, over de katrol en omlaag naar de balk
+  lijn(ctx, cx + 7, voet - 19, cx + 4, voet - 80, '#c9b98a', 0.9);
+  lijn(ctx, cx + 4, voet - 80, cx + 31, voet - 61, '#c9b98a', 0.9);
+  lijn(ctx, cx + 31, voet - 56, cx + 31, voet - 34, '#c9b98a', 0.9);
+  // Haak en een half omhooggetrokken stam
+  lijn(ctx, cx + 31, voet - 34, cx + 31, voet - 31, '#2f2a26', 1.4);
+  balk(ctx, cx + 20, voet - 28, cx + 42, voet - 40, 4.2, '#8a6a44');
+  ovaal(ctx, cx + 42.5, voet - 40.5, 2.1, 2.6, '#c9a56a');
+  lijn(ctx, cx + 24, voet - 30, cx + 31, voet - 34, '#c9b98a', 0.8);
+  lijn(ctx, cx + 38, voet - 37, cx + 31, voet - 34, '#c9b98a', 0.8);
+  return { beeld: doek, b, h, ax: cx, ay: h };
+}
+
+// De hamervlag van Lambrecht: een hoge paal met een rood banier waar een gouden hamer op staat.
+export function tekenHamervlag(naam, def) {
+  const b = TB;
+  const h = 92;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - HH;
+  ovaal(ctx, cx, voet + 1, 9, 4, 'rgba(0,0,0,0.26)');
+  // steenhoop als voet
+  ovaal(ctx, cx - 3, voet - 1, 4, 2.6, '#8e8a82');
+  ovaal(ctx, cx + 3, voet, 4, 2.4, '#a7a298');
+  ovaal(ctx, cx, voet - 3, 3.6, 2.2, '#b3aea3');
+  // paal
+  balk(ctx, cx, voet - 3, cx, voet - 78, 2.4, '#6b4a2b');
+  ovaal(ctx, cx, voet - 79, 2, 2, '#e2b53c');
+  // banier: hangt aan een dwarsbalk, met puntige onderkant
+  lijn(ctx, cx - 12, voet - 70, cx + 12, voet - 70, '#4a3624', 1.6);
+  vlak(ctx, [[cx - 11, voet - 69], [cx + 11, voet - 69], [cx + 11, voet - 36], [cx, voet - 28], [cx - 11, voet - 36]], '#a8332a');
+  vlak(ctx, [[cx, voet - 69], [cx + 11, voet - 69], [cx + 11, voet - 36], [cx, voet - 28]], 'rgba(0,0,0,0.16)');
+  lijn(ctx, cx - 10, voet - 68, cx - 10, voet - 37, '#e2b53c', 0.9);
+  lijn(ctx, cx + 10, voet - 68, cx + 10, voet - 37, '#e2b53c', 0.9);
+  // gouden hamer
+  balk(ctx, cx, voet - 44, cx, voet - 62, 2.4, '#e2b53c');
+  vlak(ctx, [[cx - 7, voet - 66], [cx + 7, voet - 66], [cx + 7, voet - 58], [cx - 7, voet - 58]], '#f0cb62');
+  vlak(ctx, [[cx - 7, voet - 66], [cx + 7, voet - 66], [cx + 7, voet - 63], [cx - 7, voet - 63]], 'rgba(255,255,255,0.3)');
+  return { beeld: doek, b, h, ax: cx, ay: h };
+}
+
+// Een steiger tegen een muur: twee verdiepingen planken op palen, met een ladder, een emmer en een bundel planken.
+export function tekenSteiger(naam, def) {
+  const b = TB;
+  const h = 96;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - HH;
+  ovaal(ctx, cx, voet + 2, 20, 8, 'rgba(0,0,0,0.26)');
+  const L = [cx - 17, voet], F = [cx, voet + 8], R = [cx + 17, voet], K = [cx, voet - 8];
+  const hoog = 58;
+  // achterpalen
+  balk(ctx, K[0], K[1], K[0], K[1] - hoog, 2.2, HOUT_DONKER);
+  // planken per verdieping
+  for (const z of [26, 50]) {
+    vlak(ctx, [[L[0], L[1] - z], [F[0], F[1] - z], [R[0], R[1] - z], [K[0], K[1] - z]], HOUT_LICHT);
+    lijn(ctx, L[0], L[1] - z, F[0], F[1] - z, HOUT_DONKER, 0.8);
+    lijn(ctx, F[0], F[1] - z, R[0], R[1] - z, HOUT_DONKER, 0.8);
+    for (let t = 0.25; t < 1; t += 0.25) lijn(ctx, L[0] + (K[0] - L[0]) * t, L[1] - z + (K[1] - L[1]) * t, F[0] + (R[0] - F[0]) * t, F[1] - z + (R[1] - F[1]) * t, 'rgba(0,0,0,0.25)', 0.6);
+  }
+  // voorpalen en kruisverbindingen
+  balk(ctx, L[0], L[1], L[0], L[1] - hoog, 2.6);
+  balk(ctx, F[0], F[1], F[0], F[1] - hoog, 2.8);
+  balk(ctx, R[0], R[1], R[0], R[1] - hoog, 2.6);
+  balk(ctx, L[0], L[1] - 2, F[0], F[1] - 26, 1.6, HOUT_DONKER);
+  balk(ctx, F[0], F[1] - 2, R[0], R[1] - 26, 1.6, HOUT_DONKER);
+  balk(ctx, L[0], L[1] - 28, F[0], F[1] - 50, 1.6, HOUT_DONKER);
+  balk(ctx, F[0], F[1] - 28, R[0], R[1] - 50, 1.6, HOUT_DONKER);
+  // ladder langs de voorpaal
+  const lx = F[0] + 4;
+  balk(ctx, lx - 2, F[1] - 2, lx + 1, F[1] - 52, 1.2, HOUT_DONKER);
+  balk(ctx, lx + 3, F[1] - 3, lx + 6, F[1] - 53, 1.2, HOUT_DONKER);
+  for (let i = 1; i < 8; i++) lijn(ctx, lx - 1.6 + i * 0.4, F[1] - i * 6.4, lx + 3.6 + i * 0.4, F[1] - i * 6.4 - 0.5, HOUT_MID, 0.9);
+  // emmer en bundel planken
+  vlak(ctx, [[cx - 12, voet - 20], [cx - 6, voet - 18], [cx - 7, voet - 12], [cx - 12, voet - 13]], '#5d4a35');
+  lijn(ctx, cx - 12, voet - 20, cx - 6, voet - 18, '#2f2a26', 0.8);
+  vlak(ctx, [[cx + 4, voet - 48], [cx + 14, voet - 44], [cx + 14, voet - 41], [cx + 4, voet - 45]], '#b58c58');
+  vlak(ctx, [[cx + 4, voet - 45], [cx + 14, voet - 41], [cx + 14, voet - 39], [cx + 4, voet - 43]], '#8a6a44');
+  return { beeld: doek, b, h, ax: cx, ay: h };
+}
+
+// Een werkbank met een stam die wordt gezaagd, een zaag, een hamer en een berg zaagsel.
+export function tekenWerkbank(naam, def) {
+  const b = TB;
+  const h = 50;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - HH;
+  ovaal(ctx, cx, voet + 2, 19, 8, 'rgba(0,0,0,0.24)');
+  // Zaagsel op de grond
+  ovaal(ctx, cx + 10, voet + 4, 7, 2.6, '#c9b07a');
+  ovaal(ctx, cx + 12, voet + 3, 3.5, 1.4, '#ddc592');
+  // Poten
+  for (const [px, py] of [[-12, -1], [0, 6], [12, -1], [0, -8]]) balk(ctx, cx + px, voet + py, cx + px, voet + py - 11, 2.4, HOUT_DONKER);
+  // Blad van de bank
+  vlak(ctx, [[cx, voet - 20], [cx + 17, voet - 11], [cx, voet - 2], [cx - 17, voet - 11]], '#b08a58');
+  vlak(ctx, [[cx - 17, voet - 11], [cx, voet - 2], [cx, voet + 0.5], [cx - 17, voet - 8.5]], '#7a5a38');
+  vlak(ctx, [[cx, voet - 2], [cx + 17, voet - 11], [cx + 17, voet - 8.5], [cx, voet + 0.5]], '#664a2e');
+  lijn(ctx, cx - 8, voet - 15.5, cx + 8, voet - 6.5, 'rgba(0,0,0,0.18)', 0.6);
+  // Een stam op de bank, half doorgezaagd
+  balk(ctx, cx - 10, voet - 9, cx + 9, voet - 19, 4.6, '#8a6a44');
+  ovaal(ctx, cx + 9.4, voet - 19.4, 2.2, 2.7, '#c9a56a');
+  lijn(ctx, cx - 1, voet - 14.5, cx - 1, voet - 11.5, 'rgba(30,20,10,0.55)', 1.2);
+  // Een zaag die in de sleuf staat
+  lijn(ctx, cx - 3, voet - 22, cx + 5, voet - 14.5, '#b9bcc2', 1.6);
+  lijn(ctx, cx - 4, voet - 24, cx - 6, voet - 20, HOUT_DONKER, 1.6);
+  // Hamer en planken
+  lijn(ctx, cx + 11, voet - 9.5, cx + 15, voet - 12, HOUT_DONKER, 1.2);
+  vlak(ctx, [[cx + 13, voet - 14], [cx + 17, voet - 12], [cx + 16, voet - 10.5], [cx + 12, voet - 12.5]], '#5a5e66');
+  balk(ctx, cx - 14, voet - 3, cx - 22, voet - 24, 2, '#c4a06a');
+  balk(ctx, cx - 11, voet - 1, cx - 19, voet - 22, 2, '#b08a58');
+  return { beeld: doek, b, h, ax: cx, ay: h };
+}
+
+// Een stapel gezaagde stammen met daarnaast een stapeltje planken.
+export function tekenHoutstapel(naam, def) {
+  const b = TB;
+  const h = 46;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const toeval = toevalVoor(naam);
+  const cx = b / 2;
+  const voet = h - HH;
+  ovaal(ctx, cx, voet + 3, 21, 8.5, 'rgba(0,0,0,0.24)');
+  // Stammen in een driehoek (kopse kant naar rechtsonder): rij van onder naar boven
+  const stam = (x, y, kleur) => {
+    vlak(ctx, [[x - 11, y - 5.5], [x, y], [x, y - 5], [x - 11, y - 10.5]], kleur);
+    ovaal(ctx, x, y - 2.6, 2.7, 3.2, '#d2ae72');
+    ovaal(ctx, x, y - 2.6, 1.6, 2, '#b78f54');
+    ovaal(ctx, x, y - 2.6, 0.6, 0.8, '#8d6a3c');
+  };
+  const kleuren = ['#7a5a38', '#8a6a44', '#6f5030'];
+  let n = 0;
+  for (let rij = 0; rij < 3; rij++) {
+    for (let i = 0; i < 4 - rij; i++) stam(cx - 2 + i * 6.2 + rij * 3.1 - 8, voet + 3 - rij * 5.4 - i * 3, kleuren[(n++ + Math.floor(toeval() * 3)) % 3]);
+  }
+  // Planken, netjes gestapeld rechts
+  for (let i = 0; i < 4; i++) {
+    vlak(ctx, [[cx + 8, voet + 1 - i * 2.2], [cx + 21, voet - 5.5 - i * 2.2], [cx + 21, voet - 4 - i * 2.2], [cx + 8, voet + 2.5 - i * 2.2]], i % 2 ? '#c9a56a' : '#b68f5a');
+  }
+  vlak(ctx, [[cx + 8, voet + 2.5 - 8.8], [cx + 21, voet - 4 - 8.8], [cx + 15, voet - 8.2 - 8.8 + 4], [cx + 2, voet - 1.7 - 8.8 + 2.4]], '#d6b47a');
+  return { beeld: doek, b, h, ax: cx, ay: h };
+}
+
+// Een half gebouwde stormram op schragen: alleen de ribben van het dak, een stam eronder, planken ernaast.
+export function tekenRamgeraamte(naam, def) {
+  const b = TB;
+  const h = 70;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - HH;
+  ovaal(ctx, cx, voet + 3, 21, 8.5, 'rgba(0,0,0,0.26)');
+  // Twee wielen
+  for (const wx of [-13, 11]) {
+    ovaal(ctx, cx + wx, voet + 3 - (wx > 0 ? 6 : -1), 5, 5.6, '#2f2a26');
+    ovaal(ctx, cx + wx, voet + 3 - (wx > 0 ? 6 : -1), 3.4, 4, '#6f5030');
+    ovaal(ctx, cx + wx, voet + 3 - (wx > 0 ? 6 : -1), 1.1, 1.3, '#2f2a26');
+  }
+  // Onderstel
+  balk(ctx, cx - 14, voet - 1, cx + 10, voet - 12, 3);
+  balk(ctx, cx - 8, voet + 3, cx + 16, voet - 8, 3);
+  // De ramstam, hangend aan ketens
+  balk(ctx, cx - 17, voet - 12, cx + 15, voet - 26, 5.4, '#7a5a38');
+  vlak(ctx, [[cx + 15, voet - 28.5], [cx + 19, voet - 26.5], [cx + 19, voet - 22.5], [cx + 15, voet - 24]], '#5a5e66');
+  // Ribben van het dak (nog zonder planken)
+  for (const dx of [-12, -4, 4, 12]) {
+    const x = cx + dx;
+    const y = voet - 8 - (dx + 12) * 0.28;
+    balk(ctx, x - 7, y - 5, x, y - 30, 1.8);
+    balk(ctx, x, y - 30, x + 7, y - 6.5, 1.8);
+    lijn(ctx, x - 5.5, y - 5.5, x - 5.5, y - 17, '#c9b98a', 0.6);
+    lijn(ctx, x + 5.5, y - 7, x + 5.5, y - 18, '#c9b98a', 0.6);
+  }
+  // Nokbalk en een paar planken die al zijn vastgespijkerd
+  balk(ctx, cx - 12, voet - 38, cx + 12, voet - 42, 2.2);
+  vlak(ctx, [[cx - 12, voet - 38], [cx - 5, voet - 17.5], [cx - 4, voet - 20], [cx - 11, voet - 40]], '#b68f5a');
+  vlak(ctx, [[cx - 4, voet - 36.5], [cx + 2, voet - 17], [cx + 3, voet - 19.5], [cx - 3, voet - 38.5]], '#c9a56a');
+  // Planken naast het onderstel
+  balk(ctx, cx + 14, voet + 3, cx + 24, voet - 4, 2, '#c4a06a');
+  balk(ctx, cx + 12, voet + 5, cx + 22, voet - 2, 2, '#b08a58');
+  return { beeld: doek, b, h, ax: cx, ay: h };
+}
+
 // Eén tegel van de commandotent van Brandt: een hoge paviljoentent op houten palen.
 // Zelfde maten en vensters als de burcht, zodat soldaten er net zo op klimmen; het dak is
 // strak gespannen doek met een franje van wimpels in plaats van kantelen.

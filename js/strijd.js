@@ -39,7 +39,7 @@ const ROOD = 2;              // eigenaar van wat de rode heer heeft gebouwd
 // er is een bouwwerk vernield (van = 1: van jou, 2: van rood).
 // opKaart(vakken): de kaart is veranderd zonder dat er gebouwd is.
 // opEinde('gewonnen' of 'verloren').
-export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, bouwwerken, opVerandering, opStand, opMelding, opVerwoest, opKaart, opEinde }) {
+export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, bouwwerken, opVerandering, opStand, opMelding, opVerwoest, opKaart, opEinde, opTerug = () => {} }) {
   const B = kaart.breedte;
   const H = kaart.hoogte;
   const HB = CONFIG.tegel.breedte / 2;
@@ -72,6 +72,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // --- De stand ---------------------------------------------------------------------
   const vijanden = [];
   const effecten = [];          // voor de tekenlaag: pijlen en wie er valt
+  const vluchten = [];          // stenen van een trebuchet onderweg: de schade komt pas als de steen er is
   const balken = [];            // voor de tekenlaag: het leven van beschadigde bouwwerken
   const schade = new Map();     // vak -> { leven, soort } van een beschadigd bouwwerk
   let stapNr = 0;
@@ -195,10 +196,10 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       return gemaakt;
     }
     const wens = R.garnizoen;
-    if (!wens) return 0;
+    if (!wens) return maakPostGarnizoen();
     const sleutels = [];
     for (const [sleutel, aantal] of Object.entries(wens)) if (soorten[sleutel]) for (let i = 0; i < aantal; i++) sleutels.push(sleutel);
-    if (!sleutels.length) return 0;
+    if (!sleutels.length) return maakPostGarnizoen();
     // Alle vrije vakken in het kamp die te voet bereikbaar zijn vanaf de ingang van de commandotent.
     const ingang = vrijBij(m.y * B + m.x + 2);
     const plekken = [];
@@ -225,6 +226,47 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       gemaakt++;
     }
     opStand();
+    return gemaakt + maakPostGarnizoen();
+  }
+  // Het garnizoen van de buitenposten (kaart.posten, level 6): per post dezelfde samenstelling
+  // (rood.postGarnizoen: { soort: aantal }). Wie dicht bij de poort staat, vecht met het zwaard;
+  // schutters staan verder naar achteren op het erf, en wie er geen plek meer heeft staat voor de poort.
+  const MELEE = new Set(['ridder', 'zwaardvechter', 'bijlridder', 'steenwachter', 'banierdrager']);
+  function maakPostGarnizoen() {
+    const wens = R.postGarnizoen;
+    const posten = kaart.posten || [];
+    if (R.proloog || !wens || !posten.length) return 0;
+    const sleutels = [];
+    for (const [sleutel, aantal] of Object.entries(wens)) if (soorten[sleutel]) for (let i = 0; i < aantal; i++) sleutels.push(sleutel);
+    if (!sleutels.length) return 0;
+    sleutels.sort((a, b) => (MELEE.has(b) ? 1 : 0) - (MELEE.has(a) ? 1 : 0));   // eerst het zwaardvolk
+    let gemaakt = 0;
+    for (const p of posten) {
+      const M = p.maat;
+      const tegels = [];
+      for (let dy = -M - 2; dy <= M + 2; dy++) {
+        for (let dx = -M - 2; dx <= M + 2; dx++) {
+          const rand = Math.max(Math.abs(dx), Math.abs(dy));
+          const x = p.x + dx;
+          const y = p.y + dy;
+          if (x < 1 || y < 1 || x >= B - 1 || y >= H - 1 || rand === M || (dx === 0 && dy === 0)) continue;
+          // Buiten de muur alleen het stuk vlak voor de poort.
+          if (rand > M && Math.hypot(x - p.poort.x, y - p.poort.y) > 3.2) continue;
+          if (!wegvinder.isVrij(x, y, VIJAND)) continue;
+          const naarPoort = Math.hypot(x - p.poort.x, y - p.poort.y);
+          tegels.push({ vak: y * B + x, binnen: rand < M, afstand: naarPoort });
+        }
+      }
+      // Eerst het erf (dichtbij de poort het eerst), dan pas het stuk buiten de poort.
+      tegels.sort((a, b) => (a.binnen === b.binnen ? a.afstand - b.afstand : a.binnen ? -1 : 1));
+      for (let i = 0; i < sleutels.length && i < tegels.length; i++) {
+        const e = maakVijand(sleutels[i], tegels[i].vak);
+        e.garnizoen = true;
+        e.post = tegels[i].vak;
+        gemaakt++;
+      }
+    }
+    if (gemaakt) opStand();
     return gemaakt;
   }
   const garnizoenLijst = () => vijanden.filter((e) => e.garnizoen && !e.dood);
@@ -237,7 +279,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (k.doelwit) {
       const d = Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y);
       if (d <= bereikVan(e, k) && kanRaken(e, k, k.doelwit)) return;   // binnen bereik: slaan of schieten
-      if (ver <= GARNIZOEN_KETTING) { jaag(e, k); return; }
+      if (ver <= (stapNr < (e.alarmTot || 0) ? ALARM_KETTING : GARNIZOEN_KETTING)) { jaag(e, k); return; }
       k.doelwit = null;
     }
     if (e.pad) return;
@@ -387,12 +429,22 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // Het vrije vak op r tegels rond een vak dat het dichtst bij deze krijger
   // ligt en waar hij kan komen, of -1.
-  function plekRond(e, vak, r, fysiek = false) {
+  function plekRond(e, vak, r, fysiek = false, buiten = null, voor = false, achter = null) {
     const x = vak % B;
     const y = Math.floor(vak / B);
     const hier = vakVan(e);
     let beste = -1;
     let min = Infinity;
+    // achter: een punt van de tegenstander; liefst sta je aan de andere kant van het vak (achter je machine)
+    let ax = 0;
+    let ay = 0;
+    if (achter) {
+      ax = x - (achter.x || 0);
+      ay = y - (achter.y || 0);
+      const l = Math.hypot(ax, ay) || 1;
+      ax /= l;
+      ay /= l;
+    }
     for (let dy = -r; dy <= r; dy++) {
       for (let dx = -r; dx <= r; dx++) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
@@ -400,8 +452,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         const ny = y + dy;
         if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
         const kandidaat = ny * B + nx;
-        if (!wegvinder.verbonden(hier, kandidaat, e.team) || bezetDoorVriend(kandidaat, e, fysiek)) continue;
-        const d = verVan(e, kandidaat);
+        if ((buiten && buiten.includes(kandidaat)) || !wegvinder.verbonden(hier, kandidaat, e.team) || bezetDoorVriend(kandidaat, e, fysiek)) continue;
+        const d = verVan(e, kandidaat) - (voor ? 3 * (dx + dy) : 0) - (achter ? 8 * (dx * ax + dy * ay) : 0);   // voor: aan de voorkant; achter: aan de kant van de machine die van de tegenstander af ligt
         if (d < min) {
           min = d;
           beste = kandidaat;
@@ -526,9 +578,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const plek = { x: doel.x, y: doel.y };
     if (k.def.gebied !== undefined) return geluid.speel('fire_cast', { x: e.x, y: e.y });
     if (k.def.windstoot) return;
-    if (sl === 'katapult') {
+    if (sl === 'katapult' || sl === 'trebuchet') {   // de trebuchet klinkt als een katapult
       geluid.speel('catapult_launch', { x: e.x, y: e.y });
-      return geluid.speel('catapult_impact', { x: doel.x, y: doel.y, wacht: 400 + 45 * Math.hypot(doel.x - e.x, doel.y - e.y) });
+      return geluid.speel('catapult_impact', { x: doel.x, y: doel.y, wacht: (k.def.staand ? 650 : 400) + (k.def.staand ? 85 : 45) * Math.hypot(doel.x - e.x, doel.y - e.y) });
     }
     if (sl === 'ram') return geluid.speel('ram_hit', plek);
     if (k.def.alleenBouw && !KLAP_GELUID[sl]) return;
@@ -548,6 +600,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.afkoel = stappen(k.def.slagTijd);
     k.pose = 3;
     e.pose = 1;
+    e.schotTijd = performance.now();   // de tekenlaag laat de arm van een trebuchet doorzwaaien
     k.rust = 0;
   }
 
@@ -594,7 +647,20 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const staatNog = (b) => (b.burcht ? burchten[b.team].leven > 0 : b.van !== 0 && kaart.eigenaar[b.vak] === b.van && kaart.object[b.vak] === b.soort);
 
   const STEEN_GELUID = new Set(['MUUR', 'TOREN', 'POORT', 'WACHTTOREN'].map((n) => OBJECT[n]).filter((n) => n !== undefined));
-  function raakBouw(b, hoeveel) {
+  // Wordt een bouwwerk van rood bij een buitenpost geraakt (rood.postGarnizoen, level 6), dan slaat het
+  // garnizoen alarm: het rukt tot 16 tegels van zijn post uit op wie het deed (een katapult buiten hun zicht
+  // blijft dus niet ongestraft schieten). Na een half minuutje gaan ze weer terug naar hun post.
+  const ALARM_KETTING = 16;
+  function alarmPost(b, door) {
+    if (!R.postGarnizoen || !door || door.dood || door.team !== SPELER) return;
+    for (const g of vijanden) {
+      if (!g.garnizoen || g.dood || g.post === undefined) continue;
+      if (Math.hypot((g.post % B) - b.x, Math.floor(g.post / B) - b.y) > 12) continue;
+      krijgVan(g).wraak = door;
+      g.alarmTot = stapNr + stappen(30);
+    }
+  }
+  function raakBouw(b, hoeveel, door = null) {
     if (b.burcht) {
       const doel = burchten[b.team];
       // In de proloog valt de burcht van rood niet en de jouwe niet helemaal.
@@ -617,6 +683,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       schade.set(b.vak, s);
     }
     s.leven -= hoeveel;
+    if (b.van === ROOD && door) alarmPost(b, door);
     if (s.leven <= 0) {
       geluid.speel(b.soort === OBJECT.POORT ? 'gate_break' : STEEN_GELUID.has(b.soort) ? 'wall_collapse' : 'build_demolish', { x: b.x, y: b.y });
       schade.delete(b.vak);
@@ -632,7 +699,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const b = k.bouw;
     const dx = Math.abs(e.x - b.x);
     const dy = Math.abs(e.y - b.y);
-    if (k.def.bereik > 2) return Math.hypot(Math.max(0, dx - b.straal), Math.max(0, dy - b.straal)) <= k.def.bereik - 1;
+    if (k.def.bereik > 2) {
+      const ver = Math.hypot(Math.max(0, dx - b.straal), Math.max(0, dy - b.straal));
+      if (k.def.minBereik && ver < k.def.minBereik) return false;   // een trebuchet raakt niets dichtbij (dode zone)
+      return ver <= k.def.bereik - 1;
+    }
     return Math.max(dx, dy) <= b.straal + 1.2;
   }
 
@@ -669,6 +740,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     for (let i = 0; i < anderen.length; i++) {
       const a = anderen[i];
       if (a.dood || a.klimt || (a === k.negeer && stapNr < k.negeerTot) || wachtBuiten(a)) continue;
+      if (k.def.geschut && a.krijg && a.krijg.def.staand) continue;   // een ballista reikt niet tot een trebuchet
       if (!kanRaken(e, k, a) && !klimtNaar(e, k, a)) continue;
       const d = Math.hypot(a.x - e.x, a.y - e.y);
       // De windzanger kiest het liefst iemand boven op een muur of toren (die blaast ze eraf).
@@ -889,11 +961,18 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     klapGeluid(e, k, b);
     if (k.def.bereik > 2 && k.def.gebied === undefined && !k.def.alleenBouw) inslagGeluid(b, 'arrow_hit_stone', e.x, e.y);
     if (k.def.verborgen) k.gezienTot = stapNr + stappen(3);
+    if (k.def.staand) {
+      // Een trebuchet gooit een grote steen in een hoge boog; de schade komt pas als hij landt.
+      const ms = 650 + 85 * Math.hypot(b.x - e.x, b.y - e.y);
+      effect({ soort: 'pijl', steen: true, groot: true, x1: e.x, y1: e.y, h1: 46, x2: b.x, y2: b.y, h2: b.burcht ? 44 : 24, duur: ms });
+      vluchten.push({ tot: stapNr + stappen(ms / 1000), b, schade: k.def.schadeBouw * bouwKeer(k.def, b), door: e });
+      return;
+    }
     if (k.def.gebied !== undefined) {
       vuurbal(e, b.x, b.y, b.burcht ? 44 : 24);
       if (k.def.brand && !b.burcht && HOUT.has(b.soort)) zetBrand(b, k.def.brand);
     } else if (k.def.bereik > 2) pijl(e.x, e.y, 20, b.x, b.y, b.burcht ? 44 : 24, !!k.def.alleenBouw);
-    raakBouw(b, k.def.schadeBouw * bouwKeer(k.def, b));
+    raakBouw(b, k.def.schadeBouw * bouwKeer(k.def, b), e);
   }
   // --- De heler: geneest elke seconde de zwaarst gewonde soldaat bij hem in de buurt.
   function helerStap() {
@@ -1812,7 +1891,406 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // --- Eén krijger, één rekenstap -----------------------------------------------------------
+  // --- Ingenieur en trebuchet (level 6) ----------------------------------------------------
+  // Een ingenieur bouwt op een vrij vak een trebuchet en blijft er naast staan om hem te bedienen.
+  // De trebuchet staat daarna vast: hij schiet alleen op bouwwerken, tussen minBereik en bereik
+  // tegels ver, en alleen zolang er een levende ingenieur van zijn team bij staat.
+  const STAAND_MAX = () => R.trebuchetMax || 2;
+  const staandVan = (a) => !a.dood && a.krijg && a.krijg.def.staand;
+  const aantalStaand = (team) => (team === SPELER ? leger.lijst : vijanden).filter(staandVan).length;
+  const staandOp = (vak) => [...leger.lijst, ...vijanden].some((a) => staandVan(a) && vakVan(a) === vak);
+  // Een ballista (geschut) staat op een stuk muur of toren van de speler, en schiet op soldaten en belegeringsmachines.
+  const geschutVan = (a) => !a.dood && a.krijg && a.krijg.def.geschut;
+  const aantalGeschut = (team) => (team === SPELER ? leger.lijst : vijanden).filter(geschutVan).length;
+  const geschutOp = (vak) => leger.lijst.some((a) => geschutVan(a) && vakVan(a) === vak);
+  const GESCHUT_MAX = () => R.ballistaMax || 4;
+  const binnenBereik = (e, k, b) => {
+    const was = k.bouw;
+    k.bouw = b;
+    const r = bijBouw(e, k);
+    k.bouw = was;
+    return r;
+  };
+  // Bediend wordt hij door de ingenieurs die aan hem gekoppeld zijn (ze bouwden hem, en je maakte ze niet los).
+  const heeftBediener = (e) => {
+    const eigen = e.team === SPELER ? leger.lijst : vijanden;
+    for (const a of eigen) {
+      if (a.dood || a === e || !(a.soldaat || a.vijand)) continue;
+      const ka = krijgVan(a);
+      if (ka.def.bouwt && ka.ing && ka.ing.treb === e) return true;
+    }
+    return false;
+  };
+  // Het beste bouwwerk van de tegenstander om te raken: eerst muren en torens, dan de rest, het kasteel als laatste.
+  function kiesStaandDoel(e, k) {
+    const min = k.def.minBereik || 0;
+    const max = k.def.bereik - 1;
+    const eigVijand = e.team === SPELER ? ROOD : SPELER + 1;
+    const vijandBurcht = e.team === SPELER ? rood : burcht;
+    const w = Math.ceil(max);
+    const mx = Math.floor(e.x);
+    const my = Math.floor(e.y);
+    let beste = null;
+    let rang = Infinity;
+    const probeer = (b, extra) => {
+      if (!staatNog(b)) return;
+      const ver = Math.hypot(Math.max(0, Math.abs(e.x - b.x) - b.straal), Math.max(0, Math.abs(e.y - b.y) - b.straal));
+      if (ver < min || ver > max) return;
+      if (ver + extra < rang) {
+        rang = ver + extra;
+        beste = b;
+      }
+    };
+    for (let dy = -w; dy <= w; dy++) {
+      for (let dx = -w; dx <= w; dx++) {
+        const nx = mx + dx;
+        const ny = my + dy;
+        if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
+        const vak = ny * B + nx;
+        if (kaart.eigenaar[vak] !== eigVijand || inBurcht(vak, vijandBurcht)) continue;
+        const soort = kaart.object[vak];
+        const eerst = SPERWERK.has(soort);
+        if (!eerst && !ANDERWERK.has(soort)) continue;
+        probeer(bouwDoel(vak), eerst ? 0 : 1000);
+      }
+    }
+    if (vijandBurcht.leven > 0) probeer(vijandBurcht.doel, 2000);
+    return beste;
+  }
+  function staandDenk(e, k) {
+    if (e.pad) zetPad(e, null);
+    k.doelwit = null;
+    k.bevel = null;
+    if (!heeftBediener(e)) {
+      k.bouw = null;
+      k.bouwBevel = null;
+      zetHouding(e, null);
+      return;
+    }
+    if (k.bouwBevel && staatNog(k.bouwBevel) && binnenBereik(e, k, k.bouwBevel)) {
+      k.bouw = k.bouwBevel;
+      return;
+    }
+    k.bouwBevel = null;
+    if (k.bouw && staatNog(k.bouw) && binnenBereik(e, k, k.bouw)) return;
+    k.bouw = kiesStaandDoel(e, k);
+  }
+  // Een plek voor een trebuchet van rood: dicht bij de ingenieur, vrij, bereikbaar, en met een bouwwerk van jou
+  // op de goede afstand (niet te dicht: de dode zone, niet te ver).
+  function kiesTrebuchetPlek(e, k) {
+    const treb = soorten[k.def.bouwt];
+    const min = treb.minBereik + 1;
+    const max = treb.bereik - 2;
+    const w = Math.ceil(treb.bereik) + 8;
+    const mx = Math.floor(e.x);
+    const my = Math.floor(e.y);
+    const doelen = [];
+    for (let dy = -w; dy <= w; dy++) {
+      for (let dx = -w; dx <= w; dx++) {
+        const nx = mx + dx;
+        const ny = my + dy;
+        if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
+        const vak = ny * B + nx;
+        if (kaart.eigenaar[vak] !== SPELER + 1 || inBurcht(vak, burcht)) continue;
+        const soort = kaart.object[vak];
+        if (SPERWERK.has(soort) || ANDERWERK.has(soort)) doelen.push(bouwDoel(vak));
+      }
+    }
+    if (burcht.leven > 0) doelen.push(burchtDoel);
+    if (!doelen.length) return null;
+    const kandidaten = [];
+    const r = 8;
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        const nx = mx + dx;
+        const ny = my + dy;
+        if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
+        const vak = ny * B + nx;
+        if (!vrijVoor(vak, VIJAND) || staandOp(vak) || bezetDoorVriend(vak, e)) continue;
+        const x = nx + 0.5;
+        const y = ny + 0.5;
+        let n = 0;
+        for (const d of doelen) {
+          const ver = Math.hypot(Math.max(0, Math.abs(x - d.x) - d.straal), Math.max(0, Math.abs(y - d.y) - d.straal));
+          if (ver >= min && ver <= max) n++;
+        }
+        if (n) kandidaten.push({ vak, rang: Math.hypot(x - e.x, y - e.y) - Math.min(n, 6) * 0.5 });
+      }
+    }
+    kandidaten.sort((p, q) => p.rang - q.rang);
+    for (const c of kandidaten.slice(0, 4)) {
+      const sta = plekRond(e, c.vak, 1);
+      if (sta >= 0 && zoekPad(e, sta)) return { vak: c.vak, sta, fase: 'loop', tot: 0, treb: null };
+    }
+    return null;
+  }
+  // Een trebuchet bouwen doen twee ingenieurs samen: allebei lopen naar de plek (elk naast het vak),
+  // en pas als ze er allebei zijn begint het hameren. Valt er eentje uit of krijgt hij een ander bevel,
+  // dan stopt de bouw en krijgt de speler de grondstoffen terug. Daarna blijft er een naast de trebuchet
+  // staan om hem te bedienen; de ander is weer vrij.
+  const projecten = [];
+  const lidGeldig = (l, p) => !l.dood && krijgVan(l).ing && krijgVan(l).ing.proj === p;
+  function stopProject(p, melding = true) {
+    if (p.klaar || p.gestopt) return;
+    p.gestopt = true;
+    for (const l of p.leden) {
+      const kl = l.krijg;
+      if (kl && kl.ing && kl.ing.proj === p) {
+        kl.ing = null;
+        if (!l.dood) zetHouding(l, null);
+      }
+    }
+    if (p.team === SPELER) {
+      opTerug(p.kosten);
+      if (melding) opMelding(`The ${p.soort === 'ballista' ? 'ballista' : 'trebuchet'} could not be built. Your wood and stone are returned.`);
+    }
+  }
+  function projectenStap() {
+    for (let i = projecten.length - 1; i >= 0; i--) {
+      const p = projecten[i];
+      if (p.klaar || p.gestopt) {
+        projecten.splice(i, 1);
+        continue;
+      }
+      if (!p.leden.every((l) => lidGeldig(l, p))) {
+        stopProject(p);
+        projecten.splice(i, 1);
+      }
+    }
+  }
+  function nieuwProject(team, vak, leden, kosten, soort = null, muur = false) {
+    const p = { team, vak, leden, kosten, tot: 0, treb: null, klaar: false, gestopt: false, soort: soort || krijgVan(leden[0]).def.bouwt, muur };
+    const gebruikt = [];
+    for (const l of leden) {
+      const kl = krijgVan(l);
+      // Op de muur bouwt hij op zijn eigen plek. Op de grond staan de ingenieurs achter de trebuchet: van de vijand af.
+      const vijandVak = team === SPELER ? rood.vak : burcht.vak;
+      const sta = muur ? vak : plekRond(l, vak, 1, false, gebruikt, false, { x: (vijandVak % B) + 0.5, y: Math.floor(vijandVak / B) + 0.5 });
+      if (sta < 0) return null;
+      gebruikt.push(sta);
+      l.__sta = sta;
+    }
+    for (const l of leden) {
+      const kl = krijgVan(l);
+      kl.ing = { proj: p, vak, sta: l.__sta, fase: 'loop', muur, wachtTot: muur ? stapNr + stappen(45) : 0 };
+      delete l.__sta;
+      kl.denk = 1;
+      kl.doelwit = null;
+      kl.bevel = null;
+      kl.bouw = null;
+      kl.bouwBevel = null;
+      kl.ladder = -1;
+      if (l.soldaat) l.soldaat.doel = -1;
+      if (l.pad) zetPad(l, null);
+    }
+    projecten.push(p);
+    return p;
+  }
+  // Voor rood: een maat voor de ingenieur, vrij en niet te ver weg.
+  function vindMaat(e, k) {
+    const eigen = e.team === SPELER ? leger.lijst : vijanden;
+    let beste = null;
+    let min = 14;
+    for (const a of eigen) {
+      if (a === e || a.dood || !(a.soldaat || a.vijand)) continue;
+      const ka = krijgVan(a);
+      if (!ka.def.bouwt) continue;
+      if (ka.ing || a.garnizoen || (ka.tak && ka.tak.verzamel >= 0)) continue;
+      const d = verVan(e, vakVan(a));
+      if (d < min) {
+        min = d;
+        beste = a;
+      }
+    }
+    return beste;
+  }
+  // Geeft true als de ingenieur hiermee bezig is (dan doet hij verder niets), false als hij gewoon meedoet.
+  function ingenieurDenk(e, k) {
+    let ing = k.ing;
+    if (!ing && e.team === VIJAND && !(k.tak && k.tak.verzamel >= 0) && !e.garnizoen && aantalStaand(VIJAND) < STAAND_MAX() && stapNr >= (k.ingZoek || 0)) {
+      k.ingZoek = stapNr + stappen(2);
+      const maat = vindMaat(e, k);
+      const plek = maat ? kiesTrebuchetPlek(e, k) : null;
+      if (plek && maat) {
+        const p = nieuwProject(VIJAND, plek.vak, [e, maat], null);
+        ing = k.ing;
+        if (!p) ing = null;
+      }
+    }
+    if (!ing) return false;
+    const p = ing.proj;
+    k.doelwit = null;
+    k.bouw = null;
+    k.bevel = null;
+    if (ing.fase === 'loop' && ing.muur) {
+      // Naar de muur: het pad is gezet door leger.naarMuur; hij is er als hij op dat stuk muur staat.
+      if (e.opMuur && !e.klimt && !e.pad && vakVan(e) === ing.sta) ing.fase = 'wacht';
+      else {
+        if (!e.pad && !e.klimt && !leger.naarMuur(e, ing.sta)) { stopProject(p); return false; }
+        if (stapNr > ing.wachtTot) { stopProject(p); return false; }
+        return true;
+      }
+    }
+    if (ing.fase === 'loop') {
+      if (verVan(e, ing.sta) <= 0.9) {
+        ing.fase = 'wacht';
+        if (e.pad) zetPad(e, null);
+      } else {
+        if (!e.pad) {
+          const pad = zoekPad(e, ing.sta);
+          if (!pad) {
+            stopProject(p);
+            return false;
+          }
+          zetPad(e, pad);
+        }
+        return true;
+      }
+    }
+    if (ing.fase === 'wacht') {
+      kijkNaar(e, (ing.vak % B) + 0.5, Math.floor(ing.vak / B) + 0.5);
+      const allebei = p.leden.every((l) => krijgVan(l).ing && krijgVan(l).ing.fase !== 'loop' && krijgVan(l).ing.fase !== undefined && verVan(l, krijgVan(l).ing.sta) <= 1.2);
+      if (!allebei) return true;
+      if (!p.tot) p.tot = stapNr + stappen(k.def.bouwTijd || 20);
+      ing.fase = 'bouw';
+    }
+    if (ing.fase === 'bouw') {
+      kijkNaar(e, (ing.vak % B) + 0.5, Math.floor(ing.vak / B) + 0.5);
+      zetHouding(e, 'sla');
+      if (!p.tot || stapNr < p.tot) return true;
+      zetHouding(e, null);
+      if (!p.treb) {
+        if (p.klaar) return true;
+        if (p.muur ? (geschutOp(ing.vak) || aantalGeschut(e.team) >= GESCHUT_MAX()) : (!vrijVoor(ing.vak, e.team) || staandOp(ing.vak) || aantalStaand(e.team) >= STAAND_MAX())) {
+          stopProject(p);
+          return false;
+        }
+        p.treb = p.muur ? leger.zetOp(p.soort, ing.vak, true) : e.team === SPELER ? leger.zetOp(p.soort, ing.vak) : maakVijand(p.soort, ing.vak);
+        p.klaar = true;
+        opMelding(p.muur ? 'Your ballista is ready. It fires giant bolts at soldiers and siege machines, as long as its engineer stays with it.' : e.team === SPELER ? 'Your trebuchet is ready. It stands fast and hits walls and towers from far away.' : 'The duke\'s engineers have raised a trebuchet! Kill both engineers and it falls silent.');
+      }
+      ing.treb = p.treb;
+      // Allebei blijven ze bij de trebuchet en bedienen hem samen.
+      ing.fase = 'bedien';
+      return true;
+    }
+    // bedienen: hij blijft naast zijn trebuchet staan en draait aan de windas zodra die schiet
+    const t = ing.treb;
+    if (!t || t.dood || Math.hypot(e.x - t.x, e.y - t.y) > 4) {
+      zetHouding(e, null);
+      k.ing = null;
+      return false;
+    }
+    kijkNaar(e, t.x, t.y);
+    const kt = t.krijg;
+    zetHouding(e, kt && kt.bouw && heeftBediener(t) ? 'sla' : null);
+    return true;
+  }
+  // Een ingenieur die nog vrij is: niet bezig met een bouw en niet aan een trebuchet gekoppeld.
+  const vrijeIngenieur = (e) => !e.dood && (e.soldaat || e.vijand) && krijgVan(e).def.bouwt && !krijgVan(e).ing;
+  // Het bevel van de speler: een of twee gekozen ingenieurs bouwen op dit vak; is er maar een gekozen, dan helpt de
+  // dichtstbijzijnde andere vrije ingenieur van je leger vanzelf mee.
+  // 0: kan niet op dit vak, -1: maximum bereikt, -2: er zijn geen twee vrije ingenieurs.
+  function bouwTrebuchet(lijst, vak, kosten = null) {
+    const gekozen = lijst.filter(vrijeIngenieur);
+    if (vak < 0 || vak >= N || !vrijVoor(vak, SPELER) || staandOp(vak)) return gekozen.length ? 0 : -2;
+    if (aantalStaand(SPELER) + projecten.filter((p) => p.team === SPELER && !p.klaar && !p.gestopt).length >= STAAND_MAX()) return -1;   // het maximum is bereikt
+    gekozen.sort((p, q) => verVan(p, vak) - verVan(q, vak));
+    const leden = gekozen.slice(0, 2);
+    if (leden.length < 2) {
+      const rest = leger.lijst.filter((e) => !leden.includes(e) && vrijeIngenieur(e)).sort((p, q) => verVan(p, vak) - verVan(q, vak));
+      leden.push(...rest.slice(0, 2 - leden.length));
+    }
+    if (leden.length < 2) return -2;
+    return nieuwProject(SPELER, vak, leden, kosten) ? 1 : 0;
+  }
+  // Een ballista bouwt een ingenieur alleen, op een stuk muur of toren van jou. Staat hij daar nog niet, dan loopt hij erheen
+  // (hij klimt via een open poort of trap, net als je soldaten). Ook weer: 1 gelukt, 0 kan hier niet, -1 maximum bereikt,
+  // -2 geen vrije ingenieur, -3 hij kan er niet komen.
+  function bouwBallista(lijst, vak, kosten = null) {
+    if (vak < 0 || vak >= N || !wegvinder.isMuur(vak % B, Math.floor(vak / B), SPELER) || geschutOp(vak)) return 0;
+    const vrij = lijst.filter(vrijeIngenieur);
+    if (!vrij.length) return -2;
+    if (aantalGeschut(SPELER) + projecten.filter((p) => p.team === SPELER && p.muur && !p.klaar && !p.gestopt).length >= GESCHUT_MAX()) return -1;
+    vrij.sort((p, q) => (q.opMuur && vakVan(q) === vak) - (p.opMuur && vakVan(p) === vak) || verVan(p, vak) - verVan(q, vak));
+    const e = vrij[0];
+    const p = nieuwProject(SPELER, vak, [e], kosten, 'ballista', true);
+    if (!p) return 0;
+    const er = e.opMuur && vakVan(e) === vak;
+    if (!er && !leger.naarMuur(e, vak)) {
+      // Niet bereikbaar: het project weer ongedaan maken, zonder terugbetaling (er is nog niet betaald).
+      p.gestopt = true;
+      const ke = krijgVan(e);
+      ke.ing = null;
+      projecten.splice(projecten.indexOf(p), 1);
+      return -3;
+    }
+    return 1;
+  }
+  // De ingenieurs van een gekozen trebuchet weer losmaken: ze lopen vrij rond en de trebuchet zwijgt.
+  function ontkoppel(lijst) {
+    let n = 0;
+    for (const t of lijst) {
+      if (t.dood || !(staandVan(t) || geschutVan(t))) continue;
+      for (const a of leger.lijst) {
+        const ka = a.krijg;
+        if (a.dood || !ka || !ka.ing || ka.ing.treb !== t) continue;
+        ka.ing = null;
+        zetHouding(a, null);
+        n++;
+      }
+      const kt = t.krijg;
+      if (kt) { kt.bouw = null; kt.bouwBevel = null; zetHouding(t, null); }
+    }
+    return n;
+  }
+  // Voor de bereikring bij het plaatsen: welke bouwwerken van rood kan een trebuchet op dit vak raken?
+  function trebuchetDoelen(px, py) {
+    const def = soorten.trebuchet;
+    const min = def.minBereik || 0;
+    const max = def.bereik - 1;
+    const x0 = px + 0.5;
+    const y0 = py + 0.5;
+    const w = Math.ceil(max) + 1;
+    const uit = [];
+    const probeer = (b) => {
+      if (!staatNog(b)) return;
+      const ver = Math.hypot(Math.max(0, Math.abs(x0 - b.x) - b.straal), Math.max(0, Math.abs(y0 - b.y) - b.straal));
+      if (ver >= min && ver <= max) uit.push({ x: Math.floor(b.x), y: Math.floor(b.y), burcht: !!b.burcht });
+    };
+    for (let dy = -w; dy <= w; dy++) {
+      for (let dx = -w; dx <= w; dx++) {
+        const nx = px + dx;
+        const ny = py + dy;
+        if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
+        const vak = ny * B + nx;
+        if (kaart.eigenaar[vak] !== ROOD || inBurcht(vak, rood)) continue;
+        const soort = kaart.object[vak];
+        if (SPERWERK.has(soort) || ANDERWERK.has(soort)) probeer(bouwDoel(vak));
+      }
+    }
+    if (rood.leven > 0) probeer(rood.doel);
+    return uit;
+  }
+  const trebuchetStand = (team = SPELER) => ({ n: aantalStaand(team), max: STAAND_MAX() });
+
   function denk(e, k, anderen) {
+    if (k.def.geschut && !heeftBediener(e)) {
+      // Een ballista schiet alleen zolang zijn ingenieur erbij is.
+      k.doelwit = null;
+      k.bevel = null;
+      if (e.pad) zetPad(e, null);
+      zetHouding(e, null);
+      return;
+    }
+    if (k.def.staand) {
+      staandDenk(e, k);
+      return;
+    }
+    if (k.def.bouwt && ingenieurDenk(e, k)) {
+      schuifOp(e, k);
+      return;
+    }
     if (e.lijfwacht && e.team === VIJAND) {
       lijfwachtDenk(e, k, anderen);
       schuifOp(e, k);
@@ -1910,6 +2388,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       k.bevel = null;
       k.bouw = null;
       k.bouwBevel = null;
+      k.ing = null;
       zetHouding(e, null);
       return;
     }
@@ -1952,6 +2431,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     if (k.doelwit) vecht(e, k);
     else if (k.bouw) beuk(e, k);
+    else if (k.ing && (k.ing.fase === 'bouw' || k.ing.fase === 'bedien')) { /* de houding komt uit ingenieurDenk: hameren of aan de windas draaien */ }
     else zetHouding(e, null);
   }
 
@@ -2043,7 +2523,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const aanvallers = () => vijanden.filter((e) => e.wachter === undefined && !e.koning && !e.lijfwacht && !e.garnizoen && !e.reserveWacht);
   function aantalAanvallers() {
     let n = 0;
-    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning && !vijanden[i].lijfwacht && !vijanden[i].garnizoen && !vijanden[i].reserveWacht) n++;
+    for (let i = 0; i < vijanden.length; i++) if (vijanden[i].wachter === undefined && !vijanden[i].koning && !vijanden[i].lijfwacht && !vijanden[i].garnizoen && !vijanden[i].reserveWacht && !staandVan(vijanden[i])) n++;
     return n;
   }
 
@@ -2265,6 +2745,14 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       }
     }
     if (veld && !R.proloog) veld.stap();
+    // Stenen van een trebuchet die aankomen
+    projectenStap();
+    for (let i = vluchten.length - 1; i >= 0; i--) {
+      const v = vluchten[i];
+      if (stapNr < v.tot) continue;
+      vluchten.splice(i, 1);
+      if (staatNog(v.b)) raakBouw(v.b, v.schade, v.door);
+    }
     const eigen = leger.lijst;
     for (let i = 0; i < vijanden.length; i++) krijgerStap(vijanden[i], eigen);
     for (let i = 0; i < eigen.length; i++) krijgerStap(eigen[i], vijanden);
@@ -2339,6 +2827,16 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     let aantal = 0;
     for (const e of lijst) {
       const k = krijgVan(e);
+      if (k.def.geschut) continue;   // een ballista schiet alleen op soldaten en machines
+      if (k.def.staand) {
+        // Een trebuchet loopt niet: hij schiet alleen als het bouwwerk binnen zijn bereik ligt.
+        if (!heeftBediener(e) || !binnenBereik(e, k, doel)) continue;
+        k.bouwBevel = doel;
+        k.bouw = doel;
+        aantal++;
+        if (uit) uit.push(e);
+        continue;
+      }
       if (!k.def.schadeBouw) continue;   // een ladderdrager beukt niet
       const was = e.pad;
       if (!gaNaarBouw(e, k, doel)) continue;
@@ -2362,6 +2860,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     for (const e of lijst) {
       const k = krijgVan(e);
       if (vreedzaam(k)) continue;
+      if (k.def.geschut && doel.krijg && doel.krijg.def.staand) continue;   // een ballista reikt niet tot een trebuchet
       k.ladder = -1;
       e.soldaat.doel = -1;
       if (e.pad) e.pad.length = Math.min(e.pad.length, e.stap + 1);
@@ -2524,6 +3023,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // Opnieuw beginnen: geen vijanden, de burcht heel, de eerste golf moet nog komen.
   function herstel() {
     gestaakt = false;
+    vluchten.length = 0;
+    projecten.length = 0;
     koningBeschermd = false;
     for (const e of vijanden) eenheden.verwijder(e);
     vijanden.length = 0;
@@ -2600,7 +3101,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     reserve: () => vijanden.filter((e) => e.reserveWacht && !e.dood),
     koningBeschermd: () => koningBeschermd,
     stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, ruiter, laatOpmarsLos, opmarsDirect, opmarsStand, hinderlaag, duikOp,
-    vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder,
+    projectenAantal: () => projecten.length, vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder, bouwTrebuchet, bouwBallista, ontkoppel, trebuchetDoelen, trebuchetPlekOk: (vak) => vak >= 0 && vak < N && vrijVoor(vak, SPELER) && !staandOp(vak), ballistaPlekOk: (vak) => vak >= 0 && vak < N && wegvinder.isMuur(vak % B, Math.floor(vak / B), SPELER) && !geschutOp(vak), ballistaBereik: () => soorten.ballista.bereik + R.muurBereik, geschutStand: (team = SPELER) => ({ n: aantalGeschut(team), max: GESCHUT_MAX() }), trebuchetStand,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),
     zetLadderBevel, ladders,

@@ -194,6 +194,7 @@ async function start() {
     opVerwoest: (werk, van) => naVerwoest(werk, van),
     opKaart: (vakken) => kaartGewijzigd(vakken),
     opEinde: (wat) => naEinde(wat),
+    opTerug: (kosten) => economie.geefAllesTerug(kosten),
   });
   naGeveld = (vak, kant) => {
     const gx = (vak % kaart.breedte) + 0.5;
@@ -448,7 +449,7 @@ async function start() {
     const aantal = {};
     for (const e of ontvangen) {
       const def = leger.soorten[e.soldaat.sleutel];
-      const soort = def.vast ? 'toren' : def.ladder ? 'ladder' : def.sleutel === 'katapult' ? 'katapult' : def.sabotage ? 'saboteur' : def.alleenBouw ? 'ram' : null;
+      const soort = def.vast ? 'toren' : def.ladder ? 'ladder' : def.sleutel === 'katapult' ? 'katapult' : def.sleutel === 'trebuchet' ? 'trebuchet' : def.sabotage ? 'saboteur' : def.alleenBouw ? 'ram' : null;
       if (soort) aantal[soort] = (aantal[soort] || 0) + 1;
     }
     const rood = `the red ${doel || 'wall'}`;
@@ -457,9 +458,10 @@ async function start() {
       toren: (n) => `${n > 1 ? 'The siege towers are' : 'The siege tower is'} being placed against ${rood}. Then your soldiers can climb over ${n > 1 ? 'them' : 'it'}.`,
       ram: (n) => `${n > 1 ? 'The battering rams are' : 'The battering ram is'} going to break through ${rood}.`,
       katapult: (n) => `${n > 1 ? 'The catapults are' : 'The catapult is'} going to fire at ${rood}.`,
+      trebuchet: (n) => `${n > 1 ? 'The trebuchets are' : 'The trebuchet is'} going to hurl stones at ${rood}.`,
       saboteur: (n) => `${n > 1 ? 'The saboteurs sneak' : 'The saboteur sneaks'} toward ${rood} with a powder keg.`,
     };
-    for (const soort of ['ladder', 'toren', 'ram', 'katapult']) {
+    for (const soort of ['ladder', 'toren', 'ram', 'katapult', 'trebuchet']) {
       if (aantal[soort]) ui.toonMelding(tekst[soort](aantal[soort]), { soort: 'leger', toon: true });
     }
   }
@@ -535,19 +537,122 @@ async function start() {
 
   // Soldaten kiezen: de knoppen rechts onderin en de uitleg erboven.
   let kaderAan = false;        // staat de knop Kader aan?
+  let trebuchetModus = false;  // de speler kiest een plek voor een trebuchet
+  let trebuchetPlek = null;    // het voorbeeld: { x, y, ok, doelen } (staat.trebPlek, de tekenlaag tekent de ring)
+  let bouwMenu = false;        // het menu van wat een ingenieur kan bouwen staat open
+  let ballistaModus = false;   // de speler kiest een stuk muur of toren voor een ballista
+  let ballistaPlek = null;     // het voorbeeld voor de ballista (zelfde vorm als trebuchetPlek)
+  const BOUWMELDING_MUUR = 'A ballista goes on a piece of your wall or on a tower. Tap one.';
+  const zetBallistaPlek = (x, y) => {
+    const ok = strijd.ballistaPlekOk(y * kaart.breedte + x);
+    ballistaPlek = { x, y, ok, doelen: [], bereik: strijd.ballistaBereik(), min: 0 };
+    geluid.speel('ui_click');
+    if (!ok) ui.toonMelding('There is already a ballista here. Pick another piece of wall.', { soort: 'leger' });
+    naLeger();
+  };
+  function bouwBallistaHier() {
+    const { x, y } = ballistaPlek;
+    const kosten = leger.soorten.ballista.kosten;
+    const mist = economie.tekort(kosten);
+    if (mist) {
+      geluid.speel('ui_denied');
+      ui.toonMelding(`A ballista costs ${economie.kostTekst(kosten)}: ${mist}.`, { soort: 'leger' });
+      return;
+    }
+    const uitkomst = strijd.bouwBallista(leger.gekozen(), y * kaart.breedte + x, kosten);
+    if (uitkomst > 0) {
+      economie.betaal(kosten);
+      staat.doel = { x, y, duur: 1400, tot: performance.now() + 1400 };
+      geluid.speel('order_move');
+      ui.toonMelding(`An engineer is on his way to build the ballista (${economie.kostTekst(kosten)}).`, { soort: 'leger' });
+      ballistaModus = false;
+      bouwMenu = false;
+      naLeger();
+    } else {
+      geluid.speel('ui_denied');
+      ui.toonMelding(uitkomst === -2 ? 'No free engineer selected. Pick an engineer who is not busy.' : uitkomst === -1 ? 'You can have at most 4 ballistas at a time.' : uitkomst === -3 ? 'The engineer cannot get up there. Open a gate or stairs to that wall first.' : BOUWMELDING_MUUR, { soort: 'leger' });
+    }
+  }
+  const zetTrebuchetPlek = (x, y) => {
+    const ok = strijd.trebuchetPlekOk(y * kaart.breedte + x);
+    trebuchetPlek = { x, y, ok, doelen: ok ? strijd.trebuchetDoelen(x, y) : [], bereik: leger.soorten.trebuchet.bereik - 1, min: leger.soorten.trebuchet.minBereik };
+    staat.trebPlek = trebuchetPlek;
+    geluid.speel('ui_click');
+    if (!ok) ui.toonMelding('A trebuchet needs a free, open spot on the ground.', { soort: 'leger' });
+    naLeger();
+  };
+  function bouwTrebuchetHier() {
+    const { x, y } = trebuchetPlek;
+    const kosten = leger.soorten.trebuchet.kosten;
+    const mist = economie.tekort(kosten);
+    if (mist) {
+      geluid.speel('ui_denied');
+      ui.toonMelding(`A trebuchet costs ${economie.kostTekst(kosten)}: ${mist}.`, { soort: 'leger' });
+      return;
+    }
+    const uitkomst = strijd.bouwTrebuchet(leger.gekozen(), y * kaart.breedte + x, kosten);
+    if (uitkomst > 0) {
+      economie.betaal(kosten);
+      staat.doel = { x, y, duur: 1400, tot: performance.now() + 1400 };
+      geluid.speel('order_move');
+      ui.toonMelding(`Two engineers are on their way to build the trebuchet (${economie.kostTekst(kosten)}).`, { soort: 'leger' });
+      trebuchetModus = false;
+      naLeger();
+    } else {
+      geluid.speel('ui_denied');
+      ui.toonMelding(uitkomst === -2 ? 'A trebuchet takes two siege engineers. Train another engineer first.' : uitkomst < 0 ? `You can have at most ${strijd.trebuchetStand().max} trebuchets at a time.` : 'A trebuchet needs a free, open spot on the ground.', { soort: 'leger' });
+    }
+  }
+  ui.opBouw(() => {
+    // Build opent of sluit het menu; een bouwmodus die aan staat gaat weer uit.
+    bouwMenu = !bouwMenu && !(trebuchetModus || ballistaModus);
+    trebuchetModus = false;
+    ballistaModus = false;
+    naLeger();
+  });
+  ui.opBallista(() => {
+    if (ballistaModus && ballistaPlek) { if (ballistaPlek.ok) bouwBallistaHier(); else { geluid.speel('ui_denied'); ui.toonMelding(BOUWMELDING_MUUR, { soort: 'leger' }); } return; }
+    ballistaModus = !ballistaModus;
+    if (ballistaModus) trebuchetModus = false;
+    naLeger();
+  });
+  ui.opTrebuchet(() => {
+    if (trebuchetModus && trebuchetPlek) { if (trebuchetPlek.ok) bouwTrebuchetHier(); else { geluid.speel('ui_denied'); ui.toonMelding('A trebuchet needs a free, open spot on the ground.', { soort: 'leger' }); } return; }
+    trebuchetModus = !trebuchetModus;
+    if (trebuchetModus) ballistaModus = false;
+    naLeger();
+  });
+  ui.opOntkoppel(() => {
+    const n = strijd.ontkoppel(leger.gekozen());
+    geluid.speel(n ? 'order_move' : 'ui_denied');
+    ui.toonMelding(n ? 'The engineers are free again. The trebuchet stays silent until you build a new one.' : 'No engineers are working this trebuchet.', { soort: 'leger' });
+    naLeger();
+  });
   naLeger = () => {
     const bouwt = !!bouw.sleutel;
     if (bouwt) kaderAan = false;
     const gekozen = leger.aantalGekozen();
+    const ingenieur = !bouwt && leger.gekozen().some((e) => leger.soorten[e.soldaat.sleutel].bouwt);
+    if (!ingenieur) { trebuchetModus = false; ballistaModus = false; bouwMenu = false; }
+    if (!trebuchetModus) trebuchetPlek = null;
+    if (!ballistaModus) ballistaPlek = null;
+    staat.trebPlek = trebuchetModus ? trebuchetPlek : ballistaModus ? ballistaPlek : null;
+    const staandGekozen = !bouwt && leger.gekozen().some((e) => leger.staatVast(e.soldaat.sleutel));
     let hint = '';
-    if (!bouwt && kaderAan) hint = 'Drag a box around your soldiers with one finger.';
+    if (trebuchetModus && trebuchetPlek) hint = trebuchetPlek.ok ? `The rings show how far it shoots: ${trebuchetPlek.doelen.length} enemy ${trebuchetPlek.doelen.length === 1 ? 'target' : 'targets'} in range. Tap the same spot again or press Build here.` : 'Not here. Tap a free spot on the ground.';
+    else if (trebuchetModus) hint = 'Tap a free spot on the ground. Two engineers walk there and build the trebuchet together.';
+    else if (ballistaModus && ballistaPlek) hint = ballistaPlek.ok ? 'The ring shows how far the ballista shoots. Tap the same spot again or press Build here. The engineer climbs up and builds it.' : 'Not here. Tap a free piece of your wall or a tower.';
+    else if (ballistaModus) hint = 'Tap a piece of your wall or a tower. One engineer climbs up and builds the ballista there.';
+    else if (bouwMenu) hint = 'Choose what the engineers build. A trebuchet needs two engineers on open ground, a ballista one engineer on your wall.';
+    else if (!bouwt && kaderAan) hint = 'Drag a box around your soldiers with one finger.';
     else if (!bouwt && gekozen === 1) hint = '1 soldier selected. Tap where he should go.';
     else if (!bouwt && gekozen > 1) hint = `${gekozen} soldiers selected. Tap where they should go.`;
     // Zijn er vijanden, dan kun je die ook aantikken. Heb je een toren,
     // wachttoren of poort, dan kunnen ze de muur op.
-    if (hint && gekozen && !kaderAan && strijd.aantalVijanden()) hint = hint.replace(/\.$/, ', or tap an enemy.');
+    if (trebuchetModus || ballistaModus || bouwMenu) { /* eigen uitleg, geen extra zin */ }
+    else if (hint && gekozen && !kaderAan && strijd.aantalVijanden()) hint = hint.replace(/\.$/, ', or tap an enemy.');
     else if (hint && gekozen && !kaderAan && wegvinder.aantalOpgangen(0)) hint = hint.replace(/\.$/, ', also on top of your wall.');
-    ui.toonLeger({ zichtbaar: !bouwt && leger.aantal() > 0, hint, kader: kaderAan, gekozen: gekozen > 0 });
+    ui.toonLeger({ zichtbaar: !bouwt && leger.aantal() > 0, hint, kader: kaderAan, gekozen: gekozen > 0, bouw: ingenieur ? { menu: bouwMenu, trebuchet: { actief: trebuchetModus, tekst: trebuchetModus ? (trebuchetPlek && trebuchetPlek.ok ? 'Build here' : 'Cancel') : 'Trebuchet' }, ballista: { actief: ballistaModus, tekst: ballistaModus ? (ballistaPlek && ballistaPlek.ok ? 'Build here' : 'Cancel') : 'Ballista' } } : null, ontkoppel: staandGekozen });
     // Groepen (dichtbij, afstand, belegering) en losse soorten kiezen.
     if (!bouwt && leger.aantal() > 0) {
       const t = leger.telling();
@@ -1166,6 +1271,30 @@ async function start() {
         const leven = strijd.levenOp(vanRood.vak);
         staat.gekozen = { x: vanRood.x, y: vanRood.y };
         ui.toonTegel(`Tile ${vanRood.x}, ${vanRood.y}: red ${beschrijfTegel(kaart, vanRood.x, vanRood.y)}, health ${leven.leven} of ${leven.max}`);
+        return;
+      }
+      // Een ingenieur gekozen en Ballista aan: de tik is het stuk muur of de toren voor de ballista.
+      if (ballistaModus && leger.aantalGekozen()) {
+        const m = muurOnder(wereld.x, wereld.y) || (leger.isMuur(x, y) ? { x, y } : null);
+        if (!m) { geluid.speel('ui_denied'); ui.toonMelding(BOUWMELDING_MUUR, { soort: 'leger' }); return; }
+        if (ballistaPlek && ballistaPlek.x === m.x && ballistaPlek.y === m.y) {
+          if (ballistaPlek.ok) bouwBallistaHier();
+          else { geluid.speel('ui_denied'); ui.toonMelding(BOUWMELDING_MUUR, { soort: 'leger' }); }
+          return;
+        }
+        zetBallistaPlek(m.x, m.y);
+        return;
+      }
+      // Een ingenieur gekozen en de knop Trebuchet aan: de tik is de plek voor de trebuchet.
+      if (trebuchetModus && leger.aantalGekozen()) {
+        if (!binnenKaart(kaart, x, y)) return;
+        // Eerste tik: een voorbeeld met de bereikring. Dezelfde plek nog eens aantikken (of de knop Build here) bouwt.
+        if (trebuchetPlek && trebuchetPlek.x === x && trebuchetPlek.y === y) {
+          if (trebuchetPlek.ok) bouwTrebuchetHier();
+          else { geluid.speel('ui_denied'); ui.toonMelding('A trebuchet needs a free, open spot on the ground.', { soort: 'leger' }); }
+          return;
+        }
+        zetTrebuchetPlek(x, y);
         return;
       }
       // Zijn er soldaten gekozen en tik je je eigen muur aan, dan gaan ze erop.

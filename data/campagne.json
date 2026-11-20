@@ -670,13 +670,13 @@
     "y": 32.3
    },
    "speelbaar": true,
-   "intro": "On the bare ridge Lambrecht Kuyper builds Ottger's machines in two siege sheds outside his walls. Burn both, but the longer they stand, the more men he sends.",
+   "intro": "On the bare ridge Master Builder Lambrecht builds the duke's war machines in two siege sheds, each inside its own fortified post far from his keep. Burn both before his masterpiece is finished, then take his keep and the man himself. Know that the duke's engineers will raise trebuchets against you.",
    "beeld": "beelden/verhaal/level06.webp",
-   "verhaal": "On the bare Giant's Spine stands a ring of old stones where giants of rock are said to sleep. Mother Gesina and the Silent Folk have come to wake them. Not far away, Master Builder Lambrecht builds the duke's siege machines in two sheds. Every hour they stand, more engines roll.",
-   "uit": "The second shed collapses in a cloud of dust. Lambrecht drops his mallet. \"Without my sheds the duke has no machines. Take this: the stone giants of the ridge listen to a king who builds, not only one who breaks.\"",
-   "wessel": "A wooden battering ram the size of two hands.",
+   "verhaal": "High on the Giant's Spine the wind carries the sound of hammers day and night. Master Builder Lambrecht builds the duke's machines here, rams and ladders and now his masterpiece: a trebuchet so tall it throws stones over castle walls. He keeps his two sheds far from his keep, each behind its own wall and towers, for Lambrecht trusts a good wall more than a good soldier. Every hour the sheds stand, more machines roll toward Aldervale.",
+   "uit": "Lambrecht falls beside his own masterpiece, the mallet still in his hand. Bartholt kneels and finds a roll of waxed parchment inside his coat: the plans for the trebuchet, every beam and counterweight drawn to scale. \"It was never meant to end with him alive, Sire. But his craft does not have to die with him. Train two engineers at your siege workshop, stock wood and stone, and plant the machine where it can see the walls. And guard it well: a trebuchet cannot run.\"",
+   "wessel": "A wooden trebuchet the size of two hands, its counterweight a bag of pebbles.",
    "beloning": [
-    "steenwachter"
+    "ingenieur"
    ],
    "rood": {
     "legerMax": 150,
@@ -688,7 +688,7 @@
      "boogschutter": {
       "aandeel": 1
      },
-     "steenwachter": {
+     "ingenieur": {
       "aandeel": 1,
       "vanaf": 2
      }
@@ -716,6 +716,7 @@
      }
     },
     "muur": 150,
+    "postGarnizoen": {"ridder": 4, "zwaardvechter": 2, "boogschutter": 6, "kruisboog": 4},
     "aanval": {
      "niveau": 4,
      "max": 5
@@ -725,8 +726,17 @@
    "doel": {
     "soort": "loodsen",
     "aantal": 2,
-    "leven": 360,
+    "leven": 1000,
     "afstand": 11,
+    "daarna": "koning",
+    "teksten": {
+     "naam": "Lambrecht Cooper",
+     "daarna": "My sheds... Fine. A builder does not run from his own walls, Karel. Come and take my keep, and take the man with it.",
+     "daarnaTaak": "Now defeat Lambrecht in his keep",
+     "alles": "Both siege sheds are in ruins! Lambrecht's keep lies open.",
+     "omschrijving": "Your goal: first destroy both of Lambrecht's siege sheds. Each stands inside its own fortified post, far from his keep. While one stands, his men pull him to safety and he cannot fall. Then defeat Lambrecht in his keep. If your king falls, you lose.",
+     "daarnaOmschrijving": "Both sheds are gone. Your goal now: defeat Lambrecht in his keep. If your king falls, you lose."
+    },
     "druk": {
      "eerste": 150,
      "waarschuwing": 20,
@@ -777,21 +787,21 @@
        "naam": "siege train",
        "wacht": 130,
        "leger": {
-        "ridder": 6,
+        "ridder": 5,
         "boogschutter": 4,
         "kruisboog": 2,
         "bijlridder": 3,
         "ram": 2,
         "ladder": 2,
         "katapult": 1,
-        "steenwachter": 1
+        "ingenieur": 2
        }
       },
       {
        "naam": "whole host",
        "wacht": 150,
        "leger": {
-        "ridder": 7,
+        "ridder": 5,
         "boogschutter": 5,
         "kruisboog": 2,
         "bijlridder": 3,
@@ -800,7 +810,7 @@
         "ladder": 2,
         "katapult": 1,
         "toren": 1,
-        "steenwachter": 1
+        "ingenieur": 2
        }
       }
      ]
@@ -811,7 +821,13 @@
      "bij": "tijd",
      "waarde": 20,
      "wie": "bartholt",
-     "tekst": "Two sheds outside his walls, Sire. Take the rams and the axe knights: wood burns slowly but it breaks."
+     "tekst": "Two sheds, Sire, each behind its own wall and towers, far from his keep. Take the rams and the axe knights: wood burns slowly but it breaks."
+    },
+    {
+     "bij": "aanval",
+     "waarde": 2,
+     "wie": "bartholt",
+     "tekst": "Sire, two engineers with hammers! If they are left alone they raise a trebuchet that throws stones at our walls from far away. Kill them and the machine falls silent."
     },
     {
      "bij": "aanval",

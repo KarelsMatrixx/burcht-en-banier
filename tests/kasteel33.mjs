@@ -35,6 +35,7 @@ const uitslag = await p.evaluate(async () => {
       const tel = (s) => { let n = 0; for (let i = 0; i < k.object.length; i++) if (k.object[i] === s && k.eigenaar[i] === 2) n++; return n; };
       const poorten = tel(OBJECT.POORT);
       const verwacht = ontwerp.kamp ? 0 : ontwerp.ringen.reduce((s, r) => s + (r.poorten || ['voor']).length, 0);   // een tentenkamp heeft geen poorten
+      const postMax = ontwerp.posten ? ontwerp.posten.aantal || 0 : 0;   // buitenposten (level 6) zijn best effort: 0 tot aantal extra poorten
       // een plek naast de burcht, en een plek ver buiten het kasteel aan jouw kant
       const binnen = vak(m.x - 2, m.y);
       const omvang = Math.max(...ontwerp.ringen.map((r) => r.maat)) + (ontwerp.gracht ? (ontwerp.gracht.afstand || 2) + (ontwerp.gracht.breedte || 1) - 1 : 0);
@@ -47,7 +48,7 @@ const uitslag = await p.evaluate(async () => {
       w.herbereken();
       const jijOpen = w.verbonden(buiten, binnen, 0);
       const werken = [OBJECT.HOUTHAKKER, OBJECT.STEENGROEVE, OBJECT.BOOMGAARD].map(tel).reduce((s, n) => s + n, 0);
-      uit.push({ kn, on, poorten, verwacht, roodEruit, jijDicht, jijOpen, weg: k.verbonden, werken, routes: k.kastelen[1].routes.length });
+      uit.push({ kn, on, poorten, verwacht, postMax, roodEruit, jijDicht, jijOpen, weg: k.verbonden, werken, routes: k.kastelen[1].routes.length });
     }
   }
   return uit;
@@ -58,7 +59,7 @@ for (const u of uitslag) {
   const kamp = u.on === 'tentenkamp';
   const goed = kamp
     ? u.poorten === 0 && u.roodEruit && u.jijOpen && u.weg && u.werken === 3 && u.routes === 0
-    : u.poorten === u.verwacht && u.roodEruit && u.jijDicht && u.jijOpen && u.weg && u.werken === 3 && u.routes > 0;
+    : u.poorten >= u.verwacht && u.poorten <= u.verwacht + u.postMax && u.roodEruit && u.jijDicht && u.jijOpen && u.weg && u.werken === 3 && u.routes > 0;
   check(n, goed, JSON.stringify(u));
 }
 

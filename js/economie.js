@@ -95,6 +95,12 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     opVoorraad();
   }
 
+  // Alles terug (een bouw die niet doorgaat), anders dan slopen.
+  function geefAllesTerug(kosten) {
+    for (const [naam, aantal] of soorten(kosten)) voorraad[naam] += aantal;
+    opVoorraad();
+  }
+
   // --- Zoeken op de kaart -----------------------------------------------------------
   // Loopt vanaf een vak steeds verder de kaart op (alleen waar de speler
   // kan lopen) en geeft het eerste terug waar test(vak) iets oplevert.
@@ -883,7 +889,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       opVerandering();
       return '';
     },
-    voorraad, opslagMax, maakt: (naam) => [...werkplaatsen.values()].some((e) => e.werk.beroep.haalt === naam) || wachtend.some((w) => regels.beroepen[w.beroepNaam] && regels.beroepen[w.beroepNaam].haalt === naam), opslagKamers: () => kamers, herzieOpslag, kostTekst, tekort, tekortAan, betaal, geefTerug,
+    voorraad, opslagMax, maakt: (naam) => [...werkplaatsen.values()].some((e) => e.werk.beroep.haalt === naam) || wachtend.some((w) => regels.beroepen[w.beroepNaam] && regels.beroepen[w.beroepNaam].haalt === naam), opslagKamers: () => kamers, herzieOpslag, kostTekst, tekort, tekortAan, betaal, geefTerug, geefAllesTerug,
     nieuweWerkplaats, werkplaatsWeg, stap, beschrijf,
     bewaarStand, zetStand, herstel,
     // Woonruimte erbij (een woning gebouwd) of eraf (gesloopt).

@@ -22,7 +22,7 @@ const beelden = await p.evaluate(async () => {
 });
 check('plaatjes van de steenwachter', beelden.every(Boolean), beelden.join());
 const def = await p.evaluate(() => window.spel.leger.soorten.steenwachter);
-check('steenwachter in de economie (mystiek)', def && def.kazerne === 'mystiek' && def.legerPlekken === 2 && def.leven === 300);
+check('steenwachter in de economie (sinds 0.79.0 niet meer op te leiden)', def && def.kazerne === 'geen' && def.legerPlekken === 2 && def.leven === 300);
 // Legerplekken
 const st = await p.evaluate(() => window.spel.kaart.start[0]);
 const pl = await p.evaluate(([x, y]) => { const l = window.spel.leger; const n0 = l.aantal(), p0 = l.plekken(); l.zetStand([['steenwachter', x + 4, y + 4, 300, 0], ['ridder', x + 5, y + 4, 60, 0]]); return { n: l.aantal() - n0, plekken: l.plekken() - p0 }; }, [st.x, st.y]);
@@ -60,9 +60,17 @@ check('kaart De Reuzenrug', (await p.evaluate(() => window.spel.kaart.naam)) ===
 const L = await p.evaluate(() => { const s = window.spel; return { v: s.doel.loodsen(), obj: s.doel.loodsen().map((v) => [s.kaart.object[v], s.kaart.eigenaar[v]]), b: s.kaart.breedte }; });
 check('twee bouwloodsen van rood', L.v.length === 2 && L.obj.every(([o, e]) => o === 29 && e === 2), JSON.stringify(L));
 const afstand = await p.evaluate(() => { const s = window.spel; const r = s.kaart.start[1]; const B = s.kaart.breedte; return s.doel.loodsen().map((v) => Math.max(Math.abs((v % B) - r.x), Math.abs(Math.floor(v / B) - r.y))); });
-check('loodsen staan buiten de muren', afstand.every((a) => a >= 8), afstand.join());
+check('loodsen staan ver van het kasteel van rood (versterkte posten)', afstand.every((a) => a >= 18), afstand.join());
 check('loodsen staan niet dicht bij elkaar', Math.abs(L.v[0] - L.v[1]) > 3);
-check('loodsen bereikbaar voor jou', await p.evaluate(() => { const s = window.spel; const B = s.kaart.breedte; const st = s.kaart.start[0]; let j = -1; for (let r = 2; r < 9 && j < 0; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (j < 0 && s.wegvinder.isVrij(st.x + dx, st.y + dy, 0)) j = (st.y + dy) * B + st.x + dx; return s.doel.loodsen().every((v) => [1, -1, B, -B].some((o) => s.wegvinder.verbonden(j, v + o, 0))); }));
+// Sinds 0.78.5 staat elke loods in een versterkte post (kaart.posten): de loods zelf zit achter de muur,
+// maar het stuk voor de poort moet voor jou te voet bereikbaar zijn.
+check('loodsen bereikbaar voor jou (voor de poort van hun post)', await p.evaluate(() => {
+  const s = window.spel; const B = s.kaart.breedte; const st = s.kaart.start[0]; let j = -1;
+  for (let r = 2; r < 9 && j < 0; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (j < 0 && s.wegvinder.isVrij(st.x + dx, st.y + dy, 0)) j = (st.y + dy) * B + st.x + dx;
+  const P = s.kaart.posten || [];
+  if (P.length !== 2) return false;
+  return P.every((p) => { const dx = Math.sign(p.poort.x - p.x), dy = Math.sign(p.poort.y - p.y); const voor = (p.poort.y + dy * 2) * B + p.poort.x + dx * 2; return s.wegvinder.verbonden(j, voor, 0); });
+}));
 await p.tap('#missie-begin'); await p.waitForTimeout(800);
 const gl = await p.evaluate(() => [].concat(window.spel.missies.campagne.levels || window.spel.missies.campagne).find((l) => l.id === 6).doel.druk.golven.map((g) => Object.values(g.leger).reduce((a, b) => a + b, 0)));
 check('zes golven oplopend tot 25', gl.length === 6 && gl[5] === 25 && gl.every((n, i) => i === 0 || n > gl[i - 1]), gl.join());
@@ -92,7 +100,14 @@ check('na herladen is de gevallen loods nog weg', rl.l[0] === 0 && rl.l[1] === 2
 await p.evaluate((v) => { const s = window.spel; s.kaart.object[v] = 0; s.kaart.eigenaar[v] = 0; s.wegvinder.herbereken(); }, L.v[1]);
 await p.waitForTimeout(1500);
 const uit = await p.evaluate(() => ({ u: window.spel.strijd.uitslag(), st: window.spel.doel.stand() }));
-check('beide loodsen weg: gewonnen', uit.u === 'gewonnen', JSON.stringify(uit));
+check('beide loodsen weg: nog niet gewonnen, nu moet Lambrecht vallen', !uit.u && uit.st.klaar === true, JSON.stringify(uit));
+const fase2 = await p.evaluate(() => { const s = window.spel; return { beschermd: s.strijd.koningBeschermd(), omschrijving: s.doel.omschrijving() }; });
+check('fase 2: de rode koning is niet meer beschermd en het doel is bijgewerkt', fase2.beschermd === false && /defeat Lambrecht/i.test(fase2.omschrijving), JSON.stringify(fase2));
+// Lambrecht laten vallen: gewonnen
+const kondood = await p.evaluate(() => { const s = window.spel; const kon = s.strijd.roodKoning(); if (kon) { kon.leven = 0; kon.dood = true; } return !!kon; });
+await p.waitForTimeout(2500);
+const gewonnen = await p.evaluate(() => window.spel.strijd.uitslag());
+check('Lambrecht dood: gewonnen', gewonnen === 'gewonnen', `${gewonnen} koningGevonden=${kondood}`);
 check('geen pagina-fouten', fouten.length === 0, fouten.join('|'));
 console.log(`ronde39: ${ok} goed, ${fout} fout`);
 await b.close(); srv.kill();

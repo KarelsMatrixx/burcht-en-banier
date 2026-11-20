@@ -276,8 +276,167 @@ function belegeringstoren(def) {
   return pakket(B, H, AY, teken, grondSchaduw(38, 108, 32), { sla: [['lopen', 0], ['slag', 0]] });
 }
 
+// ------------------------------------------------------------------ TREBUCHET
+// Een grote houten trebuchet op een zware voet: twee hoge A-schragen met een as bovenop, een
+// zeer lange werparm met slinger en touwen, een zware kist met stenen als tegengewicht, een trap
+// met bordes aan de linkerkant en een stapel stenen ernaast. Houding aan = de arm naar beneden
+// gespannen, half = arm recht omhoog tijdens de worp, los = arm voorover losgelaten.
+function trebuchet(def) {
+  const K = def.kleur;
+  const B = 100, H = 104, AY = 99;   // AY = de grond: onderkant van de voet
+  const STEEN = '#a8a7a0';
+  const steen = (ctx, x, y, r) => {
+    ovaal(ctx, x, y, r, r * 0.9, STEEN);
+    ovaal(ctx, x + r * 0.25, y + r * 0.35, r * 0.7, r * 0.5, 'rgba(0,0,0,0.18)');
+    ovaal(ctx, x - r * 0.3, y - r * 0.35, r * 0.35, r * 0.28, 'rgba(255,255,255,0.4)');
+  };
+  const teken = (ctx, houding, beeld) => {
+    const gespannen = houding !== 'los' && houding !== 'half';
+    ctx.save(); ctx.translate(2, 2);
+    const px = 50, py = 46;   // de as bovenop de schragen
+    // achterste schraag (lichter, hoger en iets naar rechts: diepte)
+    vlak(ctx, [[22, 87], [27.4, 87], [54, 45], [48.6, 45]], tint(HOUT, 0.06));
+    vlak(ctx, [[78, 87], [72.6, 87], [53, 45], [58.4, 45]], tint(HOUT, 0.12));
+    lijn(ctx, 33, 71, 68, 71, tint(HOUT_D, 0.1), 1.8);
+    // houten voet: twee lange balken en dwarsbalken
+    lichtBlok(ctx, 14, 86, 78, 4, HOUT, 0.2);
+    lichtBlok(ctx, 4, 91, 90, 5.4, HOUT_D, 0.2);
+    blok(ctx, 4, 91, 90, 1, 'rgba(255,255,255,0.14)');
+    for (const x of [8, 44, 82]) blok(ctx, x, 95.2, 4.2, 2.4, IJZER_D);
+    // trap met bordes links
+    for (let i = 0; i < 5; i++) {
+      lichtBlok(ctx, 3 + i * 4.6, 91 - (i + 1) * 3.4, 5.4, (i + 1) * 3.4, HOUT_L, 0.18);
+      blok(ctx, 3 + i * 4.6, 91 - (i + 1) * 3.4, 5.4, 0.8, 'rgba(255,255,255,0.22)');
+    }
+    lichtBlok(ctx, 21, 73.6, 11, 2.4, HOUT, 0.2);
+    lijn(ctx, 3, 90, 3, 70, HOUT_D, 1.2);
+    lijn(ctx, 3, 71, 23, 71, HOUT_D, 1);
+    // voorste schraag: twee zware poten
+    vlak(ctx, [[11, 91], [18, 91], [55, 46], [48, 46]], tint(HOUT, -0.15));
+    vlak(ctx, [[89, 91], [82, 91], [54, 46], [61, 46]], HOUT);
+    vlak(ctx, [[11, 91], [13.4, 91], [50.4, 46], [48, 46]], 'rgba(255,255,255,0.1)');
+    // dwarsbalken en schoren
+    const linkerX = (y) => 14.5 + ((91 - y) / 45) * 37;
+    const rechterX = (y) => 85.5 - ((91 - y) / 45) * 31;
+    for (const y of [78, 62]) lichtBlok(ctx, linkerX(y), y - 1.4, rechterX(y) - linkerX(y), 2.8, HOUT_D, 0.22);
+    lijn(ctx, linkerX(78), 78, rechterX(62), 62, HOUT_D, 1.6);
+    lijn(ctx, rechterX(78), 78, linkerX(62), 62, HOUT_D, 1.6);
+    for (const y of [78, 62]) { blok(ctx, linkerX(y) - 1.6, y - 2.2, 3.2, 4.4, IJZER_D); blok(ctx, rechterX(y) - 1.6, y - 2.2, 3.2, 4.4, IJZER_D); }
+    // de as met ijzeren beslag
+    lichtBlok(ctx, px - 9, py - 3, 18, 4.4, HOUT_D, 0.22);
+    blok(ctx, px - 6, py - 3, 12, 0.9, 'rgba(255,255,255,0.18)');
+    for (const dx of [-7, 5]) blok(ctx, px + dx, py - 3.6, 2.4, 6, IJZER_D);
+    // de werparm: lang eind (met slinger) en kort eind (met kist)
+    const u = houding === 'half' ? [0.06, -1] : gespannen ? [-0.55, 0.83] : [0.46, -0.89];
+    const lang = 40, kort = 14;
+    const ex = px + u[0] * lang, ey = py + u[1] * lang;
+    const sx = px - u[0] * kort, sy = py - u[1] * kort;
+    const nx = -u[1], ny = u[0];
+    vlak(ctx, [[sx + nx * 2.2, sy + ny * 2.2], [ex + nx * 1.2, ey + ny * 1.2], [ex - nx * 1.2, ey - ny * 1.2], [sx - nx * 2.2, sy - ny * 2.2]], HOUT_L);
+    vlak(ctx, [[sx - nx * 2.2, sy - ny * 2.2], [ex - nx * 1.2, ey - ny * 1.2], [ex - nx * 0.1, ey - ny * 0.1], [sx - nx * 0.4, sy - ny * 0.4]], 'rgba(0,0,0,0.25)');
+    for (const t of [0.3, 0.55, 0.8]) {
+      const bx = px + u[0] * lang * t, by = py + u[1] * lang * t;
+      lijn(ctx, bx - nx * 1.9, by - ny * 1.9, bx + nx * 1.9, by + ny * 1.9, IJZER_D, 1.3);
+    }
+    // het tegengewicht: een zware kist vol stenen aan het korte eind, hangend aan twee ijzeren beugels
+    const kx = sx, ky = sy + 4;
+    lijn(ctx, sx - 2.6, sy, kx - 5, ky, IJZER_D, 1);
+    lijn(ctx, sx + 2.6, sy, kx + 5, ky, IJZER_D, 1);
+    lichtBlok(ctx, kx - 7.4, ky, 14.8, 12, HOUT_D, 0.22);
+    blok(ctx, kx - 7.4, ky, 14.8, 1.3, 'rgba(255,255,255,0.18)');
+    for (const dx of [-4.8, 2.8]) blok(ctx, kx + dx, ky, 2, 12, IJZER_D);
+    for (const [dx, dy] of [[-4.4, -0.8], [-1.2, -1.8], [2, -1], [5, -0.4]]) steen(ctx, kx + dx, ky + dy, 2.6);
+    // slinger met steen
+    if (gespannen) {
+      lijn(ctx, ex, ey, ex + 3.4, ey + 8, 'rgba(225,215,180,0.9)', 0.8);
+      lijn(ctx, ex, ey, ex - 3.6, ey + 7.6, 'rgba(225,215,180,0.9)', 0.8);
+      steen(ctx, ex, ey + 9.6, 3.6);
+    } else if (houding === 'half') {
+      lijn(ctx, ex, ey, ex + 6, ey + 7, 'rgba(225,215,180,0.9)', 0.8);
+      lijn(ctx, ex, ey, ex + 9.6, ey + 3.6, 'rgba(225,215,180,0.9)', 0.8);
+    } else {
+      lijn(ctx, ex, ey, ex + 6.4, ey - 4, 'rgba(225,215,180,0.9)', 0.8);
+      lijn(ctx, ex, ey, ex + 5.2, ey + 3, 'rgba(225,215,180,0.9)', 0.8);
+    }
+    // touw van de arm naar de windas op het bordes
+    if (gespannen) lijn(ctx, 27, 73, ex + 1, ey - 2, 'rgba(225,215,180,0.8)', 0.6);
+    ovaal(ctx, 27, 72, 4, 4, HOUT_L); ovaal(ctx, 26.4, 71.4, 1.5, 1.5, 'rgba(255,255,255,0.2)');
+    lijn(ctx, 23, 68, 31, 76, HOUT_D, 1); lijn(ctx, 31, 68, 23, 76, HOUT_D, 1);
+    // een stapel stenen rechts op de grond
+    for (const [x, y] of [[75, 90.6], [82, 90.8], [89, 90.4], [78.6, 84.6], [85.6, 84.4], [82, 78.6]]) steen(ctx, x, y, 3.7);
+    // schild op de achterste dwarsbalk en wimpel in teamkleur op een paal bij de trap
+    schild(ctx, 66, 65, 3.6, K);
+    lijn(ctx, 3, 70, 3, 48, HOUT_D, 1.2);
+    vlak(ctx, [[3, 48], [14, 51], [3, 55]], K);
+    vlak(ctx, [[3, 48], [14, 51], [3, 49.6]], 'rgba(255,255,255,0.2)');
+    ctx.restore();
+  };
+  return pakket(B, H, AY, teken, grondSchaduw(50, 97, 46), { schiet: [['aan', 0], ['half', 0], ['los', 0]] });
+}
+
+// ------------------------------------------------------------------ BALLISTA
+// Een reuzenkruisboog op een houten bok, gebouwd door een ingenieur op een muur of toren: een lange schacht
+// met pijlgoot, twee zware boogarmen met een dikke pees, een windas achteraan en een grote bout met ijzeren
+// kop. Houding aan = pees gespannen en bout geladen, los = pees naar voren en de bout is weg.
+function ballista(def) {
+  const K = def.kleur;
+  const B = 60, H = 54, AY = 50;
+  const teken = (ctx, houding) => {
+    const los = houding === 'los';
+    // houten bok onder de schacht
+    vlak(ctx, [[16, 49], [20.4, 49], [29, 34], [25.6, 34]], HOUT_D);
+    vlak(ctx, [[42, 49], [37.6, 49], [30, 34], [33.4, 34]], tint(HOUT, 0.1));
+    lijn(ctx, 20, 44, 38, 44, HOUT_D, 1.5);
+    ovaal(ctx, 29.5, 34, 5.4, 2.4, IJZER_D);
+    // schacht met pijlgoot
+    vlak(ctx, [[6, 36], [50, 21], [52, 24.4], [8, 39.6]], HOUT);
+    vlak(ctx, [[6, 36], [50, 21], [50, 22.8], [6, 37.8]], tint(HOUT, 0.16));
+    lijn(ctx, 9, 36.6, 49, 23.2, HOUT_D, 0.9);
+    // windas achteraan, met hendels
+    ovaal(ctx, 10.5, 35.6, 3.6, 3.6, HOUT_L);
+    ovaal(ctx, 10, 35, 1.4, 1.4, 'rgba(255,255,255,0.22)');
+    lijn(ctx, 7.2, 32.6, 13.8, 38.6, HOUT_D, 1.1);
+    lijn(ctx, 13.8, 32.6, 7.2, 38.6, HOUT_D, 1.1);
+    // boogarmen vooraan de schacht: ver (achter, omhoog) en dichtbij (voor, omlaag)
+    const bx = 43.5, by = 25.4;
+    const trek = los ? 0 : 4.4;
+    const arm = (naar, dikte, kleur) => {
+      ctx.strokeStyle = kleur; ctx.lineWidth = dikte; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(bx, by);
+      ctx.quadraticCurveTo(bx + naar[0] * 0.55 - trek * 0.3, by + naar[1] * 0.55 + trek * 0.3, bx + naar[0], by + naar[1]);
+      ctx.stroke();
+    };
+    const ver = [-12.5, -9.5 + trek * 0.5], dichtbij = [12.5, 9.5 + trek * 0.5];
+    arm(ver, 3, HOUT_D);
+    arm(dichtbij, 3.4, HOUT);
+    ctx.strokeStyle = tint(HOUT, 0.22); ctx.lineWidth = 0.9;
+    ctx.beginPath(); ctx.moveTo(bx + 1, by + 1); ctx.quadraticCurveTo(bx + 7 - trek * 0.3, by + 6 + trek * 0.3, bx + dichtbij[0], by + dichtbij[1]); ctx.stroke();
+    // ijzeren beslag in het midden en een wimpel in teamkleur
+    ovaal(ctx, bx, by, 2.6, 2.6, IJZER); ovaal(ctx, bx - 0.5, by - 0.6, 1, 1, 'rgba(255,255,255,0.3)');
+    // pees: van de ene armpunt naar de neus (los: recht dwars) en terug naar de andere
+    const nokX = los ? bx + 1.2 : bx - 12, nokY = los ? by + 0.4 : by + 4.2;
+    const pees = 'rgba(232,222,190,0.95)';
+    lijn(ctx, bx + ver[0], by + ver[1], nokX, nokY, pees, 0.9);
+    lijn(ctx, nokX, nokY, bx + dichtbij[0], by + dichtbij[1], pees, 0.9);
+    // de bout: lang, met ijzeren kop en veren
+    if (!los) {
+      lijn(ctx, nokX, nokY - 0.6, bx + 14, by - 4.4, HOUT_L, 1.7);
+      vlak(ctx, [[bx + 14, by - 6.4], [bx + 20, by - 6.8], [bx + 14, by - 2.4]], '#b9bcc4');
+      vlak(ctx, [[nokX, nokY - 2.2], [nokX + 4, nokY - 1.2], [nokX, nokY + 0.6]], '#d9d2bf');
+    }
+    // schild met teamkleur op de bok en een wimpel op de windas
+    schild(ctx, 29, 39.6, 3.6, K);
+    lijn(ctx, 10.5, 33, 10.5, 15, HOUT_D, 1.1);
+    vlak(ctx, [[10.5, 15], [20, 18], [10.5, 21.4]], K);
+    vlak(ctx, [[10.5, 15], [20, 18], [10.5, 16.4]], 'rgba(255,255,255,0.2)');
+  };
+  return pakket(B, H, AY, teken, grondSchaduw(31, 49, 26), { schiet: [['aan', 0], ['los', 0]] });
+}
+
 export const MACHINES = {
   ram: (naam, def) => ram(def),
   katapult: (naam, def) => katapult(def),
+  trebuchet: (naam, def) => trebuchet(def),
+  ballista: (naam, def) => ballista(def),
   belegeringstoren: (naam, def) => belegeringstoren(def),
 };

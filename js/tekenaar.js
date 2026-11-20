@@ -208,6 +208,9 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     [assets.haal('eenheid.wind_blauw'), assets.haal('eenheid.wind_rood')],
     [assets.haal('eenheid.sabo_blauw'), assets.haal('eenheid.sabo_rood')],
     [assets.haal('eenheid.ziener_blauw'), assets.haal('eenheid.ziener_rood')],
+    [assets.haal('eenheid.ingenieur_blauw'), assets.haal('eenheid.ingenieur_rood')],
+    [assets.haal('eenheid.trebuchet_blauw'), assets.haal('eenheid.trebuchet_rood')],
+    [assets.haal('eenheid.ballista_blauw'), assets.haal('eenheid.ballista_rood')],
   ];
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
@@ -678,6 +681,69 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       effecten.length = over;
     }
 
+    // Een trebuchet plaatsen: de ring van waar hij kan schieten (groen), de dode zone erbinnen (rood) en de
+    // bouwwerken van rood die hij vanaf hier raakt.
+    if (staat.trebPlek) {
+      const tp = staat.trebPlek;
+      const cx = tp.x + 0.5;
+      const cy = tp.y + 0.5;
+      const ring = (r) => {
+        ctx.beginPath();
+        for (let i = 0; i <= 64; i++) {
+          const a = (i / 64) * Math.PI * 2;
+          const dx = cx + Math.cos(a) * r;
+          const dy = cy + Math.sin(a) * r;
+          const wx = (dx - dy) * HALVE_BREEDTE;
+          const wy = (dx + dy) * HALVE_HOOGTE;
+          if (i === 0) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
+        }
+        ctx.closePath();
+      };
+      const tegel = (x, y) => {
+        const wx = (x - y) * HALVE_BREEDTE;
+        const wy = (x + y) * HALVE_HOOGTE;
+        ctx.beginPath();
+        ctx.moveTo(wx, wy);
+        ctx.lineTo(wx + HALVE_BREEDTE, wy + HALVE_HOOGTE);
+        ctx.lineTo(wx, wy + TEGEL_HOOGTE);
+        ctx.lineTo(wx - HALVE_BREEDTE, wy + HALVE_HOOGTE);
+        ctx.closePath();
+      };
+      const puls = 0.65 + 0.35 * Math.sin(nu / 260);
+      if (tp.ok) {
+        ring(tp.bereik + 0.5);
+        ctx.fillStyle = 'rgba(120, 220, 120, 0.10)';
+        ctx.fill();
+        ctx.setLineDash([6 / camera.zoom, 4 / camera.zoom]);
+        ctx.lineWidth = 2 / camera.zoom;
+        ctx.strokeStyle = 'rgba(150, 240, 140, 0.95)';
+        ctx.stroke();
+        ctx.setLineDash([]);
+        if (tp.min > 0) {
+          ring(tp.min);
+          ctx.fillStyle = 'rgba(230, 90, 70, 0.22)';
+          ctx.fill();
+          ctx.lineWidth = 1.5 / camera.zoom;
+          ctx.strokeStyle = 'rgba(240, 120, 100, 0.9)';
+          ctx.stroke();
+        }
+        for (const d of tp.doelen) {
+          tegel(d.x, d.y);
+          ctx.fillStyle = `rgba(255, 90, 60, ${0.25 + 0.2 * puls})`;
+          ctx.fill();
+          ctx.lineWidth = 2 / camera.zoom;
+          ctx.strokeStyle = 'rgba(255, 140, 110, 0.95)';
+          ctx.stroke();
+        }
+      }
+      tegel(tp.x, tp.y);
+      ctx.fillStyle = tp.ok ? 'rgba(130, 230, 120, 0.4)' : 'rgba(230, 90, 70, 0.45)';
+      ctx.fill();
+      ctx.lineWidth = 2 / camera.zoom;
+      ctx.strokeStyle = tp.ok ? '#c8ffb8' : '#ffb4a8';
+      ctx.stroke();
+    }
+
     // De aangetikte tegel, op de grond en onder alles wat rechtop staat.
     if (staat.gekozen) {
       const wx = (staat.gekozen.x - staat.gekozen.y) * HALVE_BREEDTE;
@@ -743,7 +809,12 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       let beeld = 0;
       if (!eigen) beeld = e.loopt ? Math.floor(nu / 115 + i * 1.3) % beelden.length : 0;
       else if (e.houding === 'hak') beeld = Math.floor(nu / 210 + i) % beelden.length;
-      else if (e.houding === 'sla' || e.houding === 'schiet') beeld = e.pose ? 1 : 0;
+      else if (e.houding === 'schiet' && beelden.length >= 3 && e.schotTijd) {
+        // Een trebuchet (drie beelden: gespannen, arm omhoog, arm voorover): na het schot zwaait de arm door
+        // en wordt daarna met de windas weer neergehaald.
+        const dt = nu - e.schotTijd;
+        beeld = dt < 380 ? 1 : dt < 3000 ? 2 : dt < 4000 ? 1 : 0;
+      } else if (e.houding === 'sla' || e.houding === 'schiet') beeld = e.pose ? 1 : 0;
       else if (e.loopt) beeld = Math.floor(nu / 115 + i * 1.3) % beelden.length;
       return beelden[beeld];
     };
@@ -906,7 +977,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
         const f = effecten[i];
         if (f.soort !== 'pijl') continue;
         const t = Math.min(1, Math.max(0, (nu - f.van) / f.duur));
-        const boog = 6 + 1.6 * Math.hypot(f.x2 - f.x1, f.y2 - f.y1);
+        const boog = f.groot ? 18 + 5 * Math.hypot(f.x2 - f.x1, f.y2 - f.y1) : 6 + 1.6 * Math.hypot(f.x2 - f.x1, f.y2 - f.y1);
         const punt = (deel) => {
           const x = f.x1 + (f.x2 - f.x1) * deel;
           const y = f.y1 + (f.y2 - f.y1) * deel;
@@ -946,6 +1017,29 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
           ctx.beginPath();
           ctx.arc(kop[0] + 0.6, kop[1] + 0.6, 2, 0, Math.PI * 2);
           ctx.fill();
+          continue;
+        }
+        if (f.steen && f.groot) {
+          // Een steen van een trebuchet: groot, met een staart en een schaduw die over de grond vliegt
+          const gx = f.x1 + (f.x2 - f.x1) * t;
+          const gy = f.y1 + (f.y2 - f.y1) * t;
+          ctx.fillStyle = 'rgba(0,0,0,0.25)';
+          ctx.beginPath();
+          ctx.ellipse((gx - gy) * HALVE_BREEDTE, (gx + gy) * HALVE_HOOGTE, 4, 1.8, 0, 0, Math.PI * 2);
+          ctx.fill();
+          for (let s = 4; s >= 1; s--) {
+            const q = punt(Math.max(0, t - s * 0.025));
+            ctx.fillStyle = `rgba(200,195,185,${0.07 * (5 - s)})`;
+            ctx.beginPath();
+            ctx.arc(q[0], q[1], 3.6, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.fillStyle = '#6b6a66';
+          ctx.beginPath();
+          ctx.arc(kop[0], kop[1], 4.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.3)';
+          ctx.fillRect(kop[0] - 2, kop[1] - 2.2, 2, 2);
           continue;
         }
         if (f.steen) {

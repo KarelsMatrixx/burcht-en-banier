@@ -821,7 +821,7 @@ export function maakUi() {
     // De knoppen en de uitleg voor je soldaten.
     //   zichtbaar = de knoppen tonen, hint = de zin erboven,
     //   kader = de knop Kader staat aan, gekozen = er is iemand gekozen
-    toonLeger({ zichtbaar, hint, kader, gekozen }) {
+    toonLeger({ zichtbaar, hint, kader, gekozen, bouw = null, ontkoppel = false }) {
       // Kies je soldaten op de kaart, dan gaat het zwaard vanzelf open.
       if (gekozen && !legerStand.gekozen && paneel !== 'bouw') paneel = 'leger';
       legerStand = { zichtbaar, gekozen };
@@ -830,6 +830,31 @@ export function maakUi() {
       el('legerhint').hidden = !hint;
       el('knop-kader').classList.toggle('actief', !!kader);
       el('knop-niets').hidden = !gekozen;
+      // De knop Build verschijnt als er een ingenieur gekozen is; die opent het menu met wat hij kan bouwen.
+      // bouw = { menu, trebuchet: { actief, tekst }, ballista: { actief, tekst } }
+      el('knop-bouw').hidden = !bouw;
+      el('knop-bouw').classList.toggle('actief', !!(bouw && bouw.menu));
+      for (const naam of ['trebuchet', 'ballista']) {
+        const knop = el(`knop-${naam}`);
+        const b = bouw && bouw.menu ? bouw[naam] : null;
+        knop.hidden = !b;
+        knop.classList.toggle('actief', !!(b && b.actief));
+        if (b) knop.textContent = b.tekst;
+      }
+      // De knop Release crew verschijnt als er een trebuchet of ballista gekozen is.
+      el('knop-ontkoppel').hidden = !ontkoppel;
+    },
+    opOntkoppel(functie) {
+      el('knop-ontkoppel').addEventListener('click', functie);
+    },
+    opBouw(functie) {
+      el('knop-bouw').addEventListener('click', functie);
+    },
+    opTrebuchet(functie) {
+      el('knop-trebuchet').addEventListener('click', functie);
+    },
+    opBallista(functie) {
+      el('knop-ballista').addEventListener('click', functie);
     },
     // De knoppen om een groep of soort te kiezen. lijst = [{ tekst, sleutel, actief }].
     toonGroepen(lijst, opKies) {

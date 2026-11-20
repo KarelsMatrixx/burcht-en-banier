@@ -40,9 +40,9 @@ const d = await p.evaluate(async () => {
   return {
     mist,
     toren1: lv(1).rood.extra_soorten.toren, katapult2: lv(2).rood.extra_soorten.katapult,
-    vlam4: lv(4).doel.golven.leger.vlammenwever, heler5: lv(5).rood.leger.heler, steen6: lv(6).rood.leger.steenwachter,
+    vlam4: lv(4).doel.golven.leger.vlammenwever, heler5: lv(5).rood.leger.heler, steen6: lv(6).rood.leger.ingenieur,
     kazerne: Object.fromEntries(['ram', 'katapult', 'toren', 'ladder', 'ridder', 'boogschutter', 'sluipmoordenaar'].map((k) => [k, soldaten[k].kazerne || 'klassiek'])),
-    werkplaats: bw.belegeringswerkplaats, gewichtWachter: eco.heer.gewicht.steenwachter,
+    werkplaats: bw.belegeringswerkplaats, gewichtWachter: eco.heer.gewicht.ingenieur,
     prologue: lv(0).beloning,
   };
 });
@@ -51,8 +51,8 @@ check('elke soldaat-beloning van een speelbaar level komt in dat level tegen je 
 check('toren in level 1 pas vanaf de eerste aanval (later door het level)', d.toren1 && d.toren1.vanaf >= 1 && d.toren1.max >= 1, JSON.stringify(d.toren1));
 check('katapult in level 2 pas vanaf de eerste aanval', d.katapult2 && d.katapult2.vanaf >= 1, JSON.stringify(d.katapult2));
 check('vlammenwever in level 4 niet in de eerste golf', d.vlam4 && d.vlam4.vanaf >= 1, JSON.stringify(d.vlam4));
-check('heler in level 5 en steenwachter in level 6 niet meteen', d.heler5.vanaf >= 1 && d.steen6.vanaf >= 1);
-check('een steenwachter telt mee voor de sterkte van rood', d.gewichtWachter > 0, d.gewichtWachter);
+check('heler in level 5 en ingenieur in level 6 niet meteen (0.79.0: de ingenieur kwam in de plaats van de steenwachter)', d.heler5.vanaf >= 1 && d.steen6.vanaf >= 1);
+check('een ingenieur telt mee voor de sterkte van rood', d.gewichtWachter > 0, d.gewichtWachter);
 check('ram, katapult en toren horen bij de siege-barak, de ladderdrager bij de gewone kazerne', d.kazerne.ram === 'belegering' && d.kazerne.katapult === 'belegering' && d.kazerne.toren === 'belegering' && d.kazerne.ladder === 'klassiek' && d.kazerne.ridder === 'klassiek' && d.kazerne.sluipmoordenaar === 'mystiek', JSON.stringify(d.kazerne));
 check('de siege-barak bestaat en leidt belegering op', d.werkplaats && d.werkplaats.leidtOp === 'belegering' && d.werkplaats.object === 'BELEGERINGSWERKPLAATS', JSON.stringify(d.werkplaats));
 check('de siege-barak is een beloning van de proloog (samen met ram en ladder)', d.prologue.includes('belegeringswerkplaats') && d.prologue.includes('ram'), JSON.stringify(d.prologue));
@@ -231,7 +231,7 @@ const r6 = await p.evaluate(() => {
   for (let i = 0; i < 2500; i++) { h.stap(); for (const [k, n] of Object.entries(h.stand().reserve)) max[k] = Math.max(max[k] || 0, n); h.zetVoorraad('goud', 300); h.zetVoorraad('steen', 100); }
   return max;
 });
-check('level 6: rood kan een steenwachter kopen', (r6.steenwachter || 0) >= 1, JSON.stringify(r6));
+check('level 6: rood kan een ingenieur kopen (0.79.0, de ingenieur kwam in de plaats van de steenwachter)', (r6.ingenieur || 0) >= 1, JSON.stringify(r6));
 
 // Level 4 (hut): de vlammenwever komt pas mee vanaf de derde golf
 await start(4, [1, 2, 3]);

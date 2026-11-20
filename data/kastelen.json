@@ -7,6 +7,8 @@
   "Het kasteel moet op de kaart passen: maat plus gracht tot ongeveer 10 tegels.",
   "Nog niet: palissade van palen (jachtkamp, level 4), loodsen (level 6), sluis en kades (level 8), terrassen (level 9), Raaftoren (level 10). Die horen bij de levels zelf.",
   "kamp: true = een tentenkamp (level 4): geen muren, torens of poort; de ring bepaalt alleen hoe groot het vrije erf is. De burcht in het midden is dan de commandotent (materiaal met vorm kampburcht). omgeving: bomen en moerasplassen rondom het kamp met een open laan naar jouw kant (zie js/kaart.js 5b2).",
+  "posten (level 6): { aantal, afstand, waaier, maat, binnen }: kleine versterkte buitenposten van rood met eigen ringmuur, torens en poort naar jou toe; de bouwloods staat in het midden (js/kaart.js 5f, js/loodsen.js). Het garnizoen per post staat in campagne.json (rood.postGarnizoen).",
+  "werven (level 6): { aantal, naastSteen, sjablonen, vanThuis, afstandTot }: kleine werkplekken (steenwerf, zagerij, ramwerf) als decor verspreid over de kaart (js/kaart.js 5g). sjablonen staan in kaart.js.",
   "Level 10 (Mournkeep): een kerk met een begraafplaats op een open plek in het dode bos naast de buitenste ring (decor kerk en graf, versie 0.71.0). Kerk en graf mogen bomen wegkappen. Let op: dx en dy van decor staan gespiegeld ten opzichte van de kaart.",
   "open: zijden van een ring met een gat van 3 tegels zonder muur (level 10: de achterpoort die Reinout opende). Decor raaftoren: de Raaftoren van level 10 (onkwetsbaar, van niemand)."
  ],
@@ -288,16 +290,6 @@
      -3
     ],
     [
-     "smederij",
-     -11,
-     0
-    ],
-    [
-     "smederij",
-     12,
-     0
-    ],
-    [
      "ijzerpoort",
      -11,
      -3
@@ -384,17 +376,197 @@
    ]
   },
   "werkplaats": {
-   "naam": "Siege yard",
+   "naam": "Builder's fort",
    "ringen": [
     {
-     "maat": 5,
+     "maat": 6,
+     "rond": true,
+     "torens": 8,
      "poorten": [
       "voor",
       "achter"
+     ],
+     "steigers": [
+      60,
+      120,
+      240,
+      300
+     ],
+     "vlaggen": [
+      40,
+      140,
+      220,
+      320
+     ]
+    },
+    {
+     "maat": 10,
+     "rond": true,
+     "torens": 8,
+     "poorten": [
+      "voor",
+      "achter"
+     ],
+     "steigers": [
+      35,
+      95,
+      155,
+      205,
+      265,
+      325
+     ],
+     "vlaggen": [
+      65,
+      125,
+      235,
+      295
      ]
     }
    ],
-   "materiaal": "rots"
+   "materiaal": "rots",
+   "posten": {
+    "aantal": 2,
+    "afstand": 21,
+    "waaier": 0.75,
+    "maat": 3,
+    "binnen": [
+     [
+      "vaten",
+      -2,
+      -2
+     ],
+     [
+      "vaten",
+      2,
+      2
+     ],
+     [
+      "hooiberg",
+      2,
+      -2
+     ]
+    ]
+   },
+   "werven": {
+    "aantal": 9,
+    "naastSteen": true,
+    "sjablonen": [
+     "steenwerf",
+     "zagerij",
+     "ramwerf"
+    ],
+    "vanThuis": 18,
+    "afstandTot": 9
+   },
+   "decor": [
+    [
+     "kraan",
+     -3,
+     -3
+    ],
+    [
+     "werkbank",
+     3,
+     -3
+    ],
+    [
+     "houtstapel",
+     -3,
+     3
+    ],
+    [
+     "ramgeraamte",
+     3,
+     3
+    ],
+    [
+     "kampvuur",
+     0,
+     -4
+    ],
+    [
+     "vaten",
+     -4,
+     2
+    ],
+    [
+     "hamervlag",
+     5,
+     2
+    ],
+    [
+     "hamervlag",
+     5,
+     -2
+    ],
+    [
+     "hamervlag",
+     9,
+     2
+    ],
+    [
+     "hamervlag",
+     9,
+     -2
+    ],
+    [
+     "hamervlag",
+     -5,
+     2
+    ],
+    [
+     "hamervlag",
+     -5,
+     -2
+    ],
+    [
+     "houwer",
+     -6,
+     -6
+    ],
+    [
+     "houwer",
+     -8,
+     -5
+    ],
+    [
+     "ramgeraamte",
+     6,
+     6
+    ],
+    [
+     "vaten",
+     6,
+     -6
+    ],
+    [
+     "kampvuur",
+     -6,
+     6
+    ],
+    [
+     "houtstapel",
+     4,
+     7
+    ],
+    [
+     "werkbank",
+     -4,
+     -7
+    ],
+    [
+     "kraan",
+     7,
+     3
+    ],
+    [
+     "kraan",
+     -7,
+     -3
+    ]
+   ],
+   "hoog": true,
+   "wimpels": true
   },
   "drie_poorten": {
    "naam": "Toll castle",

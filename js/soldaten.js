@@ -994,10 +994,50 @@ function ziener(def) {
   return pakket(teken, { sla: [['lopen', 0], ['lopen', 0]] });
 }
 
+// ---------------------------------------------------------- ingenieur
+// Bouwmeester van de belegering: leren schort, werkmanshoed in teamkleur, grote houten hamer.
+// Lopen = hamer op de schouder, sla = hamer omhoog en dan neer.
+function ingenieur(def) {
+  const K = def.kleur;
+  const ARM = '#a8906a';
+  const teken = (ctx, houding, beeld) => {
+    const slaat = houding === 'hoog' || houding === 'slag';
+    const wip = houding === 'lopen' && beeld % 2 ? -1 : 0;
+    const pas = houding === 'lopen' ? LOOP[beeld] : 1.2;
+    const mx = 13;
+    benen(ctx, mx, wip, pas, { top: 27, b: 3.2, sp: 2.2, been: ['#5a4a3a', '#473a2c'], laars: '#2f2218', laarsH: 3 });
+    romp(ctx, mx, wip, 9.6, 17, 10, '#b7a07a');
+    // leren schort met teamkleurige band
+    vlak(ctx, [[mx - 3.6, 19 + wip], [mx + 3.6, 19 + wip], [mx + 4, 29 + wip], [mx - 4, 29 + wip]], LEER);
+    blok(ctx, mx - 3.8, 19.6 + wip, 7.6, 1.6, K);
+    ovaal(ctx, mx, 25.4 + wip, 1.2, 0.9, '#2a1d10');   // zakje met spijkers
+    gezichtje(ctx, mx + 0.6, 12.6 + wip, { rx: 2.7, ry: 3, baard: '#6a4a2a', haar: '#5a3a1a' });
+    // werkmanshoed: brede rand, teamkleurige kroon
+    ovaal(ctx, mx + 0.4, 9.2 + wip, 5.6, 1.5, tint(K, -0.2));
+    vlak(ctx, [[mx - 3.2, 9 + wip], [mx - 2.6, 5.4 + wip], [mx + 3.4, 5.4 + wip], [mx + 4, 9 + wip]], K);
+    blok(ctx, mx - 3, 8 + wip, 6.8, 0.8, 'rgba(0,0,0,0.25)');
+    // armen en hamer
+    lijn(ctx, mx - 3, 18 + wip, mx - 4.6, 23 + wip, ARM, 2.2); hand(ctx, mx - 4.6, 23.4 + wip, HUID, 1.2);
+    if (slaat) {
+      const op = houding === 'hoog';
+      const hx = mx + (op ? 5.6 : 8.4), hy = op ? 6 : 24;
+      lijn(ctx, mx + 3, 18 + wip, hx - 0.6, op ? 11 : 20.4, ARM, 2.2); hand(ctx, hx - 0.6, op ? 11 : 20.4, HUID, 1.2);
+      lijn(ctx, hx - 0.6, op ? 11 : 20.4, hx, hy, HOUT, 1.4);
+      lichtBlok(ctx, hx - 3, hy - (op ? 4 : 0.8), 6.4, 3.6, tint(HOUT, 0.1), 0.2);
+      blok(ctx, hx - 3, hy - (op ? 4 : 0.8), 6.4, 0.7, 'rgba(255,255,255,0.22)');
+    } else {
+      lijn(ctx, mx + 3, 18 + wip, mx + 5.6, 15 + wip, ARM, 2.2); hand(ctx, mx + 5.8, 14.6 + wip, HUID, 1.2);
+      lijn(ctx, mx + 5.8, 14.6 + wip, mx + 8.4, 22 + wip, HOUT, 1.4);   // steel over de schouder
+      lichtBlok(ctx, mx + 6.4, 8.8 + wip, 6.2, 3.6, tint(HOUT, 0.1), 0.2);
+    }
+  };
+  return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
+}
+
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
-  zwaardvechter, banierdrager, heler, steenwachter, windzanger, saboteur, ziener, ruiter, paard: (def) => ruiter(def, true),
+  zwaardvechter, banierdrager, heler, steenwachter, ingenieur, windzanger, saboteur, ziener, ruiter, paard: (def) => ruiter(def, true),
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

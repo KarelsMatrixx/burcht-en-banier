@@ -162,6 +162,11 @@ function pasRoodToe(regels, rood) {
     regels.strijd.garnizoen = {};
     for (const [soort, aantal] of Object.entries(rood.garnizoen)) if (Number.isFinite(aantal) && aantal > 0) regels.strijd.garnizoen[soort] = Math.min(60, Math.round(aantal));
   }
+  // postGarnizoen: { soort: aantal }: soldaten in elke buitenpost van rood (level 6, ontwerp.posten).
+  if (rood.postGarnizoen && typeof rood.postGarnizoen === 'object') {
+    regels.strijd.postGarnizoen = {};
+    for (const [soort, aantal] of Object.entries(rood.postGarnizoen)) if (Number.isFinite(aantal) && aantal > 0) regels.strijd.postGarnizoen[soort] = Math.min(30, Math.round(aantal));
+  }
   if (rood.koning && Number.isFinite(rood.koning.leven)) regels.strijd.roodKoningLeven = rood.koning.leven / 100;
   // schiet: { bereik, schade, slagTijd } maakt van de rode koning een schutter.
   if (rood.koning && rood.koning.schiet) regels.strijd.roodKoningSchiet = { ...rood.koning.schiet };
