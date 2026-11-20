@@ -102,6 +102,7 @@ async function start() {
   // Geluid (stap 46): klinkt zachter naarmate het verder buiten beeld is.
   if (!window.__geluidGekoppeld) { window.__geluidGekoppeld = true; geluid.koppel(); }
   geluid.zetLandschap(missie && missie.proloog ? 'proloog' : (missie && missie.landschap) || 'vrij');
+  geluid.zetStil(() => titelOpen || !document.getElementById('titelscherm').hidden);
   geluid.zetPlek((x, y) => { const w = rasterNaarWereld(x, y); const sc = camera.wereldNaarScherm(w.x, w.y); return { sx: sc.x, sy: sc.y, b: camera.breedte, h: camera.hoogte, zoom: camera.zoom }; });
   const tekenaar = maakTekenaar(canvas, kaart, camera, assets, landschapProfiel);
   tekenaar.zetWimpels(!!(ontwerp && ontwerp.wimpels));

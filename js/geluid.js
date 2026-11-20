@@ -24,6 +24,7 @@ function maakGeluid() {
   const buffers = new Map();     // bestand -> AudioBuffer (of een belofte)
   const laatst = new Map();      // naam -> tijd van de laatste keer
   let spelend = 0;               // hoeveel er nu klinken
+  let stil = null;               // () => true als er geen omgevingsgeluid mag klinken (startscherm)
   let plek = null;               // (x, y) -> { sx, sy, b, h }: waar dat op het scherm is
   let stand = { aan: true, volume: 0.8 };
   let wens = null;               // het omgevingsgeluid dat moet klinken: { naam }
@@ -192,7 +193,8 @@ function maakGeluid() {
     const p = plek(0, 0);
     if (!p) return;
     const g = lijst.geluiden[lus.naam] || {};
-    const doel = (g.volume === undefined ? 0.3 : g.volume) * zoomSterkte(p.zoom);
+    // Op het startscherm en de levelkaart geen omgevingsgeluid.
+    const doel = stil && stil() ? 0 : (g.volume === undefined ? 0.3 : g.volume) * zoomSterkte(p.zoom);
     try { lus.v.gain.setTargetAtTime(doel, ctx.currentTime, 0.25); } catch (e) { /* weg */ }
   }
 
@@ -222,7 +224,7 @@ function maakGeluid() {
       bron.loop = true;
       const v = ctx.createGain();
       v.gain.value = 0;
-      v.gain.setTargetAtTime((g.volume === undefined ? 0.3 : g.volume) * (plek && plek(0, 0) ? zoomSterkte(plek(0, 0).zoom) : 1), ctx.currentTime, 0.8);
+      v.gain.setTargetAtTime(stil && stil() ? 0 : (g.volume === undefined ? 0.3 : g.volume) * (plek && plek(0, 0) ? zoomSterkte(plek(0, 0).zoom) : 1), ctx.currentTime, 0.8);
       bron.connect(v);
       v.connect(hoofd);
       bron.start();
@@ -297,6 +299,7 @@ function maakGeluid() {
     ontgrendel,
     // main.js vertelt hoe een tegel op het scherm uitkomt.
     zetPlek(f) { plek = f; },
+    zetStil(f) { stil = f; zoomOmgeving(); },
     nulMeting() { maxKlonk = 0; gestart = 0; },
     omgeving,
     afEnToe,

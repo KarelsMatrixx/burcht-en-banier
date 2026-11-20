@@ -1007,3 +1007,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Niet gebruikt: drawbridge (geen ophaalbrug in het spel), amb_battle_far, build_working, build_done, horse_gallop.
 - Muziek maakt Karel zelf.
 - NIET op de iPhone gehoord. Volumes per geluid zijn geschat (na te stellen).
+
+## 0.78.2: geen omgevingsgeluid op het startscherm (Karels melding van 20 november)
+
+- Het water (of ander omgevingsgeluid) klonk ook op het startscherm. Nu draait de omgevingslus zacht naar nul zolang het startscherm of de levelkaart open is (`geluid.zetStil`, main.js: `titelOpen` of `#titelscherm` zichtbaar), en komt terug in het spel. Knoppen klinken wel.
+- Test geluidmix78 uitgebreid (12 controles).
