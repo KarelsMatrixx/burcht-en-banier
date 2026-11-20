@@ -1357,3 +1357,7 @@ body.gids-bedekt #gids-ring, body.gids-bedekt #gids-zin, body.gids-bedekt #gids-
   100% { transform: rotate(360deg); }
 }
 @media (prefers-reduced-motion: reduce) { #verhaalbeeld-zand { animation: none; } }
+
+/* Geluid aan of uit en het volume (stap 46), in het menu achter het tandwiel */
+.geluid-rij { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.geluid-rij input[type=range] { flex: 1; min-width: 90px; accent-color: #c9a24a; }

@@ -994,3 +994,13 @@ Naar aanleiding van Karels feedback (17 november 2026).
 
 - Foutmelding: "TypeError: undefined is not an object (evaluating 't.beeld.beeld')" in tekenaar.js. Oorzaak: `maakSchim` koos het plaatje van de groene schim voor ieder gebouw met varianten op zijn buren (bedoeld voor muren). Een huis heeft drie losse varianten (op toeval); met een huis ernaast kwam er een nummer buiten de lijst uit en was het plaatje leeg. Een gebouw met `kies: 'toeval'` kiest nu net als het echte gebouw (`tegelToeval(x, y, 4)`), plus een terugval op variant 0 en een vangnet bij het tekenen.
 - Test: nieuw schim77 (alle 17 bouwwerken, los en naast buren). hut70 groen. Zoals bij elke melding van Karel: niet op de iPhone nagespeeld, wel de fout in de browser nagebootst en weg.
+
+## 0.78.0: geluidseffecten (stap 46)
+
+- Nieuw: `js/geluid.js` (geluidsmotor met Web Audio), `data/geluiden.json` (lijst, volume en minimale tussentijd per geluid) en `geluid/` (54 mp3's, 1,3 MB). Gemaakt met ElevenLabs Sound Effects, door Karel gekozen op 20 november 2026 uit 118 varianten. Zie projectdoc `claude/geluiden-status.md`.
+- iPhone: de audio gaat pas aan bij de eerste aanraking (`ontgrendel`). Daarvoor is alles stil.
+- Positie: een geluid met een plek op de kaart klinkt zachter naarmate het verder buiten beeld is, en wat zachter ver uitgezoomd. Hooguit 14 tegelijk; per geluid een minimale tussentijd; elke keer een willekeurige variant met een iets andere toonhoogte (7 procent).
+- Waar het klinkt: elke knop (ui_click, sluit/terug ui_back); soldaat kiezen, lopen, aanvallen; belegeringsbevel; bouwen, slopen, bouwen geweigerd; opleiden (per kazerne een eigen geluid, plus een kreet); verkopen (munten); werkers (bijl, beitel, fruit, hooi, oven); boom valt en wordt weggesleept; goederen afgeleverd; voorraad vol; zwaard, bijl, dolk, zwaar zwaard van Karel; pijl, kruisboog, vuurbal; inslag van pijlen (vlees, schild, steen); bloed, sneuvelen, vermoorde burger; genezen; charge van de ruiter; ladder tegen de muur en omgeduwd; muur stort in, gebouw kapot; levelkaart.
+- Menu achter het tandwiel: "Sound: on/off" en een volumeschuif, bewaard in localStorage (`aldervale.geluid`).
+- Nog geen geluid (nog niet gemaakt, credits op): stormram, poort, katapult, belegeringstoren, voetstappen, omgeving, hoorn, verhaal. Muziek maakt Karel zelf.
+- NIET op de iPhone gehoord. Volumes per geluid zijn geschat (na te stellen).

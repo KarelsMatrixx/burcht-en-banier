@@ -1,6 +1,7 @@
 // MAIN: zet alle onderdelen in elkaar en start het spel.
 
 import { CONFIG } from './config.js';
+import { geluid } from './geluid.js';
 import { maakKaart, laadKaarten, laadKastelen, binnenKaart, beschrijfTegel, OBJECT_ASSET } from './kaart.js';
 import { rasterNaarWereld, wereldNaarRaster, kaartGrenzen } from './iso.js';
 import { maakCamera } from './camera.js';
@@ -98,6 +99,9 @@ async function start() {
   const kaart = maakKaart({ ...(kaarten[kaartNaam] || CONFIG.kaart), ...(ontwerp ? { kasteel: ontwerp } : {}) });
   let titelOpen = false;   // staat het beginscherm of de levelkaart open? Dan staat het spel stil.
   const camera = maakCamera(kaartGrenzen(kaart.breedte, kaart.hoogte));
+  // Geluid (stap 46): klinkt zachter naarmate het verder buiten beeld is.
+  if (!window.__geluidGekoppeld) { window.__geluidGekoppeld = true; geluid.koppel(); }
+  geluid.zetPlek((x, y) => { const w = rasterNaarWereld(x, y); const sc = camera.wereldNaarScherm(w.x, w.y); return { sx: sc.x, sy: sc.y, b: camera.breedte, h: camera.hoogte, zoom: camera.zoom }; });
   const tekenaar = maakTekenaar(canvas, kaart, camera, assets, landschapProfiel);
   tekenaar.zetWimpels(!!(ontwerp && ontwerp.wimpels));
   const gevangene = maakGevangene({ kaart, missie });   // level 5: Ludolf in zijn cel
@@ -189,6 +193,10 @@ async function start() {
     opEinde: (wat) => naEinde(wat),
   });
   naGeveld = (vak, kant) => {
+    const gx = (vak % kaart.breedte) + 0.5;
+    const gy = Math.floor(vak / kaart.breedte) + 0.5;
+    geluid.speel('tree_fall', { x: gx, y: gy });
+    geluid.speel('log_drag', { x: gx, y: gy, wacht: 1100 });
     if (strijd.effecten.length > 400) return;
     strijd.effecten.push({ soort: 'boomval', x: vak % kaart.breedte, y: Math.floor(vak / kaart.breedte), kant: kant < 0 ? -1 : 1, van: performance.now(), duur: 1250 });
   };
@@ -343,8 +351,8 @@ async function start() {
 
   function bevestigBouw() {
     if (!bouw.sleutel || !staat.schim) return;
-    if (bouw.sleutel === SLOOP) bouwer.sloop(bouw.begin.x, bouw.begin.y);
-    else bouwer.plaats(bouwwerken[bouw.sleutel], staat.schim.tegels.filter((t) => t.ok));
+    if (bouw.sleutel === SLOOP) geluid.speel(bouwer.sloop(bouw.begin.x, bouw.begin.y) ? 'build_demolish' : 'ui_denied');
+    else geluid.speel(bouwer.plaats(bouwwerken[bouw.sleutel], staat.schim.tegels.filter((t) => t.ok)) ? 'build_place' : 'ui_denied');
     bouw.begin = null;
     bouw.eind = null;
     toonBouw();
@@ -432,6 +440,7 @@ async function start() {
   // Gewone soldaten krijgen die melding niet. ontvangen = de eenheden die het bevel echt kregen;
   // doel = wat het bevel aanwees ('wall', 'gate', ...).
   function meldSiege(ontvangen, doel) {
+    if (ontvangen.length) geluid.speel('siege_confirm');
     const aantal = {};
     for (const e of ontvangen) {
       const def = leger.soorten[e.soldaat.sleutel];
@@ -480,6 +489,12 @@ async function start() {
   ui.opKazerneSluit(sluitKazerne);
   ui.opOpleiden((sleutel) => {
     const reden = leger.leidOp(sleutel, kazerneVak);
+    if (reden) geluid.speel('ui_denied');
+    else {
+      const soort = leger.soorten[sleutel];
+      geluid.speel({ mystiek: 'mystic_ready', belegering: 'siegeworks_ready', stal: 'horse_neigh' }[soort.kazerne] || 'barracks_ready');
+      if (!soort.alleenBouw && soort.kazerne !== 'belegering') geluid.speel('unit_ready_shout', { wacht: 350 });
+    }
     kazerneBericht = reden ? `Not possible: ${reden}.` : `${metLidwoord(leger.soorten[sleutel].naam.toLowerCase(), true)} is ready at the ${leger.soorten[sleutel].kazerne === 'stal' ? 'stable' : leger.soorten[sleutel].kazerne === 'belegering' ? 'siege workshop' : 'barracks'}.`;
     toonKazerne();
   });
@@ -506,6 +521,7 @@ async function start() {
       })),
     }, (n) => {
       const reden = economie.verkoop(n);
+      geluid.speel(reden ? 'ui_denied' : 'coins');
       handelBericht = reden ? `Not possible: ${reden}.` : `Sold: ${h.per} ${regels.grondstoffen[n].naam.toLowerCase()} for ${h.prijs[n]} gold.`;
       toonHandel();
     });
@@ -807,6 +823,7 @@ async function start() {
   const toonKaart = () => {
     const open = (c) => isOpen(c, gewonnenNu());
     ui.toonTitel({ open: true, weergave: 'kaart' });
+    geluid.speel('ui_map_open');
     ui.toonLevelkaart(missies.campagne.map((c, i) => ({
       id: c.id, naam: c.naam, portret: c.portret,
       x: c.punt ? c.punt.x : 10 + i * 8, y: c.punt ? c.punt.y : 50,
@@ -1025,6 +1042,7 @@ async function start() {
       if (soldaat && !erachter(soldaat) && (!proloog || proloog.magTikKiezen(soldaat))) {
         kaderAan = false;
         leger.kies([soldaat]);
+        geluid.speel('select_soldier');
         return;
       }
       // Een vijand aangetikt: je gekozen soldaten vallen hem aan.
@@ -1032,6 +1050,7 @@ async function start() {
       if (vijand && !erachter(vijand)) {
         if (leger.aantalGekozen()) {
           strijd.valAan(leger.gekozen(), vijand);
+          geluid.speel('order_attack');
           staat.doel = { x: Math.floor(vijand.x), y: Math.floor(vijand.y), duur: 900, tot: performance.now() + 900, aanval: true };
           // Staat die vijand op de muur van rood en heb je een ladderdrager
           // gekozen? Dan bedoel je die muur: de drager zet er een ladder tegen,
@@ -1124,6 +1143,7 @@ async function start() {
         const kregen = [];
         if (strijd.valBouwAan(leger.gekozen(), vanRood.vak, kregen)) {
           staat.doel = { x: vanRood.x, y: vanRood.y, duur: 900, tot: performance.now() + 900, aanval: true };
+          geluid.speel('order_attack');
           meldSiege(kregen, beschrijfTegel(kaart, vanRood.x, vanRood.y));
         } else {
           ui.toonMelding('Your soldiers cannot reach that. Break through the red gate or wall first.', { soort: 'leger' });
@@ -1142,6 +1162,7 @@ async function start() {
       const muur = leger.aantalGekozen() && !grondEerst ? muurOnder(wereld.x, wereld.y) : null;
       if (muur) {
         if (leger.stuur(muur.x, muur.y, true)) {
+          geluid.speel('order_move');
           staat.doel = { x: muur.x, y: muur.y, duur: 900, tot: performance.now() + 900, hoogte: hoogteOp(muur.y * kaart.breedte + muur.x) };
         } else if (!leger.heeftTrap(muur.x, muur.y)) {
           ui.toonMelding('Your soldiers cannot get onto this wall yet. They can only climb up through an open gate: build a gate in this wall, or open it.', { soort: 'leger' });
@@ -1153,7 +1174,7 @@ async function start() {
       // Zijn er soldaten gekozen, dan stuur je ze naar deze tegel.
       if (leger.aantalGekozen()) {
         if (!binnenKaart(kaart, x, y)) return;
-        if (leger.stuur(x, y)) staat.doel = { x, y, duur: 900, tot: performance.now() + 900 };
+        if (leger.stuur(x, y)) { staat.doel = { x, y, duur: 900, tot: performance.now() + 900 }; geluid.speel('order_move'); }
         else ui.toonMelding(leger.gekozenHoog() ? 'The siege tower is taller than the gate and cannot pass through it.' : 'Your soldiers cannot get there.', { soort: 'leger' });
         return;
       }
@@ -1309,7 +1330,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { gids, hinderlaag, reserve, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel };
+  window.spel = { gids, hinderlaag, reserve, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

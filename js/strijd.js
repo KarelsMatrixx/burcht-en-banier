@@ -17,6 +17,7 @@
 // Alle getallen staan in data/economie.json (soldaten en strijd) en
 // data/bouwwerken.json (leven).
 
+import { geluid } from './geluid.js';
 import { CONFIG } from './config.js';
 import { OBJECT, GROND } from './kaart.js';
 import { SOORT } from './eenheden.js';
@@ -517,6 +518,24 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // --- Raken ------------------------------------------------------------------------
+  // Het geluid van een klap of schot, naar het wapen (js/geluid.js).
+  const PIJL_GELUID = { kruisboog: 'crossbow_shot' };
+  const KLAP_GELUID = { bijlridder: 'axe_hit', steenwachter: 'axe_hit', sluipmoordenaar: 'assassin_stab', saboteur: 'assassin_stab' };
+  function klapGeluid(e, k, doel) {
+    const sl = k.def.sleutel || '';
+    const plek = { x: doel.x, y: doel.y };
+    if (k.def.gebied !== undefined) return geluid.speel('fire_cast', { x: e.x, y: e.y });
+    if (k.def.windstoot || k.def.alleenBouw) return;
+    if (isSchutter(k)) return geluid.speel(PIJL_GELUID[sl] || 'arrow_release', { x: e.x, y: e.y });
+    if (k.def.koning && e.team === SPELER) return geluid.speel('sword_heavy', plek);
+    geluid.speel(KLAP_GELUID[sl] || 'sword_hit', plek);
+  }
+  // Een pijl komt aan: het geluid klinkt pas als hij er is.
+  function inslagGeluid(doel, naam, vanX, vanY) {
+    const wacht = 130 + 45 * Math.hypot(doel.x - vanX, doel.y - vanY);
+    geluid.speel(naam, { x: doel.x, y: doel.y, wacht });
+  }
+
   function slaToe(e, k) {
     k.afkoel = stappen(k.def.slagTijd);
     k.pose = 3;
@@ -532,6 +551,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
   // Een burger of soldaat vermoord: bloed, een plas en een lijk dat een tijdje blijft liggen.
   function vermoord(x, y, kleur) {
+    geluid.speel('death_civilian', { x, y });
     bloed(x, y, 6, true);
     effect({ soort: 'lijk', x, y, kleur: kleur || '#8a6a4a', duur: 24000 });
   }
@@ -550,9 +570,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     const kd = krijgVan(doel);
     kd.rust = 0;
     if (doel.leven <= 0) {
+      if (!doel.dood) geluid.speel('death_soldier', { x: doel.x, y: doel.y });
       doel.dood = true;
       return;
     }
+    if (hoeveel > 0) geluid.speel('blood_splat', { x: doel.x, y: doel.y, volume: 0.8 });
     // Wie van ver wordt geraakt en niets te doen heeft, gaat erop af.
     if (door && !kd.doelwit && !kd.wraak) {
       kd.wraak = door;
@@ -563,6 +585,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const bouwDoel = (vak) => ({ vak, soort: kaart.object[vak], van: kaart.eigenaar[vak], x: (vak % B) + 0.5, y: Math.floor(vak / B) + 0.5, straal: 0.5 });
   const staatNog = (b) => (b.burcht ? burchten[b.team].leven > 0 : b.van !== 0 && kaart.eigenaar[b.vak] === b.van && kaart.object[b.vak] === b.soort);
 
+  const STEEN_GELUID = new Set(['MUUR', 'TOREN', 'POORT', 'WACHTTOREN'].map((n) => OBJECT[n]).filter((n) => n !== undefined));
   function raakBouw(b, hoeveel) {
     if (b.burcht) {
       const doel = burchten[b.team];
@@ -587,6 +610,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     s.leven -= hoeveel;
     if (s.leven <= 0) {
+      geluid.speel(STEEN_GELUID.has(b.soort) ? 'wall_collapse' : 'build_demolish', { x: b.x, y: b.y });
       schade.delete(b.vak);
       if (b.van === ROOD && roodOrigineel.has(b.vak)) roodWeg.add(b.vak);   // een bouwloods komt niet terug
       const werk = bouwer.verwoest(b.vak % B, Math.floor(b.vak / B));
@@ -728,6 +752,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.rust = 0;
     if (k.afkoel > 0) return;
     slaToe(e, k);
+    klapGeluid(e, k, doel);
     let schade = k.def.schade;
     // Wie slaat, laat zich zien.
     if (k.def.verborgen) k.gezienTot = stapNr + stappen(3);
@@ -739,6 +764,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if ((k.afgelegd || 0) >= k.def.charge.tegels) {
         schade *= k.def.charge.keer;
         rook(doel.x, doel.y);
+        geluid.speel('cavalry_charge', { x: e.x, y: e.y });
       }
       k.afgelegd = 0;
     }
@@ -775,6 +801,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     if (isSchutter(k)) {
       pijl(e.x, e.y, 20 + (e.hoogte || 0), doel.x, doel.y, 16 + (doel.hoogte || 0));
+      inslagGeluid(doel, doel.opMuur || dekkingVan(doel) < 1 ? 'arrow_hit_shield' : 'arrow_hit_flesh', e.x, e.y);
       // Wie op de muur staat, heeft dekking van de kantelen.
       if (doel.opMuur) schade = Math.max(1, Math.round(schade * R.muurDekking));
       if (!k.def.doorboort) schade = Math.max(1, Math.round(schade * dekkingVan(doel)));
@@ -851,6 +878,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.rust = 0;
     if (k.afkoel > 0) return;
     slaToe(e, k);
+    klapGeluid(e, k, b);
+    if (k.def.bereik > 2 && k.def.gebied === undefined && !k.def.alleenBouw) inslagGeluid(b, 'arrow_hit_stone', e.x, e.y);
     if (k.def.verborgen) k.gezienTot = stapNr + stappen(3);
     if (k.def.gebied !== undefined) {
       vuurbal(e, b.x, b.y, b.burcht ? 44 : 24);
@@ -875,6 +904,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         if (!beste) continue;
         beste.leven = Math.min(beste.levenMax, beste.leven + Math.max(1, Math.round(beste.levenMax * hl.perSeconde)));
         effect({ soort: 'heel', x: beste.x, y: beste.y, h: beste.hoogte || 0, duur: 700 });
+        geluid.speel('heal', { x: beste.x, y: beste.y });
       }
     }
   }
@@ -1159,6 +1189,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   function haalLadderWeg(vak, team) {
+    if (wegvinder.isLadder(vak, team)) geluid.speel('ladder_push', { x: (vak % B) + 0.5, y: Math.floor(vak / B) + 0.5 });
     wegvinder.zetLadder(vak, team, false);
     ladderKant.delete(vak);
     vasteLadders.delete(vak);
@@ -1169,6 +1200,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   function zetLadder(vak, team, kant, vast = false) {
+    geluid.speel('ladder_place', { x: (vak % B) + 0.5, y: Math.floor(vak / B) + 0.5 });
     wegvinder.zetLadder(vak, team, true);
     ladderKant.set(vak, kant);
     if (vast) vasteLadders.add(vak);

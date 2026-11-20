@@ -1,0 +1,343 @@
+{
+ "uitleg": "Geluidseffecten (stap 46). bestanden: varianten, het spel kiest er willekeurig een en verandert de toonhoogte een beetje. volume 0 tot 1. tussen: minimaal zoveel ms tussen twee keer hetzelfde geluid. Gemaakt met ElevenLabs, door Karel gekozen op 20 november 2026.",
+ "maxTegelijk": 14,
+ "toonhoogte": 0.07,
+ "geluiden": {
+  "arrow_hit_flesh": {
+   "bestanden": [
+    "arrow_hit_flesh_1.mp3",
+    "arrow_hit_flesh_2.mp3"
+   ],
+   "volume": 0.4,
+   "tussen": 90
+  },
+  "arrow_hit_shield": {
+   "bestanden": [
+    "arrow_hit_shield_1.mp3"
+   ],
+   "volume": 0.4,
+   "tussen": 110
+  },
+  "arrow_hit_stone": {
+   "bestanden": [
+    "arrow_hit_stone_3.mp3"
+   ],
+   "volume": 0.35,
+   "tussen": 140
+  },
+  "arrow_release": {
+   "bestanden": [
+    "arrow_release_4.mp3"
+   ],
+   "volume": 0.35,
+   "tussen": 90
+  },
+  "assassin_stab": {
+   "bestanden": [
+    "assassin_stab_2.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 150
+  },
+  "axe_chop": {
+   "bestanden": [
+    "axe_chop_3.mp3"
+   ],
+   "volume": 0.35,
+   "tussen": 220
+  },
+  "axe_hit": {
+   "bestanden": [
+    "axe_hit_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 90
+  },
+  "bakery_oven": {
+   "bestanden": [
+    "bakery_oven_1.mp3"
+   ],
+   "volume": 0.4,
+   "tussen": 4000
+  },
+  "barracks_ready": {
+   "bestanden": [
+    "barracks_ready_2.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 200
+  },
+  "blood_splat": {
+   "bestanden": [
+    "blood_splat_1.mp3",
+    "blood_splat_2.mp3"
+   ],
+   "volume": 0.3,
+   "tussen": 120
+  },
+  "build_demolish": {
+   "bestanden": [
+    "build_demolish_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 250
+  },
+  "build_done": {
+   "bestanden": [
+    "build_done_2.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 300
+  },
+  "build_place": {
+   "bestanden": [
+    "build_place_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 120
+  },
+  "build_working": {
+   "bestanden": [
+    "build_working_1.mp3"
+   ],
+   "volume": 0.4,
+   "tussen": 2000
+  },
+  "cavalry_charge": {
+   "bestanden": [
+    "cavalry_charge_2.mp3"
+   ],
+   "volume": 0.7,
+   "tussen": 1500
+  },
+  "coins": {
+   "bestanden": [
+    "coins_3.mp3"
+   ],
+   "volume": 0.55,
+   "tussen": 200
+  },
+  "crossbow_shot": {
+   "bestanden": [
+    "crossbow_shot_2.mp3"
+   ],
+   "volume": 0.45,
+   "tussen": 110
+  },
+  "death_civilian": {
+   "bestanden": [
+    "death_civilian_2.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 250
+  },
+  "death_soldier": {
+   "bestanden": [
+    "death_soldier_1.mp3",
+    "death_soldier_4.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 180
+  },
+  "fire_cast": {
+   "bestanden": [
+    "fire_cast_1.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 150
+  },
+  "fruit_pick": {
+   "bestanden": [
+    "fruit_pick_2.mp3"
+   ],
+   "volume": 0.35,
+   "tussen": 400
+  },
+  "goods_delivered": {
+   "bestanden": [
+    "goods_delivered_2.mp3"
+   ],
+   "volume": 0.3,
+   "tussen": 500
+  },
+  "hay_fork": {
+   "bestanden": [
+    "hay_fork_2.mp3"
+   ],
+   "volume": 0.35,
+   "tussen": 400
+  },
+  "heal": {
+   "bestanden": [
+    "heal_1.mp3",
+    "heal_2.mp3"
+   ],
+   "volume": 0.35,
+   "tussen": 500
+  },
+  "horse_gallop": {
+   "bestanden": [
+    "horse_gallop_2.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 1200
+  },
+  "horse_neigh": {
+   "bestanden": [
+    "horse_neigh_1.mp3"
+   ],
+   "volume": 0.55,
+   "tussen": 600
+  },
+  "ladder_place": {
+   "bestanden": [
+    "ladder_place_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 300
+  },
+  "ladder_push": {
+   "bestanden": [
+    "ladder_push_2.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 400
+  },
+  "log_drag": {
+   "bestanden": [
+    "log_drag_1.mp3"
+   ],
+   "volume": 0.35,
+   "tussen": 800
+  },
+  "mystic_ready": {
+   "bestanden": [
+    "mystic_ready_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 200
+  },
+  "order_attack": {
+   "bestanden": [
+    "order_attack_2.mp3"
+   ],
+   "volume": 0.55,
+   "tussen": 400
+  },
+  "order_move": {
+   "bestanden": [
+    "order_move_2.mp3"
+   ],
+   "volume": 0.45,
+   "tussen": 300
+  },
+  "select_soldier": {
+   "bestanden": [
+    "select_soldier_3.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 150
+  },
+  "siege_confirm": {
+   "bestanden": [
+    "siege_confirm_2.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 400
+  },
+  "siegeworks_ready": {
+   "bestanden": [
+    "siegeworks_ready_2.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 300
+  },
+  "stone_chisel": {
+   "bestanden": [
+    "stone_chisel_3.mp3"
+   ],
+   "volume": 0.3,
+   "tussen": 260
+  },
+  "storage_full": {
+   "bestanden": [
+    "storage_full_1.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 6000
+  },
+  "sword_heavy": {
+   "bestanden": [
+    "sword_heavy_3.mp3"
+   ],
+   "volume": 0.7,
+   "tussen": 120
+  },
+  "sword_hit": {
+   "bestanden": [
+    "sword_hit_1.mp3",
+    "sword_hit_3.mp3"
+   ],
+   "volume": 0.55,
+   "tussen": 70
+  },
+  "tree_fall": {
+   "bestanden": [
+    "tree_fall_2.mp3"
+   ],
+   "volume": 0.55,
+   "tussen": 600
+  },
+  "ui_back": {
+   "bestanden": [
+    "ui_back_1.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 60
+  },
+  "ui_click": {
+   "bestanden": [
+    "ui_click_3.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 40
+  },
+  "ui_confirm": {
+   "bestanden": [
+    "ui_confirm_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 100
+  },
+  "ui_denied": {
+   "bestanden": [
+    "ui_denied_1.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 250
+  },
+  "ui_map_open": {
+   "bestanden": [
+    "ui_map_open_2.mp3"
+   ],
+   "volume": 0.6,
+   "tussen": 400
+  },
+  "unit_ready_shout": {
+   "bestanden": [
+    "unit_ready_shout_1.mp3",
+    "unit_ready_shout_2.mp3",
+    "unit_ready_shout_3.mp3"
+   ],
+   "volume": 0.5,
+   "tussen": 250
+  },
+  "wall_collapse": {
+   "bestanden": [
+    "wall_collapse_2.mp3"
+   ],
+   "volume": 0.75,
+   "tussen": 400
+  }
+ }
+}

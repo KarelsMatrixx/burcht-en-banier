@@ -16,6 +16,7 @@
 //
 // De getallen staan in data/economie.json.
 
+import { geluid } from './geluid.js';
 import { CONFIG } from './config.js';
 import { OBJECT } from './kaart.js';
 import { SOORT } from './eenheden.js';
@@ -487,6 +488,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     w.staat = 'werk';
     w.genomen = false;
     w.tel = Math.round(beroep.werkTijd * stappenPerSeconde);
+    if (beroep.sleutel === 'bakker') geluid.speel('bakery_oven', { x: e.x, y: e.y });
     e.houding = 'hak';
     e.snelheid = beroep.snelheid;
     const dx = (w.plaats % B) - (hier % B);
@@ -527,6 +529,9 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     if (thuis >= 0 && !wegvinder.isVrij(hier % B, Math.floor(hier / B), TEAM)) zetOp(e, thuis);
     w.wacht = stappen(3);
   }
+
+  // Welk geluid hoort bij welk werk (data/geluiden.json).
+  const WERK_GELUID = { houthakker: 'axe_chop', steenhouwer: 'stone_chisel', mijnwerker: 'stone_chisel', fruitteler: 'fruit_pick', tarweboer: 'hay_fork' };
 
   // Eén stap voor één werker.
   function werk(e) {
@@ -578,6 +583,8 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
 
     if (w.staat === 'werk') {
       if (!beroep.neemt && kaart.object[w.bron] !== beroep.bron) return opnieuw(e);
+      // Het geluid van het werk: ongeveer elke seconde een slag (js/geluid.js).
+      if (WERK_GELUID[beroep.sleutel] && w.tel % stappenPerSeconde === 0) geluid.speel(WERK_GELUID[beroep.sleutel], { x: e.x, y: e.y });
       if (--w.tel > 0) return;
       const bron = w.bron;
       laatBronLos(w);
@@ -603,10 +610,12 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       if (e.pad) return;                     // nog onderweg
       if (afleverplek[hier]) {
         const ruimte = Math.max(0, opslagMax(beroep.haalt) - voorraad[beroep.haalt]);
+        if (ruimte <= 0) geluid.speel('storage_full');
         if (ruimte <= 0) return klem(e, `cannot unload his ${klein(beroep.haalt)}: the stores are full`, 'Build a storehouse or use what you have.', 3);
         const brengt = Math.min(w.last, ruimte);
         voorraad[beroep.haalt] += brengt;
         w.last -= brengt;
+        geluid.speel('goods_delivered', { x: e.x, y: e.y });
         if (w.last > 0) return klem(e, 'cannot unload part of his load: the stores are full', 'Build a storehouse.', 3);
         w.klem = '';
         w.staat = 'zoek';
