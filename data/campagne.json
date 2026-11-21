@@ -855,9 +855,9 @@
     "y": 44.6
    },
    "speelbaar": true,
-   "intro": "The tollhouse of Greyford closes the only road with three gates, one behind the other. Governor Everhard's swordsmen hold every gate. Lady Mechteld has sent you her wind singers.",
+   "intro": "The tollhouse of Greyford closes the only road with three great walls, two, four and six layers thick. Governor Everhard's halberdiers hold the gates and his horsemen wait behind the first wall. Lady Mechteld has sent you her wind singers.",
    "beeld": "beelden/verhaal/level07.webp",
-   "verhaal": "The tollhouse of Greyford closes the only road with three gates in a row. Governor Everhard keeps every seal and every rule. Lady Mechteld has sent her wind singers, for she will not serve a duke who sends soldiers for a child. Karel must break gate after gate.",
+   "verhaal": "The tollhouse of Greyford closes the only road with three great walls, each thicker than the last. Governor Everhard keeps every seal and every rule. Lady Mechteld has sent her wind singers, for she will not serve a duke who sends soldiers for a child. Karel must break wall after wall.",
    "uit": "In the archive lies a letter from Ottger, sent three times and never answered: \"My daughter is nine winters dead and I have one blood left. Send the boy, Karel, before I die too.\" Gesina says: \"You knew.\" Karel: \"He could have asked without an army.\"",
    "wessel": "A letter to his father: \"Grandpa is old. He cries when he thinks I am asleep.\"",
    "beloning": [
@@ -945,7 +945,7 @@
      "bij": "tijd",
      "waarde": 8,
      "wie": "bartholt",
-     "tekst": "Three gates in a row, Sire. Behind every gate stands another wall full of swordsmen. Bring rams, and patience."
+     "tekst": "Three walls, Sire, and behind every gate stands another gate. Their towers pour boiling oil on whoever stands close. Keep your rams away from the walls and bring catapults."
     },
     {
      "bij": "tijd",
@@ -953,6 +953,7 @@
      "wie": "bartholt",
      "tekst": "Lady Mechteld's wind singers wait at your Mystic Lodge. Their horns blow soldiers right off the walls."
     },
+    {"bij": "tijd", "waarde": 70, "wie": "bartholt", "tekst": "Beware, Sire: horsemen wait behind the first wall. They ride out against any trebuchet that stands alone. Guard your engineers."},
     {
      "bij": "aanval",
      "waarde": 1,

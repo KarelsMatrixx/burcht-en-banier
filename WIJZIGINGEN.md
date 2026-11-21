@@ -1143,3 +1143,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Bouwgebied (bouwen.js): in Greyford schuift het mee. Daarvoor mocht je tot 14 tegels van je burcht bouwen; zijn beide poorten van een muur gebroken, dan mag je tot 14 tegels voorbij die muur bouwen (de hamervlag van het leger). Melding: "this is too far from your keep (break the next wall to build further)".
 - Tegenbatterij (rode trebuchet die jouw trebuchet beschiet) en de paalkrans voor de speler zijn nog niet gebouwd. Slapende sectoren zijn niet nodig: 0,17 ms per rekenstap met het hele leger van rood.
 - Test: tests/tol83.mjs (21 controles). veldheer38 heeft nog de bekende fout (ram komt veel later).
+
+## 0.87.0: mist, tolweg en nieuwe teksten (Greyford, fase 4 en 5)
+- Mist (sfeer.js zetWaasFactor, tekenaar.js): in Greyford trekt de mist op met 30% per gevallen muur (beide poorten weg); na drie muren is nog 10% over. Het weer (motregen, mist, raven) en het geluid (kloof: rivier) bestonden al in het landschap 'kloof'.
+- Decor (kaart.js, 5h): een tolweg van aarde door de hele kloof, bij elke muur twee tolloketten (hutten), vaten en een hooiberg voor de poort.
+- Teksten level 7 (campagne.json): intro, verhaal en de berichten van Bartholt noemen nu drie muren, de olie en de ruiters achter muur 1 (nieuw bericht na 70 seconden). Engelse tekst door Claude geschreven: na te lezen.
+- Het bestaande verhaalbeeld level07.webp (muren van rots tot rots) past nog bij de nieuwe kaart; geen nieuw beeld nodig.
+- test_stap15 faalt soms op "bewaren: reserve terug" (onregelmatig, ook zonder deze wijzigingen te verwachten; een tweede run slaagt).

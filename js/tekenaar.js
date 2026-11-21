@@ -221,6 +221,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
   // Uit te zetten met CONFIG.beeld.sfeer = false, of ?sfeer=uit in de adresbalk.
   const sfeerAan = (new URLSearchParams(location.search).get('sfeer') || (CONFIG.beeld.sfeer === false ? 'uit' : 'aan')) !== 'uit';
   const sfeer = maakSfeer(kaart, landschap, profiel);
+  let mistCheck = -10;   // wanneer de mist van Greyford voor het laatst is bijgewerkt
   let wimpels = false;   // windvaantjes op de torens van rood (Zevenwind, level 2)
   const basis = [1, 0, 0, 1, 0, 0];   // de cameratransformatie van dit beeld
   // Zelfbewaking: blijft het beeld langer traag (onder ongeveer 30 beelden per
@@ -1226,6 +1227,13 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       if (!sfeerLicht && profiel.deeltjes !== 'geen') {
         ctx.setTransform(basis[0], 0, 0, basis[3], basis[4], basis[5]);
         sfeer.tekenWeer(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t);
+      }
+      // Greyford: elke gevallen muur (beide poorten weg) laat de mist een stuk optrekken. Eens per seconde bekeken.
+      if (kaart.tolMuren && kaart.tolMuren.length && t - mistCheck > 1) {
+        mistCheck = t;
+        const mx = kaart.start[0].x;
+        const gevallen = kaart.tolMuren.filter((w) => kaart.object[w.rij * kaart.breedte + mx] !== OBJECT.POORT && kaart.object[(w.rij + w.lagen - 1) * kaart.breedte + mx] !== OBJECT.POORT).length;
+        sfeer.zetWaasFactor(1 - gevallen * 0.3);
       }
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
       sfeer.tekenWaas(ctx, canvas.width / pixelRatio, canvas.height / pixelRatio, t);

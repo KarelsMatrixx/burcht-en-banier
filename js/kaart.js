@@ -1120,6 +1120,20 @@ export function maakKaart(recept) {
         for (let x = mid + 3; x <= mid + m.half - 2; x++) rechts.push(voor * breedte + x);
         tolRoutes.push(links, rechts);
       }
+      // De tolweg: een strook aarde door de hele kloof en bij elke muur tolloketten (hutjes) en vaten voor de poort.
+      for (let y = 12; y < hoogte - 12; y++) {
+        for (let x = mid - 1; x <= mid + 1; x++) {
+          const i = y * breedte + x;
+          if (object[i] === OBJECT.GEEN && grond[i] !== GROND.WATER) grond[i] = GROND.AARDE;
+        }
+      }
+      for (const m of muren) {
+        const y1 = m.rij + m.lagen + 1;
+        for (const [dx, dy, soort] of [[-4, 0, OBJECT.HUT], [4, 0, OBJECT.HUT], [-3, 1, OBJECT.VATEN], [3, 1, OBJECT.VATEN], [-5, 1, OBJECT.HOOIBERG]]) {
+          const i = (y1 + dy) * breedte + mid + dx;
+          if (object[i] === OBJECT.GEEN || object[i] === OBJECT.BOOM) { object[i] = soort; eigenaar[i] = 0; }
+        }
+      }
       // Voorschansen (tol.schansen: [x, y]): kleine versterkte posten in de voorhoven, met poort naar jou toe. Ze gelden als
       // buitenposten (kaart.posten): rood.postGarnizoen bepaalt wie erin staat. Zo kan rood schieten op wie een trebuchet bouwt.
       for (const [cx, cy] of T.schansen || []) {

@@ -57,6 +57,8 @@ export function maakSfeer(kaart, landschap, profiel = null) {
   const vogelSoort = (profiel && profiel.vogels) || 'vogels';
   const deeltjes = (profiel && profiel.deeltjes) || 'geen';
   const waas = (profiel && profiel.waas) || null;
+  let waasFactor = 1;   // Greyford: de mist trekt op per gevallen muur (zetWaasFactor)
+  const zetWaasFactor = (f) => { waasFactor = Math.max(0, Math.min(1, f)); };
   // --- Wind -----------------------------------------------------------------
   // Een golf die over de kaart rolt, met af en toe een vlaag.
   function wind(wx, wy, t) {
@@ -381,7 +383,7 @@ export function maakSfeer(kaart, landschap, profiel = null) {
   // Over het hele scherm (schermmaat): de kleurwaas, een stofvlaag en de bliksem.
   function tekenWaas(ctx, b, h, t) {
     if (waas) {
-      ctx.fillStyle = `rgba(${waas[0]}, ${waas[1]}, ${waas[2]}, ${waas[3]})`;
+      ctx.fillStyle = `rgba(${waas[0]}, ${waas[1]}, ${waas[2]}, ${waas[3] * waasFactor})`;
       ctx.fillRect(0, 0, b, h);
     }
     if (deeltjes === 'stof') {
@@ -410,5 +412,5 @@ export function maakSfeer(kaart, landschap, profiel = null) {
     }
   }
 
-  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenWimpel, tekenHamer, tekenWeer, tekenWaas };
+  return { herbouw, wind, tekenGlinster, tekenRook, tekenVogels, tekenWimpel, tekenHamer, tekenWeer, tekenWaas, zetWaasFactor };
 }
