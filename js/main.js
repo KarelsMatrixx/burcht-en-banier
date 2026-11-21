@@ -76,7 +76,10 @@ async function start() {
     // Een materiaal kan de burcht een andere vorm geven (tentenkamp: de commandotent) en een tweede kleur meegeven.
     // Een materiaal kan de burcht een andere vorm geven. Tentenkamp: de 8 buitenste tegels zijn een laag
     // houten podium (vorm, hoogte, vloer) en de middelste tegel is de commandotent (middenVorm, middenHoogte).
-    const burchtVelden = { kleur: materiaal.burcht || materiaal.kleur, ...(materiaal.vorm ? { vorm: materiaal.vorm } : {}), ...(materiaal.accent ? { accent: materiaal.accent } : {}), ...(materiaal.vloer ? { vloer: materiaal.vloer } : {}), ...(materiaal.hoogte ? { hoogte: materiaal.hoogte } : {}) };
+    // Een stijl voor het hoofdkasteel (a, b, c of d, zie kunst.js burchtStijl): uit het materiaal, of te proberen met ?burcht=a in het adres.
+    let burchtStijl = materiaal.stijl || null;
+    try { const q = (new URLSearchParams(location.search).get('burcht') || '').toLowerCase(); if (/^[abcd]$/.test(q)) burchtStijl = q; else if (q === 'uit' || q === 'x') burchtStijl = null; } catch (e) { /* geen adres: niets te doen */ }
+    const burchtVelden = { ...(burchtStijl ? { stijl: burchtStijl } : {}), kleur: materiaal.burcht || materiaal.kleur, ...(materiaal.vorm ? { vorm: materiaal.vorm } : {}), ...(materiaal.accent ? { accent: materiaal.accent } : {}), ...(materiaal.vloer ? { vloer: materiaal.vloer } : {}), ...(materiaal.hoogte ? { hoogte: materiaal.hoogte } : {}) };
     roodKasteel['rood.burcht'] = { basis: 'kasteel.burcht', ...burchtVelden };
     roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', ...burchtVelden, ...(materiaal.middenVorm ? { vorm: materiaal.middenVorm } : {}), ...(materiaal.middenHoogte ? { hoogte: materiaal.middenHoogte } : {}) };
   }

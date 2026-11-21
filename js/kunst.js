@@ -1922,11 +1922,121 @@ function poortTegel(naam, def, links, op_ = 0) {
   return { beeld: doek, b, h, ax: cx, ay: h - 1 };
 }
 
+// --- Burchtstijlen voor een rood hoofdkasteel (Greyford, 0.91.0) ------------------------------------------------
+// def.stijl: 'a' hoge donjon, 'b' rotsburcht (terrassen), 'c' tolpoort-kasteel, 'd' scheve burcht. Alles is decor boven op de gewone
+// tegels; de hoogte voor soldaten en het gedrag blijven gelijk. Hoeken van de 3 x 3: masker 9 voor, 3 links, 12 rechts, 6 achter.
+const DAK_ROOD = ['#6b3a33', '#8a4a40'];
+const DAK_LEI = ['#434a54', '#59616d'];
+const WARM = '#f0b550';
+function dakPiramide(ctx, cx, cy, a, b, h, kleuren) {
+  vlak(ctx, [[cx - a, cy], [cx, cy + b], [cx, cy - h]], kleuren[0]);
+  vlak(ctx, [[cx, cy + b], [cx + a, cy], [cx, cy - h]], kleuren[1]);
+  lijn(ctx, cx, cy + b, cx, cy - h, 'rgba(255,240,220,0.22)', 0.8);
+}
+function warmVenster(ctx, x, y, h = 9) {
+  blok(ctx, x - 1.8, y, 3.6, h, '#2a1d12');
+  blok(ctx, x - 1.2, y + 0.8, 2.4, h - 1.6, WARM);
+  ovaal(ctx, x, y + 0.8, 1.2, 1.2, WARM);
+}
+function vlaggetje(ctx, x, y, kleur) {
+  blok(ctx, x - 0.8, y - 26, 1.6, 26, '#3a2a1c');
+  vlak(ctx, [[x + 0.8, y - 26], [x + 17, y - 22], [x + 0.8, y - 17]], kleur || '#c23a2e');
+}
+function ronde(ctx, cx, cy, r, H, kleur) {
+  blok(ctx, cx - r, cy - H, 2 * r, H, tint(kleur, -0.12));
+  blok(ctx, cx - r, cy - H, r * 0.75, H, tint(kleur, -0.3));
+  ovaal(ctx, cx, cy, r, r / 2, tint(kleur, -0.12));
+  ovaal(ctx, cx, cy - H, r, r / 2, tint(kleur, 0.12));
+}
+function kegel(ctx, cx, cy, r, h, kleuren) {
+  vlak(ctx, [[cx - r - 2, cy], [cx, cy + r / 2 + 1], [cx, cy - h]], kleuren[0]);
+  vlak(ctx, [[cx, cy + r / 2 + 1], [cx + r + 2, cy], [cx, cy - h]], kleuren[1]);
+}
+const MEER = 118;   // zoveel hoger mag een stijl boven de gewone tegel uitsteken
+function burchtStijl(ctx, stijl, o) {
+  const { cx, top, masker, def, naam } = o;
+  const buren = (masker & 1 ? 1 : 0) + (masker & 2 ? 1 : 0) + (masker & 4 ? 1 : 0) + (masker & 8 ? 1 : 0);
+  const midden = o.metBanier;
+  const hoek = buren === 2;
+  const steen = def.kleur;
+  if (stijl === 'a' || stijl === 'c') {
+    if (midden) {
+      const hd = stijl === 'a' ? 74 : 56;
+      steenBlok(ctx, cx, top, 24, 12, hd, steen, toevalVoor(naam + 'donjon'));
+      for (const [dx, f] of [[-14, 0.25], [-6, 0.6], [6, 0.6], [14, 0.25]]) warmVenster(ctx, cx + dx, top - hd + 6 + (1 - f) * hd * 0.55 + Math.abs(dx) * 0.0);
+      dakPiramide(ctx, cx, top - hd, 28, 14, stijl === 'a' ? 54 : 40, DAK_ROOD);
+      vlaggetje(ctx, cx, top - hd - (stijl === 'a' ? 54 : 40), def.banier);
+    } else if (hoek) {
+      const ht = stijl === 'a' ? 34 : 52;
+      steenBlok(ctx, cx, top, 12, 6, ht, steen, toevalVoor(naam + 'torentje' + masker));
+      warmVenster(ctx, cx + 5, top - ht + 8, 7);
+      kegel(ctx, cx, top - ht, 12, 24, DAK_ROOD);
+    }
+    if (stijl === 'c' && masker === 13) {
+      // Het poortgebouw: een brede donkere doorgang met een valhek, over de gewone deur heen.
+      const B = [cx, o.cy + HH];
+      const R = [cx + HB, o.cy];
+      const op = (deel, hoog) => [B[0] + (R[0] - B[0]) * deel, B[1] + (R[1] - B[1]) * deel - hoog];
+      ctx.beginPath();
+      ctx.moveTo(...op(0.12, 0)); ctx.lineTo(...op(0.12, 30)); ctx.quadraticCurveTo(...op(0.5, 50), ...op(0.88, 30)); ctx.lineTo(...op(0.88, 0)); ctx.closePath();
+      ctx.fillStyle = '#241d18'; ctx.fill();
+      ctx.strokeStyle = tint(steen, 0.25); ctx.lineWidth = 1.4; ctx.stroke();
+      for (const d of [0.25, 0.38, 0.5, 0.62, 0.75]) lijn(ctx, ...op(d, 0), ...op(d, 34), '#8a7350', 0.9);
+      for (const hg of [8, 17, 26]) lijn(ctx, ...op(0.15, hg), ...op(0.85, hg), '#8a7350', 0.9);
+    }
+  } else if (stijl === 'b') {
+    // Terrassen: wat achter ligt staat hoger, op een voet van ruwe rots; bovenop de keep.
+    const diep = (masker & 2 ? 1 : 0) + (masker & 4 ? 1 : 0);
+    const extra = midden ? 30 : diep * 15;
+    const rots = '#6f6d66';
+    if (extra) {
+      steenBlok(ctx, cx, top, HB - 1, HH - 0.5, extra, rots, toevalVoor(naam + 'rots' + masker));
+      kantelen(ctx, cx, top - extra, masker, steen);
+    }
+    if (midden) {
+      const hd = 50;
+      steenBlok(ctx, cx, top - extra, 20, 10, hd, steen, toevalVoor(naam + 'keep'));
+      warmVenster(ctx, cx - 9, top - extra - hd + 12, 8);
+      warmVenster(ctx, cx + 9, top - extra - hd + 12, 8);
+      dakPiramide(ctx, cx, top - extra - hd, 24, 12, 36, DAK_LEI);
+      vlaggetje(ctx, cx, top - extra - hd - 36, def.banier);
+    } else if (masker === 6) {
+      steenBlok(ctx, cx, top - extra, 10, 5, 26, steen, toevalVoor(naam + 'wacht'));
+      kegel(ctx, cx, top - extra - 26, 10, 18, DAK_LEI);
+    }
+  } else if (stijl === 'd') {
+    if (midden) {
+      const hd = 48;
+      steenBlok(ctx, cx - 4, top, 22, 11, hd, steen, toevalVoor(naam + 'dkeep'));
+      warmVenster(ctx, cx - 10, top - hd + 10, 8);
+      warmVenster(ctx, cx + 4, top - hd + 12, 8);
+      dakPiramide(ctx, cx - 4, top - hd, 26, 13, 40, DAK_LEI);
+      vlaggetje(ctx, cx - 4, top - hd - 40, def.banier);
+    } else if (masker === 3) {
+      steenBlok(ctx, cx, top, 13, 6.5, 58, steen, toevalVoor(naam + 'west'));
+      warmVenster(ctx, cx - 5, top - 58 + 10, 8);
+      dakPiramide(ctx, cx, top - 58, 16, 8, 36, DAK_ROOD);
+    } else if (masker === 12) {
+      ronde(ctx, cx, top, 13, 74, steen);
+      warmVenster(ctx, cx + 3, top - 74 + 12, 8);
+      kegel(ctx, cx, top - 74, 13, 40, DAK_LEI);
+      vlaggetje(ctx, cx, top - 74 - 40, def.banier);
+    } else if (masker === 9) {
+      steenBlok(ctx, cx, top, 9, 4.5, 20, steen, toevalVoor(naam + 'erker'));
+      kegel(ctx, cx, top - 20, 9, 14, DAK_ROOD);
+    } else if (masker === 6) {
+      steenBlok(ctx, cx + 4, top, 10, 5, 34, steen, toevalVoor(naam + 'noord'));
+      dakPiramide(ctx, cx + 4, top - 34, 12, 6, 22, DAK_ROOD);
+    }
+  }
+}
+
 function burchtTegel(naam, def, masker) {
   const H = def.hoogte;
   const metBanier = !!def.banier;
   const b = TB + 2;
-  const h = TH + H + 14 + (metBanier ? 84 : 0);
+  const stijl = def.stijl || null;
+  const h = TH + H + 14 + (metBanier ? 84 : 0) + (stijl ? MEER : 0);
   const { doek, ctx } = nieuwDoek(b, h);
   const cx = b / 2;
   const cy = h - 1 - HH;
@@ -1970,7 +2080,9 @@ function burchtTegel(naam, def, masker) {
   }
   kantelen(ctx, cx, top, masker, def.kleur);
 
-  if (metBanier) {
+  if (stijl) burchtStijl(ctx, stijl, { cx, cy, top, masker, def, naam, metBanier });
+
+  if (metBanier && !stijl) {
     // Een tweede verdieping met eigen kantelen, daarop de banier.
     const hoog = 34;
     steenBlok(ctx, cx, top, 21, 10.5, hoog, def.kleur, toevalVoor(naam + 'opbouw'));

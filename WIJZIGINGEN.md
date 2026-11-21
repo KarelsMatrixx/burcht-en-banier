@@ -1165,3 +1165,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Papieren in de wind (sfeer.js, landschap 'berg' papier: true): kleine lichte vellen waaien en draaien door de kloof.
 - Tolarchief achter muur 3 (kaart.js 5h): stapels kisten en papieren, een vat en twee hutten tegen de voet van rood, uit bestaande tekeningen.
 - Nog niet gedaan, omdat er nieuwe tekeningen voor nodig zijn: lakzegel op de poort dat breekt, een echte archieftoren en ijzeren banden om muur 3.
+
+## 0.91.0: vier ontwerpen voor het hoofdkasteel van Greyford (om te kiezen)
+- kunst.js burchtStijl: de 3 x 3 keep van rood kan vier stijlen krijgen, alleen decor boven op de gewone tegels (hoogte voor soldaten en gedrag blijven gelijk): a hoge donjon met rood dak, warme vensters en vier torentjes; b rotsburcht met terrassen en leistenen dak; c tolpoort-kasteel met breed poortgebouw met valhek en lagere donjon; d scheve burcht met een ronde toren, een vierkante toren en een erker.
+- Proberen: voeg ?burcht=a (of b, c, d) toe aan het adres; ?burcht=uit zet het weer uit. Zonder keuze verandert er niets (ook materiaal.stijl in kastelen.json kan er een kiezen). Het geldt voor elk level met een rood kasteel van een materiaal, ook de andere levels.
+- Nog te kiezen; daarna wordt de gekozen stijl vast ingesteld voor level 7 in kastelen.json (materiaal of eigen veld).
