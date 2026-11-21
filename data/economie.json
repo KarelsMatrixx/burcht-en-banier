@@ -903,11 +903,11 @@
    "stijgElke": 4,
    "max": 5,
    "niveaus": {
-    "1": { "synchroon": true },
-    "2": { "scouts": 0.15, "scoutsVroeger": 14, "tweede": 0.25, "tweedeNa": 22, "thuis": 0.1 },
-    "3": { "doelkeuze": "zwakste", "flank": 0.35, "piekElke": 3, "piekFactor": 1.35, "piekRust": 1.3 },
-    "4": { "tegenzet": 0.7 },
-    "5": { "terugtrek": 0.5, "thuis": 0.15, "tweedeNa": 16, "tegenzet": 1 }
+    "1": { "synchroon": true, "aanpas": 0.6, "hulp": 0.3 },
+    "2": { "scouts": 0.15, "scoutsVroeger": 14, "tweede": 0.25, "tweedeNa": 22, "thuis": 0.1, "aanpas": 0.8, "hulp": 0.6 },
+    "3": { "doelkeuze": "zwakste", "flank": 0.35, "piekElke": 3, "piekFactor": 1.35, "piekRust": 1.3, "schijn": 20, "koningsjagers": true, "aanpas": 1.0, "hulp": 1.0 },
+    "4": { "tegenzet": 0.7, "belegering": true, "katapultVanaf": 3, "bestormingElke": 5, "bestormingFactor": 1.6, "aanpas": 1.15, "hulp": 1.3 },
+    "5": { "terugtrek": 0.5, "thuis": 0.15, "tweedeNa": 16, "tegenzet": 1, "aanpas": 1.3, "hulp": 1.6 }
    }
   },
   "leger": {

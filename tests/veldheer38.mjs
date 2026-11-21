@@ -91,8 +91,9 @@ const l2 = await p.evaluate(() => {
   return { n: v.length, verkenners, verzamelaars, aantalGroepen: gr.length, groepen: gr, behoud, kleine, niveau2: s.veld.niveau(1) };
 });
 check('niveau 2 in level 2', l2.niveau2 === 2, l2.niveau2);
-check('verkenners (1 tot 3) vertrekken meteen, de rest verzamelt', l2.verkenners >= 1 && l2.verkenners <= 3 && l2.verzamelaars >= 8, JSON.stringify([l2.verkenners, l2.verzamelaars]));
-check('hoofdmacht, verkenners en tweede lijn zijn aparte groepen', l2.aantalGroepen >= 3, JSON.stringify(l2.groepen));
+// Sinds 0.81.0 lopen verkenners mee met de hoofdmacht (ze hakten eerst alleen op een muur).
+check('iedereen verzamelt (verkenners lopen mee met de hoofdmacht)', l2.verkenners === 0 && l2.verzamelaars >= 10, JSON.stringify([l2.verkenners, l2.verzamelaars]));
+check('hoofdmacht en tweede lijn zijn aparte groepen', l2.aantalGroepen >= 2, JSON.stringify(l2.groepen));
 check('thuiswacht: schutters blijven thuis, geen machines', l2.behoud.boogschutter > 0 && !l2.behoud.ram && Object.values(l2.behoud).reduce((a, c) => a + c, 0) <= 6, JSON.stringify(l2.behoud));
 check('thuiswacht: kleine aanval blijft compleet', Object.keys(l2.kleine).length === 0, JSON.stringify(l2.kleine));
 

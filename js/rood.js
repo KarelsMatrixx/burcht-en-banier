@@ -81,7 +81,10 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
   const piek = () => (veld ? veld.piek(aanvallen + 1) : 1);
   // Per level kan een vaste verzwaring gelden (heer.doelVanaf): vanaf aanval X is zijn doel zoveel keer zo groot.
   const zwaarder = () => (H.doelVanaf && aanvallen + 1 >= H.doelVanaf.aanval ? H.doelVanaf.factor : 1);
-  const doel = () => Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen) * piek() * zwaarder() + (groei ? groei.doelBonus() : 0);
+  // Sinds 0.81.0 meet rood ook jouw sterkte (veldheer): zijn aanval is minstens zoveel keer jouw leger
+  // als het niveau zegt (aanpas), begrensd. Zo blijft het spannend als jouw kasteel groeit.
+  const basisDoel = () => Math.max(Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen), veld ? veld.sterkteDoel(aanvallen + 1) : 0);
+  const doel = () => basisDoel() * piek() * zwaarder() + (groei ? groei.doelBonus() : 0);
   const wachtTijd = () => (aanvallen === 0 ? H.eersteAanval : H.tussen * (veld ? veld.rust(aanvallen) : 1));
   const sterkte = () => sterkteVan(reserve);
   const aantal = () => Object.values(reserve).reduce((a, b) => a + b, 0);
@@ -118,7 +121,9 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
     const tel = (k) => reserve[k] || 0;
     // Zwaarder materieel (katapult, belegeringstoren) komt later in het spel.
     for (const [soort, w] of Object.entries(H.extra_soorten || {})) {
-      if (aanvallen < w.vanaf || tel(soort) >= w.max) continue;
+      // Belegering (veldheer, niveau 4): een katapult komt eerder.
+      const vanaf = soort === 'katapult' && veld ? Math.min(w.vanaf, veld.katapultVanaf(aanvallen + 1)) : w.vanaf;
+      if (aanvallen < vanaf || tel(soort) >= w.max) continue;
       const kosten = soorten[soort].kosten;
       if (kanBetalen(kosten)) return soort;
       if (Object.entries(omzet(kosten)).every(([k, n]) => k === 'goud' || (voorraad[k] || 0) >= n)) return null;   // sparen
@@ -219,6 +224,9 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
     const uit = inkomen();
     for (const k of GRONDSTOFFEN) voorraad[k] = Math.min(H.voorraadMax, voorraad[k] + uit[k] * dt);
 
+    // Kan hij zijn aanval niet betalen terwijl het tijd is, dan krijgt hij hulp (veldheer: goud
+    // van zijn bondgenoten). Zonder die hulp zou een sterke speler nooit meer aangevallen worden.
+    if (veld && sinds >= wachtTijd() && sterkte() < doel()) voorraad.goud = Math.min(H.voorraadMax, voorraad.goud + veld.hulp(aanvallen + 1) * dt);
     if ((kooptKlok -= dt) <= 0) {
       kooptKlok += H.kooptElke;
       koop();

@@ -25,9 +25,11 @@ const r = await p.evaluate(() => {
   s.wegvinder.herbereken(); s.strijd.kaartVeranderd();
   s.strijd.stuurLeger({ zwaardvechter: 4, ridder: 3, boogschutter: 3, ram: 2, ladder: 2 }, true);
   const eerste = new Map();
+  // Sinds 0.81.0 valt een schijnaanval bewust eerder aan: alleen de hoofdmacht telt.
+  const hoofdId = (s.veld.groepen().find((g) => g.hoofd) || {}).id;
   for (let i = 0; i < 2400; i++) {
     s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap();
-    for (const e of s.strijd.vijanden()) if (e.wachter === undefined && !eerste.has(e) && Math.hypot(e.x - m.x, e.y - m.y) < 8.5) eerste.set(e, i / 10);
+    for (const e of s.strijd.vijanden()) if (e.wachter === undefined && e.krijg && e.krijg.tak && e.krijg.tak.groep === hoofdId && !eerste.has(e) && Math.hypot(e.x - m.x, e.y - m.y) < 8.5) eerste.set(e, i / 10);
   }
   const tijd = (soort) => [...eerste.entries()].filter(([e]) => e.vijand === soort).map(([, t]) => t);
   out.ladder = tijd('ladder'); out.ridder = tijd('ridder'); out.ram = tijd('ram'); out.zwaard = tijd('zwaardvechter').sort((a, c) => a - c);

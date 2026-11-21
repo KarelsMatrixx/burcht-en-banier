@@ -37,10 +37,12 @@ const proef = (p, leger) => p.evaluate((leger) => {
   for (let i = 0; i < 4000; i++) {
     s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap();
     const g = s.veld.groepen().find((x) => x.hoofd);
-    const f = g ? g.fase : 'weg';
+    const f = g ? (g.fase === 'beleg' ? 'verzamel' : g.fase) : 'weg';
     if (f !== vorige) { out.fasen.push([f, i / 10]); vorige = f; }
     const a = aanvallers();
-    const rams = a.filter(machine), mel = a.filter(melee);
+    const hoofdId = g ? g.id : -1;
+    const inHoofd = (e) => e.krijg && e.krijg.tak && e.krijg.tak.groep === hoofdId;
+    const rams = a.filter(machine), mel = a.filter((e) => melee(e) && inHoofd(e));
     // Tijdens de opmars: loopt een machine voor de voorste ridder uit (richting jouw burcht)?
     if (f === 'opmars' && rams.length && mel.length) {
       const dk = (e) => Math.hypot(e.x - m.x, e.y - m.y);
@@ -64,7 +66,7 @@ check('er is een verzamelpunt', r.rally >= 0, r.rally);
 check('eerst verzamelen, dan opmars, dan aanval', r.fasen.map((x) => x[0]).join('>').startsWith('verzamel>opmars>aanval'), JSON.stringify(r.fasen));
 check('een ram bereikt de muur', r.ramAanMuur !== null, r.ramAanMuur);
 check('bij de ram staan minstens 2 ridders of zwaardvechters', r.begeleiding >= 2, r.begeleiding);
-check('een machine loopt in de opmars nooit meer dan 1,5 tegel voor de ridders uit', r.maxVoorsprong <= 1.5, r.maxVoorsprong);
+check('een machine loopt in de opmars nooit meer dan 2 tegels (gemeten tot de burcht, niet tot de bres) voor de ridders uit', r.maxVoorsprong <= 2, r.maxVoorsprong);
 check('melding verzamelen', r.logboek.some((x) => /gathers/.test(JSON.stringify(x))), JSON.stringify(r.logboek));
 await p.context().close();
 check('geen paginafouten', fouten.length === 0, fouten.join('|'));

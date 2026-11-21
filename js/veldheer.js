@@ -47,7 +47,12 @@ const WEGFACTOR = 1.3;      // de echte route is langer dan de rechte lijn (aann
 const VERZAMEL_MIN = 9;     // tegels van de bres: het verzamelpunt ligt hier tussen ...
 const VERZAMEL_MAX = 16;    // ... en hier, liefst rond VERZAMEL_BEST
 const VERZAMEL_BEST = 12;
-const VEILIG = 8;           // zoveel tegels blijft het verzamelpunt van jouw torens, muren en poorten
+const VEILIG = 6;           // zoveel tegels blijft het verzamelpunt van jouw muren, poorten en torens (daar kunnen schutters op)
+const MARGE = 2;            // zoveel tegels blijft rood buiten het echte bereik van jouw schutters en katapulten
+const UITWIJK_MAX = 2;      // zo vaak wijkt rood per aanval uit naar een veiliger verzamelpunt
+const STORM_DEEL = 0.6;     // onder vuur: is minstens dit deel er, dan valt rood meteen aan in plaats van uit te wijken
+const BELEG_TIJD = 60;      // seconden: zo lang beschieten de katapulten de bres voordat de rest opmarcheert
+const SCHIJN_MAX = 75;      // seconden: zo lang wacht de hoofdmacht hooguit op de schijnaanval
 const VERZAMEL_TIJD = 120;  // seconden: langer verzamelt niemand
 const HELFT_WACHT = 25;     // seconden: is de helft er, dan wacht het leger nog zo lang op de rest
 const KLAAR_DEEL = 0.85;    // dit deel moet er zijn om op te marcheren
@@ -191,10 +196,61 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     return KOMPAS[((Math.round(hoek / (Math.PI / 4)) % 8) + 8) % 8];
   };
 
+  // --- Dreiging: waar jouw schutters en katapulten kunnen raken ----------------------------
+  // Elke soldaat van jou die van afstand schiet, met zijn echte bereik (op de muur of in een
+  // hinderlaag verder) plus MARGE.
+  function dreiging() {
+    const lijst = [];
+    const extra = regels.muurBereik || 0;
+    for (const e of leger.lijst) {
+      if (e.dood || !e.soldaat) continue;
+      const d = soorten[e.soldaat.sleutel];
+      if (!d || !(d.bereik > 2)) continue;
+      lijst.push({ x: e.x, y: e.y, r: d.bereik + (e.opMuur || e.hinderlaag ? extra : 0) + MARGE });
+    }
+    return lijst;
+  }
+  const veilig = (p, dr) => dr.every((s) => Math.abs(s.x - p.x) >= s.r || Math.abs(s.y - p.y) >= s.r || Math.hypot(s.x - p.x, s.y - p.y) >= s.r);
+
+  // Hoe sterk jouw leger is, in de gewichten van rood (een ridder telt 1).
+  function jouwSterkte() {
+    let som = 0;
+    for (const e of leger.lijst) {
+      if (e.dood || !e.soldaat) continue;
+      const d = soorten[e.soldaat.sleutel];
+      if (!d || d.koning) continue;
+      som += H.gewicht[e.soldaat.sleutel] || 1;
+    }
+    return som + jouwTorens().length;
+  }
+  // Het aanvalsdoel van rood volgens jouw sterkte (0 als het niveau dat niet doet).
+  function sterkteDoel(nr) {
+    const I = instelling(nr);
+    if (!(I.aanpas > 0)) return 0;
+    // Het loopt op: de eerste aanval een derde, de tweede twee derde, daarna volledig.
+    return Math.min(I.aanpasMax || 36, I.aanpas * Math.min(1, nr / 3) * jouwSterkte());
+  }
+  // Goud per seconde dat rood bijkrijgt als hij zijn aanval niet kan betalen.
+  const hulp = (nr) => instelling(nr).hulp || 0;
+  // Een katapult koopt rood vanaf deze aanval (belegering).
+  const katapultVanaf = (nr) => instelling(nr).katapultVanaf || Infinity;
+  const isBestorming = (nr) => {
+    const I = instelling(nr);
+    return I.bestormingElke > 0 && nr % I.bestormingElke === 0;
+  };
+
   // --- Het verzamelpunt ----------------------------------------------------------------
   // Een open plek buiten bereik van jouw torens, muren en poorten, ongeveer VERZAMEL_BEST
   // tegels van het doel, aan de kant waar het leger vandaan komt. -1 als er geen is.
-  function kiesVerzamel(eind, bereik, van) {
+  function kiesVerzamel(eind, bereik, van, dr = dreiging(), weg = null) {
+    for (const max of [VERZAMEL_MAX, VERZAMEL_MAX + 6, VERZAMEL_MAX + 12]) {
+      const v = zoekVerzamel(eind, bereik, van, dr, max, weg);
+      if (v >= 0) return v;
+    }
+    return -1;
+  }
+  // weg = een plek die we juist verlaten (verder weg van jouw schutters dan die).
+  function zoekVerzamel(eind, bereik, van, dr, maxAfstand, weg) {
     const werk = [];
     for (let v = 0; v < B * HOOG; v++) {
       if (kaart.eigenaar[v] !== 1) continue;
@@ -207,15 +263,22 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       if (kaart.eigenaar[v] === 1) continue;
       const p = midden(v);
       const d = Math.hypot(p.x - eind.x, p.y - eind.y);
-      if (d < VERZAMEL_MIN || d > VERZAMEL_MAX) continue;
+      if (d < VERZAMEL_MIN || d > maxAfstand) continue;
       if (werk.some((w) => Math.abs(w.x - p.x) < VEILIG && Math.abs(w.y - p.y) < VEILIG && Math.hypot(w.x - p.x, w.y - p.y) < VEILIG)) continue;
-      // Open genoeg om met z'n allen te staan?
+      if (!veilig(p, dr)) continue;
+      if (weg && Math.hypot(p.x - weg.x, p.y - weg.y) < 4) continue;
+      // Open genoeg om met z'n allen te staan, en daar ook veilig?
       let open = 0;
       const x = v % B;
       const y = Math.floor(v / B);
-      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (bereik.has((y + dy) * B + x + dx)) open++;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+        const w = (y + dy) * B + x + dx;
+        if (bereik.has(w) && veilig(midden(w), dr)) open++;
+      }
       if (open < 14) continue;
-      const score = Math.abs(d - VERZAMEL_BEST) + 0.25 * Math.hypot(p.x - van.x, p.y - van.y) + 0.3 * (25 - open);
+      // Liefst rond VERZAMEL_BEST van het doel, aan de kant van het leger, open, en ruim buiten bereik.
+      const ruimte = dr.length ? Math.min(...dr.map((s) => Math.hypot(s.x - p.x, s.y - p.y) - s.r)) : 6;
+      const score = Math.abs(d - VERZAMEL_BEST) + 0.25 * Math.hypot(p.x - van.x, p.y - van.y) + 0.3 * (25 - open) - 0.3 * Math.min(ruimte, 4);
       if (score < min) {
         min = score;
         beste = v;
@@ -224,7 +287,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     return beste;
   }
   // Voor elke man een eigen vak rond het verzamelpunt (de dichtstbijzijnde vrije vakken).
-  function plekkenRond(centrum, n, bereik) {
+  function plekkenRond(centrum, n, bereik, dr = dreiging()) {
     const c = midden(centrum);
     const lijst = [];
     const x0 = centrum % B;
@@ -233,6 +296,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       for (let dx = -4; dx <= 4; dx++) {
         const v = (y0 + dy) * B + x0 + dx;
         if (x0 + dx < 0 || y0 + dy < 0 || x0 + dx >= B || y0 + dy >= HOOG || !bereik.has(v)) continue;
+        if (!veilig(midden(v), dr)) continue;
         lijst.push(v);
       }
     }
@@ -258,7 +322,9 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const machines = mannen.filter((e) => isMachine(def(e)));
     const voet = mannen.filter((e) => !isMachine(def(e)));
 
-    // Verkenners: de snelste mannen, alleen bij een grotere aanval.
+    // Verkenners: de snelste mannen, alleen bij een grotere aanval. Sinds 0.81.0 lopen ze met de
+    // hoofdmacht mee (ze hakten eerst alleen op een muur). Vanaf niveau 3 zijn het koningsjagers:
+    // zodra er een weg naar jouw koning is (bres, open poort, ladder), rennen ze naar hem toe.
     const scouts = [];
     if (I.scouts > 0 && voet.length >= 8) {
       const snel = voet.filter((e) => !isSteun(def(e))).sort((a, b) => def(b).snelheid - def(a).snelheid);
@@ -298,7 +364,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const zet = (groep, soort, doel, eind, verschuiving, omwegVak) => {
       for (const e of groep) rijen.push({ e, soort, doel, eind, verschuiving, omwegVak });
     };
-    zet(scouts, 'scout', doelA, eindA, -(I.scoutsVroeger || 14), -1);
+    zet(scouts, 'jager', doelA, eindA, 0, -1);
     zet(hoofd, 'hoofd', doelA, eindA, 0, -1);
     zet(tweede, 'tweede', doelA, eindA, I.tweedeNa || 22, -1);
     zet(flank, 'flank', doelF || doelA, doelF ? eindF : eindA, 4, omweg);
@@ -352,28 +418,37 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     // de oude manier: wachttijden bij vertrek uitrekenen.
     const centrum = { x: mannen.reduce((s, e) => s + e.x, 0) / mannen.length, y: mannen.reduce((s, e) => s + e.y, 0) / mannen.length };
     const marcheert = I.synchroon !== false;
-    const ralA = marcheert ? kiesVerzamel(eindA, bereik, centrum) : -1;
-    const ralF = marcheert && flank.length ? (hut >= 0 && omweg >= 0 ? omweg : bresF >= 0 ? kiesVerzamel(eindF, bereik, centrum) : ralA) : -1;
+    const dr = dreiging();
+    const ralA = marcheert ? kiesVerzamel(eindA, bereik, centrum, dr) : -1;
+    const ralF = marcheert && flank.length ? (hut >= 0 && omweg >= 0 ? omweg : bresF >= 0 ? kiesVerzamel(eindF, bereik, centrum, dr) : ralA) : -1;
+    const bestorming = isBestorming(golf);
     const kloksTijd = I.synchroon === false ? 0 : Math.max(...rijen.map((r) => r.reis - r.voor - r.verschuiving));
     const nieuweGroep = (fase, eind, eindVak, doel, rally) => {
-      const g = { id: volgende++, eenheden: [], hp0: 0, doel, vrijNa: nu, gemeld: false, herstel: [], fase, eind, eindVak, rally, start: nu, helftOp: 0, sinds: nu, volgt: 0, na: 0, stil: new Map(), hoofd: false };
+      const g = { id: volgende++, eenheden: [], hp0: 0, doel, vrijNa: nu, gemeld: false, herstel: [], fase, eind, eindVak, rally, start: nu, helftOp: 0, sinds: nu, volgt: 0, na: 0, stil: new Map(), hoofd: false,
+        bereik, centrum, uitwijk: 0, leven: new Map(), schijnVan: 0, schijnNa: 0, schijn: false, beleg: !!I.belegering, belegKlaar: false, jagerGemeld: false, bestorming };
       groepen.push(g);
       return g;
     };
     const gHoofd = nieuweGroep(ralA >= 0 ? 'verzamel' : 'aanval', eindA, eindVakA, doelA, ralA);
     gHoofd.hoofd = true;
-    const gScout = nieuweGroep('aanval', eindA, eindVakA, doelA, -1);
     const gTweede = ralA >= 0 ? nieuweGroep('verzamel', eindA, eindVakA, doelA, ralA) : gHoofd;
     gTweede.volgt = gHoofd.id;
-    gTweede.na = I.tweedeNa || 22;
+    // Bij een grote bestorming komt de tweede lijn veel sneller: één doorlopende stormloop.
+    gTweede.na = bestorming ? 8 : I.tweedeNa || 22;
     const gFlank = ralF >= 0 ? nieuweGroep('verzamel', eindF, eindVakF, doelF || doelA, ralF) : gHoofd;
-    gFlank.volgt = gHoofd.id;
-    const groepVan = (r) => (r.soort === 'scout' ? gScout : r.soort === 'tweede' ? gTweede : r.soort === 'flank' ? gFlank : gHoofd);
+    if (gFlank !== gHoofd && I.schijn > 0) {
+      // Schijnaanval (niveau 3): de flank valt eerst aan en trekt jouw schutters weg; de
+      // hoofdmacht met de ram slaat pas toe als de flank al I.schijn seconden bezig is.
+      gFlank.schijn = true;
+      gHoofd.schijnVan = gFlank.id;
+      gHoofd.schijnNa = I.schijn;
+    } else gFlank.volgt = gHoofd.id;
+    const groepVan = (r) => (r.soort === 'tweede' ? gTweede : r.soort === 'flank' ? gFlank : gHoofd);
     // Groepen met hetzelfde verzamelpunt delen één lijst plekken (niemand op elkaars vak).
     const opPlek = new Map();
     for (const g of new Set([gHoofd, gTweede, gFlank])) {
       if (g.rally < 0) continue;
-      if (!opPlek.has(g.rally)) opPlek.set(g.rally, plekkenRond(g.rally, rijen.length, bereik));
+      if (!opPlek.has(g.rally)) opPlek.set(g.rally, plekkenRond(g.rally, rijen.length, bereik, dr));
     }
     for (const r of rijen) {
       const g = groepVan(r);
@@ -381,6 +456,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       t.groep = g.id;
       t.doel = r.doel;
       t.rem = false;
+      t.jager = r.soort === 'jager' && !!I.koningsjagers;
       if (g.fase === 'verzamel') {
         t.verzamel = opPlek.get(g.rally).shift();
         t.slot = t.verzamel;
@@ -388,8 +464,8 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
         t.houdTot = 0;
         t.via = -1;
       } else {
-        // Verkenners, of de oude rekensom als er geen verzamelpunt is.
-        const wacht = r.soort === 'scout' || I.synchroon === false ? 0 : klem(kloksTijd + r.voor + r.verschuiving - r.reis, 0, MAX_WACHT);
+        // De oude rekensom als er geen verzamelpunt is.
+        const wacht = I.synchroon === false ? 0 : klem(kloksTijd + r.voor + r.verschuiving - r.reis, 0, MAX_WACHT);
         t.verzamel = -1;
         t.mars = false;
         t.via = r.omwegVak;
@@ -401,14 +477,13 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     }
     groepen = groepen.filter((g) => g.eenheden.length);
     // Een waarschuwing voor de speler, zodat het niet als vals aanvoelt.
+    if (bestorming) opMelding('A great assault! Red throws everything at you.');
     if (bresA >= 0 && I.niveau >= 3) {
       opMelding(`Red ${ralA >= 0 ? 'gathers outside' : 'masses at'} your ${richting(bresA)} wall!${bresF >= 0 ? ` A second force circles toward your ${richting(bresF)} side.` : ''}`);
     } else if (omweg >= 0) {
       opMelding('Red hunters circle around to take the hut from two sides!');
     } else if (ralA >= 0) {
       opMelding('The red army gathers before it strikes.');
-    } else if (scouts.length) {
-      opMelding('Red scouts are racing ahead of the main army.');
     }
   }
 
@@ -482,6 +557,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
   // --- Piek en rust: elke derde aanval is zwaarder, daarna even rust ------------------------
   function piek(nr) {
     const I = instelling(nr);
+    if (isBestorming(nr)) return I.bestormingFactor || 1.6;
     return I.piekElke > 0 && nr % I.piekElke === 0 ? I.piekFactor || 1.3 : 1;
   }
   function rust(nr) {
@@ -499,6 +575,18 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     g.sinds = nu;
     g.voorste = Infinity;
     g.voorsteSinds = nu;
+    if (fase === 'beleg') {
+      // Alleen de katapulten gaan; de rest blijft op het verzamelpunt.
+      for (const e of katapulten(g)) {
+        const t = takVan(e);
+        if (!t) continue;
+        t.verzamel = -1;
+        t.rem = false;
+        t.mars = false;
+      }
+      if (g.hoofd) opMelding('Red catapults open fire on your walls!');
+      return;
+    }
     for (const e of g.eenheden) {
       const t = takVan(e);
       if (!t) continue;
@@ -506,10 +594,69 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       t.rem = false;
       t.mars = fase === 'opmars';
     }
-    if (fase === 'opmars' && g.hoofd && instelling(Math.max(1, strijd.golfNr())).niveau >= 2) opMelding('The red army advances!');
+    if (fase === 'opmars' && instelling(Math.max(1, strijd.golfNr())).niveau >= 2) {
+      if (g.schijn) opMelding(`Red storms your ${richting(g.eindVak >= 0 ? g.eindVak : vakVan(g.eenheden[0]))} side!`);
+      else if (g.hoofd) opMelding(g.schijnVan || g.belegKlaar ? `The main red host advances on your ${richting(g.eindVak >= 0 ? g.eindVak : vakVan(g.eenheden[0]))} wall!` : 'The red army advances!');
+    }
   }
   // Is dit vak (de bres) al gevallen?
   const gevallen = (g) => !!g.doel && !(kaart.eigenaar[g.doel.vak] === g.doel.van && kaart.object[g.doel.vak] === g.doel.soort);
+
+  // Wordt de groep beschoten, of staat iemand binnen bereik van jouw schutters?
+  function onderVuur(g, dr) {
+    let geraakt = false;
+    for (const e of g.eenheden) {
+      const oud = g.leven.get(e);
+      if (oud !== undefined && e.leven < oud - 0.5) geraakt = true;
+      g.leven.set(e, e.leven);
+    }
+    if (geraakt) return true;
+    // Komen jouw schutters binnen bereik van het verzamelpunt zelf, dan is het ook niet veilig meer.
+    if (g.rally >= 0 && !veilig(midden(g.rally), dr)) return true;
+    return g.eenheden.some((e) => {
+      const t = takVan(e);
+      return t && t.verzamel >= 0 && afstand(e, midden(t.verzamel)) <= 2.5 && !veilig(e, dr);
+    });
+  }
+  // Uitwijken: een nieuw verzamelpunt buiten bereik, verder dan het oude.
+  function wijkUit(g, dr) {
+    const nieuw = kiesVerzamel(g.eind, g.bereik, g.centrum, dr, midden(g.rally));
+    if (nieuw < 0) return false;
+    const oud = g.rally;
+    g.rally = nieuw;
+    g.uitwijk++;
+    g.helftOp = 0;
+    const plekken = plekkenRond(nieuw, g.eenheden.length, g.bereik, dr);
+    for (const e of g.eenheden) {
+      const t = takVan(e);
+      if (!t || t.terug) continue;
+      t.verzamel = plekken.shift();
+      t.slot = t.verzamel;
+    }
+    // Groepen die hetzelfde punt deelden (de tweede lijn), gaan mee.
+    for (const h of groepen) {
+      if (h === g || h.rally !== oud || h.fase !== 'verzamel') continue;
+      h.rally = nieuw;
+      const p2 = plekkenRond(nieuw, g.eenheden.length + h.eenheden.length, g.bereik, dr).slice(g.eenheden.length);
+      for (const e of h.eenheden) {
+        const t = takVan(e);
+        if (!t || t.terug) continue;
+        t.verzamel = p2.shift();
+        t.slot = t.verzamel;
+      }
+    }
+    if (g.hoofd) opMelding('Red pulls back out of your archers\' reach.');
+    return true;
+  }
+  // Mag de hoofdmacht al? Bij een schijnaanval pas als de flank een tijdje aanvalt.
+  function schijnKlaar(g, nu) {
+    if (!g.schijnVan) return true;
+    const f = groepMet(g.schijnVan);
+    if (!f || !f.eenheden.some((e) => !e.dood)) return true;
+    if (nu - g.start >= strijd.stappenVan(VERZAMEL_TIJD + SCHIJN_MAX)) return true;
+    return f.fase === 'aanval' && nu - f.sinds >= strijd.stappenVan(g.schijnNa);
+  }
+  const katapulten = (g) => g.eenheden.filter((e) => { const d = def(e); return d.alleenBouw && d.bereik > 2; });
 
   function verzamelStap(g, nu) {
     const n = g.eenheden.length;
@@ -518,6 +665,17 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       return !t || !(t.verzamel >= 0) || afstand(e, midden(t.verzamel)) <= 2.5;
     }).length;
     if (er * 2 >= n && !g.helftOp) g.helftOp = nu;
+    // Onder vuur: uitwijken als nog weinig mannen er zijn, anders meteen aanvallen.
+    const dr = dreiging();
+    if (g.rally >= 0 && onderVuur(g, dr)) {
+      if (er < n * STORM_DEEL && g.uitwijk < UITWIJK_MAX && wijkUit(g, dr)) return;
+      if (er >= n * STORM_DEEL || g.uitwijk >= UITWIJK_MAX) {
+        if (g.hoofd) opMelding('Under fire, the red army charges!');
+        g.schijnVan = 0;
+        naarFase(g, 'opmars', nu);
+        return;
+      }
+    }
     const klaar = er >= n * KLAAR_DEEL || (g.helftOp && nu - g.helftOp >= strijd.stappenVan(HELFT_WACHT)) || nu - g.start >= strijd.stappenVan(VERZAMEL_TIJD);
     if (!klaar) return;
     if (g.volgt) {
@@ -526,11 +684,30 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
         if (g.na) {
           // De tweede lijn: pas als de hoofdmacht al een tijdje aanvalt.
           if (leider.fase !== 'aanval' || nu - leider.sinds < strijd.stappenVan(g.na)) return;
-        } else if (leider.fase === 'verzamel') return;
+        } else if (leider.fase === 'verzamel' || leider.fase === 'beleg') return;
         // De flank vertrekt zo dat hij tegelijk met de hoofdmacht aankomt.
         else if (leider.fase === 'opmars' && eta(leider) > eta(g) + 2) return;
       }
     }
+    // Belegering (niveau 4): eerst beschieten de katapulten de bres vanaf afstand.
+    if (g.beleg && !g.belegKlaar && g.doel && katapulten(g).length) {
+      naarFase(g, 'beleg', nu);
+      return;
+    }
+    if (!schijnKlaar(g, nu)) return;
+    naarFase(g, 'opmars', nu);
+  }
+
+  // De katapulten beschieten de bres; de rest wacht op het verzamelpunt (buiten bereik).
+  function belegStap(g, nu) {
+    const k = katapulten(g).filter((e) => !e.dood);
+    const lev = g.doel ? strijd.levenOp(g.doel.vak) : null;
+    const half = lev && lev.max ? lev.leven / lev.max < 0.5 : false;
+    const dr = dreiging();
+    const klaar = !k.length || gevallen(g) || half || nu - g.sinds >= strijd.stappenVan(BELEG_TIJD) || onderVuur(g, dr);
+    if (!klaar) return;
+    g.belegKlaar = true;
+    if (!schijnKlaar(g, nu) && nu - g.sinds < strijd.stappenVan(BELEG_TIJD + 30)) return;
     naarFase(g, 'opmars', nu);
   }
 
@@ -647,6 +824,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const nu = strijd.stapNr();
     for (const g of groepen) {
       if (g.fase === 'verzamel') verzamelStap(g, nu);
+      else if (g.fase === 'beleg') belegStap(g, nu);
       else if (g.fase === 'opmars') opmarsStap(g, nu);
       else aanvalStap(g);
     }
@@ -694,6 +872,15 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
 
   return {
     plan, behoud, tegenFactor, extraRam, piek, rust, stap,
+    sterkteDoel, hulp, katapultVanaf, jouwSterkte,
+    // Een koningsjager heeft een weg naar jouw koning gevonden (eenmaal per groep melden).
+    jagerDoor(e) {
+      const t = takVan(e);
+      const g = t && groepMet(t.groep);
+      if (!g || g.jagerGemeld) return;
+      g.jagerGemeld = true;
+      opMelding('Red king-hunters are through! Protect your king!');
+    },
     niveau, instelling,
     groepen: () => groepen.map((g) => ({ id: g.id, aantal: g.eenheden.length, hp0: g.hp0, vrijNa: g.vrijNa, fase: g.fase, rally: g.rally, hoofd: g.hoofd })),
     herstel() { groepen = []; teller = 0; },

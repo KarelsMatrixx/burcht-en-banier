@@ -2442,6 +2442,22 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.doelwit = kiesDoelwit(e, k, anderen);
     // Tijdens verzamelen en opmars jaagt rood niemand ver na: hij blijft bij zijn leger.
     if (k.doelwit && e.team === VIJAND && k.tak && (k.tak.mars || k.tak.verzamel >= 0) && Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > Math.max(bereikVan(e, k), 1.5) + 1.5) k.doelwit = null;
+    // Koningsjager (veldheer): na de opmars rent hij naar jouw koning zodra daar een weg is
+    // (bres, open poort, ladder). Elke 2 seconden kijkt hij opnieuw.
+    if (e.team === VIJAND && k.tak && k.tak.jager && !k.tak.mars && !(k.tak.verzamel >= 0) && !k.tak.rem && !k.tak.terug && koningSleutel) {
+      const ks = koningVan(SPELER);
+      if (ks && !ks.dood) {
+        if (k.jaagtKoning && k.doelwit !== ks && stapNr < (k.jagerKijk || 0)) k.doelwit = ks;
+        else if (stapNr >= (k.jagerKijk || 0)) {
+          k.jagerKijk = stapNr + 20;
+          const oud = k.doelwit;
+          k.doelwit = ks;
+          jaag(e, k);
+          k.jaagtKoning = k.doelwit === ks && !!e.pad;
+          if (k.jaagtKoning) { if (veld) veld.jagerDoor(e); } else k.doelwit = oud;
+        }
+      } else k.jaagtKoning = false;
+    }
     if (k.doelwit) {
       k.bouw = null;
       if (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k) || !kanRaken(e, k, k.doelwit)) {
