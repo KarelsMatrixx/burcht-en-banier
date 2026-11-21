@@ -34,6 +34,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   const TORENPLEKKEN = {
     [OBJECT.TOREN]: Math.max(1, Math.round((regels.torenPlekken || {}).toren || 2)),
     [OBJECT.WACHTTOREN]: Math.max(1, Math.round((regels.torenPlekken || {}).wachttoren || 2)),
+    [OBJECT.MOORDGATENTOREN]: Math.max(1, Math.round((regels.torenPlekken || {}).moordgatentoren || (regels.torenPlekken || {}).wachttoren || 2)),
   };
   const soldaten = [];
 

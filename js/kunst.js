@@ -1708,6 +1708,44 @@ export function tekenWachttoren(naam, def) {
   return { beeld: doek, b, h, ax: cx, ay: h - 1 };
 }
 
+// De Moordgatentoren (level 7): een brede, zware toren met een overhangende bovenrand, zwarte moordgaten
+// onder de kantelen, een deur en druppels olie. Hoogte iets boven de wachttoren.
+export function tekenMoordgatentoren(naam, def) {
+  const H = def.hoogte;
+  const b = TB + 10;
+  const h = TH + H + 18;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const top = cy - H;
+  steenBlok(ctx, cx, cy, HB + 1, HH + 0.5, H, def.kleur, toevalVoor(naam));
+  // De overhangende rand: een donkere strook met moordgaten, iets breder dan de romp.
+  const rand = 9;
+  ctx.fillStyle = '#4c463c';
+  ctx.beginPath();
+  ctx.moveTo(cx - HB - 5, top + 4);
+  ctx.lineTo(cx, top + HH + 4 + 4);
+  ctx.lineTo(cx + HB + 5, top + 4);
+  ctx.lineTo(cx + HB + 5, top + 4 + rand);
+  ctx.lineTo(cx, top + HH + 4 + 4 + rand);
+  ctx.lineTo(cx - HB - 5, top + 4 + rand);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#14110d';
+  for (let k = -2; k <= 2; k++) {
+    if (k === 0) continue;
+    ctx.fillRect(cx + k * 13 - 3, top + 7 + Math.abs(k) * 0 + (k > 0 ? 3 + k * 1.5 : 3 - k * 1.5) + 4, 6, 5);
+  }
+  schietgat(ctx, cx + 16, top + 8 + 30);
+  schietgat(ctx, cx - 16, top + 8 + 30);
+  // Een druppel olie langs de muur.
+  ctx.fillStyle = '#2a2217';
+  ctx.fillRect(cx + 13, top + 22, 2, 8);
+  ctx.fillRect(cx - 17, top + 24, 2, 6);
+  kantelen(ctx, cx, top, 0, def.kleur);
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
 export function tekenToren(naam, def) {
   const H = def.hoogte;
   const rx = 26;     // voet van de toren

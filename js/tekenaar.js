@@ -648,6 +648,23 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
           }
           continue;
         }
+        if (f.soort === 'olie') {
+          // Kokende olie: donkere druppels vallen op de soldaat en spatten uiteen.
+          const t = (nu - f.van) / f.duur;
+          const wxo = (f.x - f.y) * HALVE_BREEDTE;
+          const wyo = (f.x + f.y) * HALVE_HOOGTE;
+          for (let k = 0; k < 7; k++) {
+            const hoek = k * 0.9 + 0.3;
+            const val = Math.min(1, t * 2);
+            ctx.globalAlpha = 0.85 * (1 - t);
+            ctx.fillStyle = k % 3 === 0 ? '#e0a23a' : '#2a1d10';
+            ctx.beginPath();
+            ctx.arc(wxo + Math.cos(hoek) * (3 + 7 * t), wyo - 30 + 28 * val + Math.sin(hoek) * 3 * t, 2.2 - t, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          continue;
+        }
         if (f.soort === 'rook') {
           const t = (nu - f.van) / f.duur;
           const wxr = (f.x - f.y) * HALVE_BREEDTE;

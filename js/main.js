@@ -72,7 +72,7 @@ async function start() {
   const roodKasteel = {};
   if (materiaal) {
     const hoger = ontwerp.hoog ? 1.25 : 1;
-    for (const deel of ['muur', 'toren', 'wachttoren', 'poort']) roodKasteel['rood.' + deel] = { basis: 'kasteel.' + deel, kleur: materiaal.kleur, hoogteFactor: hoger };
+    for (const deel of ['muur', 'toren', 'wachttoren', 'moordgatentoren', 'poort']) roodKasteel['rood.' + deel] = { basis: 'kasteel.' + deel, kleur: materiaal.kleur, hoogteFactor: hoger };
     // Een materiaal kan de burcht een andere vorm geven (tentenkamp: de commandotent) en een tweede kleur meegeven.
     // Een materiaal kan de burcht een andere vorm geven. Tentenkamp: de 8 buitenste tegels zijn een laag
     // houten podium (vorm, hoogte, vloer) en de middelste tegel is de commandotent (middenVorm, middenHoogte).

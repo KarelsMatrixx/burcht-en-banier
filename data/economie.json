@@ -773,7 +773,8 @@
  },
  "legerMax": 150,
  "legerPerKazerne": 40,
- "torenPlekken": { "toren": 7, "wachttoren": 3 },
+ "torenPlekken": { "toren": 7, "wachttoren": 3, "moordgatentoren": 2 },
+ "moordgaten": { "straal": 2, "tijd": 1.5, "schade": 6, "belegering": 1.5 },
  "bouwStraal": 14,
  "strijd": {
   "eersteGolf": 240,

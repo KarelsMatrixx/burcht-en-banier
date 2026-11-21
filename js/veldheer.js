@@ -107,7 +107,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const lijst = [];
     for (let v = 0; v < B * HOOG; v++) {
       if (kaart.eigenaar[v] !== 1) continue;
-      if (kaart.object[v] === OBJECT.TOREN || kaart.object[v] === OBJECT.WACHTTOREN) lijst.push(midden(v));
+      if (kaart.object[v] === OBJECT.TOREN || kaart.object[v] === OBJECT.WACHTTOREN || kaart.object[v] === OBJECT.MOORDGATENTOREN) lijst.push(midden(v));
     }
     return lijst;
   }
@@ -314,7 +314,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     for (let v = 0; v < B * HOOG; v++) {
       if (kaart.eigenaar[v] !== 1) continue;
       const s = kaart.object[v];
-      if (s === OBJECT.MUUR || s === OBJECT.POORT || s === OBJECT.TOREN || s === OBJECT.WACHTTOREN) werk.push(midden(v));
+      if (s === OBJECT.MUUR || s === OBJECT.POORT || s === OBJECT.TOREN || s === OBJECT.WACHTTOREN || s === OBJECT.MOORDGATENTOREN) werk.push(midden(v));
     }
     let beste = -1;
     let min = Infinity;

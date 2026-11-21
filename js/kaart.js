@@ -35,6 +35,7 @@ export const OBJECT = {
   RAAFTOREN: 43, // de Raaftoren van Mournkeep (level 10): hier zit Wessel; onkwetsbaar, decor
   SLUIS: 42,     // de sluis van de Witte Dijk (level 8): een doel dat je moet slopen
   GRAF: 41,      // grafstenen en kruisen van een begraafplaats (level 10, bij de kerk), decor
+  MOORDGATENTOREN: 50,   // toren met moordgaten (level 7): kokende olie op alles binnen 2 tegels
 };
 
 // Namen waarmee de tekenlaag het juiste plaatje opzoekt in data/assets.json.
@@ -46,7 +47,7 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf', 'werk.sluis', 'dorp.raaftoren', 'dorp.kraan', 'dorp.werkbank', 'dorp.houtstapel', 'dorp.ramgeraamte', 'dorp.hamervlag', 'dorp.steiger',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf', 'werk.sluis', 'dorp.raaftoren', 'dorp.kraan', 'dorp.werkbank', 'dorp.houtstapel', 'dorp.ramgeraamte', 'dorp.hamervlag', 'dorp.steiger', 'kasteel.moordgatentoren',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
@@ -60,7 +61,7 @@ const RING = 5;
 
 const isBurcht = (soort) =>
   soort === OBJECT.BURCHT || soort === OBJECT.BANIER_BLAUW || soort === OBJECT.BANIER_ROOD;
-const isVesting = (soort) => soort >= OBJECT.MUUR && soort <= OBJECT.WACHTTOREN;
+const isVesting = (soort) => (soort >= OBJECT.MUUR && soort <= OBJECT.WACHTTOREN) || soort === OBJECT.MOORDGATENTOREN;
 
 // Zegt aan welke kanten van een kasteeldeel een buur aansluit. Daar tekent
 // het spel geen kantelen, zodat muren één geheel vormen.
@@ -469,9 +470,9 @@ export function maakKaart(recept) {
             const hoek = ring.rond ? torenTegels.has(`${dx},${dy}`) : Math.abs(dx) === M && Math.abs(dy) === M;
             const midden = !ring.rond && (dx === 0 || dy === 0);
             let soort = OBJECT.MUUR;
-            if (hoek) soort = OBJECT.TOREN;
+            if (hoek) soort = ring.moord ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN;
             else if (poorten.has(`${dx},${dy}`)) soort = OBJECT.POORT;
-            else if (midden) soort = ring.middenTorens ? OBJECT.TOREN : OBJECT.WACHTTOREN;
+            else if (midden) soort = ring.moord ? OBJECT.MOORDGATENTOREN : ring.middenTorens ? OBJECT.TOREN : OBJECT.WACHTTOREN;
             object[i] = soort;
             grond[i] = GROND.GRAS_DONKER;
           }
@@ -545,7 +546,7 @@ export function maakKaart(recept) {
       const i = y * breedte + x;
       const soort = object[i];
       const kern = Math.abs(dx) <= 1 && Math.abs(dy) <= 1;
-      const vesting = soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT;
+      const vesting = soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.MOORDGATENTOREN || soort === OBJECT.POORT;
       if (vesting || (kern && (soort === OBJECT.BURCHT || soort === OBJECT.BANIER_ROOD))) eigenaar[i] = 2;
     }
   }
@@ -1083,7 +1084,7 @@ export function maakKaart(recept) {
         const i = y * breedte + x;
         object[i] = soort;
         grond[i] = ondergrond;
-        if (soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT) eigenaar[i] = 2;
+        if (soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.MOORDGATENTOREN || soort === OBJECT.POORT) eigenaar[i] = 2;
       };
       for (let w = 0; w < muren.length; w++) {
         const m = muren[w];
@@ -1098,8 +1099,8 @@ export function maakKaart(recept) {
             if (ver === 0) {
               if (rand) soort = OBJECT.POORT;
               else { soort = OBJECT.GEEN; ondergrond = GROND.AARDE; }   // de gang tussen de poorten
-            } else if (rand && (ver === m.half || ver === m.half - 1)) soort = OBJECT.TOREN;
-            else if (rand && ver === 3) soort = OBJECT.WACHTTOREN;
+            } else if (rand && (ver === m.half || ver === m.half - 1)) soort = OBJECT.MOORDGATENTOREN;
+            else if (rand && ver === 2) soort = OBJECT.MOORDGATENTOREN;   // naast de poort: de olie reikt tot de poort
             zetVast(x, y, soort, ondergrond);
           }
         }
@@ -1114,8 +1115,8 @@ export function maakKaart(recept) {
         const voor = laatste;
         const links = [];
         const rechts = [];
-        for (let x = mid - m.half + 2; x <= mid - 4; x++) links.push(voor * breedte + x);
-        for (let x = mid + 4; x <= mid + m.half - 2; x++) rechts.push(voor * breedte + x);
+        for (let x = mid - m.half + 2; x <= mid - 3; x++) links.push(voor * breedte + x);
+        for (let x = mid + 3; x <= mid + m.half - 2; x++) rechts.push(voor * breedte + x);
         tolRoutes.push(links, rechts);
       }
       // Het rotseiland met twee torens voor de laatste muur.
@@ -1195,6 +1196,7 @@ export function binnenKaart(kaart, x, y) {
 }
 
 // Korte omschrijving van een tegel in gewoon Nederlands, voor in beeld.
+OBJECT_TEKST[OBJECT.MOORDGATENTOREN] = 'murder-hole tower';
 export function beschrijfTegel(kaart, x, y) {
   const i = y * kaart.breedte + x;
   const wat = OBJECT_TEKST[kaart.object[i]];

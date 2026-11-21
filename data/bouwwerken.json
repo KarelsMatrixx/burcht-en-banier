@@ -26,6 +26,8 @@
                      "tip": "Room for 7 soldiers on top." },
     "wachttoren":  { "naam": "Tower",       "groep": "kasteel", "leven": 300, "object": "WACHTTOREN",  "kosten": { "steen": 8 },
                      "tip": "Room for 3 soldiers on top." },
+    "moordgatentoren": { "naam": "Murder-Hole Tower", "groep": "kasteel", "leven": 350, "object": "MOORDGATENTOREN", "kosten": { "steen": 10, "planken": 1 },
+                     "tip": "Pours boiling oil on every enemy within 2 tiles. Strong against rams and ladders, but it cannot shoot." },
     "poort":       { "naam": "Gate",        "groep": "kasteel", "leven": 250, "object": "POORT",       "kosten": { "steen": 4, "planken": 2 }, "inMuur": true },
     "houthakker":  { "naam": "Woodcutter's Hut",  "groep": "werk",    "object": "HOUTHAKKER",  "kosten": { "hout": 20 }, "werker": "houthakker",
                      "tip": "Build it close to trees." },

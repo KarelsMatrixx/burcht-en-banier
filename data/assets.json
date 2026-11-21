@@ -25,6 +25,7 @@
     "kasteel.muur":          { "vorm": "muur",       "kleur": "#b9ad94", "hoogte": 40, "sprite": "" },
     "kasteel.toren":         { "vorm": "toren",      "kleur": "#b9ad94", "hoogte": 78, "sprite": "" },
     "kasteel.wachttoren":    { "vorm": "wachttoren", "kleur": "#b9ad94", "hoogte": 62, "sprite": "" },
+    "kasteel.moordgatentoren": { "vorm": "moordgatentoren", "kleur": "#a79c86", "hoogte": 68, "sprite": "" },
     "kasteel.poort":         { "vorm": "poort",      "kleur": "#b9ad94", "hoogte": 58, "sprite": "" },
     "kasteel.burcht":        { "vorm": "burcht",     "kleur": "#c4b89a", "hoogte": 74, "sprite": "" },
     "kasteel.banier_blauw":  { "vorm": "burcht",     "kleur": "#c4b89a", "hoogte": 74, "banier": "#2f5fc4", "sprite": "" },

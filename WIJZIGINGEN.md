@@ -1122,3 +1122,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - strijd.js: elke volgende muur is sterker (sterkte 1, 1.6 en 2.4 keer, eilandtorens 4 keer; schattingen). De eilandtorens nemen alleen schade van katapulten en trebuchets en zijn nooit over te nemen. Zij hebben altijd bezetting (ballista en kruisboogschutter).
 - campagne.json level 7: wachters 20, torens { ballista 0.25, kruisboog 0.25 } (schattingen van Claude).
 - Nog niet gedaan (volgende fasen): Moordgatentoren, hellebaardier en vuurboogschutter, voorposten, ruiterreserve, weer en decor, briefing en teksten.
+
+## 0.84.0: de Moordgatentoren (Greyford, fase 1 deel 2)
+- Nieuw bouwwerk 'moordgatentoren' (Murder-Hole Tower, object MOORDGATENTOREN = 50): kokende olie op alle vijanden binnen 2 tegels, elke 1,5 s; 150% tegen ram, ladder en belegeringstoren. Geen bereik, geen bemanning nodig. Getallen in economie.json (moordgaten) en bouwwerken.json (leven 350, kosten 10 steen en 1 plank), allemaal schattingen van Claude.
+- Rood gebruikt in level 7 alleen deze torens op de muren en in het kasteel (kastelen.json: tolhuis, ring.moord); de eilandtorens blijven gewone torens met bemanning.
+- Een toren van rood treft jouw soldaten, een toren van jou treft die van rood. Nieuw olie-effect (tekenaar.js) en nieuwe tekening (kunst.js, tekenMoordgatentoren).
+- Beloning van level 7 is nu windzanger en moordgatentoren: vanaf level 8 bouw je hem zelf.
+- Test: tests/tol83.mjs (13 controles).
+- Let op: rode muurtorens zonder bemanning schieten niet meer; de verdediging van de muren komt van wachters, olie en later hellebaardiers.

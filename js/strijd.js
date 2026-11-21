@@ -412,7 +412,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const roodWeg = new Set();
   const isRodeMuur = (vak) => {
     const soort = kaart.object[vak];
-    return kaart.eigenaar[vak] === ROOD && (soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT);
+    return kaart.eigenaar[vak] === ROOD && (soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.MOORDGATENTOREN || soort === OBJECT.POORT);
   };
   // De stukken muur waar een wachter loopt: zoveel als er in economie.json
   // staat (wachters), één per stuk, te beginnen bij de vier halve muren.
@@ -762,7 +762,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const bouwDoel = (vak) => ({ vak, soort: kaart.object[vak], van: kaart.eigenaar[vak], x: (vak % B) + 0.5, y: Math.floor(vak / B) + 0.5, straal: 0.5 });
   const staatNog = (b) => (b.burcht ? burchten[b.team].leven > 0 : b.van !== 0 && kaart.eigenaar[b.vak] === b.van && kaart.object[b.vak] === b.soort);
 
-  const STEEN_GELUID = new Set(['MUUR', 'TOREN', 'POORT', 'WACHTTOREN'].map((n) => OBJECT[n]).filter((n) => n !== undefined));
+  const STEEN_GELUID = new Set(['MUUR', 'TOREN', 'POORT', 'WACHTTOREN', 'MOORDGATENTOREN'].map((n) => OBJECT[n]).filter((n) => n !== undefined));
   // Wordt een bouwwerk van rood bij een buitenpost geraakt (rood.postGarnizoen, level 6), dan slaat het
   // garnizoen alarm: het rukt tot 16 tegels van zijn post uit op wie het deed (een katapult buiten hun zicht
   // blijft dus niet ongestraft schieten). Na een half minuutje gaan ze weer terug naar hun post.
@@ -1098,6 +1098,41 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     raakBouw(b, k.def.schadeBouw * bouwKeer(k.def, b), e);
   }
   // --- De heler: geneest elke seconde de zwaarst gewonde soldaat bij hem in de buurt.
+  // --- De Moordgatentoren (level 7): kokende olie op alles binnen een paar tegels van de toren.
+  //     Een toren van rood treft jouw soldaten, een toren van jou treft die van rood. Belegeringstuig krijgt extra.
+  //     Geen bereik; de toren hoeft geen bemanning (de ketel staat altijd te koken). Schade is een schatting van Claude.
+  const MG = regels_moordgaten();
+  function regels_moordgaten() {
+    const m = (regels && regels.moordgaten) || {};
+    return { straal: m.straal || 2, tijd: m.tijd || 1.5, schade: m.schade || 6, belegering: m.belegering || 1.5 };
+  }
+  let moordVakken = [];
+  function moordStap() {
+    if (stapNr % stappen(2) === 0) {
+      moordVakken = [];
+      for (let i = 0; i < kaart.object.length; i++) {
+        if (kaart.object[i] === OBJECT.MOORDGATENTOREN && kaart.eigenaar[i] && !(kaart.eigenaar[i] === ROOD && roodWeg.has(i))) moordVakken.push(i);
+      }
+    }
+    if (!moordVakken.length || stapNr % stappen(MG.tijd) !== 0) return;
+    for (const vak of moordVakken) {
+      if (kaart.object[vak] !== OBJECT.MOORDGATENTOREN) continue;
+      const tx = (vak % B) + 0.5;
+      const ty = Math.floor(vak / B) + 0.5;
+      const doelen = kaart.eigenaar[vak] === ROOD ? leger.lijst : vijanden;
+      let gebruikt = false;
+      for (const d of doelen) {
+        if (d.dood || d.opMuur) continue;
+        if (Math.hypot(d.x - tx, d.y - ty) > MG.straal + 0.5) continue;
+        const kd = krijgVan(d);
+        const zwaar = kd.def.alleenBouw || kd.def.soort === 'LADDER' || kd.def.soort === 'TOREN';
+        raak(d, MG.schade * (zwaar ? MG.belegering : 1), null);
+        effect({ soort: 'olie', x: d.x, y: d.y, duur: 700 });
+        gebruikt = true;
+      }
+      if (gebruikt) rook(tx, ty);
+    }
+  }
   function helerStap() {
     for (const lijst of [leger.lijst, vijanden]) {
       for (const h of lijst) {
@@ -1621,7 +1656,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // De bouwwerken van jou die een machine van rood mag aanvallen. De burcht hoort er niet bij.
-  const SPERWERK = new Set([OBJECT.MUUR, OBJECT.POORT, OBJECT.TOREN, OBJECT.WACHTTOREN]);
+  const SPERWERK = new Set([OBJECT.MUUR, OBJECT.POORT, OBJECT.TOREN, OBJECT.WACHTTOREN, OBJECT.MOORDGATENTOREN]);
   const ANDERWERK = new Set([OBJECT.HOUTHAKKER, OBJECT.STEENGROEVE, OBJECT.BOOMGAARD, OBJECT.WONING, OBJECT.KAZERNE, OBJECT.STAL, OBJECT.VOORRAADKAMER, OBJECT.ZAGERIJ, OBJECT.TARWEVELD, OBJECT.BAKKERIJ, OBJECT.KOPERMIJN, OBJECT.MAGIERTOREN, OBJECT.BELEGERINGSWERKPLAATS]);
   function kiesBelegerDoel(e, k) {
     // Eerst op weg naar de burcht: het eerste wat in de weg staat (muur, poort, toren) gaat eraan.
@@ -2927,6 +2962,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     burchtStap(burcht, vijanden);
     if (!R.proloog) burchtStap(rood, eigen);
     if (stapNr % stappen(1) === 0) helerStap();
+    moordStap();
     if (stapNr % stappen(0.5) === 0 && vijanden.some((e) => e.reserveWacht)) reserveZicht();
     if (stapNr % stappen(0.5) === 0) zienerZicht();   // in de proloog staat er geen kasteel van rood
     brandStap();

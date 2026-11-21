@@ -11,7 +11,7 @@
 
 import {
   tekenGrond, tekenBoom, tekenRots, tekenRidder, tekenBoogschutter, tekenRam, tekenLadderdrager, tekenKatapult, tekenBelegeringstoren,
-  tekenMuur, tekenToren, tekenWachttoren, tekenPoort, tekenBurcht,
+  tekenMuur, tekenToren, tekenWachttoren, tekenMoordgatentoren, tekenPoort, tekenBurcht,
   tekenHuis, tekenTent, tekenVlaggen, tekenHooiberg, tekenPut, tekenVaten,
   tekenWerker, tekenHouthakker, tekenSteengroeve, tekenBoomgaard, tekenTarweveld, tekenBakkerij, tekenKopermijn, tekenMijngang, tekenJagerstent, tekenKampvuur, tekenKraan, tekenHamervlag, tekenSteiger, tekenWerkbank, tekenHoutstapel, tekenRamgeraamte, tekenKampBurcht, tekenKampVloer, tekenSteenhouwer, tekenCel, tekenKerk, tekenBijlridder, tekenKruisboogschutter, tekenSluipmoordenaar, tekenVlammenwever, tekenMagiertoren, tekenKoning, tekenKazerne, tekenStal, tekenZagerij, tekenPakhuis, tekenBelegeringswerkplaats, tekenGraf, tekenSluis, tekenRaaftoren,
 } from './kunst.js';
@@ -37,6 +37,7 @@ const VORMEN = {
   muur: tekenMuur,
   toren: tekenToren,
   wachttoren: tekenWachttoren,
+  moordgatentoren: tekenMoordgatentoren,
   poort: tekenPoort,
   burcht: tekenBurcht,
   huis: tekenHuis,

@@ -129,7 +129,7 @@ export function maakWegvinder(kaart) {
         const spelerKasteel = team === 1 && soort === OBJECT.BURCHT && Math.max(Math.abs(ix - kaart.start[0].x), Math.abs(iy - kaart.start[0].y)) <= 1;
         // Naar boven alleen via een poort die open is (naar Karel). Torens en muren loop je op, maar je klimt er niet op.
         const trap = (soort === OBJECT.POORT && !dicht.has(i)) || eigenKasteel;
-        muurVan[team][i] = (eigen && (trap || soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT)) || eigenKasteel || roodKasteel || spelerKasteel ? 1 : 0;
+        muurVan[team][i] = (eigen && (trap || soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.MOORDGATENTOREN || soort === OBJECT.POORT)) || eigenKasteel || roodKasteel || spelerKasteel ? 1 : 0;
         // Op het hoofdkasteel kom je alleen via de deur: de tegel midden aan de rechterkant (x + 1).
         const kasteelDeur = (eigenKasteel && ix === kaart.start[team].x + 1 && iy === kaart.start[team].y)
           || (roodKasteel && ix === kaart.start[1].x + 1 && iy === kaart.start[1].y)
@@ -156,7 +156,7 @@ export function maakWegvinder(kaart) {
           const buur = ny * B + nx;
           if (muurVan[team][buur] || kaart.eigenaar[buur] !== ander) continue;
           const soort = kaart.object[buur];
-          if (soort !== OBJECT.MUUR && soort !== OBJECT.TOREN && soort !== OBJECT.WACHTTOREN && soort !== OBJECT.POORT) continue;
+          if (soort !== OBJECT.MUUR && soort !== OBJECT.TOREN && soort !== OBJECT.WACHTTOREN && soort !== OBJECT.MOORDGATENTOREN && soort !== OBJECT.POORT) continue;
           muurVan[team][buur] = 1;
           stapel.push(buur);
         }
