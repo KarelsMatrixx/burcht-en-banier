@@ -40,7 +40,7 @@
   "muurBereik: zoveel tegels verder schiet een boogschutter die op de muur staat. muurDekking: het deel van de schade van een pijl dat iemand op de muur nog krijgt (0.5 is de helft).",
   "gebouwLeven is het leven van een bouwwerk waar in data/bouwwerken.json geen leven bij staat.",
   "omduwen: zoveel seconden staat een soldaat van jou op een stuk muur voordat hij een ladder van rood omduwt. Rood stuurt vanaf de vierde aanval ladderdragers mee: die zetten een ladder tegen de eerste muur die in de weg staat.",
-  "ingenieur: twee ingenieurs bouwen samen op een vrij vak een trebuchet (bouwt: welke, bouwTijd: seconden; de kosten van de trebuchet betaal je bij het bevel en krijg je terug als de bouw stopt) en een van hen bedient hem daarna; valt hij, dan schiet de trebuchet niet meer. trebuchet: staand: staat vast, schiet alleen op bouwwerken tussen minBereik en bereik tegels (14), schadeBouw 70 per worp, kazerne geen (je leidt hem niet op, de ingenieur bouwt hem).",
+  "ingenieur: twee ingenieurs bouwen samen op een vrij vak een trebuchet (bouwt: welke, bouwTijd: seconden; de kosten van de trebuchet betaal je bij het bevel en krijg je terug als de bouw stopt) en een van hen bedient hem daarna; valt hij, dan schiet de trebuchet niet meer. trebuchet: staand: staat vast, schiet alleen op bouwwerken tussen minBereik en bereik tegels (28 sinds 0.81.1, was 14), schadeBouw 70 per worp, kazerne geen (je leidt hem niet op, de ingenieur bouwt hem).",
  "katapult: gooit stenen op bouwwerken tot 9 tegels ver (schadeBouw 60 per worp), vecht niet met soldaten. toren (belegeringstoren): zet een stevige ladder tegen een muur van rood, die je pas na omduwenVast seconden kunt omduwen; vast: true. De toren zelf is taai (300 leven)."
  ],
  "grondstoffen": {
@@ -460,9 +460,9 @@
    "schade": 0,
    "schadeBouw": 70,
    "slagTijd": 8,
-   "bereik": 14,
+   "bereik": 28,
    "minBereik": 5,
-   "zicht": 16,
+   "zicht": 30,
    "alleenBouw": true,
    "staand": true,
    "pijlDekking": 0.5,

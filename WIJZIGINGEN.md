@@ -1094,3 +1094,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Proef zonder speler (level 5, ringmuur, 10 schutters en 6 ridders, niemand traint bij of repareert): eerste aanval 5 man, dan 9 en 8; de passieve verdediger verliest na ongeveer 13,5 minuten (voorheen hield hij 15 minuten vol). Level 3: verlies na 9,3 minuten (voorheen 10,5). Een speler die bijtraint en repareert hoort het te halen; niet op de iPhone gespeeld.
 - Tests: tests/aanval41.mjs (15 punten); veldheer38, opmars40 en level5_39 aangepast (verkenners lopen mee, schijnaanval komt bewust eerder). Bekende fouten die ook zonder deze versie optreden: veldheer38 (zonder plan), hut36 (4 punten), campagne30.
 - Alle meldingen zijn door Claude geschreven; alle getallen zijn schattingen.
+
+## 0.81.1: trebuchet reikt twee keer zo ver, ingenieurs werken, arm beweegt soepel
+- Wens van Karel (21 november).
+- Bereik van de trebuchet 28 tegels (was 14), zicht 30 (was 16); de dode zone blijft 5 tegels (economie.json).
+- Arm (machines.js, tekenaar.js): 24 standen in plaats van 3. Worp in 0,65 s (versnellend, dan afremmend), even nazwaaien, 0,7 s stil voorover, dan in 4 s rustig met het touw van de windas terug. De steen blijft in de slinger tot de arm bijna rechtop staat.
+- Ingenieurs (strijd.js): tussen 1,8 en 5,8 s na een schot draaien ze samen aan de windas (gelijk met de arm); met een doel leggen ze daarna een nieuwe steen klaar; zonder doel doen ze om de 9 s een tijdje onderhoud met de hamer. Ze werken niet precies tegelijk.
+- Test: trebuchet80 uitgebreid (27 punten). Niet op de iPhone gezien; geheugen: 24 beelden per kant per team voor de trebuchet.

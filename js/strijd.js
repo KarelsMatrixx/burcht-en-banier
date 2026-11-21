@@ -697,6 +697,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.pose = 3;
     e.pose = 1;
     e.schotTijd = performance.now();   // de tekenlaag laat de arm van een trebuchet doorzwaaien
+    k.schotStap = stapNr;              // en de ingenieurs halen hem daarna met de windas terug
     k.rust = 0;
   }
 
@@ -2279,7 +2280,24 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     kijkNaar(e, t.x, t.y);
     const kt = t.krijg;
-    zetHouding(e, kt && kt.bouw && heeftBediener(t) ? 'sla' : null);
+    // Wat ze doen (0.81.1), gelijk met de arm in de tekenlaag (10 stappen per seconde):
+    //   1,8 tot 5,8 s na het schot: samen aan de windas draaien tot de arm weer beneden is;
+    //   daarna, met een doel: een nieuwe steen in de slinger leggen (rustiger tempo);
+    //   zonder doel: af en toe onderhoud (een paar tikken met de hamer), daartussen even rondkijken.
+    const sinds = kt && kt.schotStap !== undefined ? stapNr - kt.schotStap : Infinity;
+    const wie = (Math.floor(e.x) + Math.floor(e.y)) % 2;   // de twee ingenieurs werken niet precies tegelijk
+    let werk = false;
+    let tempo = 4;
+    if (sinds >= 18 && sinds < 58) werk = true;
+    else if (kt && kt.bouw && heeftBediener(t)) { werk = true; tempo = 7; }
+    else {
+      const ronde = (stapNr + wie * 37) % 90;
+      werk = ronde < 22;
+      tempo = 5;
+      if (!werk && ronde % 30 === 0) kijkNaar(e, e.x + (wie ? 1 : -1), e.y);
+    }
+    zetHouding(e, werk ? 'sla' : null);
+    if (werk) e.pose = Math.floor((stapNr + wie * 2) / tempo) % 2;
     return true;
   }
   // Een ingenieur die nog vrij is: niet bezig met een bouw en niet aan een trebuchet gekoppeld.

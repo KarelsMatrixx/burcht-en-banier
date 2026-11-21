@@ -809,7 +809,18 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       let beeld = 0;
       if (!eigen) beeld = e.loopt ? Math.floor(nu / 115 + i * 1.3) % beelden.length : 0;
       else if (e.houding === 'hak') beeld = Math.floor(nu / 210 + i) % beelden.length;
-      else if (e.houding === 'schiet' && beelden.length >= 3 && e.schotTijd) {
+      else if (e.houding === 'schiet' && beelden.length >= 16) {
+        // Een trebuchet met vloeiende arm (0.81.1): beelden 0..n-1 de worp, n..2n-1 het terughalen.
+        // Worp 0,65 s (versnellend, dan afremmend), even nazwaaien, 0,7 s stil, dan in 4 s rustig terug.
+        const n = beelden.length / 2;
+        const dt = e.schotTijd ? nu - e.schotTijd : Infinity;
+        const glad = (x) => 0.5 - 0.5 * Math.cos(Math.PI * Math.min(1, Math.max(0, x)));
+        if (dt < 650) beeld = Math.round(glad(dt / 650) ** 1.4 * (n - 1));
+        else if (dt < 1100) beeld = Math.round((1 - 0.08 * Math.sin(Math.PI * (dt - 650) / 450)) * (n - 1));
+        else if (dt < 1800) beeld = n - 1;
+        else if (dt < 5800) beeld = n + Math.round(glad((dt - 1800) / 4000) * (n - 1));
+        else beeld = 0;
+      } else if (e.houding === 'schiet' && beelden.length >= 3 && e.schotTijd) {
         // Een trebuchet (drie beelden: gespannen, arm omhoog, arm voorover): na het schot zwaait de arm door
         // en wordt daarna met de windas weer neergehaald.
         const dt = nu - e.schotTijd;

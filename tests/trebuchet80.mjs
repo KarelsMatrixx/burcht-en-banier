@@ -36,6 +36,9 @@ check('ingenieur: belegeringswerkplaats, bouwt trebuchet', data.ing && data.ing.
 check('trebuchet kost hout en steen (duur)', data.treb && data.treb.kosten && data.treb.kosten.hout >= 60 && data.treb.kosten.steen >= 40, JSON.stringify(data.treb.kosten));
 check('trebuchet: staand, alleen bouwwerken, bereik > katapult, dode zone', data.treb && data.treb.staand && data.treb.alleenBouw && data.treb.bereik > data.kat.bereik && data.treb.minBereik >= 4, JSON.stringify(data.treb));
 check('steenwachter niet meer op te leiden', data.steen.kazerne === 'geen', data.steen.kazerne);
+check('0.81.1: bereik van de trebuchet 28 (twee keer zo groot)', data.treb.bereik === 28, data.treb.bereik);
+const standen = await p.evaluate(async () => { const m = await import('./js/machines.js'); const set = m.MACHINES.trebuchet('x', { kleur: '#2f5fc4' }); return set.houdingen.schiet.rechts.length; });
+check('0.81.1: de arm heeft 24 standen (12 worp, 12 terug) voor een soepele beweging', standen === 24, standen);
 check('beloning level 6 is de ingenieur', data.beloning.length === 1 && data.beloning[0] === 'ingenieur', JSON.stringify(data.beloning));
 check('geen steenwachter meer in level 6', !data.steenInLevel);
 check('rood zet ingenieurs in (level 6)', data.ingInRood);
@@ -78,6 +81,7 @@ const r = await p.evaluate(() => {
   uit.bereikOk = tr.length ? s.strijd.valBouwAan(tr, loodsVak) : 0;
   sim(50);
   uit.bedienen = [e, e2].map((x) => x.krijg.ing && x.krijg.ing.fase);
+  { const poses = new Set(); for (let i = 0; i < 20; i++) { sim(1); poses.add(e.pose); } uit.poses = [...poses]; }   // 0.81.1: ze werken echt (de arm gaat op en neer)
   uit.hameren = [e, e2].map((x) => x.houding); uit.tb = [JSON.stringify(tr[0].krijg.bouw && tr[0].krijg.bouw.soort), tr[0].krijg.bouwBevel ? 1 : 0, tr[0].houding];
   sim(350);
   uit.naLeven = s.strijd.levenOp(loodsVak).leven;
@@ -92,6 +96,7 @@ check('trebuchet nog niet na 3 s', r.nogNiet === 0, r.nogNiet);
 check('trebuchet staat er na de bouwtijd, op het gekozen vak', r.treb === 1 && r.trebOp && Math.abs(r.trebOp[0] - r.verwacht[0]) <= 0 && Math.abs(r.trebOp[1] - r.verwacht[1]) <= 0, JSON.stringify(r));
 check('beide ingenieurs blijven en bedienen de trebuchet, draaiend aan de windas', r.bedienen && r.bedienen.every((f) => f === 'bedien') && r.hameren.every((h) => h === 'sla'), JSON.stringify([r.bedienen, r.hameren, r.tb]));
 check('trebuchet loopt niet', r.stilStaan === true);
+check('0.81.1: de ingenieurs bewegen tijdens het werk (niet stil)', r.poses && r.poses.length === 2, JSON.stringify(r.poses));
 check('loods staat op meer dan 7 tegels, binnen bereik', r.afstandLoods > 7 && r.afstandLoods <= 13, r.afstandLoods);
 check('bevel op de loods is binnen bereik', r.bereikOk === 1, r.bereikOk);
 check('de loods verliest leven van de trebuchet alleen', r.naLeven < r.voorLeven, `${r.voorLeven} -> ${r.naLeven}`);

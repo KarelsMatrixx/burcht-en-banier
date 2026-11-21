@@ -290,8 +290,15 @@ function trebuchet(def) {
     ovaal(ctx, x + r * 0.25, y + r * 0.35, r * 0.7, r * 0.5, 'rgba(0,0,0,0.18)');
     ovaal(ctx, x - r * 0.3, y - r * 0.35, r * 0.35, r * 0.28, 'rgba(255,255,255,0.4)');
   };
+  // Sinds 0.81.1 een vloeiende arm: houding 'worp' en 'terug' met beeld 0..STANDEN-1 (0 = gespannen,
+  // STANDEN-1 = arm voorover). Bij 'worp' zit de steen in de slinger tot het loslaten; bij 'terug'
+  // trekt het touw van de windas de lege arm weer naar beneden.
+  const A0 = Math.atan2(0.83, -0.55);                 // gespannen: arm naar linksonder
+  const A1 = Math.atan2(-0.89, 0.46) + Math.PI * 2;   // losgelaten: arm voorover (rechtsboven), via boven
   const teken = (ctx, houding, beeld) => {
-    const gespannen = houding !== 'los' && houding !== 'half';
+    const glad = houding === 'worp' || houding === 'terug';
+    const f = glad ? beeld / (STANDEN - 1) : 0;
+    const gespannen = glad ? f === 0 : houding !== 'los' && houding !== 'half';
     ctx.save(); ctx.translate(2, 2);
     const px = 50, py = 46;   // de as bovenop de schragen
     // achterste schraag (lichter, hoger en iets naar rechts: diepte)
@@ -327,7 +334,8 @@ function trebuchet(def) {
     blok(ctx, px - 6, py - 3, 12, 0.9, 'rgba(255,255,255,0.18)');
     for (const dx of [-7, 5]) blok(ctx, px + dx, py - 3.6, 2.4, 6, IJZER_D);
     // de werparm: lang eind (met slinger) en kort eind (met kist)
-    const u = houding === 'half' ? [0.06, -1] : gespannen ? [-0.55, 0.83] : [0.46, -0.89];
+    const a = A0 + (A1 - A0) * f;
+    const u = glad ? [Math.cos(a), Math.sin(a)] : houding === 'half' ? [0.06, -1] : gespannen ? [-0.55, 0.83] : [0.46, -0.89];
     const lang = 40, kort = 14;
     const ex = px + u[0] * lang, ey = py + u[1] * lang;
     const sx = px - u[0] * kort, sy = py - u[1] * kort;
@@ -347,7 +355,15 @@ function trebuchet(def) {
     for (const dx of [-4.8, 2.8]) blok(ctx, kx + dx, ky, 2, 12, IJZER_D);
     for (const [dx, dy] of [[-4.4, -0.8], [-1.2, -1.8], [2, -1], [5, -0.4]]) steen(ctx, kx + dx, ky + dy, 2.6);
     // slinger met steen
-    if (gespannen) {
+    if (glad && !gespannen) {
+      // De slinger zwaait achter de arm aan; de steen gaat los als de arm bijna recht omhoog staat.
+      const los = houding === 'terug' || f > 0.62;
+      const achter = a + (los ? -1.1 : 1.9 - 1.2 * f);   // richting van de slinger, achter de beweging
+      const sx2 = ex + Math.cos(achter) * 9, sy2 = ey + Math.sin(achter) * 9;
+      lijn(ctx, ex, ey, sx2 + 1.6, sy2, 'rgba(225,215,180,0.9)', 0.8);
+      lijn(ctx, ex, ey, sx2 - 1.6, sy2 + 0.6, 'rgba(225,215,180,0.9)', 0.8);
+      if (!los) steen(ctx, sx2, sy2, 3.6);
+    } else if (gespannen) {
       lijn(ctx, ex, ey, ex + 3.4, ey + 8, 'rgba(225,215,180,0.9)', 0.8);
       lijn(ctx, ex, ey, ex - 3.6, ey + 7.6, 'rgba(225,215,180,0.9)', 0.8);
       steen(ctx, ex, ey + 9.6, 3.6);
@@ -359,7 +375,7 @@ function trebuchet(def) {
       lijn(ctx, ex, ey, ex + 5.2, ey + 3, 'rgba(225,215,180,0.9)', 0.8);
     }
     // touw van de arm naar de windas op het bordes
-    if (gespannen) lijn(ctx, 27, 73, ex + 1, ey - 2, 'rgba(225,215,180,0.8)', 0.6);
+    if (gespannen || houding === 'terug') lijn(ctx, 27, 73, ex + 1, ey - 2, 'rgba(225,215,180,0.8)', 0.6);
     ovaal(ctx, 27, 72, 4, 4, HOUT_L); ovaal(ctx, 26.4, 71.4, 1.5, 1.5, 'rgba(255,255,255,0.2)');
     lijn(ctx, 23, 68, 31, 76, HOUT_D, 1); lijn(ctx, 31, 68, 23, 76, HOUT_D, 1);
     // een stapel stenen rechts op de grond
@@ -371,8 +387,13 @@ function trebuchet(def) {
     vlak(ctx, [[3, 48], [14, 51], [3, 49.6]], 'rgba(255,255,255,0.2)');
     ctx.restore();
   };
-  return pakket(B, H, AY, teken, grondSchaduw(50, 97, 46), { schiet: [['aan', 0], ['half', 0], ['los', 0]] });
+  // 'schiet': eerst de worp (0..STANDEN-1), dan het terughalen (STANDEN..2*STANDEN-1, van boven naar beneden).
+  const worp = Array.from({ length: STANDEN }, (_, i) => ['worp', i]);
+  const terug = Array.from({ length: STANDEN }, (_, i) => ['terug', STANDEN - 1 - i]);
+  return pakket(B, H, AY, teken, grondSchaduw(50, 97, 46), { schiet: [...worp, ...terug] });
 }
+export const TREBUCHET_STANDEN = 12;
+const STANDEN = TREBUCHET_STANDEN;
 
 // ------------------------------------------------------------------ BALLISTA
 // Een reuzenkruisboog op een houten bok, gebouwd door een ingenieur op een muur of toren: een lange schacht
