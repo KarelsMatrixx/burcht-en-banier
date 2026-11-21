@@ -335,8 +335,17 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function maakTorenPosten() {
     const w = R.torens;
     if (R.proloog || !w || typeof w !== 'object' || !koningSleutel) return 0;
-    const torens = roodTorenVakken();
+    let torens = roodTorenVakken();
     let gemaakt = 0;
+    // De torens op het rotseiland (Greyford) hebben altijd bezetting: de eerste een ballista, de tweede een kruisboogschutter, en afwisselend verder.
+    const eiland = torens.filter((v) => eilandVakken.has(v));
+    eiland.forEach((vak, k) => {
+      const sleutel = k % 2 === 0 ? 'ballista' : 'kruisboog';
+      if (!soorten[sleutel]) return;
+      zetTorenPost(sleutel, vak);
+      gemaakt++;
+    });
+    torens = torens.filter((v) => !eilandVakken.has(v));
     const deelBallista = soorten.ballista ? klem(Number(w.ballista) || 0, 0, 1) : 0;
     const deelKruisboog = soorten.kruisboog ? klem(Number(w.kruisboog) || 0, 0, 1) : 0;
     let balans = 0;
@@ -414,10 +423,20 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // Hoeveel een bouwwerk kan hebben.
   const werkVan = new Map(Object.values(bouwwerken).map((werk) => [werk.soort, werk]));
   // van = 2: van rood. In de campagne zijn zijn muren sterker of zwakker (stap 33).
-  const maxLeven = (soort, van = 0) => {
+  // Greyford (kaart.tolMuren): elke volgende muur is sterker (sterkte per muur), en de torens op het rotseiland zijn extra taai.
+  const eilandVakken = new Set(kaart.eilandTorens || []);
+  const tolSterkte = (vak) => {
+    if (vak === undefined) return 1;
+    if (eilandVakken.has(vak)) return kaart.eilandSterkte || 1;
+    const y = Math.floor(vak / B);
+    for (const w of kaart.tolMuren || []) if (y >= w.rij && y < w.rij + w.lagen) return w.sterkte || 1;
+    return 1;
+  };
+  const maxLeven = (soort, van = 0, vak) => {
     const werk = werkVan.get(soort);
     const basis = (werk && werk.leven) || R.gebouwLeven;
-    return van === 2 && R.roodMuurFactor ? Math.round(basis * R.roodMuurFactor) : basis;
+    const m = van === 2 && R.roodMuurFactor ? Math.round(basis * R.roodMuurFactor) : basis;
+    return van === 2 ? Math.round(m * tolSterkte(vak)) : m;
   };
 
   // --- Hulpjes ----------------------------------------------------------------------
@@ -586,7 +605,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   function balkenBij() {
     balken.length = 0;
     for (const [vak, s] of schade) {
-      balken.push({ x: vak % B, y: Math.floor(vak / B), deel: klem(s.leven / (s.max || maxLeven(s.soort, s.van)), 0, 1) });
+      balken.push({ x: vak % B, y: Math.floor(vak / B), deel: klem(s.leven / (s.max || maxLeven(s.soort, s.van, vak)), 0, 1) });
     }
     for (const b of burchten) {
       if (b.leven < b.max) balken.push({ x: b.vx, y: b.vy, deel: klem(b.leven / b.max, 0, 1), groot: true });
@@ -758,6 +777,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
   }
   function raakBouw(b, hoeveel, door = null) {
+    // De torens op het rotseiland (Greyford) vallen alleen voor katapulten en trebuchets: soldaten, pijlen en ballista's krassen niet.
+    if (!b.burcht && eilandVakken.has(b.vak)) {
+      const sk = door && door.krijg && door.krijg.def && door.krijg.def.soort;
+      if (sk !== 'KATAPULT' && sk !== 'TREBUCHET') return;
+    }
     if (b.burcht) {
       const doel = burchten[b.team];
       // In de proloog valt de burcht van rood niet en de jouwe niet helemaal.
@@ -776,7 +800,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     let s = schade.get(b.vak);
     if (!s || s.soort !== b.soort) {
-      s = { leven: maxLeven(b.soort, b.van), soort: b.soort, van: b.van };
+      s = { leven: maxLeven(b.soort, b.van, b.vak), soort: b.soort, van: b.van };
       schade.set(b.vak, s);
     }
     s.leven -= hoeveel;
@@ -3027,7 +3051,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     const van = kaart.eigenaar[vak];
     if (!van) return null;
-    const max = maxLeven(kaart.object[vak], van);
+    const max = maxLeven(kaart.object[vak], van, vak);
     const s = schade.get(vak);
     return { leven: s && s.soort === kaart.object[vak] ? Math.ceil(s.leven) : max, max, van };
   }
@@ -3119,7 +3143,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         const [vak, leven] = regel;
         if (!Number.isInteger(vak) || vak < 0 || vak >= B * H || !kaart.eigenaar[vak]) continue;
         if (inBurcht(vak, burcht) || inBurcht(vak, rood)) continue;
-        const max = maxLeven(kaart.object[vak], kaart.eigenaar[vak]);
+        const max = maxLeven(kaart.object[vak], kaart.eigenaar[vak], vak);
         if (!Number.isFinite(leven) || leven <= 0 || leven >= max) continue;
         schade.set(vak, { leven: Math.round(leven), soort: kaart.object[vak], van: kaart.eigenaar[vak] });
       }

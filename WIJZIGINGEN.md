@@ -1114,3 +1114,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Meting na de wijziging (zelfde opstelling, passieve verdediger die niets herstelt): level 5 jouw kant 19 naar 6 (was 19 naar 19); level 3: in aanval 1 valt de poort, in aanval 2 loopt rood door het gat en sneuvelt de koning na 7 min 18 s (was: na 12 min nog 11 van 19 over). Een speler die zijn poort herstelt en reageert hoort het te halen; niet op de iPhone gespeeld.
 - Tests: aanval41, opmars40, veldheer38 aangepast aan de nieuwe regels. Bekende fouten die ook zonder deze versie optreden: hut36 (4), campagne30, veldheer38 (zonder plan).
 - Meldingen door Claude geschreven; alle getallen schattingen.
+
+## 0.83.0: Greyford opnieuw (fase 1: kloof, drie dikke muren, rotseiland)
+- Aanleiding (Karel, 21 november): level 7 was saai. Jij onderaan, rood bovenaan, drie dikke muren ertussen (2, 4 en 6 lagen, strak tegen elkaar, dubbele poorten achter elkaar), een zandlopervormige kloof en een rotseiland met twee torens voor de laatste muur.
+- Kaart (data/kaarten.json, grauwvoort): 53 x 96 tegels, start [0.49, 0.875], vorm 'tol'. Nieuw kasteelontwerp 'tolhuis' (kastelen.json) met een blok 'tol': muren (rij, lagen, half, sterkte), eiland (y, straal, torens, sterkte). Level 7 gebruikt 'tolhuis' in plaats van 'drie_poorten'.
+- kaart.js, sectie 5h: na het spiegelen worden de rotswanden, de drie muren, de poorten (eerste en laatste laag, ertussen een gang van een tegel), torens en wachttorens, de wachtersroutes (voorste laag per muur) en het eiland gezet. De kaart geeft tolMuren, eilandTorens en eilandSterkte terug. Het proefkasteel-ring dat bij een klein kasteel (maat 3) overbleef wordt bij 'tol' ook weggehaald.
+- strijd.js: elke volgende muur is sterker (sterkte 1, 1.6 en 2.4 keer, eilandtorens 4 keer; schattingen). De eilandtorens nemen alleen schade van katapulten en trebuchets en zijn nooit over te nemen. Zij hebben altijd bezetting (ballista en kruisboogschutter).
+- campagne.json level 7: wachters 20, torens { ballista 0.25, kruisboog 0.25 } (schattingen van Claude).
+- Nog niet gedaan (volgende fasen): Moordgatentoren, hellebaardier en vuurboogschutter, voorposten, ruiterreserve, weer en decor, briefing en teksten.

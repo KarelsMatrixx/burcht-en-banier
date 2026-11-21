@@ -739,6 +739,50 @@
    ],
    "materiaal": "grijs"
   },
+  "tolhuis": {
+   "naam": "Tollhouse",
+   "ringen": [
+    {
+     "maat": 3,
+     "poorten": [
+      "links"
+     ]
+    }
+   ],
+   "materiaal": "grijs",
+   "tol": {
+    "midden": 26,
+    "muren": [
+     {
+      "rij": 64,
+      "sterkte": 1,
+      "lagen": 2,
+      "half": 9
+     },
+     {
+      "rij": 38,
+      "sterkte": 1.6,
+      "lagen": 4,
+      "half": 8
+     },
+     {
+      "rij": 17,
+      "sterkte": 2.4,
+      "lagen": 6,
+      "half": 7
+     }
+    ],
+    "eiland": {
+     "y": 30,
+     "straal": 4,
+     "sterkte": 4,
+     "torens": [
+      -2,
+      2
+     ]
+    }
+   }
+  },
   "gracht": {
    "naam": "Dike castle",
    "ringen": [

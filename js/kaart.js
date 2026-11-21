@@ -422,7 +422,7 @@ export function maakKaart(recept) {
     };
     if (r.kasteel) {
       // Eerst alles vrij maken (de gespiegelde ring en het decor), daarna bouwen.
-      const vrijTot = omvang + 1;
+      const vrijTot = r.kasteel.tol ? Math.max(omvang + 1, RING + 1) : omvang + 1;   // Greyford: ook de gespiegelde ring van het proefkasteel weg
       for (let dy = -vrijTot; dy <= vrijTot; dy++) {
         for (let dx = -vrijTot; dx <= vrijTot; dx++) {
           const i = plek(dx, dy);
@@ -1041,6 +1041,104 @@ export function maakKaart(recept) {
     }
   }
 
+  // 5h. Greyford (ontwerp.tol, level 7): een zandlopervormige kloof van onder (jij) naar boven (rood), met
+  //     drie dikke muren van meerdere lagen achter elkaar en een rotseiland met twee torens voor de laatste muur.
+  //     De lagen liggen strak tegen elkaar; alleen de eerste en laatste laag hebben een poort, ertussen loopt een
+  //     smalle gang. Dit gebeurt na het spiegelen: de muren zijn niet symmetrisch.
+  const tolRoutes = [];
+  const eilandTorens = [];
+  const tolMuren = [];
+  {
+    const T = r.kasteel && r.kasteel.tol;
+    if (T) {
+      const mid = T.midden;
+      const muren = T.muren;
+      const halfBij = (y) => {
+        let h = 22;
+        for (const w of muren) {
+          const d = y < w.rij ? w.rij - y : y > w.rij + w.lagen - 1 ? y - (w.rij + w.lagen - 1) : 0;
+          h = Math.min(h, w.half + 2 * d);
+        }
+        return h;
+      };
+      const natuur = (o) => o === OBJECT.GEEN || o === OBJECT.BOOM || o === OBJECT.STEEN;
+      for (let y = 0; y < hoogte; y++) {
+        const half = halfBij(y);
+        for (let x = 0; x < breedte; x++) {
+          const i = y * breedte + x;
+          const rand = (fijn(x, y) - 0.5) * 1.6;
+          const ver = Math.abs(x - mid);
+          if (ver > half + rand && natuur(object[i])) {
+            grond[i] = GROND.GRAS_DONKER;
+            object[i] = OBJECT.STEEN;
+          } else if (ver <= 3 && natuur(object[i])) {
+            // De hoofdweg door de kloof blijft altijd open.
+            object[i] = OBJECT.GEEN;
+            if (grond[i] === GROND.WATER) grond[i] = GROND.ZAND;
+          }
+        }
+      }
+      const zetVast = (x, y, soort, ondergrond) => {
+        if (x < 0 || y < 0 || x >= breedte || y >= hoogte) return;
+        const i = y * breedte + x;
+        object[i] = soort;
+        grond[i] = ondergrond;
+        if (soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.POORT) eigenaar[i] = 2;
+      };
+      for (let w = 0; w < muren.length; w++) {
+        const m = muren[w];
+        const laatste = m.rij + m.lagen - 1;
+        tolMuren.push({ rij: m.rij, lagen: m.lagen, half: m.half, sterkte: m.sterkte || 1 });
+        for (let y = m.rij; y <= laatste; y++) {
+          const rand = y === m.rij || y === laatste;
+          for (let x = mid - m.half; x <= mid + m.half; x++) {
+            const ver = Math.abs(x - mid);
+            let soort = OBJECT.MUUR;
+            let ondergrond = GROND.GRAS_DONKER;
+            if (ver === 0) {
+              if (rand) soort = OBJECT.POORT;
+              else { soort = OBJECT.GEEN; ondergrond = GROND.AARDE; }   // de gang tussen de poorten
+            } else if (rand && (ver === m.half || ver === m.half - 1)) soort = OBJECT.TOREN;
+            else if (rand && ver === 3) soort = OBJECT.WACHTTOREN;
+            zetVast(x, y, soort, ondergrond);
+          }
+        }
+        // Vóór en achter de poorten een strook aarde.
+        for (const y of [m.rij - 1, laatste + 1]) {
+          for (let x = mid - 1; x <= mid + 1; x++) {
+            const i = y * breedte + x;
+            if (object[i] !== OBJECT.MUUR) { grond[i] = GROND.AARDE; if (object[i] !== OBJECT.POORT) object[i] = OBJECT.GEEN; }
+          }
+        }
+        // Wachters lopen op de voorste laag (die naar jou toe), links en rechts van de poort.
+        const voor = laatste;
+        const links = [];
+        const rechts = [];
+        for (let x = mid - m.half + 2; x <= mid - 4; x++) links.push(voor * breedte + x);
+        for (let x = mid + 4; x <= mid + m.half - 2; x++) rechts.push(voor * breedte + x);
+        tolRoutes.push(links, rechts);
+      }
+      // Het rotseiland met twee torens voor de laatste muur.
+      const E = T.eiland;
+      if (E) {
+        for (let y = E.y - E.straal; y <= E.y + E.straal; y++) {
+          for (let x = mid - E.straal - 1; x <= mid + E.straal + 1; x++) {
+            if (Math.hypot((x - mid) / 1.25, y - E.y) > E.straal) continue;
+            const i = y * breedte + x;
+            grond[i] = GROND.GRAS_DONKER;
+            object[i] = OBJECT.STEEN;
+          }
+        }
+        for (const dx of E.torens) {
+          const i = E.y * breedte + mid + dx;
+          object[i] = OBJECT.TOREN;
+          eigenaar[i] = 2;
+          eilandTorens.push(i);
+        }
+      }
+    }
+  }
+
   // 6. Looproutes voor de wachters op de muur, per kasteel. Elke muur is
   //    in tweeën gedeeld door een wachttoren of de poort.
   //    Bij meer ringen eerst de buitenste: daar staan de wachters het liefst.
@@ -1086,10 +1184,10 @@ export function maakKaart(recept) {
   };
   const kastelen = [
     { team: 0, midden: start[0], routes: [] },   // nog geen muren, dus geen wachters
-    { team: 1, midden: start[1], routes: r.zonderRood ? [] : ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat, ring.rond)) },
+    { team: 1, midden: start[1], routes: r.zonderRood ? [] : [...ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat, ring.rond)), ...tolRoutes.filter((rt) => rt.length > 1)] },
   ];
 
-  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, verbonden: padGemaakt === 'ja' };
+  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, tolMuren, eilandTorens, eilandSterkte: (r.kasteel && r.kasteel.tol && r.kasteel.tol.eiland && r.kasteel.tol.eiland.sterkte) || 1, verbonden: padGemaakt === 'ja' || !!(r.kasteel && r.kasteel.tol) };
 }
 
 export function binnenKaart(kaart, x, y) {

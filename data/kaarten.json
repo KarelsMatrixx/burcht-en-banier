@@ -323,21 +323,18 @@
   },
   "grauwvoort": {
    "naam": "The Greyford Gorge",
-   "breedte": 64,
-   "hoogte": 64,
+   "breedte": 53,
+   "hoogte": 96,
    "zaad": 7707,
    "water": 0.1,
    "zand": 0.2,
    "bos": 0.64,
    "start": [
-    0.2,
-    0.8
+    0.49,
+    0.875
    ],
-   "vorm": {
-    "soort": "kloof",
-    "breed": 0.2,
-    "smal": 0.05,
-    "lang": 0.24
+    "vorm": {
+    "soort": "tol"
    },
    "vindplaatsen": [
     {

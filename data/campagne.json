@@ -925,9 +925,15 @@
      "hout": 20,
      "steen": 20
     },
-    "wachters": 12
+    "wachters": 20,
+    "torens": {
+     "ballista": 0.25,
+     "kruisboog": 0.25,
+     "bereik": 6,
+     "schade": 0.6
+    }
    },
-   "kasteel": "drie_poorten",
+   "kasteel": "tolhuis",
    "berichten": [
     {
      "bij": "tijd",
