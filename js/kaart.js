@@ -216,7 +216,7 @@ export async function laadKastelen() {
     if (o.materiaal && !materialen[o.materiaal]) throw new Error(`kastelen.json: ${naam} kent geen materiaal ${o.materiaal}`);
     if (!Array.isArray(o.ringen) || !o.ringen.length) throw new Error(`kastelen.json: ${naam} heeft geen ringen`);
     for (const r of o.ringen) {
-      if (!(r.maat >= 3 && r.maat <= 10)) throw new Error(`kastelen.json: ${naam} heeft een ring met maat ${r.maat} (3 tot 10)`);
+      if (!(r.maat >= 2 && r.maat <= 10)) throw new Error(`kastelen.json: ${naam} heeft een ring met maat ${r.maat} (3 tot 10)`);
       for (const p of r.poorten || []) if (!['voor', 'achter', 'links', 'rechts'].includes(p)) throw new Error(`kastelen.json: ${naam} kent geen poort ${p}`);
     }
   }
@@ -407,7 +407,8 @@ export function maakKaart(recept) {
   //     binnen naar buiten. Poorten: voor, achter, links, rechts.
   const ontwerp = r.kasteel || { ringen: [{ maat: RING, poorten: ['voor'] }] };
   const ringen = ontwerp.ringen.slice().sort((p, q) => p.maat - q.maat);
-  const buiten = ringen[ringen.length - 1].maat;
+  // Een ring kan van het midden af staan (ring.midden: [dx, dy], bij Greyford: de keep achterin) of bastions hebben (ring.bastions): de omvang telt dat mee.
+  const buiten = Math.max(...ringen.map((rg) => rg.maat + (rg.bastions ? 1 : 0) + Math.max(Math.abs((rg.midden || [0, 0])[0]), Math.abs((rg.midden || [0, 0])[1]))));
   const gracht = ontwerp.gracht || null;
   const grachtVan = gracht ? buiten + (gracht.afstand || 2) : 0;
   const grachtTot = gracht ? grachtVan + (gracht.breedte || 1) - 1 : 0;
@@ -458,13 +459,14 @@ export function maakKaart(recept) {
             torenTegels.add(`${Math.round(M * Math.cos(a))},${Math.round(M * Math.sin(a))}`);
           }
         }
+        const [ox, oy] = ring.midden || [0, 0];
         for (let dy = -M; dy <= M; dy++) {
           for (let dx = -M; dx <= M; dx++) {
             if (ring.rond) {
               const d = Math.hypot(dx, dy);
               if (d < M - 0.62 || d >= M + 0.62) continue;
             } else if (Math.max(Math.abs(dx), Math.abs(dy)) !== M) continue;
-            const i = plek(dx, dy);
+            const i = plek(dx + ox, dy + oy);
             if (i < 0) continue;
             if (gaten.has(`${dx},${dy}`)) { object[i] = OBJECT.GEEN; grond[i] = GROND.AARDE; continue; }
             const hoek = ring.rond ? torenTegels.has(`${dx},${dy}`) : Math.abs(dx) === M && Math.abs(dy) === M;
@@ -473,6 +475,26 @@ export function maakKaart(recept) {
             if (hoek) soort = ring.moord ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN;
             else if (poorten.has(`${dx},${dy}`)) soort = OBJECT.POORT;
             else if (midden) soort = ring.moord ? OBJECT.MOORDGATENTOREN : ring.middenTorens ? OBJECT.TOREN : OBJECT.WACHTTOREN;
+            object[i] = soort;
+            grond[i] = GROND.GRAS_DONKER;
+          }
+        }
+        // Bastions (ring.bastions): op elke hoek een stevig blok van torens, in het midden van elke zijde een uitspringende toren,
+        // en twee torens naast de poort. De poortkant is de kant van ring.poorten.
+        if (ring.bastions && !ring.rond) {
+          const poortRicht = (ring.poorten || ['voor']).map((k) => POORTPLEK[k] || POORTPLEK.voor);
+          const extra = [];
+          for (const sx of [-1, 1]) for (const sy of [-1, 1]) extra.push([sx * (M + 1), sy * M, OBJECT.TOREN], [sx * M, sy * (M + 1), OBJECT.TOREN]);
+          for (const [px, py] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            if (poortRicht.some(([qx, qy]) => qx === px && qy === py)) {
+              const zx = py ? 1 : 0;
+              const zy = px ? 1 : 0;
+              for (const t of [-1, 1]) extra.push([px * (M + 1) + zx * t, py * (M + 1) + zy * t, ring.moord ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN]);
+            } else extra.push([px * (M + 1), py * (M + 1), ring.moord ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN]);
+          }
+          for (const [ex, ey, soort] of extra) {
+            const i = plek(ex + ox, ey + oy);
+            if (i < 0) continue;
             object[i] = soort;
             grond[i] = GROND.GRAS_DONKER;
           }

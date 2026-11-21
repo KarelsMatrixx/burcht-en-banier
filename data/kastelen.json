@@ -750,6 +750,7 @@
      ]
     }
    ],
+   "varianten": {"1": {"naam": "Round fort", "ringen": [{"maat": 4, "rond": true, "torens": 8, "moord": true, "poorten": ["links"]}]}, "2": {"naam": "Double ring", "ringen": [{"maat": 2, "moord": true, "poorten": ["links"]}, {"maat": 4, "moord": true, "poorten": ["links"]}]}, "3": {"naam": "Toll court", "ringen": [{"maat": 3, "moord": true, "poorten": ["links"], "midden": [0, -1], "bastions": true}], "decor": [["hut", -2, -2], ["hut", 2, -2], ["vaten", -2, -3], ["vaten", 2, -3], ["houtstapel", -2, -4], ["houtstapel", 2, -4]]}, "4": {"naam": "Bastion fort", "ringen": [{"maat": 3, "moord": true, "poorten": ["links"], "bastions": true}]}},
    "materiaal": "grijs",
    "tol": {
     "midden": 26,

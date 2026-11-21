@@ -65,7 +65,12 @@ async function start() {
 
   // Het kasteel van rood: in de campagne het ontwerp van het level (stap 33).
   const { kastelen, materialen } = await laadKastelen();
-  const ontwerp = missie && missie.kasteel ? kastelen[missie.kasteel] : null;
+  let ontwerp = missie && missie.kasteel ? kastelen[missie.kasteel] : null;
+  // Een vorm voor het kasteel uitproberen (Greyford): ?kasteel=1 (rond fort), 2 (dubbele ring), 3 (tolhof), 4 (bastionfort); ?kasteel=uit voor de oude vorm.
+  try {
+    const q = new URLSearchParams(location.search).get('kasteel') || '';
+    if (ontwerp && ontwerp.varianten && ontwerp.varianten[q]) { const { ringen, decor } = ontwerp.varianten[q]; ontwerp = { ...ontwerp, ringen, decor: decor || [] }; }
+  } catch (e) { /* geen adres: niets te doen */ }
   if (missie && missie.kasteel && !ontwerp) throw new Error(`campagne.json: level ${missie.id} kent geen kasteel ${missie.kasteel}`);
   // Het materiaal van dat kasteel: eigen plaatjes voor muur, torens, poort en burcht van rood.
   const materiaal = ontwerp && ontwerp.materiaal ? materialen[ontwerp.materiaal] : null;

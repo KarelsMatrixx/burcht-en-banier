@@ -1170,3 +1170,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - kunst.js burchtStijl: de 3 x 3 keep van rood kan vier stijlen krijgen, alleen decor boven op de gewone tegels (hoogte voor soldaten en gedrag blijven gelijk): a hoge donjon met rood dak, warme vensters en vier torentjes; b rotsburcht met terrassen en leistenen dak; c tolpoort-kasteel met breed poortgebouw met valhek en lagere donjon; d scheve burcht met een ronde toren, een vierkante toren en een erker.
 - Proberen: voeg ?burcht=a (of b, c, d) toe aan het adres; ?burcht=uit zet het weer uit. Zonder keuze verandert er niets (ook materiaal.stijl in kastelen.json kan er een kiezen). Het geldt voor elk level met een rood kasteel van een materiaal, ook de andere levels.
 - Nog te kiezen; daarna wordt de gekozen stijl vast ingesteld voor level 7 in kastelen.json (materiaal of eigen veld).
+
+## 0.92.0: vier plattegronden voor het kasteel van Greyford (om te kiezen)
+- kaart.js: een ring kan van het midden af staan (ring.midden [dx, dy]) en bastions hebben (ring.bastions: blok torens op de hoeken, uitspringende torens in het midden van elke zijde en twee naast de poort); ringen mogen nu maat 2 zijn. De omvang van het kasteel rekent dat mee.
+- kastelen.json tolhuis.varianten, kiezen met ?kasteel=1 (rond fort), 2 (dubbele ring), 3 (tolhof: keep achterin, binnenplaats met hutten en vaten), 4 (bastionfort); ?kasteel=uit of niets: de oude vorm. Te combineren met ?burcht=a tot d.
+- Bij alle vier: batterijen, garnizoen en console blijven in orde. Nog te kiezen; daarna wordt de gekozen vorm de vaste vorm van level 7 en gaan de andere eruit.
