@@ -403,6 +403,41 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (gemaakt) opStand();
     return gemaakt;
   }
+  // Tegenbatterij (Greyford): vaste trebuchets van rood achter muur 2 en 3, elk bediend door twee ingenieurs.
+  // Ze beschieten jouw bouwwerken binnen bereik; alleen de ingenieurs doden (ruiters, boogschutters) legt ze stil.
+  function maakTegenbatterij() {
+    const n = R.tegenbatterij || 0;
+    const plekken = kaart.batterijPlekken || [];
+    if (R.proloog || !n || !plekken.length || !soorten.trebuchet || !soorten.ingenieur) return 0;
+    let gemaakt = 0;
+    for (const vak of plekken.slice(0, n)) {
+      if (!wegvinder.isVrij(vak % B, Math.floor(vak / B), VIJAND) || staandOp(vak)) continue;
+      const t = maakVijand('trebuchet', vak);
+      t.garnizoen = true;
+      t.post = vak;
+      let nodig = 2;
+      for (let rad = 1; rad <= 3 && nodig > 0; rad++) {
+        for (let dy = -rad; dy <= rad && nodig > 0; dy++) {
+          for (let dx = -rad; dx <= rad && nodig > 0; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== rad) continue;
+            const x = (vak % B) + dx;
+            const y = Math.floor(vak / B) + dy;
+            if (x < 1 || y < 1 || x >= B - 1 || y >= H - 1 || !wegvinder.isVrij(x, y, VIJAND)) continue;
+            const v2 = y * B + x;
+            if (vijanden.some((a) => !a.dood && vakVan(a) === v2)) continue;
+            const ing = maakVijand('ingenieur', v2);
+            ing.garnizoen = true;
+            ing.post = v2;
+            krijgVan(ing).ing = { fase: 'bedien', treb: t };
+            nodig--;
+          }
+        }
+      }
+      gemaakt++;
+    }
+    if (gemaakt) opStand();
+    return gemaakt;
+  }
   // Elke seconde: welke doelen van de speler zijn slecht bewaakt?
   let jagerDoelen = [];
   function jagerStap() {
@@ -436,7 +471,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     }
     return beste;
   }
-  const maakExtraGarnizoen = () => maakSlotGarnizoen() + maakPostGarnizoen() + maakTorenPosten() + maakRuiterReserve();
+  const maakExtraGarnizoen = () => maakSlotGarnizoen() + maakPostGarnizoen() + maakTorenPosten() + maakRuiterReserve() + maakTegenbatterij();
   const garnizoenLijst = () => vijanden.filter((e) => e.garnizoen && !e.dood);
   // Een man van het garnizoen: vecht wat in zicht komt, binnen de ketting, en gaat daarna naar zijn post.
   function garnizoenDenk(e, k, anderen) {

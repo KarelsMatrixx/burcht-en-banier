@@ -175,6 +175,8 @@ function pasRoodToe(regels, rood) {
       bereik: Number.isFinite(rood.ruiterReserve.bereik) ? rood.ruiterReserve.bereik : 45,
     };
   }
+  // tegenbatterij: aantal (0 tot 4): zoveel vaste trebuchets van rood, elk met twee ingenieurs, achter de muren van Greyford (kaart.batterijPlekken).
+  if (rood.tegenbatterij && Number.isFinite(rood.tegenbatterij.aantal)) regels.strijd.tegenbatterij = Math.max(0, Math.min(4, Math.round(rood.tegenbatterij.aantal)));
   // torens: { ballista: deel, kruisboog: deel }: welk deel van de rode torens een ballista of een kruisboogschutter krijgt (0 tot 1).
   if (rood.torens && typeof rood.torens === 'object') {
     regels.strijd.torens = {

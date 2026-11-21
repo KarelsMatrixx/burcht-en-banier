@@ -1155,3 +1155,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Nieuw landschap 'berg' (landschappen.json, "Grey mountain"): grijs gras en grijze vlekken over de helft van de grond, grijs zand en aarde, grijsblauw water, grijze rotsen, haast geen bloemen, veel losse steentjes, mist, raven en een lichte grijze waas voor een grijze middag. Geluid: wind (geluiden.json, berg: amb_wind).
 - Level 7 gebruikt 'berg' in plaats van 'kloof'. Geen bomenbos meer (kaarten.json bos 1.2). Alleen de vindplaats bij jouw kasteel houdt een klein groepje kale grijze bomen, anders heeft de speler geen hout; de houthakker blijft dus werken.
 - Test level7_72 controleert nu 'berg'.
+
+## 0.89.0: tegenbatterij (Greyford)
+- Vier vaste trebuchets van rood, twee achter muur 2 (rij 35) en twee achter muur 3 (rij 15), elk met twee ingenieurs (kastelen.json tol.batterijen, kaart.batterijPlekken, campagne rood.tegenbatterij.aantal 4, modus.js, strijd.js maakTegenbatterij). Ze beschieten bouwwerken van de speler binnen bereik 28; leggen de ingenieurs om (ruiters, boogschutters), dan zwijgt de trebuchet.
+- Een trebuchet raakt alleen bouwwerken, geen eenheden: "terugschieten op jouw trebuchet" kan dus niet; de batterij slaat wel jouw muren, torens en schansen. Wat jij vooruit bouwt na een doorbraak komt binnen bereik.
+- Test tests/batterij89.mjs (6 checks). Aantal en plekken zijn schattingen: na te spelen.

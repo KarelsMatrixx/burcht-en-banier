@@ -1050,6 +1050,7 @@ export function maakKaart(recept) {
   const eilandTorens = [];
   const tolMuren = [];
   const reservePlekken = [];
+  const batterijPlekken = [];
   {
     const T = r.kasteel && r.kasteel.tol;
     if (T) {
@@ -1154,6 +1155,11 @@ export function maakKaart(recept) {
       // Stallen van de ruiterreserve (decor) en de plekken waar de ruiters staan.
       for (const [sx, sy] of T.stallen || []) { const i = sy * breedte + sx; if (object[i] === OBJECT.GEEN || object[i] === OBJECT.BOOM) { object[i] = OBJECT.STAL; grond[i] = GROND.AARDE; } }
       for (const [rx, ry] of T.reserve || []) reservePlekken.push(ry * breedte + rx);
+      // Plekken voor vaste trebuchets van rood (tegenbatterij): twee achter muur 2, twee achter muur 3. Vrijmaken zodat ze er kunnen staan.
+      for (const [bx, by] of T.batterijen || []) {
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const i = (by + dy) * breedte + bx + dx; if (object[i] === OBJECT.BOOM && grond[i] !== GROND.WATER) object[i] = OBJECT.GEEN; }
+        batterijPlekken.push(by * breedte + bx);
+      }
       // Het rotseiland met twee torens voor de laatste muur.
       const E = T.eiland;
       if (E) {
@@ -1223,7 +1229,7 @@ export function maakKaart(recept) {
     { team: 1, midden: start[1], routes: r.zonderRood ? [] : [...ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat, ring.rond)), ...tolRoutes.filter((rt) => rt.length > 1)] },
   ];
 
-  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, tolMuren, reservePlekken, eilandTorens, eilandSterkte: (r.kasteel && r.kasteel.tol && r.kasteel.tol.eiland && r.kasteel.tol.eiland.sterkte) || 1, verbonden: padGemaakt === 'ja' || !!(r.kasteel && r.kasteel.tol) };
+  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, tolMuren, reservePlekken, batterijPlekken, eilandTorens, eilandSterkte: (r.kasteel && r.kasteel.tol && r.kasteel.tol.eiland && r.kasteel.tol.eiland.sterkte) || 1, verbonden: padGemaakt === 'ja' || !!(r.kasteel && r.kasteel.tol) };
 }
 
 export function binnenKaart(kaart, x, y) {
