@@ -1149,4 +1149,4 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Decor (kaart.js, 5h): een tolweg van aarde door de hele kloof, bij elke muur twee tolloketten (hutten), vaten en een hooiberg voor de poort.
 - Teksten level 7 (campagne.json): intro, verhaal en de berichten van Bartholt noemen nu drie muren, de olie en de ruiters achter muur 1 (nieuw bericht na 70 seconden). Engelse tekst door Claude geschreven: na te lezen.
 - Het bestaande verhaalbeeld level07.webp (muren van rots tot rots) past nog bij de nieuwe kaart; geen nieuw beeld nodig.
-- test_stap15 faalt soms op "bewaren: reserve terug" (onregelmatig, ook zonder deze wijzigingen te verwachten; een tweede run slaagt).
+- test_stap15 faalt soms op "bewaren: reserve terug" (onregelmatig; bevestigd ook op de code van voor 0.83.0, dus niet door Greyford veroorzaakt).
