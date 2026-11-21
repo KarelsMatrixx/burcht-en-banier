@@ -1049,6 +1049,7 @@ export function maakKaart(recept) {
   const tolRoutes = [];
   const eilandTorens = [];
   const tolMuren = [];
+  const reservePlekken = [];
   {
     const T = r.kasteel && r.kasteel.tol;
     if (T) {
@@ -1119,6 +1120,26 @@ export function maakKaart(recept) {
         for (let x = mid + 3; x <= mid + m.half - 2; x++) rechts.push(voor * breedte + x);
         tolRoutes.push(links, rechts);
       }
+      // Voorschansen (tol.schansen: [x, y]): kleine versterkte posten in de voorhoven, met poort naar jou toe. Ze gelden als
+      // buitenposten (kaart.posten): rood.postGarnizoen bepaalt wie erin staat. Zo kan rood schieten op wie een trebuchet bouwt.
+      for (const [cx, cy] of T.schansen || []) {
+        const M = 2;
+        for (let dy = -M - 1; dy <= M + 1; dy++) {
+          for (let dx = -M - 1; dx <= M + 1; dx++) {
+            const i = (cy + dy) * breedte + cx + dx;
+            const rand = Math.max(Math.abs(dx), Math.abs(dy));
+            if (rand > M) { if (object[i] === OBJECT.BOOM) object[i] = OBJECT.GEEN; continue; }
+            if (rand < M) { object[i] = OBJECT.GEEN; grond[i] = GROND.AARDE; eigenaar[i] = 0; continue; }
+            const hoekPunt = Math.abs(dx) === M && Math.abs(dy) === M;
+            zetVast(cx + dx, cy + dy, hoekPunt ? OBJECT.MOORDGATENTOREN : dx === 0 && dy === M ? OBJECT.POORT : OBJECT.MUUR, GROND.GRAS_DONKER);
+          }
+        }
+        for (let k = 1; k <= 3; k++) { const i = (cy + M + k) * breedte + cx; if (object[i] === OBJECT.BOOM) object[i] = OBJECT.GEEN; grond[i] = GROND.AARDE; }
+        posten.push({ vak: cy * breedte + cx, x: cx, y: cy, poort: { x: cx, y: cy + M }, maat: M });
+      }
+      // Stallen van de ruiterreserve (decor) en de plekken waar de ruiters staan.
+      for (const [sx, sy] of T.stallen || []) { const i = sy * breedte + sx; if (object[i] === OBJECT.GEEN || object[i] === OBJECT.BOOM) { object[i] = OBJECT.STAL; grond[i] = GROND.AARDE; } }
+      for (const [rx, ry] of T.reserve || []) reservePlekken.push(ry * breedte + rx);
       // Het rotseiland met twee torens voor de laatste muur.
       const E = T.eiland;
       if (E) {
@@ -1188,7 +1209,7 @@ export function maakKaart(recept) {
     { team: 1, midden: start[1], routes: r.zonderRood ? [] : [...ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat, ring.rond)), ...tolRoutes.filter((rt) => rt.length > 1)] },
   ];
 
-  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, tolMuren, eilandTorens, eilandSterkte: (r.kasteel && r.kasteel.tol && r.kasteel.tol.eiland && r.kasteel.tol.eiland.sterkte) || 1, verbonden: padGemaakt === 'ja' || !!(r.kasteel && r.kasteel.tol) };
+  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, tolMuren, reservePlekken, eilandTorens, eilandSterkte: (r.kasteel && r.kasteel.tol && r.kasteel.tol.eiland && r.kasteel.tol.eiland.sterkte) || 1, verbonden: padGemaakt === 'ja' || !!(r.kasteel && r.kasteel.tol) };
 }
 
 export function binnenKaart(kaart, x, y) {

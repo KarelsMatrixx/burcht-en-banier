@@ -167,6 +167,14 @@ function pasRoodToe(regels, rood) {
     regels.strijd.slotGarnizoen = {};
     for (const [soort, aantal] of Object.entries(rood.slotGarnizoen)) if (Number.isFinite(aantal) && aantal > 0) regels.strijd.slotGarnizoen[soort] = Math.min(40, Math.round(aantal));
   }
+  // ruiterReserve: { aantallen: [per stal], bewaking, bereik }: ruiters in een stal binnen een muur (Greyford) die jagen op slecht bewaakte trebuchets en ingenieurs.
+  if (rood.ruiterReserve && Array.isArray(rood.ruiterReserve.aantallen)) {
+    regels.strijd.ruiterReserve = {
+      aantallen: rood.ruiterReserve.aantallen.map((n) => Math.max(0, Math.min(20, Math.round(Number(n) || 0)))),
+      bewaking: Number.isFinite(rood.ruiterReserve.bewaking) ? rood.ruiterReserve.bewaking : 3,
+      bereik: Number.isFinite(rood.ruiterReserve.bereik) ? rood.ruiterReserve.bereik : 45,
+    };
+  }
   // torens: { ballista: deel, kruisboog: deel }: welk deel van de rode torens een ballista of een kruisboogschutter krijgt (0 tot 1).
   if (rood.torens && typeof rood.torens === 'object') {
     regels.strijd.torens = {

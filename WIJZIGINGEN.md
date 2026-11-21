@@ -1136,3 +1136,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Nieuwe tekeningen in soldaten.js, nieuwe soorten in eenheden.js (HELLEBAARDIER 40, VUURBOOG 41), plaatjes in assets.json en tekenaar.js.
 - Level 7: rood heeft ze in zijn leger (hellebaardier vanaf aanval 1, vuurboogschutter vanaf aanval 2) en het slotgarnizoen heeft 6 hellebaardiers. Jij krijgt ze als beloning van level 8 (dus vanaf level 9), zodat level 7 niet te veel nieuws geeft (Karel kan dit nog veranderen).
 - Test: tests/tol83.mjs uitgebreid (16 controles).
+
+## 0.86.0: voorschansen, ruiterreserve, bouwgebied dat meeschuift (Greyford, fase 3)
+- Vier voorschansen (kastelen.json tolhuis.tol.schansen): kleine versterkte posten in de voorhoven, twee voor muur 1 (op jouw bouwgebied) en twee in de voorhof daarachter. Ze tellen als buitenposten: rood.postGarnizoen (level 7: hellebaardier, zwaardvechter, 2 boogschutters, vuurboogschutter) staat erin.
+- Ruiterreserve (strijd.js maakRuiterReserve, jagerStap): twee stallen binnen muur 1 en muur 2 met 4 en 6 ruiters (campagne level 7: ruiterReserve). Ze jagen op een ingenieur, trebuchet of katapult als er hoogstens 3 soldaten van jou binnen 7 tegels staan (een ingenieur gaat voor), tot 45 tegels ver, en gaan daarna terug naar de stal. Is je trebuchet goed bewaakt, dan blijven ze thuis.
+- Bouwgebied (bouwen.js): in Greyford schuift het mee. Daarvoor mocht je tot 14 tegels van je burcht bouwen; zijn beide poorten van een muur gebroken, dan mag je tot 14 tegels voorbij die muur bouwen (de hamervlag van het leger). Melding: "this is too far from your keep (break the next wall to build further)".
+- Tegenbatterij (rode trebuchet die jouw trebuchet beschiet) en de paalkrans voor de speler zijn nog niet gebouwd. Slapende sectoren zijn niet nodig: 0,17 ms per rekenstap met het hele leger van rood.
+- Test: tests/tol83.mjs (21 controles). veldheer38 heeft nog de bekende fout (ram komt veel later).

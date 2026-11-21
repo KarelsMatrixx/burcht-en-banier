@@ -47,7 +47,16 @@ export function maakBouwer({ kaart, wegvinder, tekenaar, eenheden, economie, bou
     const i = y * B + x;
     // Je bouwt alleen in de buurt van je eigen burcht (bouwStraal in economie.json).
     const thuis = kaart.start[0];
-    if (bouwStraal > 0 && Math.max(Math.abs(x - thuis.x), Math.abs(y - thuis.y)) > bouwStraal) return 'this is too far from your keep';
+    // Greyford: na elke doorbraak (beide poorten van een muur weg) schuift je bouwgebied naar voren (de hamervlag van het leger).
+    if (kaart.tolMuren && kaart.tolMuren.length && bouwStraal > 0) {
+      let voorY = thuis.y - bouwStraal;
+      for (const w of kaart.tolMuren.slice().sort((p, q) => q.rij - p.rij)) {
+        const poort = (rij) => kaart.object[rij * B + thuis.x] === OBJECT.POORT;
+        if (poort(w.rij) || poort(w.rij + w.lagen - 1)) break;
+        voorY = Math.min(voorY, w.rij - bouwStraal);
+      }
+      if (y < voorY || Math.abs(x - thuis.x) > 24) return 'this is too far from your keep (break the next wall to build further)';
+    } else if (bouwStraal > 0 && Math.max(Math.abs(x - thuis.x), Math.abs(y - thuis.y)) > bouwStraal) return 'this is too far from your keep';
     if (kaart.grond[i] === GROND.WATER) return 'this is water';
     const staat = kaart.object[i];
 

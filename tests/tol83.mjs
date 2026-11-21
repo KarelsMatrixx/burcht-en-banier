@@ -49,6 +49,21 @@ const w9 = await ont(9);
 check('level 9: beide wel te leiden (beloning van level 8)', w9[0] && w9[1], JSON.stringify(w9));
 const defs = await p.evaluate(() => { const r = window.spel.regels.soldaten; return { h: r.hellebaardier && r.hellebaardier.bonusTegen, v: r.vuurboogschutter && r.vuurboogschutter.bonusTegen }; });
 check('hellebaardier sterk tegen ruiters, vuurboogschutter tegen belegeringstuig', defs.h && defs.h.ruiter > 2 && defs.v && defs.v.ram >= 3 && defs.v.trebuchet >= 3, JSON.stringify(defs));
+// Voorschansen, ruiterreserve en bouwgebied dat meeschuift
+await zet([0, 1, 2, 3, 4, 5, 6], 7);
+const sc = await p.evaluate(() => ({ posten: window.spel.kaart.posten.length, reserve: window.spel.kaart.reservePlekken.length, garn: window.spel.strijd.garnizoen().filter((e) => e.vijand === 'ruiter').length }));
+check('vier voorschansen en twee reservepunten', sc.posten === 4 && sc.reserve === 2, JSON.stringify(sc));
+check('10 ruiters in de reserve', sc.garn === 10, sc.garn);
+const nee = await p.evaluate(() => window.spel.bouwer.waaromNiet(26, 60, window.spel.bouwwerken.muur));
+check('voor de doorbraak mag je niet voorbij muur 1 bouwen', /too far/.test(nee), nee);
+await p.evaluate(() => { const k = window.spel.kaart; k.object[64 * k.breedte + 26] = 0; k.object[65 * k.breedte + 26] = 0; });
+const ja = await p.evaluate(() => window.spel.bouwer.waaromNiet(26, 60, window.spel.bouwwerken.muur));
+check('na het breken van beide poorten wel', !/too far/.test(ja), ja);
+// de ruiters jagen op een onbewaakte ingenieur
+await zet([0, 1, 2, 3, 4, 5, 6], 7);
+await p.evaluate(() => { document.getElementById('missie-begin') && document.getElementById('missie-begin').click(); window.spel.leger.zetStand([['ingenieur', 26, 70, 100, 0]]); const s = window.spel; for (let i = 0; i < 400; i++) { s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap(); } });
+const ing = await p.evaluate(() => window.spel.leger.lijst.filter((e) => e.soldaat && e.soldaat.sleutel === 'ingenieur' && !e.dood).length);
+check('een onbewaakte ingenieur wordt opgejaagd', ing === 0, ing);
 check('geen fouten in de console', fouten.length === 0, fouten.join('|'));
 console.log(`tol83: ${ok} goed, ${fout} fout`);
 await b.close(); srv.kill();

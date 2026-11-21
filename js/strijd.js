@@ -368,13 +368,90 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (gemaakt) opStand();
     return gemaakt;
   }
-  const maakExtraGarnizoen = () => maakSlotGarnizoen() + maakPostGarnizoen() + maakTorenPosten();
+  // De ruiterreserve (Greyford): rood.ruiterReserve is een lijst met aantallen, een per plek in kaart.reservePlekken.
+  // Zij staan bij hun stal binnen een muur en jagen op een trebuchet, een katapult of een ingenieur die slecht bewaakt wordt
+  // (rood.ruiterReserve.bewaking: hoeveel eigen soldaten er hoogstens binnen 7 tegels mogen staan, standaard 3). Daarna gaan ze terug.
+  const RESERVE = R.ruiterReserve || null;
+  function maakRuiterReserve() {
+    const aantallen = RESERVE && Array.isArray(RESERVE.aantallen) ? RESERVE.aantallen : null;
+    const plekken = kaart.reservePlekken || [];
+    if (R.proloog || !aantallen || !plekken.length || !soorten.ruiter) return 0;
+    let gemaakt = 0;
+    plekken.forEach((vak0, n) => {
+      const x0 = vak0 % B;
+      const y0 = Math.floor(vak0 / B);
+      let over = aantallen[n] || 0;
+      for (let rad = 0; rad <= 5 && over > 0; rad++) {
+        for (let dy = -rad; dy <= rad && over > 0; dy++) {
+          for (let dx = -rad; dx <= rad && over > 0; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== rad) continue;
+            const x = x0 + dx;
+            const y = y0 + dy;
+            if (x < 1 || y < 1 || x >= B - 1 || y >= H - 1 || !wegvinder.isVrij(x, y, VIJAND)) continue;
+            const vak = y * B + x;
+            if (vijanden.some((a) => !a.dood && vakVan(a) === vak)) continue;
+            const e = maakVijand('ruiter', vak);
+            e.garnizoen = true;
+            e.post = vak;
+            e.jager = true;
+            gemaakt++;
+            over--;
+          }
+        }
+      }
+    });
+    if (gemaakt) opStand();
+    return gemaakt;
+  }
+  // Elke seconde: welke doelen van de speler zijn slecht bewaakt?
+  let jagerDoelen = [];
+  function jagerStap() {
+    if (stapNr % stappen(1) !== 0) return;
+    const max = Number.isFinite(RESERVE && RESERVE.bewaking) ? RESERVE.bewaking : 3;
+    jagerDoelen = [];
+    for (const a of leger.lijst) {
+      if (a.dood) continue;
+      const sl = a.soldaat && a.soldaat.sleutel;
+      if (sl !== 'ingenieur' && sl !== 'trebuchet' && sl !== 'katapult') continue;
+      let bewaker = 0;
+      for (const b of leger.lijst) {
+        if (b.dood || b === a || !b.soldaat) continue;
+        const bs = b.soldaat.sleutel;
+        if (bs === 'ingenieur' || bs === 'trebuchet' || bs === 'katapult' || bs === 'ladder' || bs === 'ram') continue;
+        if (Math.hypot(b.x - a.x, b.y - a.y) <= 7) bewaker++;
+      }
+      if (bewaker <= max) jagerDoelen.push(a);
+    }
+  }
+  function jagerProoi(e) {
+    const bereik = (RESERVE && RESERVE.bereik) || 45;
+    let beste = null;
+    let bestAfstand = bereik;
+    for (const a of jagerDoelen) {
+      if (a.dood) continue;
+      const d = Math.hypot(a.x - e.x, a.y - e.y);
+      // een ingenieur gaat voor: zonder hem schiet de trebuchet niet meer
+      const score = a.soldaat && a.soldaat.sleutel === 'ingenieur' ? d * 0.6 : d;
+      if (score < bestAfstand) { beste = a; bestAfstand = score; }
+    }
+    return beste;
+  }
+  const maakExtraGarnizoen = () => maakSlotGarnizoen() + maakPostGarnizoen() + maakTorenPosten() + maakRuiterReserve();
   const garnizoenLijst = () => vijanden.filter((e) => e.garnizoen && !e.dood);
   // Een man van het garnizoen: vecht wat in zicht komt, binnen de ketting, en gaat daarna naar zijn post.
   function garnizoenDenk(e, k, anderen) {
     const px = (e.post % B) + 0.5;
     const py = Math.floor(e.post / B) + 0.5;
     const ver = Math.hypot(e.x - px, e.y - py);
+    if (e.jager) {
+      const prooi = jagerProoi(e);
+      if (prooi) {
+        k.doelwit = prooi;
+        if (Math.hypot(prooi.x - e.x, prooi.y - e.y) <= bereikVan(e, k) && kanRaken(e, k, prooi)) return;
+        jaag(e, k);
+        return;
+      }
+    }
     k.doelwit = kiesDoelwit(e, k, anderen);
     if (k.doelwit) {
       const d = Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y);
@@ -2963,6 +3040,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (!R.proloog) burchtStap(rood, eigen);
     if (stapNr % stappen(1) === 0) helerStap();
     moordStap();
+    jagerStap();
     if (stapNr % stappen(0.5) === 0 && vijanden.some((e) => e.reserveWacht)) reserveZicht();
     if (stapNr % stappen(0.5) === 0) zienerZicht();   // in de proloog staat er geen kasteel van rood
     brandStap();
