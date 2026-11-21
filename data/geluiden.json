@@ -650,6 +650,7 @@
   "meer": "amb_river",
   "rug": "amb_wind",
   "kloof": "amb_river",
+  "berg": "amb_wind",
   "polder": "amb_river",
   "sneeuw": "amb_wind",
   "rouw": "amb_rain"

@@ -1150,3 +1150,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Teksten level 7 (campagne.json): intro, verhaal en de berichten van Bartholt noemen nu drie muren, de olie en de ruiters achter muur 1 (nieuw bericht na 70 seconden). Engelse tekst door Claude geschreven: na te lezen.
 - Het bestaande verhaalbeeld level07.webp (muren van rots tot rots) past nog bij de nieuwe kaart; geen nieuw beeld nodig.
 - test_stap15 faalt soms op "bewaren: reserve terug" (onregelmatig; bevestigd ook op de code van voor 0.83.0, dus niet door Greyford veroorzaakt).
+
+## 0.88.0: Greyford op een grijze berg
+- Nieuw landschap 'berg' (landschappen.json, "Grey mountain"): grijs gras en grijze vlekken over de helft van de grond, grijs zand en aarde, grijsblauw water, grijze rotsen, haast geen bloemen, veel losse steentjes, mist, raven en een lichte grijze waas voor een grijze middag. Geluid: wind (geluiden.json, berg: amb_wind).
+- Level 7 gebruikt 'berg' in plaats van 'kloof'. Geen bomenbos meer (kaarten.json bos 1.2). Alleen de vindplaats bij jouw kasteel houdt een klein groepje kale grijze bomen, anders heeft de speler geen hout; de houthakker blijft dus werken.
+- Test level7_72 controleert nu 'berg'.

@@ -107,6 +107,7 @@
    "spriet": ["rgba(190,190,170,0.24)", "rgba(10,10,10,0.36)"], "bloemen": ["rgba(200,40,40,0.85)"], "bloemKans": 0.008, "steenKans": 0.07, "riet": 0,
    "bomen": ["dood", "dood", "dood", "kaal", "struikdor", "dood"], "boomKleur": "#3c4032", "rotsKleur": "#4a484c", "rotsSneeuw": false,
    "deeltjes": "storm", "vogels": "raven", "waas": [40, 30, 60, 0.16]
-  }
+  },
+  "berg": {"naam": "Grey mountain", "gras": [[128, 130, 128], [104, 106, 106]], "zand": [[170, 168, 162], [134, 132, 128]], "aarde": [110, 106, 100], "water": [[112, 128, 136], [58, 74, 86]], "schuim": [226, 230, 232], "rimpels": true, "vlek": {"kleur": [148, 150, 148], "aandeel": 0.5}, "spriet": ["rgba(200,204,200,0.22)", "rgba(30,34,34,0.30)"], "bloemen": ["rgba(220,222,226,0.7)"], "bloemKans": 0.004, "steenKans": 0.12, "riet": 0, "bomen": ["kaal", "dood", "kaal", "struikdor"], "boomKleur": "#6e706c", "rotsKleur": "#8a8c88", "rotsSneeuw": false, "deeltjes": "mist", "vogels": "raven", "waas": [150, 153, 156, 0.16]}
  }
 }

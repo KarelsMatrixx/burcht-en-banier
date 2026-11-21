@@ -27,7 +27,7 @@ const a = await p.evaluate(() => { const s = window.spel; const tel = {}; for (c
   return { modus: s.modus, poorten: tel[6] || 0, landschap: s.landschap && s.landschap.sleutel, wind: s.leger.waaromNiet('windzanger'), wachters: s.strijd.wachters().length }; });
 check('level 7 geladen', a.modus.soort === 'campagne' && a.modus.missie === 7, JSON.stringify(a.modus));
 check('drie poorten van rood (en jouw poort)', a.poorten >= 3, a.poorten);
-check('landschap kloof', a.landschap === 'kloof', a.landschap);
+check('landschap kloof', a.landschap === 'berg', a.landschap);
 check('windzanger nog niet op te leiden in level 7', !!a.wind, a.wind);
 check('rood heeft wachters op de muren', a.wachters >= 6, a.wachters);
 // ---- Vrij spel (alles vrij, gewone ringmuur zonder gracht): leid een windzanger op en zet hem bij een rode wachter
