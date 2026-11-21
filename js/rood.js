@@ -158,7 +158,27 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
     return kanBetalen(soorten.ridder.kosten) ? 'ridder' : null;
   }
 
+  // Belegering (veldheer, 0.82.0): ontbrekend hout voor een ram of ladder betaalt hij met goud
+  // (twee goud per hout), zodat hij ook zonder houthakkers belegeringstuig heeft.
+  function belegPrijs(kosten) {
+    const o = omzet(kosten);
+    const tekort = Math.max(0, (o.hout || 0) - (voorraad.hout || 0));
+    return { hout: (o.hout || 0) - tekort, goud: (o.goud || 0) + tekort * 2 };
+  }
+  const belegNu = () => (veld ? veld.belegNodig(reserve, aanvallen + 1) : null);
+
   function koop() {
+    // Eerst het belegeringstuig en de schutters die bij een aanval op muren horen (bovenop zijn doel).
+    const beleg = belegNu();
+    if (beleg) {
+      const prijs = belegPrijs(soorten[beleg].kosten);
+      if ((voorraad.goud || 0) >= prijs.goud && (voorraad.hout || 0) >= prijs.hout) {
+        voorraad.goud -= prijs.goud;
+        voorraad.hout -= prijs.hout;
+        reserve[beleg] = (reserve[beleg] || 0) + 1;
+      }
+      return;   // anders spaart hij ervoor
+    }
     // Hij koopt niet veel meer dan hij nodig heeft voor de volgende aanval.
     if (sterkte() >= doel() + H.extra) return;
     const soort = kiesKoop();
@@ -226,7 +246,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
 
     // Kan hij zijn aanval niet betalen terwijl het tijd is, dan krijgt hij hulp (veldheer: goud
     // van zijn bondgenoten). Zonder die hulp zou een sterke speler nooit meer aangevallen worden.
-    if (veld && sinds >= wachtTijd() && sterkte() < doel()) voorraad.goud = Math.min(H.voorraadMax, voorraad.goud + veld.hulp(aanvallen + 1) * dt);
+    if (veld && sinds >= wachtTijd() && (sterkte() < doel() || belegNu())) voorraad.goud = Math.min(H.voorraadMax, voorraad.goud + veld.hulp(aanvallen + 1) * dt);
     if ((kooptKlok -= dt) <= 0) {
       kooptKlok += H.kooptElke;
       koop();
@@ -241,7 +261,8 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
       stuur((n) => `The red lord makes a sally with ${n} ${n === 1 ? 'man' : 'men'}!`, false);
       return;
     }
-    if (sinds >= wachtTijd() && sterkte() >= doel()) {
+    // Mist hij nog belegeringstuig, dan wacht hij daar hooguit 40 s extra op.
+    if (sinds >= wachtTijd() && sterkte() >= doel() && (!belegNu() || sinds >= wachtTijd() + 40)) {
       stuur((n) => `Attack ${aanvallen + 1}! ${n} ${n === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`, true);
       opVerandering();
     }

@@ -131,6 +131,65 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
 
   // De bres: het zwakste stuk muur of poort van jou waar rood bij kan.
   // vermijd: een eerdere bres; de nieuwe moet minstens minAfstand tegels verder liggen.
+  // Is er al een weg naar jouw burcht (geen muur meer tussen rood en de burcht)?
+  function open(bereik) {
+    const b = strijd.burcht();
+    if (!b) return false;
+    const x0 = Math.floor(b.x), y0 = Math.floor(b.y);
+    for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
+      const v = (y0 + dy) * B + x0 + dx;
+      if (bereik.has(v) && Math.hypot(dx, dy) <= 2.9) return true;
+    }
+    return false;
+  }
+  // De bres en de stukken muur, poort en toren van jou ernaast die rood van buiten kan raken,
+  // dichtstbijzijnde eerst (hooguit drie).
+  function werkplekken(bres, bereik) {
+    const x0 = bres % B, y0 = Math.floor(bres / B);
+    const lijst = [];
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const v = (y0 + dy) * B + x0 + dx;
+      if (x0 + dx < 0 || y0 + dy < 0 || x0 + dx >= B || y0 + dy >= HOOG || kaart.eigenaar[v] !== 1) continue;
+      const s = kaart.object[v];
+      if (s !== OBJECT.MUUR && s !== OBJECT.POORT && s !== OBJECT.TOREN) continue;
+      let buiten = false;
+      for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (bereik.has(v + ay * B + ax)) buiten = true;
+      if (buiten) lijst.push(v);
+    }
+    lijst.sort((a, b) => Math.hypot(a % B - x0, Math.floor(a / B) - y0) - Math.hypot(b % B - x0, Math.floor(b / B) - y0));
+    return lijst.slice(0, 3);
+  }
+
+  // Belegering (sinds 0.82.0): heeft de speler muren, dan neemt rood altijd ladders, een ram en
+  // genoeg schutters mee. Geeft de soort die hij nu moet kopen, of null.
+  function belegNodig(reserve, nr) {
+    const I = instelling(nr);
+    if (!(I.niveau >= 2)) return null;
+    let muren = 0, poort = false;
+    for (let v = 0; v < B * HOOG; v++) {
+      if (kaart.eigenaar[v] !== 1) continue;
+      const s = kaart.object[v];
+      if (s === OBJECT.MUUR || s === OBJECT.TOREN) muren++;
+      else if (s === OBJECT.POORT) { muren++; poort = true; }
+    }
+    if (muren < 6) return null;
+    let voet = 0, schutters = 0;
+    for (const [s, n] of Object.entries(reserve)) {
+      const d = soorten[s];
+      if (!d || isMachine(d) || isSteun(d)) continue;
+      voet += n;
+      if (isSchutter(d)) schutters += n;
+    }
+    const tel = (s) => reserve[s] || 0;
+    if (voet >= 4 && tel('ladder') < Math.min(4, Math.max(1, Math.floor(voet / 6)))) return 'ladder';
+    if (nr >= 2 && voet >= 6 && tel('ram') < Math.min(3, Math.max(1, Math.floor(voet / 8))) && (poort || muren >= 6)) return 'ram';
+    if (voet >= 4 && schutters < voet * 0.25) {
+      const kent = Object.keys(H.leger || {}).filter((s) => soorten[s] && isSchutter(soorten[s]) && !(soorten[s].alleenBouw));
+      return kent.includes('boogschutter') ? 'boogschutter' : kent[0] || 'boogschutter';
+    }
+    return null;
+  }
+
   function kiesBres(bereik, zaden, vermijd = -1, minAfstand = 0) {
     const soldaten = leger.lijst.filter((e) => !e.dood && e.soldaat && !(soorten[e.soldaat.sleutel] || {}).koning);
     const torens = jouwTorens();
@@ -334,13 +393,17 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     // De tweede lijn: gelijkmatig uit de rest gekozen, zodat het mengsel blijft kloppen.
     const tweede = [];
     const hoofdVoet = [];
-    const ft = I.tweede > 0 && rest.length >= 6 ? I.tweede : 0;
+    // Sinds 0.82.0 alleen bij een groot leger: anders wordt het opgeknipt in groepjes die apart
+    // sneuvelen (Karel, 21 november: aanvallen ongeorganiseerd).
+    const ft = I.tweede > 0 && rest.length >= 14 ? I.tweede : 0;
     rest.forEach((e, i) => ((Math.floor((i + 1) * ft) > Math.floor(i * ft)) ? tweede : hoofdVoet).push(e));
     // De flank: een deel van de hoofdmacht kiest een andere weg.
     const flank = [];
     const hoofd = [];
-    const ff = I.flank > 0 && hoofdVoet.length >= 6 ? I.flank : 0;
+    const ff = I.flank > 0 && (hut >= 0 ? hoofdVoet.length >= 6 : hoofdVoet.length >= 12) ? I.flank : 0;
     hoofdVoet.forEach((e, i) => ((Math.floor((i + 1) * ff) > Math.floor(i * ff)) ? flank : hoofd).push(e));
+    // Een flank (of schijnaanval) van minder dan 5 man heeft geen zin: dan blijft iedereen bij elkaar.
+    if (hut < 0 && flank.length < 5) hoofd.push(...flank.splice(0));
     for (const e of machines) hoofd.push(e);
 
     // Doelen: de bres van de hoofdmacht en van de flank.
@@ -349,6 +412,9 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     let omweg = -1;
     if (hut >= 0) {
       if (flank.length) omweg = omwegBijHut(hut, bereik);
+    } else if (open(bereik)) {
+      // Er is al een weg naar jouw burcht (vernielde poort, gat in de muur): niet hakken, erdoor.
+      if (I.niveau >= 2) opMelding('Red pours through the gap in your defences!');
     } else if (I.doelkeuze === 'zwakste') {
       bresA = kiesBres(bereik, zaden);
       if (bresA >= 0 && flank.length) bresF = kiesBres(bereik, zaden, bresA, 9);
@@ -366,7 +432,27 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     };
     zet(scouts, 'jager', doelA, eindA, 0, -1);
     zet(hoofd, 'hoofd', doelA, eindA, 0, -1);
-    zet(tweede, 'tweede', doelA, eindA, I.tweedeNa || 22, -1);
+    // Niet allemaal op één vak (dan lopen ze om het kasteel heen om een plekje te vinden): de
+    // voetsoldaten verdelen zich met drie per stuk over de bres en de stukken muur ernaast, de ram
+    // neemt liefst de poort. Zo blijven ze bij elkaar en wordt de bres breder.
+    const werkA = bresA >= 0 ? werkplekken(bresA, bereik) : [];
+    if (werkA.length > 1) {
+      let i = 0;
+      for (const r of rijen) {
+        if (r.soort !== 'hoofd' && r.soort !== 'jager') continue;
+        const d = def(r.e);
+        if (isMachine(d)) {
+          if (d.alleenBouw && !(d.bereik > 2)) {
+            const poort = werkA.find((v) => kaart.object[v] === OBJECT.POORT);
+            if (poort >= 0) r.doel = strijd.bouwDoelOp(poort);
+          }
+          continue;
+        }
+        if (isSchutter(d) || isSteun(d)) continue;
+        r.doel = strijd.bouwDoelOp(werkA[Math.floor(i++ / 3) % werkA.length]);
+      }
+    }
+    zet(tweede, 'tweede', doelA, eindA, I.tweedeNa || 10, -1);
     zet(flank, 'flank', doelF || doelA, doelF ? eindF : eindA, 4, omweg);
     // De echte route is langer dan de rechte lijn, en vaak veel langer: bij een gracht of
     // ringmuren lopen mannen die binnen de muren beginnen een heel andere weg dan mannen
@@ -434,7 +520,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const gTweede = ralA >= 0 ? nieuweGroep('verzamel', eindA, eindVakA, doelA, ralA) : gHoofd;
     gTweede.volgt = gHoofd.id;
     // Bij een grote bestorming komt de tweede lijn veel sneller: één doorlopende stormloop.
-    gTweede.na = bestorming ? 8 : I.tweedeNa || 22;
+    gTweede.na = bestorming ? 4 : I.tweedeNa || 10;
     const gFlank = ralF >= 0 ? nieuweGroep('verzamel', eindF, eindVakF, doelF || doelA, ralF) : gHoofd;
     if (gFlank !== gHoofd && I.schijn > 0) {
       // Schijnaanval (niveau 3): de flank valt eerst aan en trekt jouw schutters weg; de
@@ -498,8 +584,9 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     if (totaal < 6) return {};
     let wil = Math.min(6, Math.floor(totaal * I.thuis));
     const thuis = {};
-    // Liefst schutters (die verdedigen goed), dan de goedkoopste.
-    voet.sort((p, q) => (isSchutter(soorten[q[0]]) ? 1 : 0) - (isSchutter(soorten[p[0]]) ? 1 : 0) || ((soorten[p[0]].kosten || {}).goud || 0) - ((soorten[q[0]].kosten || {}).goud || 0));
+    // Sinds 0.82.0 liefst voetvolk (de goedkoopste eerst): de schutters gaan mee met de aanval,
+    // anders hakt rood met zwaarden op jouw muur terwijl jouw schutters ongestoord schieten.
+    voet.sort((p, q) => (isSchutter(soorten[p[0]]) ? 1 : 0) - (isSchutter(soorten[q[0]]) ? 1 : 0) || ((soorten[p[0]].kosten || {}).goud || 0) - ((soorten[q[0]].kosten || {}).goud || 0));
     for (const [s, n] of voet) {
       const neem = Math.min(n, wil);
       if (neem <= 0) continue;
@@ -682,8 +769,9 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       const leider = groepMet(g.volgt);
       if (leider && leider !== g) {
         if (g.na) {
-          // De tweede lijn: pas als de hoofdmacht al een tijdje aanvalt.
-          if (leider.fase !== 'aanval' || nu - leider.sinds < strijd.stappenVan(g.na)) return;
+          // De tweede lijn komt g.na seconden na de hoofdmacht aan (niet pas als die al lang vecht).
+          const lEta = leider.fase === 'opmars' ? eta(leider) : leider.fase === 'aanval' ? -(nu - leider.sinds) / perSeconde : Infinity;
+          if (!(eta(g) >= lEta + g.na)) return;
         } else if (leider.fase === 'verzamel' || leider.fase === 'beleg') return;
         // De flank vertrekt zo dat hij tegelijk met de hoofdmacht aankomt.
         else if (leider.fase === 'opmars' && eta(leider) > eta(g) + 2) return;
@@ -774,6 +862,9 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       return;
     }
     const middenVoet = voet.length ? voet.map(d).sort((a, b) => a - b)[Math.floor(voet.length / 2)] : 0;
+    // Wie binnen bereik van jouw schutters staat, wacht niet: stilstaan onder vuur is het slechtste (0.82.0).
+    const dr = dreiging();
+    const onder = (e) => !veilig(e, dr);
     for (const e of R.machine) {
       const t = takVan(e);
       if (!voet.length) {   // geen begeleiding meer: terug naar het verzamelpunt
@@ -790,12 +881,12 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       const marge = t && t.rem ? 1 : 0;
       const teVer = actief.length && d(e) < achterste - VOORSPRONG + marge;
       const losVanGroep = R.melee.length >= 3 && d(e) < middenVoet - VOORSPRONG + marge;
-      zetRem(e, !!(teVer || losVanGroep));
+      zetRem(e, !!(teVer || losVanGroep) && !onder(e));
     }
     for (const e of R.achter) {
       const t = takVan(e);
       const marge = t && t.rem ? 1 : 0;
-      zetRem(e, R.melee.length > 0 && d(e) < voorste + 1 + marge);
+      zetRem(e, R.melee.length > 0 && d(e) < voorste + 1 + marge && !onder(e));
     }
   }
 
@@ -816,7 +907,13 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
 
   // --- Terugtrekken en terugkomen -----------------------------------------------------------
   function stap() {
-    if (++teller % perSeconde) return;
+    // De opmars wordt drie keer per seconde bijgestuurd (een ladderdrager loopt anders tussen twee
+    // controles ruim 2 tegels uit); de rest één keer per seconde.
+    if (++teller % Math.max(1, Math.round(perSeconde / 3)) === 0) {
+      const nu0 = strijd.stapNr();
+      for (const g of groepen) if (g.fase === 'opmars' && teller % perSeconde) { g.eenheden = g.eenheden.filter((e) => !e.dood); if (g.eenheden.length) opmarsStap(g, nu0); }
+    }
+    if (teller % perSeconde) return;
     groepen = groepen.filter((g) => {
       g.eenheden = g.eenheden.filter((e) => !e.dood);
       return g.eenheden.length > 0;
@@ -872,7 +969,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
 
   return {
     plan, behoud, tegenFactor, extraRam, piek, rust, stap,
-    sterkteDoel, hulp, katapultVanaf, jouwSterkte,
+    sterkteDoel, hulp, katapultVanaf, jouwSterkte, belegNodig,
     // Een koningsjager heeft een weg naar jouw koning gevonden (eenmaal per groep melden).
     jagerDoor(e) {
       const t = takVan(e);
@@ -882,7 +979,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       opMelding('Red king-hunters are through! Protect your king!');
     },
     niveau, instelling,
-    groepen: () => groepen.map((g) => ({ id: g.id, aantal: g.eenheden.length, hp0: g.hp0, vrijNa: g.vrijNa, fase: g.fase, rally: g.rally, hoofd: g.hoofd })),
+    groepen: () => groepen.map((g) => ({ id: g.id, aantal: g.eenheden.length, hp0: g.hp0, vrijNa: g.vrijNa, fase: g.fase, rally: g.rally, hoofd: g.hoofd, eind: g.eind })),
     herstel() { groepen = []; teller = 0; },
   };
 }

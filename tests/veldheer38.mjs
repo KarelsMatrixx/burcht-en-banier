@@ -93,8 +93,10 @@ const l2 = await p.evaluate(() => {
 check('niveau 2 in level 2', l2.niveau2 === 2, l2.niveau2);
 // Sinds 0.81.0 lopen verkenners mee met de hoofdmacht (ze hakten eerst alleen op een muur).
 check('iedereen verzamelt (verkenners lopen mee met de hoofdmacht)', l2.verkenners === 0 && l2.verzamelaars >= 10, JSON.stringify([l2.verkenners, l2.verzamelaars]));
-check('hoofdmacht en tweede lijn zijn aparte groepen', l2.aantalGroepen >= 2, JSON.stringify(l2.groepen));
-check('thuiswacht: schutters blijven thuis, geen machines', l2.behoud.boogschutter > 0 && !l2.behoud.ram && Object.values(l2.behoud).reduce((a, c) => a + c, 0) <= 6, JSON.stringify(l2.behoud));
+// 0.82.0: een tweede lijn alleen bij een groot leger (14 of meer); hier blijft iedereen bij elkaar.
+check('bij een kleiner leger blijft iedereen in één groep', l2.aantalGroepen === 1, JSON.stringify(l2.groepen));
+// 0.82.0: de thuiswacht neemt voetvolk, de schutters gaan mee met de aanval.
+check('thuiswacht: voetvolk blijft thuis, geen schutters en geen machines', !l2.behoud.boogschutter && !l2.behoud.ram && Object.values(l2.behoud).reduce((a, c) => a + c, 0) >= 1 && Object.values(l2.behoud).reduce((a, c) => a + c, 0) <= 6, JSON.stringify(l2.behoud));
 check('thuiswacht: kleine aanval blijft compleet', Object.keys(l2.kleine).length === 0, JSON.stringify(l2.kleine));
 
 // ---- Laag 3: doelkeuze en flank (level 3, niveau 3) ------------------------------------------

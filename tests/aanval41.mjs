@@ -22,7 +22,7 @@ async function start(l) {
 const ring = (schutters = 8) => p.evaluate((schutters) => {
   const s = window.spel; const k = s.kaart; const m = s.strijd.burcht(); const r = 6; const muur = [];
   for (let d = -r; d <= r; d++) for (const [x, y] of [[m.x + d, m.y - r], [m.x + d, m.y + r], [m.x - r, m.y + d], [m.x + r, m.y + d]]) {
-    if (x < 0 || y < 0 || x >= k.breedte || y >= k.hoogte || k.object[y * k.breedte + x] !== 0) continue;
+    if (x < 0 || y < 0 || x >= k.breedte || y >= k.hoogte || (k.object[y * k.breedte + x] !== 0 && k.object[y * k.breedte + x] !== 1)) continue;   // bomen: overbouwen (anders gaten in de ring)
     const poort = x === m.x + r && y === m.y;
     s.bouwer.zetVast(y * k.breedte + x, poort ? 6 : 4);
     if (!poort) muur.push([x, y]);
@@ -110,7 +110,7 @@ await start(3);
 await ring(4);
 const v5 = await p.evaluate(() => {
   const s = window.spel; const stap = () => { s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap(); };
-  s.strijd.stuurLeger({ ridder: 12, boogschutter: 3, ram: 1 }, true);
+  s.strijd.stuurLeger({ ridder: 20, boogschutter: 5, ram: 1 }, true);   // 0.82.0: een schijnaanval pas bij een groot leger
   const gr = s.veld.groepen(); const hoofd = gr.find((g) => g.hoofd); const flank = gr.find((g) => !g.hoofd && g.rally !== hoofd.rally);
   let flankAanval = null, hoofdOpmars = null;
   for (let i = 0; i < 3000 && hoofdOpmars === null; i++) {

@@ -19,7 +19,7 @@ async function start(l, klaar) {
 const proef = (p, leger) => p.evaluate((leger) => {
   const s = window.spel; const k = s.kaart; const m = s.strijd.burcht(); const r = 6;
   for (let d = -r; d <= r; d++) for (const [x, y] of [[m.x + d, m.y - r], [m.x + d, m.y + r], [m.x - r, m.y + d], [m.x + r, m.y + d]]) {
-    if (x < 0 || y < 0 || x >= k.breedte || y >= k.hoogte || k.object[y * k.breedte + x] !== 0) continue;
+    if (x < 0 || y < 0 || x >= k.breedte || y >= k.hoogte || (k.object[y * k.breedte + x] !== 0 && k.object[y * k.breedte + x] !== 1)) continue;
     s.bouwer.zetVast(y * k.breedte + x, x === m.x + r && y === m.y ? 6 : 4);
   }
   s.wegvinder.herbereken(); s.strijd.kaartVeranderd();
@@ -45,7 +45,7 @@ const proef = (p, leger) => p.evaluate((leger) => {
     const rams = a.filter(machine), mel = a.filter((e) => melee(e) && inHoofd(e));
     // Tijdens de opmars: loopt een machine voor de voorste ridder uit (richting jouw burcht)?
     if (f === 'opmars' && rams.length && mel.length) {
-      const dk = (e) => Math.hypot(e.x - m.x, e.y - m.y);
+      const ei = g.eind || m; const dk = (e) => Math.hypot(e.x - ei.x, e.y - ei.y);   // tot het doel van de groep (de bres)
       const voor = Math.min(...mel.map(dk));
       const v = voor - Math.min(...rams.map(dk));
       out.maxVoorsprong = Math.max(out.maxVoorsprong, v);
@@ -66,7 +66,7 @@ check('er is een verzamelpunt', r.rally >= 0, r.rally);
 check('eerst verzamelen, dan opmars, dan aanval', r.fasen.map((x) => x[0]).join('>').startsWith('verzamel>opmars>aanval'), JSON.stringify(r.fasen));
 check('een ram bereikt de muur', r.ramAanMuur !== null, r.ramAanMuur);
 check('bij de ram staan minstens 2 ridders of zwaardvechters', r.begeleiding >= 2, r.begeleiding);
-check('een machine loopt in de opmars nooit meer dan 2 tegels (gemeten tot de burcht, niet tot de bres) voor de ridders uit', r.maxVoorsprong <= 2, r.maxVoorsprong);
+check('een machine loopt in de opmars nooit meer dan 1,5 tegel (gemeten tot de bres) voor de ridders uit', r.maxVoorsprong <= 1.5, r.maxVoorsprong);
 check('melding verzamelen', r.logboek.some((x) => /gathers/.test(JSON.stringify(x))), JSON.stringify(r.logboek));
 await p.context().close();
 check('geen paginafouten', fouten.length === 0, fouten.join('|'));

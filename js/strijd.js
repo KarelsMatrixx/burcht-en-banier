@@ -841,7 +841,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (!kanRaken(e, k, a) && !klimtNaar(e, k, a)) continue;
       const d = Math.hypot(a.x - e.x, a.y - e.y);
       // De windzanger kiest het liefst iemand boven op een muur of toren (die blaast ze eraf).
-      const score = k.def.windstoot && a.opMuur && d <= bereik ? d - 5 : d;
+      // Rode schutters (0.82.0) mikken liefst op jouw schutters op de muur: die houden de aanval tegen.
+      const muurSchutter = e.team === VIJAND && schutter && a.opMuur && d <= bereik && a.krijg && a.krijg.def && a.krijg.def.bereik > 2;
+      const score = k.def.windstoot && a.opMuur && d <= bereik ? d - 5 : muurSchutter ? d - 3 : d;
       if (score >= min || d > ver + 0.001 || verborgenVoor(a, d)) continue;
       if (d > bereik && !kanBij(e, a)) continue;   // hij kan er niet bij en niet op schieten
       min = score;
@@ -1455,6 +1457,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         if (nx < 0 || ny < 0 || nx >= B || ny >= H) continue;
         const w = ny * B + nx;
         if (gezien.has(w) || !wegvinder.isVrij(nx, ny, VIJAND)) continue;
+        // Een poort van de speler gaat dicht zodra rood nadert: voor de veldheer is die dicht (0.82.0).
+        if (kaart.eigenaar[w] === SPELER + 1 && kaart.object[w] === OBJECT.POORT) continue;
         gezien.add(w);
         rij.push(w);
       }
