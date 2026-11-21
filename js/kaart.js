@@ -1135,6 +1135,14 @@ export function maakKaart(recept) {
           if (object[i] === OBJECT.GEEN || object[i] === OBJECT.BOOM) { object[i] = soort; eigenaar[i] = 0; }
         }
       }
+      // Het tolarchief achter muur 3: stapels kisten en papieren, vaten en een hut vlak voor de voet van rood, waar de tolbrieven liggen.
+      {
+        const rij3 = Math.min(...muren.map((m) => m.rij));
+        for (const [dx, dy, soort] of [[-3, -3, OBJECT.HOUTSTAPEL], [-4, -2, OBJECT.HOUTSTAPEL], [3, -3, OBJECT.HOUTSTAPEL], [4, -2, OBJECT.VATEN], [-5, -3, OBJECT.HUT], [5, -3, OBJECT.HUT]]) {
+          const i = (rij3 + dy) * breedte + mid + dx;
+          if (object[i] === OBJECT.GEEN || object[i] === OBJECT.BOOM) { object[i] = soort; eigenaar[i] = 0; }
+        }
+      }
       // Voorschansen (tol.schansen: [x, y]): kleine versterkte posten in de voorhoven, met poort naar jou toe. Ze gelden als
       // buitenposten (kaart.posten): rood.postGarnizoen bepaalt wie erin staat. Zo kan rood schieten op wie een trebuchet bouwt.
       for (const [cx, cy] of T.schansen || []) {

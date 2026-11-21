@@ -1160,3 +1160,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Vier vaste trebuchets van rood, twee achter muur 2 (rij 35) en twee achter muur 3 (rij 15), elk met twee ingenieurs (kastelen.json tol.batterijen, kaart.batterijPlekken, campagne rood.tegenbatterij.aantal 4, modus.js, strijd.js maakTegenbatterij). Ze beschieten bouwwerken van de speler binnen bereik 28; leggen de ingenieurs om (ruiters, boogschutters), dan zwijgt de trebuchet.
 - Een trebuchet raakt alleen bouwwerken, geen eenheden: "terugschieten op jouw trebuchet" kan dus niet; de batterij slaat wel jouw muren, torens en schansen. Wat jij vooruit bouwt na een doorbraak komt binnen bereik.
 - Test tests/batterij89.mjs (6 checks). Aantal en plekken zijn schattingen: na te spelen.
+
+## 0.90.0: tolsfeer (Greyford)
+- Papieren in de wind (sfeer.js, landschap 'berg' papier: true): kleine lichte vellen waaien en draaien door de kloof.
+- Tolarchief achter muur 3 (kaart.js 5h): stapels kisten en papieren, een vat en twee hutten tegen de voet van rood, uit bestaande tekeningen.
+- Nog niet gedaan, omdat er nieuwe tekeningen voor nodig zijn: lakzegel op de poort dat breekt, een echte archieftoren en ijzeren banden om muur 3.

@@ -377,6 +377,30 @@ export function maakSfeer(kaart, landschap, profiel = null) {
       ctx.fillStyle = deeltjes === 'sneeuw' ? 'rgba(255, 255, 255, 0.85)' : deeltjes === 'pluis' ? 'rgba(255, 255, 248, 0.75)' : 'rgba(70, 66, 64, 0.55)';
       ctx.fill();
     }
+    if (profiel && profiel.papier) {
+      // Greyford: losse papieren uit de tolhuizen waaien door de kloof (hoop stempels en tolbrieven), klein, licht en draaiend.
+      const hash2 = (i) => { const v = Math.sin(i * 91.7 + 3.1) * 43758.5453; return v - Math.floor(v); };
+      for (let ty = ty0; ty <= ty1; ty++) {
+        for (let tx = tx0; tx <= tx1; tx++) {
+          for (let i = 0; i < 7; i++) {
+            const z = 0.4 + hash2(i + 11) * 0.6;
+            const x = tx * TW + rond(hash2(i * 3.7 + tx) * TW + t * (26 + z * 22), TW);
+            const y = ty * TH + rond(hash2(i * 5.3 + ty) * TH + t * (4 + z * 6) + Math.sin(t * 1.3 + i * 2) * 14, TH);
+            const draai = t * (1.5 + z) + i * 1.9;
+            const w = 6 + z * 3;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(draai);
+            ctx.scale(1, 0.55 + 0.45 * Math.abs(Math.sin(draai * 0.8)));
+            ctx.fillStyle = 'rgba(232, 226, 208, 0.85)';
+            ctx.fillRect(-w / 2, -w * 0.35, w, w * 0.7);
+            ctx.fillStyle = 'rgba(80, 70, 60, 0.4)';
+            ctx.fillRect(-w / 2 + 1, -w * 0.35 + 1.4, w - 2, 0.8);
+            ctx.restore();
+          }
+        }
+      }
+    }
   }
 
   let laatsteFlits = -1;   // welke flits al donder kreeg
