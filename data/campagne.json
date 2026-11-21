@@ -888,7 +888,9 @@
      "windzanger": {
       "aandeel": 1,
       "vanaf": 2
-     }
+     },
+     "hellebaardier": {"aandeel": 2, "vanaf": 1},
+     "vuurboogschutter": {"aandeel": 1, "vanaf": 2}
     },
     "koning": {
      "leven": 110,
@@ -926,6 +928,7 @@
      "hout": 20,
      "steen": 20
     },
+    "slotGarnizoen": {"hellebaardier": 6, "zwaardvechter": 4, "boogschutter": 4},
     "wachters": 20,
     "torens": {
      "ballista": 0.25,
@@ -982,7 +985,9 @@
    "uit": "Rutger lays his boathook on the dike. \"I held back the water. That is all I can do.\" The sluice gates hang open, but the polder stays dry: the Silent Folk closed the old dam behind it. The road to the Mourngate is open.",
    "wessel": "A little sailing boat made of bark, found in the reeds.",
    "beloning": [
-    "saboteur"
+    "saboteur",
+    "hellebaardier",
+    "vuurboogschutter"
    ],
    "rood": {
     "legerMax": 180,

@@ -1130,3 +1130,9 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Beloning van level 7 is nu windzanger en moordgatentoren: vanaf level 8 bouw je hem zelf.
 - Test: tests/tol83.mjs (13 controles).
 - Let op: rode muurtorens zonder bemanning schieten niet meer; de verdediging van de muren komt van wachters, olie en later hellebaardiers.
+
+## 0.85.0: hellebaardier en vuurboogschutter (Greyford, fase 2)
+- Hellebaardier ("Halberdier"): zwaar harnas, 110 leven, 12 schade per 1,6 s, bereik 2, 2,5 keer schade tegen ruiters, pijlen doen 40% minder. Vuurboogschutter ("Fire Archer"): 32 leven, bereik 6, extra schade tegen ram (3x), katapult (3x), trebuchet (3x), belegeringstoren (3x), ladder (2x), ballista (2x). Allemaal schattingen van Claude, na te lezen; engelse tips ook.
+- Nieuwe tekeningen in soldaten.js, nieuwe soorten in eenheden.js (HELLEBAARDIER 40, VUURBOOG 41), plaatjes in assets.json en tekenaar.js.
+- Level 7: rood heeft ze in zijn leger (hellebaardier vanaf aanval 1, vuurboogschutter vanaf aanval 2) en het slotgarnizoen heeft 6 hellebaardiers. Jij krijgt ze als beloning van level 8 (dus vanaf level 9), zodat level 7 niet te veel nieuws geeft (Karel kan dit nog veranderen).
+- Test: tests/tol83.mjs uitgebreid (16 controles).

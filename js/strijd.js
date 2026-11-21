@@ -231,7 +231,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // Het garnizoen van de buitenposten (kaart.posten, level 6): per post dezelfde samenstelling
   // (rood.postGarnizoen: { soort: aantal }). Wie dicht bij de poort staat, vecht met het zwaard;
   // schutters staan verder naar achteren op het erf, en wie er geen plek meer heeft staat voor de poort.
-  const MELEE = new Set(['ridder', 'zwaardvechter', 'bijlridder', 'steenwachter', 'banierdrager']);
+  const MELEE = new Set(['ridder', 'zwaardvechter', 'bijlridder', 'steenwachter', 'banierdrager', 'hellebaardier']);
   function maakPostGarnizoen() {
     const wens = R.postGarnizoen;
     const posten = kaart.posten || [];

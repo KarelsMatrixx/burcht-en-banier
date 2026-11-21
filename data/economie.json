@@ -566,6 +566,55 @@
    },
    "tip": "Throws a fireball: half damage around the target as well. Wood catches fire."
   },
+  "hellebaardier": {
+   "naam": "Halberdier",
+   "meervoud": "Halberdiers",
+   "soort": "HELLEBAARDIER",
+   "kosten": {
+    "goud": 18,
+    "koper": 3
+   },
+   "snelheid": 1.4,
+   "leven": 110,
+   "schade": 12,
+   "bonusTegen": {
+    "ruiter": 2.5
+   },
+   "schadeBouw": 4,
+   "slagTijd": 1.6,
+   "bereik": 2,
+   "zicht": 5,
+   "pijlDekking": 0.4,
+   "tip": "Heavy armour and a long halberd. Very strong against cavalry, slow, and arrows do less to him. A fine guard for a wall.",
+   "kazerne": "klassiek"
+  },
+  "vuurboogschutter": {
+   "naam": "Fire Archer",
+   "meervoud": "Fire Archers",
+   "soort": "VUURBOOG",
+   "kosten": {
+    "goud": 12,
+    "koper": 1
+   },
+   "snelheid": 2.0,
+   "leven": 32,
+   "schade": 5,
+   "bonusTegen": {
+    "ram": 3,
+    "katapult": 3,
+    "trebuchet": 3,
+    "toren": 3,
+    "ladder": 2,
+    "ballista": 2,
+    "ingenieur": 1.5
+   },
+   "schadeBouw": 2,
+   "slagTijd": 1.7,
+   "bereik": 6,
+   "zicht": 7,
+   "tip": "Flaming arrows. Weak against soldiers, but burns rams, siege towers, catapults and trebuchets.",
+   "kazerne": "klassiek"
+  },
   "zwaardvechter": {
    "naam": "Swordsman",
    "meervoud": "Swordsmen",

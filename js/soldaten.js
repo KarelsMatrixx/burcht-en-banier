@@ -1034,10 +1034,120 @@ function ingenieur(def) {
   return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
 }
 
+// ---------------------------------------------------------- hellebaardier
+// Zwaar harnas, gesloten helm met vizier, lange hellebaard; sjerp in teamkleur.
+function hellebaardier(def) {
+  const K = def.kleur;
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const hoog = houding === 'hoog';
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 1.6 : LOOP[beeld];
+    const mx = 13;
+    // hellebaard: lange steel met speerpunt, bijlblad en haak
+    const bijl = (x1, y1, x2, y2) => {
+      lijn(ctx, x1, y1, x2, y2, HOUT, 1.4);
+      const l = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / l, uy = (y2 - y1) / l, nx = -uy, ny = ux;
+      vlak(ctx, [[x2, y2], [x2 - nx * 1 - ux * 3.6, y2 - ny * 1 - uy * 3.6], [x2 + nx * 1 - ux * 3.6, y2 + ny * 1 - uy * 3.6]], '#dfe3e8');
+      vlak(ctx, [[x2 - ux * 2.4, y2 - uy * 2.4], [x2 + nx * 5.2 - ux * 1.6, y2 + ny * 5.2 - uy * 1.6], [x2 + nx * 5 - ux * 5.4, y2 + ny * 5 - uy * 5.4], [x2 - ux * 5.4, y2 - uy * 5.4]], '#cfd4da');
+      vlak(ctx, [[x2 - ux * 3, y2 - uy * 3], [x2 - nx * 3.4 - ux * 4.4, y2 - ny * 3.4 - uy * 4.4], [x2 - ux * 5, y2 - uy * 5]], '#8f96a0');
+    };
+    if (!vecht) bijl(mx - 6.5, 24 + wip, mx - 9.5, 6 + wip);
+    benen(ctx, mx, wip, pas, { top: 27, b: 3.6, sp: 2.5, been: ['#4a3c2c', '#3a2e22'], laars: '#2a2018', laarsH: 3.2 });
+    // zwaar harnas: borstplaat en maliën, sjerp in teamkleur
+    romp(ctx, mx, wip, 11, 16.5, 11.6, '#9aa0a8', '#2a2c30');
+    blok(ctx, mx - 3.4, 18 + wip, 6.8, 6, tint(STAAL, 0.1));
+    for (let y = 18; y < 27; y += 2) blok(ctx, mx - 5.5, y + wip, 11, 0.4, 'rgba(0,0,0,0.22)');
+    vlak(ctx, [[mx - 5.5, 16.8 + wip], [mx - 2.8, 16.8 + wip], [mx + 5.5, 27 + wip], [mx + 2.6, 27 + wip]], K);
+    vlak(ctx, [[mx - 3.6, 17 + wip], [mx - 2.8, 16.8 + wip], [mx + 5.5, 27 + wip], [mx + 4.6, 27 + wip]], tint(K, 0.2));
+    // schouderstukken
+    ovaal(ctx, mx - 5.8, 17.8 + wip, 3, 2.5, tint(STAAL, -0.3));
+    ovaal(ctx, mx + 5.8, 17.8 + wip, 3, 2.5, tint(STAAL, -0.05));
+    ovaal(ctx, mx + 6.4, 17.2 + wip, 1.2, 0.8, 'rgba(255,255,255,0.5)');
+    // hoofd met open helm, baard en kam
+    blok(ctx, mx - 4, 8 + wip, 8, 6, tint(STAAL, -0.15));
+    blok(ctx, mx - 3, 10.6 + wip, 6.4, 1.1, '#14161a');
+    ovaal(ctx, mx, 9.6 + wip, 4.8, 3.8, tint(STAAL, -0.12));
+    blok(ctx, mx - 4.8, 9.6 + wip, 9.6, 1.8, tint(STAAL, -0.12));
+    blok(ctx, mx - 4.8, 9.6 + wip, 3.2, 1.8, 'rgba(0,0,0,0.25)');
+    blok(ctx, mx - 4.9, 9.6 + wip, 1.1, 5, tint(STAAL, -0.3));
+    blok(ctx, mx + 3.8, 9.6 + wip, 1.1, 5, STAAL);
+    ovaal(ctx, mx + 1.8, 7.6 + wip, 1.5, 1, 'rgba(255,255,255,0.5)');
+    vlak(ctx, [[mx - 0.8, 6.4 + wip], [mx + 0.8, 6.4 + wip], [mx + 0.4, 3.6 + wip], [mx - 0.4, 3.6 + wip]], tint(K, -0.1));
+    if (vecht) {
+      if (hoog) { bijl(mx + 2, 24, mx + 11, 3); hand(ctx, mx + 3.5, 21, STAAL, 1.6); hand(ctx, mx + 6, 15, STAAL, 1.6); }
+      else { bijl(mx + 1.5, 15, mx + 13.5, 28.5); hand(ctx, mx + 3.5, 17, STAAL, 1.6); hand(ctx, mx + 7.6, 22, STAAL, 1.6); }
+    } else {
+      hand(ctx, mx - 6.8, 21 + wip, STAAL, 1.6);
+    }
+  };
+  return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
+}
+
+// ------------------------------------------------------- vuurboogschutter
+// Een boogschutter met oranje kap en een vuurpot: zijn pijlen branden.
+function vuurboogschutter(def) {
+  const K = def.kleur;
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const geschoten = houding === 'los';
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 1.4 : LOOP[beeld];
+    const mx = 13;
+    // pijlkoker
+    lichtBlok(ctx, mx - 7.2, 15 + wip, 2.8, 9, '#5b4228', 0.25);
+    for (const [dx, k] of [[0.4, '#e8e2d0'], [1.5, K], [2.4, '#e8e2d0']]) vlak(ctx, [[mx - 7.2 + dx, 15 + wip], [mx - 6.4 + dx, 15 + wip], [mx - 6.8 + dx, 12.2 + wip]], k);
+    benen(ctx, mx, wip, pas, { top: 27, b: 2.9, sp: 2.1, been: ['#58452e', '#463725'], laars: '#2f2418', laarsH: 3.4 });
+    // tuniek: leer met teamkleur
+    romp(ctx, mx, wip, 8.8, 17, 10.4, '#8a6a40', '#2e2216');
+    blok(ctx, mx - 4.4, 17 + wip, 8.8, 3.2, tint('#c46a2a', -0.05));
+    blok(ctx, mx + 1.8, 17 + wip, 2.6, 3.2, 'rgba(255,255,255,0.14)');
+    blok(ctx, mx - 4.4, 26.4 + wip, 8.8, 1.6, tint('#8a6a40', -0.2));
+    ovaal(ctx, mx - 5.4, 23 + wip, 2, 2.4, '#3a3028');
+    vlak(ctx, [[mx - 6.6, 21.4 + wip], [mx - 5.4, 18.6 + wip], [mx - 4.2, 21.4 + wip]], '#ff9a2a');
+    // kap in teamkleur met punt, gezicht
+    gezichtje(ctx, mx + 0.6, 12 + wip, { rx: 2.7, ry: 3.1 });
+    vlak(ctx, [[mx - 4.4, 13.2 + wip], [mx - 4.6, 8.2 + wip], [mx - 1, 5 + wip], [mx + 3.2, 6.6 + wip], [mx + 4, 9.8 + wip], [mx + 2.2, 10 + wip], [mx + 1.6, 9.2 + wip], [mx - 2.4, 9.6 + wip], [mx - 2.8, 13.2 + wip]], K);
+    vlak(ctx, [[mx + 1.2, 5.8 + wip], [mx + 3.2, 6.6 + wip], [mx + 4, 9.8 + wip], [mx + 2.2, 10 + wip]], tint(K, 0.22));
+    vlak(ctx, [[mx - 4.6, 8.2 + wip], [mx - 3.2, 6.6 + wip], [mx - 3, 13.2 + wip], [mx - 4.4, 13.2 + wip]], tint(K, -0.3));
+    // boog
+    const boog = (bx, by, trek) => {
+      ctx.strokeStyle = '#7a5530'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(bx + 1.5, by - 11); ctx.quadraticCurveTo(bx + 7, by, bx + 1.5, by + 11); ctx.stroke(); ctx.lineCap = 'butt';
+      ctx.strokeStyle = '#4a3220'; ctx.lineWidth = 0.6;
+      ctx.beginPath(); ctx.moveTo(bx + 1.5, by - 10.8); ctx.quadraticCurveTo(bx + 6.4, by, bx + 1.5, by + 10.8); ctx.stroke();
+      ctx.strokeStyle = 'rgba(240,235,220,0.85)'; ctx.lineWidth = 0.4;
+      ctx.beginPath(); ctx.moveTo(bx + 1.5, by - 11); ctx.lineTo(bx - trek, by); ctx.lineTo(bx + 1.5, by + 11); ctx.stroke();
+    };
+    if (!vecht) {
+      boog(mx + 5.5, 21 + wip, 0);
+      lijn(ctx, mx + 3, 19 + wip, mx + 6.8, 21 + wip, tint(K, -0.1), 2.2);
+      hand(ctx, mx + 7, 21 + wip, HUID, 1.4);
+    } else if (!geschoten) {
+      boog(mx + 7.5, 19, 4.6);
+      lijn(ctx, mx + 5, 18.4, mx + 17, 19, '#d8c9a4', 0.6);
+      vlak(ctx, [[mx + 18.6, 19], [mx + 16.6, 18.1], [mx + 16.6, 19.9]], '#cfd4da');
+      vlak(ctx, [[mx + 20.8, 19], [mx + 18.4, 16.6], [mx + 17.2, 19], [mx + 18.4, 21.4]], '#ff9a2a');
+      vlak(ctx, [[mx + 19.4, 19], [mx + 18.2, 17.8], [mx + 17.8, 19], [mx + 18.2, 20.2]], '#ffe27a');
+      lijn(ctx, mx + 3, 18.6, mx + 8.6, 19, tint(K, -0.1), 2.2);
+      hand(ctx, mx + 8.9, 19, HUID, 1.4);
+      lijn(ctx, mx - 1, 19, mx + 3, 18.6, tint(K, -0.2), 2);
+    } else {
+      boog(mx + 7.5, 19, 0);
+      lijn(ctx, mx + 3, 18.6, mx + 8.6, 19, tint(K, -0.1), 2.2);
+      hand(ctx, mx + 8.9, 19, HUID, 1.4);
+      lijn(ctx, mx + 12, 19, mx + 22, 18.6, 'rgba(255,170,60,0.9)', 0.9);
+      vlak(ctx, [[mx + 24, 18.6], [mx + 21.4, 16.2], [mx + 20.4, 18.6], [mx + 21.4, 21]], '#ff9a2a');
+      hand(ctx, mx - 1.4, 19, HUID, 1.3);
+    }
+  };
+  return pakket(teken, { schiet: [['aan', 0], ['los', 0]] });
+}
+
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
   ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
-  zwaardvechter, banierdrager, heler, steenwachter, ingenieur, windzanger, saboteur, ziener, ruiter, paard: (def) => ruiter(def, true),
+  hellebaardier, vuurboogschutter, zwaardvechter, banierdrager, heler, steenwachter, ingenieur, windzanger, saboteur, ziener, ruiter, paard: (def) => ruiter(def, true),
 };
 
 export const heeftSoldaat = (vorm) => vorm === 'werker' || Object.prototype.hasOwnProperty.call(SOLDATEN, vorm);

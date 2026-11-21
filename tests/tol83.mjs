@@ -42,6 +42,13 @@ const reg = await p.evaluate(() => Object.keys(window.spel.bouwwerken || {}).joi
 check('bouwwerk moordgatentoren bestaat', /moordgatentoren/.test(reg), reg);
 const kn = await p.$$eval('#bouw-knoppen button', (x) => x.map((e) => e.textContent));
 check('level 8: Murder-Hole Tower in het bouwmenu', kn.some((t) => /Murder-Hole/.test(t)), kn.join('|'));
+const ont = (lvl) => p.evaluate(async (l) => { const m = await import('/js/modus.js'); const c = (await (await fetch('/data/campagne.json')).json()).levels; const f = m.ontgrendeld(c, l); return [f('hellebaardier'), f('vuurboogschutter'), f('moordgatentoren')]; }, lvl);
+const w8 = await ont(8);
+check('level 8: hellebaardier en vuurboogschutter nog niet te leiden', !w8[0] && !w8[1] && w8[2], JSON.stringify(w8));
+const w9 = await ont(9);
+check('level 9: beide wel te leiden (beloning van level 8)', w9[0] && w9[1], JSON.stringify(w9));
+const defs = await p.evaluate(() => { const r = window.spel.regels.soldaten; return { h: r.hellebaardier && r.hellebaardier.bonusTegen, v: r.vuurboogschutter && r.vuurboogschutter.bonusTegen }; });
+check('hellebaardier sterk tegen ruiters, vuurboogschutter tegen belegeringstuig', defs.h && defs.h.ruiter > 2 && defs.v && defs.v.ram >= 3 && defs.v.trebuchet >= 3, JSON.stringify(defs));
 check('geen fouten in de console', fouten.length === 0, fouten.join('|'));
 console.log(`tol83: ${ok} goed, ${fout} fout`);
 await b.close(); srv.kill();
