@@ -204,6 +204,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
 
   // Zijn herstel: één stuk per keer, het nuttigste eerst.
   function herbouw() {
+    if (H.geenHerbouw) return;   // level-instelling: wat sneuvelt blijft weg
     const weg = strijd.roodWeg();
     if (!weg.length) return;
     const soldaten = leger.lijst;

@@ -1239,7 +1239,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         const kd = krijgVan(d);
         const zwaar = kd.def.alleenBouw || kd.def.soort === 'LADDER' || kd.def.soort === 'TOREN';
         raak(d, MG.schade * (zwaar ? MG.belegering : 1), null);
-        effect({ soort: 'olie', x: d.x, y: d.y, duur: 700 });
+        effect({ soort: 'olie', x: d.x, y: d.y, bx: tx, by: ty, duur: 1300 });
         gebruikt = true;
       }
       if (gebruikt) rook(tx, ty);

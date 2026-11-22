@@ -923,6 +923,7 @@
      "aantal": 3
     },
     "eersteAanval": 200,
+    "geenHerbouw": true,
     "begin": {
      "goud": 150,
      "hout": 20,

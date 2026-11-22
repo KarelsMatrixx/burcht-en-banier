@@ -1203,3 +1203,7 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Probleem (gemeld na het spelen): rood deed niets tegen een trebuchet. Oorzaak: de ruiterreserve valt alleen een trebuchet, katapult of ingenieur aan met hoogstens 3 eigen soldaten binnen 7 tegels (rood.ruiterReserve.bewaking). Met meer bewakers bleef rood passief, en de vaste trebuchets van rood (tegenbatterij) beschieten alleen gebouwen, geen eenheden. Zonder bewakers deed rood het wel: in een test viel de reserve twee ingenieurs binnen 10 seconden aan.
 - campagne.json level 7: bewaking van 3 naar 8. In de test met zes bewakers reageert rood nu met de hele reserve (10 ruiters; de bewakers verloren, vier van de zes vielen).
 - Niet gedaan: rode trebuchets die jouw trebuchet beschieten (tegenbatterij tegen machines). Dat zou het een stuk zwaarder maken; zeg het als je dat wilt.
+
+## 0.99.0: Greyford, zwarte olie en rood herbouwt niet
+- Moordgatentoren: de olie is nu een dikke zwarte straal die vanaf de toren op de soldaat valt, met spetters en een zwarte plas met glans (eerder alleen kleine druppels, deels goud). De straal wordt na de muren getekend, zodat hij niet achter de toren verdwijnt. tekenaar.js en strijd.js (effect krijgt de torenpositie mee). Alleen visueel; de schade is hetzelfde.
+- Level 7: rood herstelt zijn muren, torens en poorten niet meer (campagne.json rood.geenHerbouw, modus.js en rood.js). Wat sneuvelt blijft weg. Andere levels houden het herstel.

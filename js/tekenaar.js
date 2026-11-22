@@ -613,6 +613,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     // Wie er net gevallen is: een vlek op de grond die langzaam vervaagt.
     // Verlopen effecten gaan hier meteen uit de lijst.
     const effecten = staat.effecten;
+    const oliestralen = [];   // de stralen worden pas na de muren getekend, anders zitten ze achter de toren
     if (effecten && effecten.length) {
       let over = 0;
       for (let i = 0; i < effecten.length; i++) {
@@ -652,20 +653,64 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
           continue;
         }
         if (f.soort === 'olie') {
-          // Kokende olie: donkere druppels vallen op de soldaat en spatten uiteen.
+          // Zwarte olie stort uit de moordgaten van de toren in een dikke straal op de soldaat, spat uiteen en blijft even als plas liggen.
           const t = (nu - f.van) / f.duur;
           const wxo = (f.x - f.y) * HALVE_BREEDTE;
           const wyo = (f.x + f.y) * HALVE_HOOGTE;
-          for (let k = 0; k < 7; k++) {
-            const hoek = k * 0.9 + 0.3;
-            const val = Math.min(1, t * 2);
-            ctx.globalAlpha = 0.85 * (1 - t);
-            ctx.fillStyle = k % 3 === 0 ? '#e0a23a' : '#2a1d10';
+          const bronX = f.bx !== undefined ? (f.bx - f.by) * HALVE_BREEDTE : wxo;
+          const bronY = (f.bx !== undefined ? (f.bx + f.by) * HALVE_HOOGTE : wyo) - 44;
+          const straal = Math.min(1, t / 0.25);          // de straal valt eerst naar beneden
+          const uitloop = t < 0.6 ? 1 : Math.max(0, 1 - (t - 0.6) / 0.4);
+          oliestralen.push(() => {
+          // de straal: een boog van de toren naar de soldaat
+          if (uitloop > 0) {
+            const steun = (a, b, c, k) => (1 - k) * (1 - k) * a + 2 * (1 - k) * k * b + k * k * c;
+            const mx = bronX + (wxo - bronX) * 0.7;   // de olie loopt eerst over de rand en valt dan
+            const my = bronY + 2;
+            for (const [br, kl, al] of [[5, '#050403', 0.95], [2.2, '#3a3a40', 0.55]]) {
+              ctx.globalAlpha = al * uitloop;
+              ctx.strokeStyle = kl;
+              ctx.lineWidth = br;
+              ctx.lineCap = 'round';
+              ctx.beginPath();
+              ctx.moveTo(bronX, bronY);
+              for (let k = 0.05; k <= straal + 0.001; k += 0.05) ctx.lineTo(steun(bronX, mx, wxo, k), steun(bronY, my, wyo - 6, k));
+              ctx.stroke();
+            }
+            // druppels die van de straal spatten
+            ctx.fillStyle = '#050403';
+            for (let k = 0; k < 9; k++) {
+              const kk = ((k / 9 + t * 1.6) % 1) * straal;
+              ctx.globalAlpha = 0.9 * uitloop;
+              ctx.beginPath();
+              ctx.arc(steun(bronX, mx, wxo, kk) + Math.sin(k * 5) * 3, steun(bronY, my, wyo - 6, kk) + 2 + (k % 3), 1.5, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+          });
+          // inslag: spetters en een zwarte plas met glans
+          if (straal >= 1) {
+            const na = Math.min(1, (t - 0.25) / 0.3);
+            ctx.globalAlpha = 0.9 * (t < 0.75 ? 1 : 1 - (t - 0.75) / 0.25);
+            ctx.fillStyle = '#050403';
             ctx.beginPath();
-            ctx.arc(wxo + Math.cos(hoek) * (3 + 7 * t), wyo - 30 + 28 * val + Math.sin(hoek) * 3 * t, 2.2 - t, 0, Math.PI * 2);
+            ctx.ellipse(wxo, wyo + 1, 4 + 10 * na, 1.8 + 4.6 * na, 0, 0, Math.PI * 2);
             ctx.fill();
+            ctx.fillStyle = 'rgba(120, 130, 150, 0.35)';
+            ctx.beginPath();
+            ctx.ellipse(wxo - 2 * na, wyo - 0.2, 2 + 4 * na, 0.8 + 1.4 * na, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#050403';
+            for (let k = 0; k < 8; k++) {
+              const hoek = k * 0.8 + 0.3;
+              const afst = 4 + 11 * na;
+              ctx.beginPath();
+              ctx.arc(wxo + Math.cos(hoek) * afst, wyo - 2 - Math.abs(Math.sin(hoek * 2)) * 9 * (1 - na) + Math.sin(hoek) * 3, 1.6 - 0.6 * na, 0, Math.PI * 2);
+              ctx.fill();
+            }
           }
           ctx.globalAlpha = 1;
+          ctx.lineCap = 'butt';
           continue;
         }
         if (f.soort === 'rook') {
@@ -1013,6 +1058,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     }
     tekenEenhedenTot(Infinity);
     for (const [sx, sy] of scherven) tekenZegel(sx, sy, 0, false);
+    for (const teken of oliestralen) teken();
 
     // Vogels boven het land.
     if (sfeerAan) sfeer.tekenVogels(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t, zon);
