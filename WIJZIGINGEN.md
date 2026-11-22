@@ -1198,3 +1198,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 ## 0.97.0: Everhard, de rode koning, dichter bij zijn portret
 - heren.js everhard: smallere gestalte, dikke grijsgroene kap om de schouders met rode voering, duidelijke ronde brilletjes, geen donkere gezichtsholtes meer (ze leken een baard), groter rood zegel als broche, rode zoom onder de mantel, lichter grijs haar. De ring met zegels en de hellebaard blijven.
 - Alleen uiterlijk. Na te kijken in het spel; wat nog niet klopt met het portret hoor ik graag.
+
+## 0.98.0: Greyford, rood reageert ook op een bewaakte trebuchet
+- Probleem (gemeld na het spelen): rood deed niets tegen een trebuchet. Oorzaak: de ruiterreserve valt alleen een trebuchet, katapult of ingenieur aan met hoogstens 3 eigen soldaten binnen 7 tegels (rood.ruiterReserve.bewaking). Met meer bewakers bleef rood passief, en de vaste trebuchets van rood (tegenbatterij) beschieten alleen gebouwen, geen eenheden. Zonder bewakers deed rood het wel: in een test viel de reserve twee ingenieurs binnen 10 seconden aan.
+- campagne.json level 7: bewaking van 3 naar 8. In de test met zes bewakers reageert rood nu met de hele reserve (10 ruiters; de bewakers verloren, vier van de zes vielen).
+- Niet gedaan: rode trebuchets die jouw trebuchet beschieten (tegenbatterij tegen machines). Dat zou het een stuk zwaarder maken; zeg het als je dat wilt.

@@ -929,7 +929,7 @@
      "steen": 20
     },
     "postGarnizoen": {"hellebaardier": 1, "zwaardvechter": 1, "boogschutter": 2, "vuurboogschutter": 1},
-    "ruiterReserve": {"aantallen": [4, 6], "bewaking": 3, "bereik": 45},
+    "ruiterReserve": {"aantallen": [4, 6], "bewaking": 8, "bereik": 45},
     "tegenbatterij": {"aantal": 4},
     "slotGarnizoen": {"hellebaardier": 6, "zwaardvechter": 4, "boogschutter": 4},
     "wachters": 20,
