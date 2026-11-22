@@ -65,12 +65,8 @@ async function start() {
 
   // Het kasteel van rood: in de campagne het ontwerp van het level (stap 33).
   const { kastelen, materialen } = await laadKastelen();
-  let ontwerp = missie && missie.kasteel ? kastelen[missie.kasteel] : null;
-  // Een vorm voor het kasteel uitproberen (Greyford): ?kasteel=1 (rond fort), 2 (dubbele ring), 3 (tolhof), 4 (bastionfort); ?kasteel=uit voor de oude vorm.
-  try {
-    const q = new URLSearchParams(location.search).get('kasteel') || '';
-    if (ontwerp && ontwerp.varianten && ontwerp.varianten[q]) { const { ringen, decor } = ontwerp.varianten[q]; ontwerp = { ...ontwerp, ringen, decor: decor || [] }; }
-  } catch (e) { /* geen adres: niets te doen */ }
+  const ontwerp = missie && missie.kasteel ? kastelen[missie.kasteel] : null;
+
   if (missie && missie.kasteel && !ontwerp) throw new Error(`campagne.json: level ${missie.id} kent geen kasteel ${missie.kasteel}`);
   // Het materiaal van dat kasteel: eigen plaatjes voor muur, torens, poort en burcht van rood.
   const materiaal = ontwerp && ontwerp.materiaal ? materialen[ontwerp.materiaal] : null;
@@ -81,9 +77,8 @@ async function start() {
     // Een materiaal kan de burcht een andere vorm geven (tentenkamp: de commandotent) en een tweede kleur meegeven.
     // Een materiaal kan de burcht een andere vorm geven. Tentenkamp: de 8 buitenste tegels zijn een laag
     // houten podium (vorm, hoogte, vloer) en de middelste tegel is de commandotent (middenVorm, middenHoogte).
-    // Een stijl voor het hoofdkasteel (a, b, c of d, zie kunst.js burchtStijl): uit het materiaal, of te proberen met ?burcht=a in het adres.
-    let burchtStijl = materiaal.stijl || null;
-    try { const q = (new URLSearchParams(location.search).get('burcht') || '').toLowerCase(); if (/^[abcd]$/.test(q)) burchtStijl = q; else if (q === 'uit' || q === 'x') burchtStijl = null; } catch (e) { /* geen adres: niets te doen */ }
+    // Een stijl voor het hoofdkasteel (kunst.js burchtStijl: a hoge donjon, b rotsburcht, c tolpoort, d scheve burcht): uit het ontwerp of het materiaal.
+    const burchtStijl = ontwerp.burchtStijl || materiaal.stijl || null;
     const burchtVelden = { ...(burchtStijl ? { stijl: burchtStijl } : {}), kleur: materiaal.burcht || materiaal.kleur, ...(materiaal.vorm ? { vorm: materiaal.vorm } : {}), ...(materiaal.accent ? { accent: materiaal.accent } : {}), ...(materiaal.vloer ? { vloer: materiaal.vloer } : {}), ...(materiaal.hoogte ? { hoogte: materiaal.hoogte } : {}) };
     roodKasteel['rood.burcht'] = { basis: 'kasteel.burcht', ...burchtVelden };
     roodKasteel['rood.banier_rood'] = { basis: 'kasteel.banier_rood', ...burchtVelden, ...(materiaal.middenVorm ? { vorm: materiaal.middenVorm } : {}), ...(materiaal.middenHoogte ? { hoogte: materiaal.middenHoogte } : {}) };

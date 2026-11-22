@@ -1175,3 +1175,7 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - kaart.js: een ring kan van het midden af staan (ring.midden [dx, dy]) en bastions hebben (ring.bastions: blok torens op de hoeken, uitspringende torens in het midden van elke zijde en twee naast de poort); ringen mogen nu maat 2 zijn. De omvang van het kasteel rekent dat mee.
 - kastelen.json tolhuis.varianten, kiezen met ?kasteel=1 (rond fort), 2 (dubbele ring), 3 (tolhof: keep achterin, binnenplaats met hutten en vaten), 4 (bastionfort); ?kasteel=uit of niets: de oude vorm. Te combineren met ?burcht=a tot d.
 - Bij alle vier: batterijen, garnizoen en console blijven in orde. Nog te kiezen; daarna wordt de gekozen vorm de vaste vorm van level 7 en gaan de andere eruit.
+
+## 0.93.0: het kasteel van Greyford, definitieve vorm
+- Gekozen door Karel: bastionfort (ring maat 3 met bastions, poort naar jou toe met twee zware torens ernaast) met de hoge donjon (stijl a: rood leistenen dak, warme vensters, vier torentjes, banier). kastelen.json tolhuis: ring.bastions, burchtStijl a en een beetje decor op de binnenplaats (hut, vaten, houtstapel). De andere varianten en de adresopties ?kasteel en ?burcht zijn weer weg; de stijlcode in kunst.js (a tot d) blijft beschikbaar voor andere levels (materiaal.stijl of ontwerp.burchtStijl).
+- Dakkleur iets dieper rood zodat de mist hem minder weg wast. De binnenplaats is bereikbaar vanaf de poort (gecontroleerd). Balans niet gespeeld: er staan nu meer Moordgatentorens rond de poort van rood (18 in plaats van 13): na te spelen.

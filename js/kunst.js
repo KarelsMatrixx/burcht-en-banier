@@ -1925,7 +1925,7 @@ function poortTegel(naam, def, links, op_ = 0) {
 // --- Burchtstijlen voor een rood hoofdkasteel (Greyford, 0.91.0) ------------------------------------------------
 // def.stijl: 'a' hoge donjon, 'b' rotsburcht (terrassen), 'c' tolpoort-kasteel, 'd' scheve burcht. Alles is decor boven op de gewone
 // tegels; de hoogte voor soldaten en het gedrag blijven gelijk. Hoeken van de 3 x 3: masker 9 voor, 3 links, 12 rechts, 6 achter.
-const DAK_ROOD = ['#6b3a33', '#8a4a40'];
+const DAK_ROOD = ['#7a3329', '#a2493b'];
 const DAK_LEI = ['#434a54', '#59616d'];
 const WARM = '#f0b550';
 function dakPiramide(ctx, cx, cy, a, b, h, kleuren) {
