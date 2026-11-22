@@ -36,6 +36,7 @@ export const OBJECT = {
   SLUIS: 42,     // de sluis van de Witte Dijk (level 8): een doel dat je moet slopen
   GRAF: 41,      // grafstenen en kruisen van een begraafplaats (level 10, bij de kerk), decor
   MOORDGATENTOREN: 50,   // toren met moordgaten (level 7): kokende olie op alles binnen 2 tegels
+  ARCHIEFTOREN: 51,      // het tolarchief achter de laatste muur van Greyford (level 7), decor
 };
 
 // Namen waarmee de tekenlaag het juiste plaatje opzoekt in data/assets.json.
@@ -47,7 +48,7 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf', 'werk.sluis', 'dorp.raaftoren', 'dorp.kraan', 'dorp.werkbank', 'dorp.houtstapel', 'dorp.ramgeraamte', 'dorp.hamervlag', 'dorp.steiger', 'kasteel.moordgatentoren',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf', 'werk.sluis', 'dorp.raaftoren', 'dorp.kraan', 'dorp.werkbank', 'dorp.houtstapel', 'dorp.ramgeraamte', 'dorp.hamervlag', 'dorp.steiger', 'kasteel.moordgatentoren', 'dorp.archieftoren',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
@@ -516,7 +517,7 @@ export function maakKaart(recept) {
       }
       // Decor binnen en buiten de muren (detailronde): [naam, dx, dy] in dezelfde maat als de ringen.
       // Alleen op een lege tegel zonder water; het pad naar de poort blijft vrij omdat het ontwerp dat bewaakt.
-      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR, kraan: OBJECT.KRAAN, werkbank: OBJECT.WERKBANK, houtstapel: OBJECT.HOUTSTAPEL, ramgeraamte: OBJECT.RAMGERAAMTE, hamervlag: OBJECT.HAMERVLAG, steiger: OBJECT.STEIGER, stal: OBJECT.STAL, kerk: OBJECT.KERK, graf: OBJECT.GRAF, raaftoren: OBJECT.RAAFTOREN };
+      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR, kraan: OBJECT.KRAAN, werkbank: OBJECT.WERKBANK, houtstapel: OBJECT.HOUTSTAPEL, ramgeraamte: OBJECT.RAMGERAAMTE, hamervlag: OBJECT.HAMERVLAG, steiger: OBJECT.STEIGER, stal: OBJECT.STAL, kerk: OBJECT.KERK, graf: OBJECT.GRAF, raaftoren: OBJECT.RAAFTOREN, archieftoren: OBJECT.ARCHIEFTOREN };
       // Moerasplekjes midden in het kamp ([dx, dy]): water op een lege tegel buiten de burcht.
       for (const [dx, dy] of ontwerp.water || []) {
         const i = plek(dx, dy);
@@ -1157,10 +1158,10 @@ export function maakKaart(recept) {
           if (object[i] === OBJECT.GEEN || object[i] === OBJECT.BOOM) { object[i] = soort; eigenaar[i] = 0; }
         }
       }
-      // Het tolarchief achter muur 3: stapels kisten en papieren, vaten en een hut vlak voor de voet van rood, waar de tolbrieven liggen.
+      // Het tolarchief achter muur 3: de archieftoren (decor) met kisten, papierstapels en een hut ernaast, rechts naast het kasteel.
       {
         const rij3 = Math.min(...muren.map((m) => m.rij));
-        for (const [dx, dy, soort] of [[-3, -3, OBJECT.HOUTSTAPEL], [-4, -2, OBJECT.HOUTSTAPEL], [3, -3, OBJECT.HOUTSTAPEL], [4, -2, OBJECT.VATEN], [-5, -3, OBJECT.HUT], [5, -3, OBJECT.HUT]]) {
+        for (const [dx, dy, soort] of [[9, -4, OBJECT.ARCHIEFTOREN], [7, -3, OBJECT.HOUTSTAPEL], [11, -3, OBJECT.VATEN], [9, -2, OBJECT.HUT], [11, -2, OBJECT.HOUTSTAPEL]]) {
           const i = (rij3 + dy) * breedte + mid + dx;
           if (object[i] === OBJECT.GEEN || object[i] === OBJECT.BOOM) { object[i] = soort; eigenaar[i] = 0; }
         }
@@ -1268,6 +1269,7 @@ export function binnenKaart(kaart, x, y) {
 
 // Korte omschrijving van een tegel in gewoon Nederlands, voor in beeld.
 OBJECT_TEKST[OBJECT.MOORDGATENTOREN] = 'murder-hole tower';
+OBJECT_TEKST[OBJECT.ARCHIEFTOREN] = 'archive tower';
 export function beschrijfTegel(kaart, x, y) {
   const i = y * kaart.breedte + x;
   const wat = OBJECT_TEKST[kaart.object[i]];

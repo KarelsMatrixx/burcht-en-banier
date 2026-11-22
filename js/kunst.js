@@ -4215,6 +4215,43 @@ export function tekenSluis(naam, def) {
 // De Raaftoren van Mournkeep (level 10): een slanke, hoge ronde toren van donkere steen
 // met een spits leien dak, een zwarte rouwbanier, raven op de kantelen en hoog één
 // verlicht raam: daar zit Wessel. Onderaan een zware deur met ijzeren banden.
+// De archieftoren van Greyford (level 7): een smalle, hoge toren van grijze steen waar de tolbrieven liggen. Verlichte ramen met
+// stapels papier, een houten hijsbalk met een mand brieven en bovenop een leistenen dak met een wimpel met een rood lakzegel.
+export function tekenArchieftoren(naam, def) {
+  const b = TB + 40;
+  const h = TH + 200;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - 1 - HH;
+  const steen = def.kleur || '#6f7377';
+  ovaal(ctx, cx + 3, voet + 2, HB - 2, HH + 1, 'rgba(0,0,0,0.28)');
+  steenBlok(ctx, cx, voet, HB - 6, HH - 3, 74, steen, toevalVoor(naam + 'onder'));
+  steenBlok(ctx, cx, voet - 74, HB - 12, HH - 6, 44, tint(steen, -0.04), toevalVoor(naam + 'boven'));
+  // Verlichte ramen met stapels papier: links en rechts, drie hoog onderin, twee bovenin.
+  const raam = (x, y) => {
+    blok(ctx, x - 2.4, y, 4.8, 11, '#2a1d12');
+    blok(ctx, x - 1.7, y + 0.9, 3.4, 9.2, WARM);
+    blok(ctx, x - 1.7, y + 6.6, 3.4, 3.5, '#efe6c8');
+    lijn(ctx, x - 1.7, y + 5, x + 1.7, y + 5, '#8a6a38', 0.6);
+  };
+  for (const hg of [10, 30, 50]) { raam(cx - 14, voet - 74 + hg + 2 + 0); raam(cx + 14, voet - 74 + hg + 2 - 0); }
+  for (const hg of [8, 26]) { raam(cx - 8, voet - 118 + hg + 2); raam(cx + 8, voet - 118 + hg + 2); }
+  // Een hijsbalk met een mand brieven aan een touw
+  blok(ctx, cx + 4, voet - 104, 30, 2.4, '#4a3320');
+  lijn(ctx, cx + 4, voet - 101, cx + 14, voet - 94, '#4a3320', 1.4);
+  lijn(ctx, cx + 31, voet - 102, cx + 31, voet - 76, '#6a5638', 0.9);
+  blok(ctx, cx + 25, voet - 76, 12, 8, '#7a5a34');
+  blok(ctx, cx + 26.5, voet - 79, 9, 3.4, '#efe6c8');
+  lijn(ctx, cx + 25, voet - 72, cx + 37, voet - 72, '#4a3320', 0.8);
+  // Het dak en een wimpel met een rood lakzegel
+  dakPiramide(ctx, cx, voet - 118, HB - 10, HH - 5, 38, DAK_LEI);
+  lijn(ctx, cx, voet - 156, cx, voet - 176, '#3a2a1c', 1.4);
+  vlak(ctx, [[cx, voet - 176], [cx + 16, voet - 171], [cx, voet - 165]], '#d8d2bc');
+  ovaal(ctx, cx + 6, voet - 170.5, 3.2, 3.2, '#a8281f');
+  ovaal(ctx, cx + 5.4, voet - 171.2, 1.1, 1.1, '#d6574a');
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
+
 export function tekenRaaftoren(naam, def) {
   const b = TB + 8;
   const h = TH + 184;

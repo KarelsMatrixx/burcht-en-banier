@@ -1179,3 +1179,9 @@ Naar aanleiding van Karels feedback (17 november 2026).
 ## 0.93.0: het kasteel van Greyford, definitieve vorm
 - Gekozen door Karel: bastionfort (ring maat 3 met bastions, poort naar jou toe met twee zware torens ernaast) met de hoge donjon (stijl a: rood leistenen dak, warme vensters, vier torentjes, banier). kastelen.json tolhuis: ring.bastions, burchtStijl a en een beetje decor op de binnenplaats (hut, vaten, houtstapel). De andere varianten en de adresopties ?kasteel en ?burcht zijn weer weg; de stijlcode in kunst.js (a tot d) blijft beschikbaar voor andere levels (materiaal.stijl of ontwerp.burchtStijl).
 - Dakkleur iets dieper rood zodat de mist hem minder weg wast. De binnenplaats is bereikbaar vanaf de poort (gecontroleerd). Balans niet gespeeld: er staan nu meer Moordgatentorens rond de poort van rood (18 in plaats van 13): na te spelen.
+
+## 0.94.0: Greyford, lakzegel, archieftoren en ijzeren banden
+- Lakzegel: elke poort van de drie muren draagt een rood lakzegel met een wit lintje. Valt de poort, dan blijven er rode scherven op de grond liggen. Alleen getekend (tekenaar.js), geen invloed op het gevecht.
+- Ijzeren banden: de voorkant van de laatste muur (muur 3, 6 lagen dik) heeft twee donkere ijzeren banden met klinknagels. Alleen visueel.
+- Archieftoren (OBJECT.ARCHIEFTOREN 51, decor, dorp.archieftoren): smalle hoge toren achter muur 3 rechts van het kasteel, met verlichte ramen, hijsbalk met mand brieven en een wimpel met zegel. Vervangt de oude archiefhoek; hij staat met kisten, een hut en een houtstapel eromheen.
+- Het bouwen van een schans of paalkrans door de speler is op verzoek van Karel geschrapt.

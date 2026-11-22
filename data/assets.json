@@ -58,6 +58,7 @@
     "dorp.hamervlag": { "vorm": "hamervlag", "hoogte": 80, "sprite": "" },
     "dorp.steiger": { "vorm": "steiger", "hoogte": 56, "sprite": "" },
     "werk.sluis":     { "vorm": "sluis", "kleur": "#9a968c", "accent": "#c23a2e", "hoogte": 30, "sprite": "" },
+    "dorp.archieftoren": { "vorm": "archieftoren", "kleur": "#6f7377", "hoogte": 112, "sprite": "" },
     "dorp.raaftoren": { "vorm": "raaftoren", "kleur": "#4a4850", "hoogte": 146, "sprite": "" },
     "dorp.graf":      { "vorm": "graf", "kleur": "#8d8a86", "hoogte": 10, "sprite": "" },
     "dorp.kerk":      { "vorm": "kerk", "hoogte": 80, "sprite": "" },

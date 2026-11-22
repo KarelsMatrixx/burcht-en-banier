@@ -909,6 +909,56 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       tekenLadderOp(ctx, vx, vy, tx, ty, l.team === 0 ? '#a07a48' : '#8a6a40', l.vast ? 5.5 : 3);
     };
 
+    // Greyford: lakzegel op elke poort (breekt in scherven als de poort valt) en ijzeren banden op de voorkant van de laatste muur.
+    if (kaart.tolMuren && kaart.tolMuren.length && kaart._zegels === undefined) {
+      const B = kaart.breedte;
+      kaart._zegels = new Set();
+      kaart._banden = new Set();
+      const laatsteMuur = kaart.tolMuren.reduce((a, w) => (w.rij < a.rij ? w : a));
+      for (const w of kaart.tolMuren) {
+        const voor = (w.rij + w.lagen - 1) * B;
+        for (let x = 0; x < B; x++) {
+          if (kaart.object[voor + x] === OBJECT.POORT) kaart._zegels.add(voor + x);
+          else if (w === laatsteMuur && kaart.object[voor + x] === OBJECT.MUUR) kaart._banden.add(voor + x);
+        }
+      }
+    }
+    const tekenZegel = (wx, wy, H, heel) => {
+      const cx = wx - HALVE_BREEDTE / 2;
+      const cy = wy + TEGEL_HOOGTE * 0.75 - H * 0.5;
+      if (heel) {
+        ctx.fillStyle = '#7e1c16'; ctx.beginPath(); ctx.ellipse(cx, cy, 5, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#b8352b'; ctx.beginPath(); ctx.ellipse(cx - 0.8, cy - 0.8, 3.6, 2.8, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#7e1c16'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(cx, cy, 1.6, 0, Math.PI * 2); ctx.stroke();
+        ctx.strokeStyle = '#e8dfc4'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(cx + 4, cy + 2); ctx.lineTo(cx + 8, cy + 9); ctx.stroke();
+      } else {
+        // Scherven op de grond voor de gevallen poort
+        const gx = wx;
+        const gy = wy + TEGEL_HOOGTE * 0.85;
+        for (let i = 0; i < 6; i++) {
+          const a = i * 2.1 + 0.7;
+          ctx.fillStyle = i % 2 ? '#8e2219' : '#b8352b';
+          ctx.beginPath();
+          ctx.moveTo(gx + Math.cos(a) * 16, gy + Math.sin(a) * 7);
+          ctx.lineTo(gx + Math.cos(a + 0.5) * 21, gy + Math.sin(a + 0.5) * 9.5);
+          ctx.lineTo(gx + Math.cos(a + 0.2) * 11, gy + Math.sin(a + 0.2) * 5);
+          ctx.closePath(); ctx.fill();
+        }
+      }
+    };
+    const tekenBanden = (wx, wy, H) => {
+      for (const f of [0.3, 0.66]) {
+        const h = H * f;
+        const x1 = wx - HALVE_BREEDTE;
+        const y1 = wy + HALVE_HOOGTE + HALVE_HOOGTE * 0 - h;
+        ctx.strokeStyle = '#26282c'; ctx.lineWidth = 3.2; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(wx, y1 + HALVE_HOOGTE); ctx.stroke();
+        ctx.strokeStyle = 'rgba(160,165,172,0.35)'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(x1, y1 - 1.2); ctx.lineTo(wx, y1 + HALVE_HOOGTE - 1.2); ctx.stroke();
+        ctx.fillStyle = '#9a9ea6';
+        for (const q of [0.25, 0.75]) { ctx.beginPath(); ctx.arc(x1 + (wx - x1) * q, y1 + HALVE_HOOGTE * q, 0.9, 0, Math.PI * 2); ctx.fill(); }
+      }
+    };
+
+    const scherven = [];
     // Een object staat midden op zijn tegel: diepte x + y + 1.
     for (let som = minX + minY; som <= maxX + maxY; som++) {
       tekenEenhedenTot(som + 1);
@@ -917,6 +967,10 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       for (let x = vanX; x <= totX; x++) {
         const y = som - x;
         let o = objectBeeld[y * kaart.breedte + x];
+        if (!o && kaart._zegels && kaart._zegels.has(y * kaart.breedte + x)) {
+          scherven.push([(x - y) * HALVE_BREEDTE, som * HALVE_HOOGTE]);
+          continue;
+        }
         if (!o) continue;
         const wx = (x - y) * HALVE_BREEDTE;
         const wy = som * HALVE_HOOGTE;
@@ -948,11 +1002,17 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
           if (o.rook) sfeer.tekenRook(ctx, wx + dx + o.rook[0], wy + TEGEL_HOOGTE + dy + o.rook[1], t, tegelToeval(x, y, 7), kaart.object[y * kaart.breedte + x] === OBJECT.MIJNGANG);
           else if (kaart.object[y * kaart.breedte + x] === OBJECT.STEENHOUWER && !sfeerLicht) sfeer.tekenHamer(ctx, wx + dx, wy + TEGEL_HOOGTE / 2 + dy, t, tegelToeval(x, y, 5));
         } else ctx.drawImage(o.beeld, wx - o.ax + dx, wy + TEGEL_HOOGTE - o.ay + dy, o.b, o.h);
+        if (!doorzicht && kaart._zegels) {
+          const ti = y * kaart.breedte + x;
+          if (kaart._zegels.has(ti) && kaart.object[ti] === OBJECT.POORT) tekenZegel(wx + dx, wy + dy, o.hoogte || 50, true);
+          else if (kaart._banden.has(ti)) tekenBanden(wx + dx, wy + dy, o.hoogte || 50);
+        }
         if (wimpels && sfeerAan && !sfeerLicht && !doorzicht && kaart.object[y * kaart.breedte + x] === OBJECT.TOREN && kaart.eigenaar[y * kaart.breedte + x] === 2) sfeer.tekenWimpel(ctx, wx + dx, wy + TEGEL_HOOGTE / 2 + dy - (o.hoogte || 60) + 2, t, tegelToeval(x, y, 8));
         if (l && !(l.dx < 0 || l.dy < 0)) tekenLadder(l);
       }
     }
     tekenEenhedenTot(Infinity);
+    for (const [sx, sy] of scherven) tekenZegel(sx, sy, 0, false);
 
     // Vogels boven het land.
     if (sfeerAan) sfeer.tekenVogels(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder, t, zon);

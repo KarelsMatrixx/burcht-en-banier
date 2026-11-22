@@ -13,7 +13,7 @@ import {
   tekenGrond, tekenBoom, tekenRots, tekenRidder, tekenBoogschutter, tekenRam, tekenLadderdrager, tekenKatapult, tekenBelegeringstoren,
   tekenMuur, tekenToren, tekenWachttoren, tekenMoordgatentoren, tekenPoort, tekenBurcht,
   tekenHuis, tekenTent, tekenVlaggen, tekenHooiberg, tekenPut, tekenVaten,
-  tekenWerker, tekenHouthakker, tekenSteengroeve, tekenBoomgaard, tekenTarweveld, tekenBakkerij, tekenKopermijn, tekenMijngang, tekenJagerstent, tekenKampvuur, tekenKraan, tekenHamervlag, tekenSteiger, tekenWerkbank, tekenHoutstapel, tekenRamgeraamte, tekenKampBurcht, tekenKampVloer, tekenSteenhouwer, tekenCel, tekenKerk, tekenBijlridder, tekenKruisboogschutter, tekenSluipmoordenaar, tekenVlammenwever, tekenMagiertoren, tekenKoning, tekenKazerne, tekenStal, tekenZagerij, tekenPakhuis, tekenBelegeringswerkplaats, tekenGraf, tekenSluis, tekenRaaftoren,
+  tekenWerker, tekenHouthakker, tekenSteengroeve, tekenBoomgaard, tekenTarweveld, tekenBakkerij, tekenKopermijn, tekenMijngang, tekenJagerstent, tekenKampvuur, tekenKraan, tekenHamervlag, tekenSteiger, tekenWerkbank, tekenHoutstapel, tekenRamgeraamte, tekenKampBurcht, tekenKampVloer, tekenSteenhouwer, tekenCel, tekenKerk, tekenBijlridder, tekenKruisboogschutter, tekenSluipmoordenaar, tekenVlammenwever, tekenMagiertoren, tekenKoning, tekenKazerne, tekenStal, tekenZagerij, tekenPakhuis, tekenBelegeringswerkplaats, tekenGraf, tekenSluis, tekenRaaftoren, tekenArchieftoren,
 } from './kunst.js';
 import { SOLDATEN, teken as tekenNieuw } from './soldaten.js';
 import { MACHINES } from './machines.js';
@@ -67,6 +67,7 @@ const VORMEN = {
   graf: tekenGraf,
   sluis: tekenSluis,
   raaftoren: tekenRaaftoren,
+  archieftoren: tekenArchieftoren,
   kampburcht: tekenKampBurcht,
   kampvloer: tekenKampVloer,
   steenhouwer: tekenSteenhouwer,
