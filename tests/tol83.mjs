@@ -52,7 +52,7 @@ check('hellebaardier sterk tegen ruiters, vuurboogschutter tegen belegeringstuig
 // Voorschansen, ruiterreserve en bouwgebied dat meeschuift
 await zet([0, 1, 2, 3, 4, 5, 6], 7);
 const sc = await p.evaluate(() => ({ posten: window.spel.kaart.posten.length, reserve: window.spel.kaart.reservePlekken.length, garn: window.spel.strijd.garnizoen().filter((e) => e.vijand === 'ruiter').length }));
-check('vier voorschansen en twee reservepunten', sc.posten === 4 && sc.reserve === 2, JSON.stringify(sc));
+check('twee voorschansen en twee reservepunten', sc.posten === 2 && sc.reserve === 2, JSON.stringify(sc));
 check('10 ruiters in de reserve', sc.garn === 10, sc.garn);
 const nee = await p.evaluate(() => window.spel.bouwer.waaromNiet(26, 60, window.spel.bouwwerken.muur));
 check('voor de doorbraak mag je niet voorbij muur 1 bouwen', /too far/.test(nee), nee);

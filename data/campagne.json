@@ -905,7 +905,7 @@
     },
     "muur": 165,
     "aanval": {
-     "niveau": 4,
+     "niveau": 3,
      "max": 5
     },
     "extra_soorten": {
@@ -922,7 +922,7 @@
      "soort": "zwaardvechter",
      "aantal": 3
     },
-    "eersteAanval": 130,
+    "eersteAanval": 200,
     "begin": {
      "goud": 150,
      "hout": 20,

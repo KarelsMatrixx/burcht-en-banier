@@ -1185,3 +1185,9 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Ijzeren banden: de voorkant van de laatste muur (muur 3, 6 lagen dik) heeft twee donkere ijzeren banden met klinknagels. Alleen visueel.
 - Archieftoren (OBJECT.ARCHIEFTOREN 51, decor, dorp.archieftoren): smalle hoge toren achter muur 3 rechts van het kasteel, met verlichte ramen, hijsbalk met mand brieven en een wimpel met zegel. Vervangt de oude archiefhoek; hij staat met kisten, een hut en een houtstapel eromheen.
 - Het bouwen van een schans of paalkrans door de speler is op verzoek van Karel geschrapt.
+
+## 0.95.0: Greyford, meer hout en een zachtere eerste golf
+- Na het spelen: te weinig hout en de eerste golf te zwaar.
+- kaart.js: tol.bosjes ([x, y, straal]) zet kleine groepjes bomen op het land van de speler. kastelen.json tolhuis: 10 bosjes, verspreid over het veld tussen jouw burcht en muur 1 (ook achter jouw burcht).
+- De twee voorschansen vlak bij jouw start ([14, 73] en [38, 73]) zijn weg; de twee tussen muur 1 en muur 2 blijven. Test tol83 aangepast (twee posten).
+- campagne.json level 7: aanvalsniveau 4 naar 3 en eersteAanval 130 naar 200 seconden. Niet gespeeld: na te spelen.

@@ -1183,6 +1183,20 @@ export function maakKaart(recept) {
         for (let k = 1; k <= 3; k++) { const i = (cy + M + k) * breedte + cx; if (object[i] === OBJECT.BOOM) object[i] = OBJECT.GEEN; grond[i] = GROND.AARDE; }
         posten.push({ vak: cy * breedte + cx, x: cx, y: cy, poort: { x: cx, y: cy + M }, maat: M });
       }
+      // Bosjes (tol.bosjes: [x, y, straal]): kleine groepjes bomen op het land van de speler, zodat er hout te hakken valt.
+      for (const [bx, by, br] of T.bosjes || []) {
+        for (let dy = -br; dy <= br; dy++) {
+          for (let dx = -br; dx <= br; dx++) {
+            const x = bx + dx;
+            const y = by + dy;
+            if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1 || Math.hypot(dx / 1.3, dy) > br) continue;
+            const i = y * breedte + x;
+            if (object[i] !== OBJECT.GEEN || grond[i] > GROND.GRAS_DONKER) continue;
+            if (Math.min(afstand(x, y, start[0]), afstand(x, y, start[1])) < 7.5) continue;
+            if (toeval() < 0.6) object[i] = OBJECT.BOOM;
+          }
+        }
+      }
       // Stallen van de ruiterreserve (decor) en de plekken waar de ruiters staan.
       for (const [sx, sy] of T.stallen || []) { const i = sy * breedte + sx; if (object[i] === OBJECT.GEEN || object[i] === OBJECT.BOOM) { object[i] = OBJECT.STAL; grond[i] = GROND.AARDE; } }
       for (const [rx, ry] of T.reserve || []) reservePlekken.push(ry * breedte + rx);
