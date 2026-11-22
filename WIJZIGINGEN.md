@@ -1191,3 +1191,6 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - kaart.js: tol.bosjes ([x, y, straal]) zet kleine groepjes bomen op het land van de speler. kastelen.json tolhuis: 10 bosjes, verspreid over het veld tussen jouw burcht en muur 1 (ook achter jouw burcht).
 - De twee voorschansen vlak bij jouw start ([14, 73] en [38, 73]) zijn weg; de twee tussen muur 1 en muur 2 blijven. Test tol83 aangepast (twee posten).
 - campagne.json level 7: aanvalsniveau 4 naar 3 en eersteAanval 130 naar 200 seconden. Niet gespeeld: na te spelen.
+
+## 0.96.0: Greyford zonder akkers
+- Op verzoek: de gele akkers naast jouw burcht passen niet bij de grijze sfeer. kaart.js: kaartveld geenAkkers slaat de akkers bij de startburcht over; alleen grauwvoort (Greyford) gebruikt het. Andere levels houden hun akkers.

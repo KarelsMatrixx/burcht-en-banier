@@ -326,6 +326,7 @@
    "breedte": 53,
    "hoogte": 96,
    "zaad": 7707,
+   "geenAkkers": true,
    "water": 0.1,
    "zand": 0.2,
    "bos": 1.2,

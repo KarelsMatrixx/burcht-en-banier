@@ -370,12 +370,14 @@ export function maakKaart(recept) {
   for (let dy = 1; dy <= 4; dy++) zet(RING + 4, dy, OBJECT.GEEN, GROND.AARDE);
   zet(RING + 2, 1, OBJECT.GEEN, GROND.AARDE);
   zet(RING + 6, -1, OBJECT.GEEN, GROND.AARDE);
-  // Akkers
-  for (let dy = 4; dy <= 7; dy++) {
-    for (let dx = RING + 5; dx <= RING + 8; dx++) zet(dx, dy, OBJECT.GEEN, GROND.AKKER);
-  }
-  for (let dy = -6; dy <= -4; dy++) {
-    for (let dx = RING + 3; dx <= RING + 5; dx++) zet(dx, dy, OBJECT.GEEN, GROND.AKKER);
+  // Akkers (r.geenAkkers: een kale kaart, zoals Greyford, heeft ze niet)
+  if (!r.geenAkkers) {
+    for (let dy = 4; dy <= 7; dy++) {
+      for (let dx = RING + 5; dx <= RING + 8; dx++) zet(dx, dy, OBJECT.GEEN, GROND.AKKER);
+    }
+    for (let dy = -6; dy <= -4; dy++) {
+      for (let dx = RING + 3; dx <= RING + 5; dx++) zet(dx, dy, OBJECT.GEEN, GROND.AKKER);
+    }
   }
   // Platgetreden grond in het legerkamp
   for (const [dx, dy] of [[-1, -8], [0, -8], [1, -8], [0, -7], [-1, -9], [1, -9], [0, -10]]) {
