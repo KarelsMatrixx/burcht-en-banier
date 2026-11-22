@@ -800,19 +800,24 @@ function everhard(ctx, houding, beeld) {
   const wapper = vecht ? 0 : [0, 1, 0, -1][beeld];
   const mx = 13;
   const wol = '#7a7a78', wolD = '#5c5c5b';
-  roodMantel(ctx, mx, wip, wapper, { top: 17.5, b: 7.6, len: 31.4 });
+  roodMantel(ctx, mx, wip, wapper, { top: 17.5, b: 7.0, len: 31.4 });
   benen(ctx, mx, wip, pas, { top: 29, b: 2.8, sp: 2.2, been: ['#4a4a4c', '#555558'], laars: '#2a2a2e', laarsH: 4 });
   // wijde mantel met kap-kraag
-  vlak(ctx, [[mx - 5.6, 17.4 + wip], [mx + 5.6, 17.4 + wip], [mx + 7.6, 30.6 + wip], [mx - 7.6, 30.6 + wip]], wol);
-  blok(ctx, mx - 7.4, 19 + wip, 3.4, 11.6, 'rgba(0,0,0,0.2)');
-  vlak(ctx, [[mx + 2.4, 18 + wip], [mx + 5.6, 17.4 + wip], [mx + 7.6, 30.6 + wip], [mx + 3.2, 30.6 + wip]], 'rgba(255,255,255,0.10)');
+  vlak(ctx, [[mx - 5.0, 17.4 + wip], [mx + 5.0, 17.4 + wip], [mx + 6.8, 30.6 + wip], [mx - 6.8, 30.6 + wip]], wol);
+  blok(ctx, mx - 6.6, 19 + wip, 3.2, 11.6, 'rgba(0,0,0,0.2)');
+  vlak(ctx, [[mx + 2.4, 18 + wip], [mx + 5.0, 17.4 + wip], [mx + 6.8, 30.6 + wip], [mx + 3.2, 30.6 + wip]], 'rgba(255,255,255,0.10)');
   for (const f of [-0.5, 0, 0.5]) lijn(ctx, mx + f * 5, 21 + wip, mx + f * 7.4, 30.2 + wip, 'rgba(0,0,0,0.18)', 0.5);
-  lijn(ctx, mx - 7.6, 30.4 + wip, mx + 7.6, 30.4 + wip, wolD, 0.9);
-  ovaal(ctx, mx, 18.2 + wip, 5.6, 2.2, wolD);
-  ovaal(ctx, mx + 1.6, 18 + wip, 3.4, 1.2, 'rgba(255,255,255,0.1)');
+  lijn(ctx, mx - 6.8, 30.4 + wip, mx + 6.8, 30.4 + wip, wolD, 0.9);
+  lijn(ctx, mx - 6.8, 30.9 + wip, mx + 6.8, 30.9 + wip, tint(ROOD, -0.15), 0.8);   // rode zoom: rode partij
+  ovaal(ctx, mx, 18.4 + wip, 6.2, 2.9, '#8d918b');
+  ovaal(ctx, mx, 18.9 + wip, 5.2, 1.9, tint(ROOD, -0.25));
+  ovaal(ctx, mx, 18.2 + wip, 4.6, 1.5, '#9fa39c');
+  lijn(ctx, mx - 3.6, 17.6 + wip, mx - 4.6, 19.8 + wip, 'rgba(0,0,0,0.25)', 0.5);
+  lijn(ctx, mx + 3.4, 17.6 + wip, mx + 4.4, 19.8 + wip, 'rgba(0,0,0,0.2)', 0.5);
   // rood zegel op de mantel
-  ovaal(ctx, mx + 2.4, 22.4 + wip, 1.4, 1.4, ROOD);
-  ovaal(ctx, mx + 2, 22 + wip, 0.5, 0.5, 'rgba(255,255,255,0.5)');
+  ovaal(ctx, mx + 2.2, 21.8 + wip, 1.9, 1.9, tint(ROOD, -0.3));
+  ovaal(ctx, mx + 2.2, 21.8 + wip, 1.5, 1.5, ROOD);
+  ovaal(ctx, mx + 1.7, 21.3 + wip, 0.55, 0.55, 'rgba(255,255,255,0.55)');
   // riem met ring van zegels
   blok(ctx, mx - 5.4, 25.4 + wip, 10.8, 0.9, '#2a2a2e');
   ctx.strokeStyle = '#a8a8ac'; ctx.lineWidth = 0.5;
@@ -820,8 +825,12 @@ function everhard(ctx, houding, beeld) {
   [['#c23a2e', -4.4], ['#d4b24a', -3.2], ['#4f7a4a', -2.4]].forEach(([k, dx]) => ovaal(ctx, mx + dx, 28.6 + wip + (dx === -3.2 ? 0.8 : 0), 0.7, 0.9, k));
   const hx = mx + 0.2, hy = 12.2 + wip;
   hals(ctx, hx, hy, huid);
-  gezicht(ctx, hx, hy, { huid, brauw: 'recht', mond: 'streng', bril: true, holte: true, brauwKleur: '#7a7a7e' }, 3.2, 4.2);
-  ovaal(ctx, hx, hy - 3.4, 3.8, 1.5, '#9a9aa0');
+  gezicht(ctx, hx, hy, { huid, brauw: 'recht', mond: 'streng', brauwKleur: '#8a8a90' }, 2.9, 4.4);
+  // ronde brilletjes, duidelijk zichtbaar
+  ctx.strokeStyle = '#2a2a30'; ctx.lineWidth = 0.45;
+  for (const dx of [-1.4, 1.4]) { ctx.beginPath(); ctx.ellipse(hx + dx, hy - 0.2, 1.3, 1.25, 0, 0, Math.PI * 2); ctx.stroke(); }
+  lijn(ctx, hx - 0.1, hy - 0.2, hx + 0.1, hy - 0.2, '#2a2a30', 0.4);
+  ovaal(ctx, hx, hy - 3.4, 3.4, 1.5, '#b4b4ba');
   ovaal(ctx, hx - 3.4, hy - 1.2, 1, 2, '#8c8c92');
   ovaal(ctx, hx + 3.2, hy - 1.2, 0.9, 1.8, '#a8a8ae');
   const hellebaard = (x1, y1, x2, y2) => {

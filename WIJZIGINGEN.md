@@ -1194,3 +1194,7 @@ Naar aanleiding van Karels feedback (17 november 2026).
 
 ## 0.96.0: Greyford zonder akkers
 - Op verzoek: de gele akkers naast jouw burcht passen niet bij de grijze sfeer. kaart.js: kaartveld geenAkkers slaat de akkers bij de startburcht over; alleen grauwvoort (Greyford) gebruikt het. Andere levels houden hun akkers.
+
+## 0.97.0: Everhard, de rode koning, dichter bij zijn portret
+- heren.js everhard: smallere gestalte, dikke grijsgroene kap om de schouders met rode voering, duidelijke ronde brilletjes, geen donkere gezichtsholtes meer (ze leken een baard), groter rood zegel als broche, rode zoom onder de mantel, lichter grijs haar. De ring met zegels en de hellebaard blijven.
+- Alleen uiterlijk. Na te kijken in het spel; wat nog niet klopt met het portret hoor ik graag.
