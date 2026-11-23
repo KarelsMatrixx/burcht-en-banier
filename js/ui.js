@@ -259,11 +259,26 @@ export function maakUi() {
   // tik op de hamer het neer. Anders opent en sluit hij de bouwbalk.
   let kanPlaatsen = false;
   const bijPlaatsen = [];
+  // Een tik op een medaillon begint dat menu altijd bij het begin (0.103.0):
+  // bouwbalk terug naar de groepen, gekozen bouwwerk los, rijen naar links.
+  // Sta je al aan het begin van de bouwbalk, dan sluit de hamer hem.
+  let bouwTerug = () => {};
+  const resetBouw = () => {
+    if (bouwtNu) bouwTerug();
+    toonGroep(null);
+  };
   el('knop-hamer').addEventListener('click', () => {
     if (bouwtNu && kanPlaatsen) { for (const f of bijPlaatsen) f(); return; }
-    zetPaneel(paneel === 'bouw' ? null : 'bouw');
+    if (paneel === 'bouw' && (openGroep !== null || bouwtNu)) { resetBouw(); return; }
+    if (paneel === 'bouw') { zetPaneel(null); return; }
+    resetBouw();
+    zetPaneel('bouw');
   });
-  el('knop-zwaard').addEventListener('click', () => zetPaneel(paneel === 'leger' ? null : 'leger'));
+  el('knop-zwaard').addEventListener('click', () => {
+    resetBouw();
+    if (paneel !== 'leger') el('leger-groepen').scrollLeft = 0;
+    zetPaneel(paneel === 'leger' ? null : 'leger');
+  });
 
   // Tip om de app op het beginscherm te zetten. Alleen als je nog in
   // Safari zit en de tip niet eerder hebt gesloten.
@@ -282,7 +297,9 @@ export function maakUi() {
   });
 
   // Welke groep van de bouwbalk openstaat (null = het begin, met de groepen).
+  let openGroep = null;
   function toonGroep(open) {
+    openGroep = open;
     for (const knop of el('bouw-knoppen').children) {
       if (knop.dataset.open) knop.hidden = open !== null;            // een groepknop
       else if (knop.id === 'knop-terug') knop.hidden = open === null;
@@ -301,6 +318,7 @@ export function maakUi() {
   let verkoopActie = () => {};
   const klapVolk = (open) => {
     el('volkpaneel').hidden = !open;
+    if (open) el('volk-scroll').scrollTop = 0;   // altijd bij het begin
     el('voorraad').classList.toggle('open', open);
   };
   const tikVolk = () => {
@@ -988,6 +1006,7 @@ export function maakUi() {
         const icoon = lijnIcoon(groep);
         if (icoon) knop.prepend(icoon);
       }
+      bouwTerug = opTerug;
       const terug = maak('‹ Back', () => {
         toonGroep(null);
         opTerug();

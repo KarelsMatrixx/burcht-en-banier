@@ -1242,3 +1242,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Paneel over je volk: ondoorzichtig perkament met titel "Your people", kruisje rechtsboven (aria-label Close, id blijft `volk-sluit`), voorraad met een balk, belasting als perkamenttegels. Het paneel ligt nu boven de verhaalregel (z-index 31).
 - De lijniconen zijn door Claude getekend (SVG in ui.js `LIJN` en index.html); later te vervangen door plaatjes. "Your people" is nieuwe Engelse tekst: na te lezen.
 - Tests groen: balk38, selectie, selectie_kader51, hud35, test_stap17, ballista80, proloog35.
+
+## 0.103.0
+- Een tik op een medaillon begint dat menu bij het begin (Karels wens).
+  - Hamer terwijl de bouwbalk in een groep staat (bijvoorbeeld Village) of een bouwwerk gekozen is zonder plek: terug naar de groepen, het menu blijft open. Hamer aan het begin: de bouwbalk sluit.
+  - Staat er een bouwwerk klaar op een geldige plek, dan zet de hamer het nog steeds neer.
+  - Zwaard: stopt het bouwen en zet de bouwbalk terug naar het begin; de rij met groepen begint bij het openen weer links.
+  - Paneel over je volk opent altijd bovenaan.
+- Test: tests/menureset103.mjs (8). Groen: balk38, hud35, selectie_kader51, proloog35, ballista80.
