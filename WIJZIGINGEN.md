@@ -1250,3 +1250,10 @@ Naar aanleiding van Karels feedback (17 november 2026).
   - Zwaard: stopt het bouwen en zet de bouwbalk terug naar het begin; de rij met groepen begint bij het openen weer links.
   - Paneel over je volk opent altijd bovenaan.
 - Test: tests/menureset103.mjs (8). Groen: balk38, hud35, selectie_kader51, proloog35, ballista80.
+
+## 0.104.0
+- Legerbalk in twee lagen, net als de bouwbalk (Karels wens: te veel opties in één rij).
+  - Laag 1: de ingeboxte groep (na een kader), Melee, Ranged, Siege en King, met rechts Box, All, None.
+  - Een tik op een groep kiest de hele groep en opent laag 2: ‹ Back en alleen de soorten in die groep. Een groep met maar één soort opent geen laag 2.
+  - Het zwaard en Back brengen je terug naar laag 1. Bij een nieuwe laag begint de rij links.
+- Code: main.js `legerOpen`, ui.js `opLegerBegin`. Test selectie.mjs aangepast (10). Groen: selectie_kader51, hud35, menureset103, proloog35, ballista80, balk38.

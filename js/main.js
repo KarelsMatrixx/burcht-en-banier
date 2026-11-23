@@ -182,6 +182,7 @@ async function start() {
     },
   });
   let naLeger = () => {};      // wordt verderop ingevuld, als de knoppen er zijn
+  let legerOpen = null;        // legerbalk: welke groep openstaat (null = het begin)
   const leger = maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVerandering: bewaar, opLeger: () => naLeger() });
   economie.zetEters(() => leger.soldaten().length);   // soldaten eten ook
   // Het gevecht: de aanvallen van de rode heer, winnen en verliezen.
@@ -662,17 +663,31 @@ async function start() {
       const namenGroep = { melee: 'Melee', afstand: 'Ranged', belegering: 'Siege' };
       const lijst = [];
       const groepen = Object.keys(namenGroep).filter((g) => t.groepen[g]);
-      const soortKeys = Object.keys(t.perSoort);
       const vol = (x) => x.gekozen === x.n;
-      // Na een kader: de hele ingeboxte groep met het totaal, zodat je daar altijd naar terug kunt.
-      if (t.deel && (groepen.length > 1 || soortKeys.length > 1)) lijst.push({ sleutel: 'd:', tekst: `Group ${t.deel}`, actief: t.deelGekozen === t.deel });
-      if (groepen.length > 1) for (const g of groepen) lijst.push({ sleutel: 'g:' + g, tekst: `${namenGroep[g]} ${t.groepen[g].n}`, actief: vol(t.groepen[g]) });
-      if (soortKeys.length > 1) for (const sl of soortKeys) lijst.push({ sleutel: 's:' + sl, tekst: `${leger.soorten[sl].naam} ${t.perSoort[sl].n}`, actief: vol(t.perSoort[sl]), klein: true });
+      // Twee lagen, net als de bouwbalk (0.104.0). Laag 1: de groepen, de koning
+      // en na een kader de ingeboxte groep. Laag 2 (legerOpen): Back en de
+      // soorten van die ene groep.
+      const soortenVan = (g) => Object.keys(t.perSoort).filter((sl) => sl !== 'koning' && t.perSoort[sl].groep === g);
+      if (legerOpen && soortenVan(legerOpen).length < 2) legerOpen = null;   // groep weg of nog maar één soort
+      if (legerOpen) {
+        lijst.push({ sleutel: 'b:', tekst: '‹ Back' });
+        for (const sl of soortenVan(legerOpen)) lijst.push({ sleutel: 's:' + sl, tekst: `${leger.soorten[sl].naam} ${t.perSoort[sl].n}`, actief: vol(t.perSoort[sl]), klein: true });
+      } else {
+        if (t.deel && (groepen.length > 1 || Object.keys(t.perSoort).length > 1)) lijst.push({ sleutel: 'd:', tekst: `Group ${t.deel}`, actief: t.deelGekozen === t.deel });
+        for (const g of groepen) lijst.push({ sleutel: 'g:' + g, tekst: `${namenGroep[g]} ${t.groepen[g].n}`, actief: vol(t.groepen[g]) });
+        if (t.perSoort.koning) lijst.push({ sleutel: 's:koning', tekst: `${leger.soorten.koning.naam} ${t.perSoort.koning.n}`, actief: vol(t.perSoort.koning) });
+        // Eén knop is geen keuze: zonder ingeboxte groep en met maar één knop blijft de rij leeg.
+        if (lijst.length === 1 && !t.deel && !(lijst[0].sleutel.startsWith('g:') && soortenVan(lijst[0].sleutel.slice(2)).length > 1)) lijst.length = 0;
+      }
       ui.toonGroepen(lijst, (sl) => {
         kaderAan = false;
-        if (sl === 'd:') leger.kiesDeel();
-        else if (sl.startsWith('g:')) leger.kiesGroep(sl.slice(2));
-        else leger.kiesSoort(sl.slice(2));
+        if (sl === 'b:') legerOpen = null;
+        else if (sl === 'd:') leger.kiesDeel();
+        else if (sl.startsWith('g:')) {
+          leger.kiesGroep(sl.slice(2));
+          if (soortenVan(sl.slice(2)).length > 1) legerOpen = sl.slice(2);
+        } else leger.kiesSoort(sl.slice(2));
+        naLeger();
       });
     }
     if (kazerneVak >= 0) toonKazerne();
@@ -690,6 +705,7 @@ async function start() {
     kaderAan = false;
     leger.kiesGeen();
   });
+  ui.opLegerBegin(() => { legerOpen = null; naLeger(); });
   naLeger();
 
   // Waar staat deze soldaat op het scherm (het midden van zijn lijf)?

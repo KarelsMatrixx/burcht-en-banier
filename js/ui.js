@@ -274,8 +274,10 @@ export function maakUi() {
     resetBouw();
     zetPaneel('bouw');
   });
+  let legerBegin = () => {};
   el('knop-zwaard').addEventListener('click', () => {
     resetBouw();
+    legerBegin();
     if (paneel !== 'leger') el('leger-groepen').scrollLeft = 0;
     zetPaneel(paneel === 'leger' ? null : 'leger');
   });
@@ -923,6 +925,10 @@ export function maakUi() {
       doos.dataset.leeg = lijst.length === 0 ? '1' : '0';
       doos.hidden = lijst.length === 0 || paneel !== 'leger' || !legerStand.zichtbaar;
       doos.textContent = '';
+      // Naar een andere laag (groepen of soorten): de rij begint weer links.
+      const eerste = lijst.length ? lijst[0].sleutel : '';
+      if (doos.dataset.eerste !== eerste) doos.scrollLeft = 0;
+      doos.dataset.eerste = eerste;
       for (const k of lijst) {
         const knop = document.createElement('button');
         knop.type = 'button';
@@ -944,6 +950,10 @@ export function maakUi() {
         doos.appendChild(knop);
       }
       requestAnimationFrame(() => schuifLeger());
+    },
+    // Het zwaard zet de legerbalk terug naar de groepen.
+    opLegerBegin(functie) {
+      legerBegin = functie;
     },
     opKader(functie) {
       el('knop-kader').addEventListener('click', functie);
