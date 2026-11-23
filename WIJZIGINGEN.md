@@ -1207,3 +1207,7 @@ Naar aanleiding van Karels feedback (17 november 2026).
 ## 0.99.0: Greyford, zwarte olie en rood herbouwt niet
 - Moordgatentoren: de olie is nu een dikke zwarte straal die vanaf de toren op de soldaat valt, met spetters en een zwarte plas met glans (eerder alleen kleine druppels, deels goud). De straal wordt na de muren getekend, zodat hij niet achter de toren verdwijnt. tekenaar.js en strijd.js (effect krijgt de torenpositie mee). Alleen visueel; de schade is hetzelfde.
 - Level 7: rood herstelt zijn muren, torens en poorten niet meer (campagne.json rood.geenHerbouw, modus.js en rood.js). Wat sneuvelt blijft weg. Andere levels houden het herstel.
+
+## 0.100.0: rood bouwt nooit meer muren terug
+- Op verzoek, in alle levels: rood herstelt geen muren, torens, wachttorens, moordgatentorens en poorten meer (rood.js VERDEDIGING). Zijn werken (hout, steen, voedsel) herstelt hij nog wel, behalve in level 7 (geenHerbouw).
+- tests/test_stap15.mjs: de check "muur hersteld" is omgedraaid naar "muur wordt niet hersteld".

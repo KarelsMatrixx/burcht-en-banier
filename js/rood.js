@@ -21,6 +21,9 @@ import { maakGroei } from './roodgroei.js';
 
 const GRONDSTOFFEN = ['hout', 'steen', 'goud'];
 
+// Muren, torens en poorten bouwt rood nooit terug: wat jij sloopt blijft weg. Alleen zijn werken (hout, steen, voedsel) herstelt hij.
+const VERDEDIGING = new Set([OBJECT.MUUR, OBJECT.TOREN, OBJECT.POORT, OBJECT.WACHTTOREN, OBJECT.MOORDGATENTOREN, OBJECT.IJZERPOORT]);
+
 export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, wegvinder, niveau = 3, groeiConfig = null, perSeconde, opMelding, opVerandering, veld = null }) {
   const H = regels.heer;
   if (!H) return null;
@@ -202,7 +205,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
     return n;
   }
 
-  // Zijn herstel: één stuk per keer, het nuttigste eerst.
+  // Zijn herstel: één stuk per keer, het nuttigste eerst. Geen muren, torens of poorten (VERDEDIGING).
   function herbouw() {
     if (H.geenHerbouw) return;   // level-instelling: wat sneuvelt blijft weg
     const weg = strijd.roodWeg();
@@ -222,7 +225,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
         const werk = werken.some((w) => w.vak === vak);
         return { vak, soort, werk, kosten: bouwKosten(soort) };
       })
-      .filter((c) => c.soort !== undefined && kanBetalen(c.kosten) && veilig(c.vak))
+      .filter((c) => c.soort !== undefined && !VERDEDIGING.has(c.soort) && kanBetalen(c.kosten) && veilig(c.vak))
       // Eerst de werken (daar verdient hij aan), dan wat het goedkoopst is.
       .sort((a, b) => (b.werk ? 1 : 0) - (a.werk ? 1 : 0) || Object.values(a.kosten).reduce((s, n) => s + n, 0) - Object.values(b.kosten).reduce((s, n) => s + n, 0));
     if (!kandidaten.length) return;

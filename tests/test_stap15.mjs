@@ -18,7 +18,7 @@ const r = await p.evaluate(() => {
   const st = s.strijd.stand();
   return { v: s.CONFIG.versie, heer: !!st.heer, werken: st.heer && st.heer.werkenTotaal, golf: st.golf, w: s.rood.werken() };
 });
-check('versie', r.v === '0.99.0', r.v);
+check('versie', r.v === '0.100.0', r.v);
 check('heer aanwezig', r.heer);
 check('3 werken', r.werken === 3, r.werken);
 const spoel = (sec) => p.evaluate((sec) => { const s = window.spel; for (let i = 0; i < sec * 10; i++) s.strijd.stap(); return s.strijd.stand(); }, sec);
@@ -60,7 +60,7 @@ await p.evaluate((vak) => { const s = window.spel; s.kaart.object[vak] = 0; s.ka
 check('roodWeg bevat vak', await p.evaluate((vak) => window.spel.strijd.roodWeg().includes(vak), muur.vak));
 await spoel(10);
 const na = await p.evaluate((vak) => ({ o: window.spel.kaart.object[vak], e: window.spel.kaart.eigenaar[vak] }), muur.vak);
-check('muur hersteld', na.o === muur.soort && na.e === 2, JSON.stringify(na));
+check('muur wordt niet hersteld (rood bouwt geen muren terug)', na.o === 0, JSON.stringify(na));
 // herbouw wacht als soldaat van jou vlakbij staat
 await p.evaluate((vak) => { const s = window.spel; s.kaart.object[vak] = 0; s.kaart.eigenaar[vak] = 0; s.strijd.kaartVeranderd(); }, muur.vak);
 // uitval: soldaat van jou bij de burcht van rood
