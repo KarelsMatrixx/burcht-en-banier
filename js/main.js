@@ -627,9 +627,10 @@ async function start() {
     naLeger();
   });
   ui.opOntkoppel(() => {
-    const n = strijd.ontkoppel(leger.gekozen());
-    geluid.speel(n ? 'order_move' : 'ui_denied');
-    ui.toonMelding(n ? 'The engineers are free again. The trebuchet stays silent until you build a new one.' : 'No engineers are working this trebuchet.', { soort: 'leger' });
+    const { n, sloop } = strijd.ontkoppel(leger.gekozen());
+    if (sloop) for (let i = 0; i < sloop; i++) economie.geefTerug(leger.soorten.trebuchet.kosten);
+    geluid.speel(n || sloop ? 'order_move' : 'ui_denied');
+    ui.toonMelding(sloop ? `The trebuchet is taken apart. You get part of the cost back.` : n ? 'The engineers are free again and the trebuchet stays silent. Press again to take it apart.' : 'This trebuchet has no engineers. Press again on a silent trebuchet to take it apart.', { soort: 'leger' });
     naLeger();
   });
   naLeger = () => {
@@ -1179,6 +1180,21 @@ async function start() {
       // Een eigen soldaat aangetikt: die kies je.
       const soldaat = leger.vind(wereld.x, wereld.y, 8 / camera.zoom);
       // Tutorial: een soldaat die nu niet te kiezen is (niet die van de les, of de poortles) telt niet als tik op een soldaat
+      // Ingenieurs gekozen en een eigen trebuchet aangetikt: die ingenieurs gaan de trebuchet bedienen.
+      if (soldaat && !erachter(soldaat) && leger.staatVast(soldaat.soldaat.sleutel) && !leger.gekozen().includes(soldaat)
+          && leger.gekozen().some((e) => leger.soorten[e.soldaat.sleutel].bouwt)) {
+        const gek = leger.gekozen().filter((e) => leger.soorten[e.soldaat.sleutel].bouwt);
+        const n = strijd.bemanTrebuchet(gek, Math.floor(soldaat.y) * kaart.breedte + Math.floor(soldaat.x));
+        if (n > 0) {
+          staat.doel = { x: soldaat.x, y: soldaat.y, duur: 900, tot: performance.now() + 900 };
+          geluid.speel('order_move');
+          ui.toonMelding(n === 1 ? 'The engineer goes to operate the trebuchet.' : 'The engineers go to operate the trebuchet.', { soort: 'leger' });
+        } else {
+          geluid.speel('ui_denied');
+          ui.toonMelding(n === -2 ? 'This trebuchet already has two engineers.' : 'These engineers cannot reach that trebuchet.', { soort: 'leger' });
+        }
+        return;
+      }
       if (soldaat && !erachter(soldaat) && (!proloog || proloog.magTikKiezen(soldaat))) {
         kaderAan = false;
         leger.kies([soldaat]);

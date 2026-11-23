@@ -120,7 +120,7 @@ const s4 = await p.evaluate(() => {
   const uit = {};
   uit.staatVast = s.leger.staatVast('ballista') && !s.leger.staatVast('ridder');
   s.leger.kies([bal]);
-  const n = s.strijd.ontkoppel(s.leger.gekozen());
+  const n = s.strijd.ontkoppel(s.leger.gekozen()).n;
   uit.ontkoppeld = n; uit.ingNu = e.krijg.ing === null || e.krijg.ing === undefined;
   // verse vijanden dicht bij: hij zwijgt nu
   const nu0 = []; for (const v of [ridder, ram]) { v.leven = v.levenMax; v.dood = false; nu0.push(v.leven); }

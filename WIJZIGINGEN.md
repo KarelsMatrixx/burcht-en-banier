@@ -1257,3 +1257,13 @@ Naar aanleiding van Karels feedback (17 november 2026).
   - Een tik op een groep kiest de hele groep en opent laag 2: ‹ Back en alleen de soorten in die groep. Een groep met maar één soort opent geen laag 2.
   - Het zwaard en Back brengen je terug naar laag 1. Bij een nieuwe laag begint de rij links.
 - Code: main.js `legerOpen`, ui.js `opLegerBegin`. Test selectie.mjs aangepast (10). Groen: selectie_kader51, hud35, menureset103, proloog35, ballista80, balk38.
+## 0.105.0 (deel 1): moordgatentoren, olie alleen recht voor de toren en recht omlaag
+- Bereik van de olie van 2 naar 1 tegel (economie.json moordgaten.straal): alleen soldaten die recht voor de toren staan en hem aanvallen worden geraakt, niet meer op afstand. Geldt ook voor jouw eigen moordgatentoren.
+- De straal valt nu altijd loodrecht omlaag, precies boven de geraakte soldaat (dus links van de toren links, rechts van de toren rechts), geen boog meer. Tekst in bouwwerken.json aangepast.
+- Gevolg voor de balans (niet gespeeld): de torens zijn nu veel minder sterk tegen leger op afstand. De 13 tot 18 torens bij de rode poort raken alleen wie er vlak naast staat.
+
+## 0.105.0 (deel 2): trebuchet opnieuw bemannen en slopen
+- Kies je ingenieurs en tik je op een eigen trebuchet, dan gaan ze hem bedienen (max 2 per trebuchet). Niets gebeurt automatisch.
+- Knop "Release crew": eerste druk maakt de ingenieurs vrij en zet de trebuchet stil, tweede druk op een stille trebuchet zonder bedieners breekt hem af. Je krijgt een deel van de kosten terug (fractie van economie.geefTerug, na te lezen).
+- Limiet van 2 trebuchets tegelijk blijft; afbreken maakt dus ruimte voor een nieuwe.
+- Test: tests/bemannen101.mjs.

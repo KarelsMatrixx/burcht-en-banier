@@ -1,0 +1,44 @@
+// 0.101.0: een trebuchet zonder bedieners wordt door vrije ingenieurs overgenomen; een stille trebuchet kun je afbreken.
+import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { spawn } from 'child_process';
+const srv = spawn('python3', ['-m', 'http.server', '8195'], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
+await new Promise((r) => setTimeout(r, 800));
+const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true })).newPage();
+let ok = 0, fout = 0; const check = (n, w, d = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, d); } };
+await p.goto('http://localhost:8195/'); await p.waitForFunction(() => window.spel && window.spel.strijd);
+await p.evaluate(() => { localStorage.clear(); localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [0,1,2,3,4,5] })); localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 6 })); sessionStorage.setItem('burcht-banier.geenTitel', '1'); });
+await p.reload(); await p.waitForFunction(() => window.spel && window.spel.strijd); await p.waitForTimeout(1200);
+const r = await p.evaluate(() => {
+  const s = window.spel, K = s.kaart, B = K.breedte, uit = {};
+  const sim = (n) => { for (let i = 0; i < n; i++) { s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap(); s.poortwacht.stap(); s.doel.stap(0.1); } };
+  const vrij = []; for (let y = 5; y < K.hoogte - 5 && vrij.length < 3; y++) for (let x = 5; x < 40; x++) if (s.wegvinder.isVrij(x, y, 0) && K.object[y * B + x] === 0) { vrij.push(y * B + x); break; }
+  const plek = vrij[1];
+  const i1 = s.leger.geef('ingenieur', plek + 4, 6), i2 = s.leger.geef('ingenieur', plek + 5, 6);
+  s.strijd.bouwTrebuchet([i1, i2], plek, {});
+  sim(500);
+  const tr = s.leger.lijst.find((e) => e.krijg && e.krijg.def.staand);
+  uit.gebouwd = !!tr;
+  for (const e of [i1, i2]) s.leger.sneuvel(e);
+  uit.bedienersNa = s.leger.lijst.filter((e) => e.krijg && e.krijg.def.bouwt).length;
+  const n1 = s.leger.geef('ingenieur', plek + 8, 6), n2 = s.leger.geef('ingenieur', plek + 9, 6);
+  sim(400);
+  uit.autoNul = [n1, n2].filter((e) => e.krijg.ing).length;
+  uit.tik = s.strijd.bemanTrebuchet([n1, n2], tr.krijg.vak !== undefined ? tr.krijg.vak : Math.floor(tr.y) * B + Math.floor(tr.x));
+  sim(600);
+  uit.gekoppeld = [n1, n2].filter((e) => e.krijg.ing && e.krijg.ing.treb === tr).length;
+  uit.fase = [n1, n2].map((e) => e.krijg.ing && e.krijg.ing.fase);
+  const a1 = s.strijd.ontkoppel([tr]);
+  sim(300);
+  uit.n1 = a1.n; uit.stilBlijft = [n1, n2].filter((e) => e.krijg.ing).length;
+  const a2 = s.strijd.ontkoppel([tr]);
+  uit.sloop = a2.sloop; uit.weg = !s.leger.lijst.includes(tr); uit.stand = s.strijd.trebuchetStand();
+  return uit;
+});
+console.log(JSON.stringify(r));
+check('trebuchet gebouwd', r.gebouwd); check('bedieners weg', r.bedienersNa === 0);
+check('niemand loopt automatisch erheen', r.autoNul === 0, JSON.stringify(r)); check('tik: twee ingenieurs gewezen', r.tik === 2, JSON.stringify(r));
+check('twee nieuwe ingenieurs nemen hem over', r.gekoppeld === 2 && r.fase.every((f) => f === 'bedien'), JSON.stringify(r));
+check('ontkoppelen maakt twee los', r.n1 === 2); check('stil: niemand neemt hem over', r.stilBlijft === 0);
+check('tweede keer breekt hem af', r.sloop === 1 && r.weg && r.stand.n === 0, JSON.stringify(r.stand));
+console.log(`bemannen101: ${ok} goed, ${fout} fout`); await b.close(); srv.kill();

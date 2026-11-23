@@ -35,7 +35,7 @@ export const OBJECT = {
   RAAFTOREN: 43, // de Raaftoren van Mournkeep (level 10): hier zit Wessel; onkwetsbaar, decor
   SLUIS: 42,     // de sluis van de Witte Dijk (level 8): een doel dat je moet slopen
   GRAF: 41,      // grafstenen en kruisen van een begraafplaats (level 10, bij de kerk), decor
-  MOORDGATENTOREN: 50,   // toren met moordgaten (level 7): kokende olie op alles binnen 2 tegels
+  MOORDGATENTOREN: 50,   // toren met moordgaten (level 7): kokende olie recht omlaag op alles vlak voor de toren (1 tegel)
   ARCHIEFTOREN: 51,      // het tolarchief achter de laatste muur van Greyford (level 7), decor
 };
 

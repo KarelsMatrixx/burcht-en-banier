@@ -131,7 +131,7 @@ const ro = await p.evaluate(() => {
   const ings = s.leger.soldaten().filter((x) => x.soldaat.sleutel === 'ingenieur');
   const voor = s.strijd.levenOp(P.vak).leven;
   s.strijd.valBouwAan([tr], P.vak);
-  const n = s.strijd.ontkoppel([tr]);
+  const n = s.strijd.ontkoppel([tr]).n;
   sim(300);
   const na = s.strijd.levenOp(P.vak).leven;
   const gebonden = ings.filter((x) => x.krijg && x.krijg.ing).length;

@@ -1239,7 +1239,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         const kd = krijgVan(d);
         const zwaar = kd.def.alleenBouw || kd.def.soort === 'LADDER' || kd.def.soort === 'TOREN';
         raak(d, MG.schade * (zwaar ? MG.belegering : 1), null);
-        effect({ soort: 'olie', x: d.x, y: d.y, bx: tx, by: ty, duur: 1300 });
+        effect({ soort: 'olie', x: d.x, y: d.y, duur: 1300 });
         gebruikt = true;
       }
       if (gebruikt) rook(tx, ty);
@@ -2196,6 +2196,17 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.bouw = was;
     return r;
   };
+  // Hoeveel ingenieurs hem bedienen (of ernaartoe lopen).
+  const bedienerAantal = (t) => {
+    const eigen = t.team === SPELER ? leger.lijst : vijanden;
+    let n = 0;
+    for (const a of eigen) {
+      if (a.dood || a === t || !(a.soldaat || a.vijand)) continue;
+      const ka = a.krijg;
+      if (ka && ka.def.bouwt && ka.ing && ka.ing.treb === t) n++;
+    }
+    return n;
+  };
   // Bediend wordt hij door de ingenieurs die aan hem gekoppeld zijn (ze bouwden hem, en je maakte ze niet los).
   const heeftBediener = (e) => {
     const eigen = e.team === SPELER ? leger.lijst : vijanden;
@@ -2403,6 +2414,23 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       }
     }
     if (!ing) return false;
+    if (ing.bemanning) {
+      // Op weg naar een trebuchet zonder bedieners: aangekomen, dan bedient hij hem mee.
+      if (!ing.treb || ing.treb.dood || (ing.treb.krijg && ing.treb.krijg.stil)) { k.ing = null; if (e.pad) zetPad(e, null); return false; }
+      if (ing.fase === 'loop') {
+        if (verVan(e, ing.sta) <= 0.9) {
+          ing.fase = 'bedien';
+          if (e.pad) zetPad(e, null);
+        } else {
+          if (!e.pad) {
+            const pad = zoekPad(e, ing.sta);
+            if (!pad) { k.ing = null; return false; }
+            zetPad(e, pad);
+          }
+          return true;
+        }
+      }
+    }
     const p = ing.proj;
     k.doelwit = null;
     k.bouw = null;
@@ -2493,6 +2521,30 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // Het bevel van de speler: een of twee gekozen ingenieurs bouwen op dit vak; is er maar een gekozen, dan helpt de
   // dichtstbijzijnde andere vrije ingenieur van je leger vanzelf mee.
   // 0: kan niet op dit vak, -1: maximum bereikt, -2: er zijn geen twee vrije ingenieurs.
+  // Door de speler gekozen ingenieurs op een eigen trebuchet zetten (tik op de trebuchet). Max 2 bedieners per trebuchet.
+  function bemanTrebuchet(lijst, vak) {
+    const t = leger.lijst.find((a) => staandVan(a) && vakVan(a) === vak);
+    if (!t || t.team !== SPELER || t.dood || (t.krijg && t.krijg.stil)) return -1;
+    let vrij = 2 - bedienerAantal(t);
+    if (vrij <= 0) return -2;
+    let n = 0;
+    for (const e of lijst) {
+      if (vrij <= 0) break;
+      const k = e.krijg;
+      if (!k || !k.def || !k.def.bouwt || e.team !== SPELER || e.dood || e.opMuur || e.klimt) continue;
+      if (k.ing && k.ing.treb === t) continue;
+      const vijandVak = rood.vak;
+      const sta = plekRond(e, vakVan(t), 1, false, [], false, { x: (vijandVak % B) + 0.5, y: Math.floor(vijandVak / B) + 0.5 });
+      if (sta < 0) continue;
+      k.ing = { treb: t, vak: vakVan(t), sta, fase: 'loop', muur: false, wachtTot: 0, bemanning: true };
+      k.denk = 1; k.doelwit = null; k.bevel = null; k.bouw = null; k.bouwBevel = null;
+      if (e.pad) zetPad(e, null);
+      if (e.soldaat) e.soldaat.doel = -1;
+      n++; vrij--;
+    }
+    return n;
+  }
+
   function bouwTrebuchet(lijst, vak, kosten = null) {
     const gekozen = lijst.filter(vrijeIngenieur);
     if (vak < 0 || vak >= N || !vrijVoor(vak, SPELER) || staandOp(vak)) return gekozen.length ? 0 : -2;
@@ -2530,10 +2582,19 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     return 1;
   }
   // De ingenieurs van een gekozen trebuchet weer losmaken: ze lopen vrij rond en de trebuchet zwijgt.
+  // Eerste keer: de bedieners worden losgemaakt en de trebuchet blijft stil (geen ingenieur neemt hem nog over).
+  // Is hij al stil en heeft hij geen bedieners, dan wordt hij afgebroken: dat geeft true terug in sloop.
   function ontkoppel(lijst) {
     let n = 0;
-    for (const t of lijst) {
+    let sloop = 0;
+    for (const t of [...lijst]) {
       if (t.dood || !(staandVan(t) || geschutVan(t))) continue;
+      const kt = t.krijg;
+      if (staandVan(t) && kt && kt.stil && bedienerAantal(t) === 0) {
+        leger.sneuvel(t);
+        sloop++;
+        continue;
+      }
       for (const a of leger.lijst) {
         const ka = a.krijg;
         if (a.dood || !ka || !ka.ing || ka.ing.treb !== t) continue;
@@ -2541,10 +2602,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
         zetHouding(a, null);
         n++;
       }
-      const kt = t.krijg;
-      if (kt) { kt.bouw = null; kt.bouwBevel = null; zetHouding(t, null); }
+      if (kt) { kt.bouw = null; kt.bouwBevel = null; if (staandVan(t)) kt.stil = true; zetHouding(t, null); }
     }
-    return n;
+    return { n, sloop };
   }
   // Voor de bereikring bij het plaatsen: welke bouwwerken van rood kan een trebuchet op dit vak raken?
   function trebuchetDoelen(px, py) {
@@ -3451,7 +3511,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     reserve: () => vijanden.filter((e) => e.reserveWacht && !e.dood),
     koningBeschermd: () => koningBeschermd,
     stap, stand, effecten, balken, kaartVeranderd, bloed, vermoord, rook, ruiter, laatOpmarsLos, opmarsDirect, opmarsStand, hinderlaag, duikOp,
-    projectenAantal: () => projecten.length, vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder, bouwTrebuchet, bouwBallista, ontkoppel, trebuchetDoelen, trebuchetPlekOk: (vak) => vak >= 0 && vak < N && vrijVoor(vak, SPELER) && !staandOp(vak), ballistaPlekOk: (vak) => vak >= 0 && vak < N && wegvinder.isMuur(vak % B, Math.floor(vak / B), SPELER) && !geschutOp(vak), ballistaBereik: () => soorten.ballista.bereik + R.muurBereik, geschutStand: (team = SPELER) => ({ n: aantalGeschut(team), max: GESCHUT_MAX() }), trebuchetStand,
+    projectenAantal: () => projecten.length, vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder, bemanTrebuchet, bouwTrebuchet, bouwBallista, ontkoppel, trebuchetDoelen, trebuchetPlekOk: (vak) => vak >= 0 && vak < N && vrijVoor(vak, SPELER) && !staandOp(vak), ballistaPlekOk: (vak) => vak >= 0 && vak < N && wegvinder.isMuur(vak % B, Math.floor(vak / B), SPELER) && !geschutOp(vak), ballistaBereik: () => soorten.ballista.bereik + R.muurBereik, geschutStand: (team = SPELER) => ({ n: aantalGeschut(team), max: GESCHUT_MAX() }), trebuchetStand,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),
     zetLadderBevel, ladders,

@@ -657,36 +657,34 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
           const t = (nu - f.van) / f.duur;
           const wxo = (f.x - f.y) * HALVE_BREEDTE;
           const wyo = (f.x + f.y) * HALVE_HOOGTE;
-          const bronX = f.bx !== undefined ? (f.bx - f.by) * HALVE_BREEDTE : wxo;
-          const bronY = (f.bx !== undefined ? (f.bx + f.by) * HALVE_HOOGTE : wyo) - 44;
           const straal = Math.min(1, t / 0.25);          // de straal valt eerst naar beneden
           const uitloop = t < 0.6 ? 1 : Math.max(0, 1 - (t - 0.6) / 0.4);
+          // de straal: de olie valt recht omlaag, precies boven de soldaat (links van de toren links, rechts rechts)
           oliestralen.push(() => {
-          // de straal: een boog van de toren naar de soldaat
-          if (uitloop > 0) {
-            const steun = (a, b, c, k) => (1 - k) * (1 - k) * a + 2 * (1 - k) * k * b + k * k * c;
-            const mx = bronX + (wxo - bronX) * 0.7;   // de olie loopt eerst over de rand en valt dan
-            const my = bronY + 2;
-            for (const [br, kl, al] of [[5, '#050403', 0.95], [2.2, '#3a3a40', 0.55]]) {
+            if (uitloop <= 0) return;
+            const top = wyo - 40;
+            const voet = wyo - 5;
+            const val = top + (voet - top) * straal;
+            for (const [br, kl, al] of [[4.4, '#050403', 0.92], [1.8, '#3a3a40', 0.5]]) {
               ctx.globalAlpha = al * uitloop;
               ctx.strokeStyle = kl;
               ctx.lineWidth = br;
               ctx.lineCap = 'round';
               ctx.beginPath();
-              ctx.moveTo(bronX, bronY);
-              for (let k = 0.05; k <= straal + 0.001; k += 0.05) ctx.lineTo(steun(bronX, mx, wxo, k), steun(bronY, my, wyo - 6, k));
+              ctx.moveTo(wxo, top);
+              ctx.lineTo(wxo, val);
               ctx.stroke();
             }
-            // druppels die van de straal spatten
+            // een schuimrandje bovenaan en druppels langs de straal
             ctx.fillStyle = '#050403';
-            for (let k = 0; k < 9; k++) {
-              const kk = ((k / 9 + t * 1.6) % 1) * straal;
-              ctx.globalAlpha = 0.9 * uitloop;
+            ctx.globalAlpha = 0.95 * uitloop;
+            ctx.beginPath(); ctx.ellipse(wxo, top, 5, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+            for (let k = 0; k < 8; k++) {
+              const kk = ((k / 8 + t * 1.8) % 1);
               ctx.beginPath();
-              ctx.arc(steun(bronX, mx, wxo, kk) + Math.sin(k * 5) * 3, steun(bronY, my, wyo - 6, kk) + 2 + (k % 3), 1.5, 0, Math.PI * 2);
+              ctx.arc(wxo + (k % 2 ? 3.6 : -3.6) * (0.6 + 0.4 * Math.sin(k)), top + (val - top) * kk, 1.3, 0, Math.PI * 2);
               ctx.fill();
             }
-          }
           });
           // inslag: spetters en een zwarte plas met glans
           if (straal >= 1) {
