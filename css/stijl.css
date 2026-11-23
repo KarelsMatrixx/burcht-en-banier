@@ -1361,3 +1361,132 @@ body.gids-bedekt #gids-ring, body.gids-bedekt #gids-zin, body.gids-bedekt #gids-
 /* Geluid aan of uit en het volume (stap 46), in het menu achter het tandwiel */
 .geluid-rij { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
 .geluid-rij input[type=range] { flex: 1; min-width: 90px; accent-color: #c9a24a; }
+
+/* 0.102.0: de menu's in de stijl van de medaillons.
+   Houten planken met een gouden rand, goud als iets gekozen is, perkament
+   voor wat je leest en koopt, ijzer voor acties (Box, All, None). */
+
+/* Een gekozen medaillon houdt zijn eiken en gouden rand (button.actief gaf
+   hem een egale bruine vulling) en gloeit. */
+.medaillon.actief, .medaillon-klein.actief,
+.medaillon.actief:active { background: url(../beelden/hud/medaillon.webp) center / contain no-repeat; border-color: transparent; }
+.medaillon.actief { transform: scale(1.08); filter: drop-shadow(0 0 7px #f6d98a) drop-shadow(0 0 3px #f6d98a) drop-shadow(0 2px 3px #0009); }
+
+.knop-lijn { width: 20px; height: 20px; flex: none; color: #e2bd62; }
+
+/* Houten plank: groepen in de bouwbalk, Back, groepen en soorten in de legerbalk. */
+#bouw-knoppen button, #leger-groepen button {
+  border: 1.5px solid #c9a24a;
+  border-radius: 10px;
+  background: linear-gradient(#5e4027, #3a2614);
+  box-shadow: inset 0 1px 0 rgba(255, 230, 170, 0.25), inset 0 -2px 0 rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: #f1e3c2;
+  text-shadow: 0 1px 0 #000;
+}
+#bouw-knoppen button:active, #leger-groepen button:active, #leger-balk button:active { filter: brightness(1.15); }
+#bouw-knoppen button[data-open] { flex-direction: row; gap: 7px; padding: 0 14px 0 10px; }
+
+/* Slopen is een actie: roodbruin hout. */
+#bouw-knoppen button[data-sleutel="sloop"] { background: linear-gradient(#5b2a22, #3a1712); border-color: #b07a4a; }
+
+/* Wat je kunt bouwen: perkamentkaartjes met naam en prijs. */
+#bouw-knoppen button[data-groep] {
+  align-items: flex-start;
+  padding: 0 11px;
+  border-color: #b08a45;
+  background: linear-gradient(#f3e7cb, #e2cfa6);
+  color: #3a2614;
+  text-shadow: none;
+}
+#bouw-knoppen button[data-groep] small { color: #6b4a24; opacity: 1; }
+
+/* Gekozen: goud. */
+#bouw-knoppen button.actief, #leger-groepen button.actief {
+  background: linear-gradient(#ecca72, #b88a32);
+  border-color: #fff0c0;
+  color: #2a1a0b;
+  text-shadow: none;
+  box-shadow: 0 0 0 1px #7a5a20, 0 0 10px 2px rgba(246, 200, 90, 0.45);
+}
+#bouw-knoppen button[data-groep].actief {
+  background: linear-gradient(#f8eed6, #e8d6ae);
+  box-shadow: 0 0 0 2px #c9a24a, 0 0 12px 3px rgba(246, 200, 90, 0.55);
+}
+button.actief .knop-lijn { color: #3a2614; }
+
+/* Legerbalk: icoon, naam en het aantal in een rood zegel. Ruimte boven de
+   rij, anders snijdt het schuiven de zegels af. */
+#leger-groepen { padding: 10px 10px 2px 2px; margin-top: -10px; gap: 8px; }
+#leger-groepen button { position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 0 18px 0 10px; }
+#leger-groepen button[hidden] { display: none; }
+#leger-groepen button.klein { opacity: 1; border-color: #9c7d42; }
+.telzegel {
+  position: absolute; top: -9px; right: -7px;
+  min-width: 22px; height: 22px; padding: 0 3px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
+  background: url(../beelden/hud/teller_zegel.webp) center / 22px 22px no-repeat;
+  color: #fff; font-size: 11px; font-weight: 700; line-height: 1; text-shadow: 0 1px 1px #000;
+}
+
+/* Acties in de legerbalk: rond ijzer. */
+#leger-balk button {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 14px 0 10px;
+  border-radius: 24px;
+  border: 1.5px solid #8f7a4a;
+  background: linear-gradient(#4a4a4d, #2a2a2c);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: #e9e4d8;
+}
+#leger-balk button .knop-lijn { width: 18px; height: 18px; color: #d8c28a; }
+#leger-balk button.actief { background: linear-gradient(#6a6a6e, #3a3a3d); border-color: #f3d37a; box-shadow: 0 0 8px 2px rgba(246, 200, 90, 0.45); }
+#leger-balk button[hidden] { display: none; }
+
+/* Schuifbare rij: rechts een vervaging zolang er meer is. */
+.schuif-rechts {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 40px), transparent);
+}
+
+/* Het paneel over je volk: perkament, niet doorzichtig. */
+#volkpaneel {
+  background: linear-gradient(160deg, #f1e5c9, #e0cca2);
+  border: 2px solid #c9a24a;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px #3b2715, inset 0 0 26px rgba(120, 80, 30, 0.35), 0 8px 24px rgba(0, 0, 0, 0.55);
+  color: #3a2614;
+  padding: 10px 14px 12px;
+}
+#volk-titel { font: 700 18px/1.2 Georgia, 'Times New Roman', serif; margin: 2px 48px 8px 0; }
+#volk-sluit {
+  position: absolute; top: 2px; right: 2px;
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; color: #6b4a24;
+}
+#volk-sluit .knop-lijn { width: 20px; height: 20px; color: #6b4a24; stroke-width: 2.4; }
+#volk-kop { font: 700 15px/1.2 Georgia, serif; }
+#volk-strijd { border-top-color: rgba(120, 80, 30, 0.3); }
+
+/* Voorraad als regel met een balk eronder. */
+.volk-grond { display: grid; grid-template-columns: 20px 1fr auto 34px; align-items: center; column-gap: 6px; }
+.volk-grond b { margin-left: 0; font-variant-numeric: tabular-nums; }
+.volk-grond small { grid-column: 4; }
+.volk-grond small.omhoog { color: #2f6b2a; }
+.volk-grond small.omlaag, .volk-grond.slecht b { color: #9a3520; }
+.volk-balk { grid-column: 2 / -1; grid-row: 2; height: 5px; border-radius: 3px; background: rgba(90, 60, 30, 0.2); overflow: hidden; }
+.volk-balk span { display: block; height: 100%; background: #8a5a2b; }
+.volk-grond.slecht .volk-balk span { background: #b0472f; }
+
+/* Belasting: vier tegels van perkament, de gekozen in goud. */
+#volk-belasting { flex-wrap: nowrap; gap: 6px; }
+#volk-belasting button {
+  min-height: 48px;
+  border: 1.5px solid #b08a45;
+  background: linear-gradient(#f4e9cf, #e3d0a8);
+  color: #3a2614;
+  box-shadow: inset 0 -2px 0 rgba(120, 80, 30, 0.2);
+}
+#volk-belasting button.actief { background: linear-gradient(#e8c66e, #b88a32); border-color: #7a5a20; color: #2a1a0b; box-shadow: 0 0 0 2px #fff0c0, 0 2px 6px rgba(0, 0, 0, 0.35); }
+/* Het kruisje zit bovenin; een verhaalregel (z-index 30) mag er niet overheen. */
+#volkpaneel { z-index: 31; }

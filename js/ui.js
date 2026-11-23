@@ -7,6 +7,34 @@ import { naarSpel } from './scherm.js';
 
 const komma = (getal) => getal.toFixed(1).replace('.', ',');
 
+// Lijniconen voor de knoppen in de bouw- en legerbalk (0.102.0). Getekend in
+// goud (currentColor), zodat ze bij de medaillons passen. Later te vervangen
+// door plaatjes.
+const LIJN = {
+  kasteel: '<path d="M4 21V9h3V5h3v4h4V5h3v4h3v12z"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/>',
+  werk: '<path d="M13 4l7 3-3 5-6-3z"/><path d="M12 8L4 20"/>',
+  dorp: '<path d="M3 11l9-7 9 7v10H3z"/><path d="M10 21v-6h4v6"/>',
+  leger: '<path d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z"/>',
+  melee: '<path d="M14 4h6v6L10 20l-6-6z"/><path d="M4 20l3-3"/>',
+  afstand: '<path d="M6 3c9 1 14 6 15 15"/><path d="M6 3l15 15"/><path d="M3 21l7-7"/>',
+  belegering: '<path d="M3 19h18"/><path d="M7 19l4-9 4 9"/><path d="M6 9l13-5"/><circle cx="19" cy="4" r="1.6"/>',
+  koning: '<path d="M3 18h18l1-11-6 4-4-6-4 6-6-4z"/>',
+};
+function lijnIcoon(naam) {
+  const pad = LIJN[naam];
+  if (!pad) return null;
+  const doos = document.createElement('span');
+  doos.innerHTML = `<svg class="knop-lijn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${pad}</svg>`;
+  return doos.firstChild;
+}
+// Een rij die je kunt schuiven krijgt rechts een vervaging zolang er meer is.
+function volgSchuif(rij) {
+  const zet = () => rij.classList.toggle('schuif-rechts', rij.scrollLeft + rij.clientWidth < rij.scrollWidth - 4);
+  rij.addEventListener('scroll', zet, { passive: true });
+  if (typeof ResizeObserver === 'function') new ResizeObserver(zet).observe(rij);
+  return zet;
+}
+
 export function maakUi() {
   const el = (id) => document.getElementById(id);
   const vlaggen = maakVlaggen(el('titelscherm'), el('titel-beeld'));
@@ -200,6 +228,8 @@ export function maakUi() {
   }
   sleepbaar(el('bouw-knoppen'));
   sleepbaar(el('leger-groepen'));
+  const schuifBouw = volgSchuif(el('bouw-knoppen'));
+  const schuifLeger = volgSchuif(el('leger-groepen'));
   sleepbaar(el('leger-opleiden'));
   sleepbaar(el('logboek-lijst'), 'y');
   sleepbaar(el('menu-lijst'), 'y');
@@ -259,6 +289,8 @@ export function maakUi() {
       else if (knop.dataset.groep) knop.hidden = knop.dataset.groep !== open;
       else knop.hidden = open !== null;                              // Slopen staat bij het begin
     }
+    el('bouw-knoppen').scrollLeft = 0;
+    requestAnimationFrame(() => schuifBouw());
   }
 
   // Tik je bovenin op je voorraad, dan klapt het paneel over je volk open.
@@ -380,6 +412,14 @@ export function maakUi() {
         const getal = document.createElement('b');
         getal.textContent = g.max ? `${g.aantal}/${g.max}` : g.aantal;
         vak.append(icoon, naam, getal);
+        if (g.max) {
+          const balk = document.createElement('span');
+          balk.className = 'volk-balk';
+          const vul = document.createElement('span');
+          vul.style.width = `${Math.max(0, Math.min(100, (100 * g.aantal) / g.max))}%`;
+          balk.appendChild(vul);
+          vak.appendChild(balk);
+        }
         if (Number.isFinite(g.verschil)) {
           const v = document.createElement('small');
           v.textContent = g.verschil > 0 ? `+${g.verschil}` : g.verschil < 0 ? `−${-g.verschil}` : '0';
@@ -868,12 +908,24 @@ export function maakUi() {
       for (const k of lijst) {
         const knop = document.createElement('button');
         knop.type = 'button';
-        knop.textContent = k.tekst;
+        // "Ranged 41": de naam op de plank, het aantal in een rood zegel.
+        const deel = /^(.*\S)\s+(\d+)$/.exec(k.tekst);
+        const icoon = lijnIcoon(k.sleutel.startsWith('g:') ? k.sleutel.slice(2) : k.sleutel === 's:koning' ? 'koning' : '');
+        if (icoon) knop.appendChild(icoon);
+        knop.append(deel ? deel[1] + ' ' : k.tekst);   // de spatie houdt textContent gelijk ("Melee 3")
+        if (deel) {
+          const zegel = document.createElement('span');
+          zegel.className = 'telzegel';
+          zegel.textContent = deel[2];
+          knop.appendChild(zegel);
+        }
+        knop.setAttribute('aria-label', k.tekst);
         if (k.actief) knop.classList.add('actief');
         if (k.klein) knop.classList.add('klein');
         knop.addEventListener('click', () => opKies(k.sleutel));
         doos.appendChild(knop);
       }
+      requestAnimationFrame(() => schuifLeger());
     },
     opKader(functie) {
       el('knop-kader').addEventListener('click', functie);
@@ -931,7 +983,10 @@ export function maakUi() {
         return knop;
       };
       for (const [groep, naam] of Object.entries(groepen)) {
-        maak(naam, () => toonGroep(groep)).dataset.open = groep;
+        const knop = maak(naam, () => toonGroep(groep));
+        knop.dataset.open = groep;
+        const icoon = lijnIcoon(groep);
+        if (icoon) knop.prepend(icoon);
       }
       const terug = maak('‹ Back', () => {
         toonGroep(null);

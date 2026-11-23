@@ -208,6 +208,7 @@
     </div>
     <!-- Het paneel over je volk: tik bovenin op je voorraad -->
     <div class="plaat" id="volkpaneel" hidden>
+      <div id="volk-titel">Your people</div>
       <div id="volk-grondstoffen"></div>
       <div id="volk-scroll">
         <div id="volk-tekst"></div>
@@ -216,7 +217,7 @@
       <div id="volk-kop">Tax</div>
       <div id="volk-rij">
         <div class="knoppen" id="volk-belasting"></div>
-        <button id="volk-sluit" type="button">Close</button>
+        <button id="volk-sluit" type="button" aria-label="Close"><svg class="knop-lijn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
     </div>
     <!-- De kazerne: tik hem aan om soldaten op te leiden -->
@@ -264,9 +265,9 @@
         <div class="knoppen" id="leger-groepen" hidden></div>
         <!-- Je soldaten kiezen: verschijnt zodra je er een hebt -->
         <div class="knoppen" id="leger-balk" hidden>
-          <button id="knop-kader" type="button">Box</button>
-          <button id="knop-alle" type="button">All</button>
-          <button id="knop-niets" type="button">None</button>
+          <button id="knop-kader" type="button"><svg class="knop-lijn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1" stroke-dasharray="3 3"/></svg>Box</button>
+          <button id="knop-alle" type="button"><svg class="knop-lijn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3 3-5 6-5s6 2 6 5"/><path d="M14 15c3 0 8 1 8 5"/></svg>All</button>
+          <button id="knop-niets" type="button"><svg class="knop-lijn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M6.5 6.5l11 11"/></svg>None</button>
           <button id="knop-bouw" type="button" hidden>Build</button>
           <button id="knop-trebuchet" type="button" hidden>Trebuchet</button>
           <button id="knop-ballista" type="button" hidden>Ballista</button>

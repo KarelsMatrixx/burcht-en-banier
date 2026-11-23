@@ -1232,3 +1232,13 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Proeven zonder speler (niemand reageert): met 8 schutters en 4 zwaardvechters thuis en 25 man in het veld valt de koning in aanval 1 via de ladders (5 min); met 20 schutters thuis in aanval 2 (7 min, voorheen 8 min 47). Een speler die op de waarschuwing reageert hoort het te halen; niet op de iPhone gespeeld.
 - Test: tests/rooster96.mjs (18). aanval41 aangepast. Bekende fouten die ook op main zonder deze versie optreden: kasteel33 (12), hut36, campagne30, veldheer38 (zonder plan).
 - Alle meldingen door Claude geschreven (Engels); alle getallen schattingen.
+
+## 0.102.0
+- Menu's in de stijl van de medaillons (na Karels feedback, mockup in het project Stronghold).
+- Gekozen medaillon blijft een medaillon met gloed. Fout opgelost: `button.actief` gaf hem een egale bruine vulling.
+- Bouwbalk: groepen als houten planken met een goudkleurig lijnicoon (Castle, Work, Village, Army), gekozen in goud. Gebouwen als perkamentkaartjes met naam en prijs. Demolish in roodbruin hout.
+- Legerbalk: groepen met icoon (Melee, Ranged, Siege, King) en het aantal in een rood zegel (`teller_zegel.webp`). Box, All en None als ronde ijzeren knoppen met icoon.
+- Schuifbare rijen (bouw en leger) krijgen rechts een vervaging zolang er meer is (ui.js `volgSchuif`).
+- Paneel over je volk: ondoorzichtig perkament met titel "Your people", kruisje rechtsboven (aria-label Close, id blijft `volk-sluit`), voorraad met een balk, belasting als perkamenttegels. Het paneel ligt nu boven de verhaalregel (z-index 31).
+- De lijniconen zijn door Claude getekend (SVG in ui.js `LIJN` en index.html); later te vervangen door plaatjes. "Your people" is nieuwe Engelse tekst: na te lezen.
+- Tests groen: balk38, selectie, selectie_kader51, hud35, test_stap17, ballista80, proloog35.
