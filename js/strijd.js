@@ -1707,6 +1707,19 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       }
       return true;
     }
+    // Uitval (veldheer): wie niets te bevechten heeft, gaat terug naar zijn plek achter de muur.
+    if (t.uitval >= 0) {
+      // Eerst 30 s op jouw belegeraars af, daarna terug naar zijn plek.
+      if (t.uitvalTot === undefined) t.uitvalTot = stapNr + stappen(30);
+      const heen = t.uitvalDoel && stapNr < t.uitvalTot ? Math.floor(t.uitvalDoel.y) * B + Math.floor(t.uitvalDoel.x) : t.uitval;
+      if (verVan(e, heen) > 1.5) {
+        if (!e.pad || e.pad !== k.marsPad || k.marsNaar !== heen) {
+          const pad = zoekPad(e, heen) || (heen !== t.uitval ? zoekPad(e, t.uitval) : null);
+          if (pad) { zetPad(e, pad); k.marsPad = e.pad; k.marsNaar = heen; } else t.uitval = -1;
+        }
+      } else if (e.pad) zetPad(e, null);
+      return true;
+    }
     // Verzamelen (veldheer): naar zijn plek op het verzamelpunt en daar wachten.
     if (t.verzamel >= 0) {
       if (verVan(e, t.verzamel) > 1.2) {
@@ -2635,6 +2648,11 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.doelwit = kiesDoelwit(e, k, anderen);
     // Tijdens verzamelen en opmars jaagt rood niemand ver na: hij blijft bij zijn leger.
     if (k.doelwit && e.team === VIJAND && k.tak && (k.tak.mars || k.tak.verzamel >= 0) && Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > Math.max(bereikVan(e, k), 1.5) + 1.5) k.doelwit = null;
+    // Een uitvaller jaagt niemand verder dan 12 tegels van zijn plek achter de muur.
+    if (k.doelwit && e.team === VIJAND && k.tak && k.tak.uitval >= 0) {
+      const hx = k.tak.uitval % B + 0.5, hy = Math.floor(k.tak.uitval / B) + 0.5;
+      if (Math.hypot(k.doelwit.x - hx, k.doelwit.y - hy) > 12) k.doelwit = null;
+    }
     // Koningsjager (veldheer): na de opmars rent hij naar jouw koning zodra daar een weg is
     // (bres, open poort, ladder). Elke 2 seconden kijkt hij opnieuw.
     if (e.team === VIJAND && k.tak && k.tak.jager && !k.tak.mars && !(k.tak.verzamel >= 0) && !k.tak.rem && !k.tak.terug && koningSleutel) {
@@ -2856,7 +2874,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // rond en straal: waar ze verschijnen (standaard bij de burcht van rood).
   // binnen: niet dichter dan zoveel tegels bij rond (proloog: niet op de burcht zelf).
   const maxVijanden = () => (R.proloog ? MAX_VIJANDEN_PROLOOG : MAX_VIJANDEN);
-  function stuurLeger(inhoud, telAls = true, { rond = kaart.start[VIJAND], straal = 8, binnen = 0, houd = null, traag = 1 } = {}) {
+  function stuurLeger(inhoud, telAls = true, { rond = kaart.start[VIJAND], straal = 8, binnen = 0, houd = null, traag = 1, plan = false, uitval = null } = {}) {
     const bezet = new Set(vijanden.map(vakVan));
     const nieuw = [];
     let aantal = 0;
@@ -2884,6 +2902,12 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
           t.snelheid = man.snelheid;
           man.snelheid *= traag;   // langzaam aanmarcheren
         }
+        // Uitval (veldheer, 0.96.0): verdedigt het stuk voor zijn muur en keert daarna terug.
+        if (uitval) {
+          const t = tak(man);
+          t.uitval = Math.floor(rond.y) * B + Math.floor(rond.x);
+          t.uitvalDoel = uitval;
+        }
         nieuw.push(man);
         aantal++;
       }
@@ -2895,7 +2919,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (!heer && !R.proloog) opMelding(`Attack ${golf}! ${aantal} ${aantal === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`);
     }
     // De veldheer maakt er een aanval van: groepen, timing, doelkeuze (alleen bij een echte aanval).
-    if (veld && telAls && nieuw.length && !eigenStart && !R.proloog && (heer || hutVak >= 0)) veld.plan(nieuw, { golf, hut: hutVak });
+    if (veld && telAls && nieuw.length && (!eigenStart || plan) && !R.proloog && (heer || hutVak >= 0)) veld.plan(nieuw, { golf, hut: hutVak });
     opVerandering();
     opStand();
     return aantal;

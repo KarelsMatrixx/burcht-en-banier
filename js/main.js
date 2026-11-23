@@ -815,7 +815,13 @@ async function start() {
       const klaar = h.sterkte >= h.doel && h.wacht > 0;
       if (s.vijanden) kort = 'Attack!';
       else if (h.wacht > 3600) kort = '';   // rood valt in dit level niet vanzelf aan: de klok zegt niets
+      else if (h.rooster) kort = `${h.rooster.naam} ${tijd(h.rooster.volgende)}`;   // aanvalsrooster: de klok tikt
       else kort = klaar ? tijd(h.wacht) : `Red ${Math.floor(h.sterkte)}/${Math.ceil(h.doel)}`;
+      if (h.rooster) {
+        lang = (s.vijanden ? `Attack ${s.golf}: ${s.vijanden} ${s.vijanden === 1 ? 'enemy' : 'enemies'} left. ` : '') +
+          `Next attack (${s.golf + 1}): ${h.rooster.naam.toLowerCase()} in ${tijd(h.rooster.volgende)}. The stronger you are, the stronger it comes. ` +
+          `Workshops still standing: ${h.werken} of ${h.werkenTotaal}.`;
+      } else
       lang = (s.vijanden ? `Attack ${s.golf}: ${s.vijanden} ${s.vijanden === 1 ? 'enemy' : 'enemies'} left. ` : `Attack ${s.golf + 1}: `) +
         `${heerNaam} has ${rij || 'no one yet'} in reserve (strength ${Math.round(h.sterkte * 10) / 10} of ${Math.round(h.doel * 10) / 10}). ` +
         `Workshops still standing: ${h.werken} of ${h.werkenTotaal}. Stock: ${h.voorraad.goud} gold, ${h.voorraad.hout} wood, ${h.voorraad.steen} stone.`;

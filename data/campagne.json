@@ -905,8 +905,22 @@
     },
     "muur": 165,
     "aanval": {
-     "niveau": 3,
+     "niveau": 4,
      "max": 5
+    },
+    "rooster": {
+     "eerste": 200,
+     "tussen": 150,
+     "krimp": 0.94,
+     "minTussen": 80,
+     "basis": 6,
+     "perAanval": 2.5,
+     "thuis": 1,
+     "veld": 0.25,
+     "min": 8,
+     "max": 42,
+     "uitvalReserve": 9,
+     "soorten": ["bestorming", "belegering", "overval", "brand", "schijn", "koningsmoord"]
     },
     "extra_soorten": {
      "katapult": {

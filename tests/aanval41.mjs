@@ -94,6 +94,8 @@ check('kan rood het niet betalen, dan krijgt hij goud bij', v3b.g1 > v3b.g0 + 5,
 await start(5);
 const v4 = await p.evaluate(() => {
   const s = window.spel; const stap = () => { s.eenheden.stap(0.1); s.leger.stap(); s.strijd.stap(); };
+  // Sinds 0.101.0 zijn er bij een gewone aanval pas vanaf aanval 3 koningsjagers; een koningsmoord heeft ze altijd.
+  s.veld.zetSoort('koningsmoord');
   s.strijd.stuurLeger({ ridder: 10, boogschutter: 2 }, true);
   const v = s.strijd.vijanden().filter((e) => e.krijg && e.krijg.tak);
   const jagers = v.filter((e) => e.krijg.tak.jager);
@@ -101,7 +103,7 @@ const v4 = await p.evaluate(() => {
   for (let i = 0; i < 2500 && !jaagt; i++) { stap(); jaagt = jagers.some((e) => !e.dood && e.krijg.jaagtKoning); }
   return { jagers: jagers.length, jaagt, log: s.ui.logboek().map((r) => r.tekst).some((t) => /king-hunters/.test(t)) };
 });
-check('er zijn 1 tot 3 koningsjagers', v4.jagers >= 1 && v4.jagers <= 3, v4.jagers);
+check('bij een koningsmoord zijn alle voetsoldaten koningsjagers', v4.jagers >= 8, v4.jagers);
 check('een koningsjager rent naar jouw koning als er een weg is', v4.jaagt, JSON.stringify(v4));
 check('de speler krijgt een waarschuwing', v4.log, JSON.stringify(v4));
 

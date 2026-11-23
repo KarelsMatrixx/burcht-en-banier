@@ -144,6 +144,8 @@ function pasRoodToe(regels, rood) {
   if (rood.geenHerbouw) h.geenHerbouw = true;   // rood herstelt zijn gesneuvelde muren en werken niet (Greyford)
   // begin: extra grondstoffen voor rood bij de start (bijvoorbeeld goud: een groter eerste leger).
   if (rood.begin) h.begin = { ...h.begin, ...rood.begin };
+  // rooster: vaste aanvalsklok in plaats van sparen (veldheer, 0.96.0); zie rood.js en veldheer.js.
+  if (rood.rooster) h.rooster = { ...rood.rooster };
   // Hoe groot zijn aanvallen zijn, in gewichten van economie.json (een ridder telt 1): absolute waarden.
   for (const veld of ['doelBegin', 'doelPerAanval', 'doelMax']) if (Number.isFinite(rood[veld])) h[veld] = rood[veld];
   if (rood.doelVanaf && Number.isFinite(rood.doelVanaf.aanval) && Number.isFinite(rood.doelVanaf.factor)) h.doelVanaf = { ...rood.doelVanaf };

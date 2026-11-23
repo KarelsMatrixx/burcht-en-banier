@@ -84,7 +84,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const uit = { niveau: n };
     for (let i = 1; i <= n; i++) Object.assign(uit, (a.niveaus || {})[i] || {});
     // Wat het level zelf vastlegt (bijvoorbeeld flank in level 4) gaat voor.
-    for (const veld of ['doelkeuze', 'flank', 'scouts', 'tweede', 'thuis', 'tegenzet', 'terugtrek', 'piekElke', 'piekFactor', 'piekRust']) {
+    for (const veld of ['doelkeuze', 'flank', 'scouts', 'tweede', 'thuis', 'tegenzet', 'terugtrek', 'piekElke', 'piekFactor', 'piekRust', 'aanpas', 'aanpasMax', 'hulp']) {
       if (a[veld] !== undefined) uit[veld] = a[veld];
     }
     return uit;
@@ -131,6 +131,210 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
 
   // De bres: het zwakste stuk muur of poort van jou waar rood bij kan.
   // vermijd: een eerdere bres; de nieuwe moet minstens minAfstand tegels verder liggen.
+  // --- Aanvalsrooster (0.96.0, Karel 23 november) --------------------------------------
+  // Geen sparen meer: rood valt aan volgens een vast rooster (rood.rooster in campagne.json).
+  // Bij vertrek wordt het leger samengesteld: een basis, een deel van jouw sterkte (wat bij je
+  // kasteel staat telt volledig, je veldleger maar half) en groei per aanval. Elke aanval heeft
+  // een soort; je krijgt 25 s van tevoren een waarschuwing.
+  let soortNu = null;
+  let vorigeSoort = null;
+  const RO = () => H.rooster || null;
+  const NAAM = { bestorming: 'Assault', belegering: 'Siege', overval: 'Raid', brand: 'Fire', schijn: 'Feint', koningsmoord: 'Assassins' };
+  const WAARSCHUWING = {
+    bestorming: 'Scouts report: Red comes with ladders and a ram. An assault on your walls!',
+    belegering: 'Scouts report: catapults are rolling toward your walls. Ride out to stop them!',
+    overval: 'Riders spotted along the cliffs! They are after your farms and workers.',
+    brand: 'Scouts report: flameweavers march with Red. Your wooden buildings are in danger!',
+    schijn: 'Scouts report: Red splits his army. Watch more than one wall!',
+    koningsmoord: 'Scouts report: assassins are on the move. Guard your king!',
+  };
+  function thuisEnVeld() {
+    const b = strijd.burcht();
+    let thuis = 0, veld = 0;
+    for (const e of leger.lijst) {
+      if (e.dood || !e.soldaat) continue;
+      const d = soorten[e.soldaat.sleutel];
+      if (!d || d.koning) continue;
+      const w = H.gewicht[e.soldaat.sleutel] || 1.2;
+      if (b && Math.hypot(e.x - b.x, e.y - b.y) <= 16) thuis += w; else veld += w;
+    }
+    return { thuis: thuis + jouwTorens().length, veld };
+  }
+  function aanvalsGrootte(nr) {
+    const r = RO();
+    const { thuis, veld } = thuisEnVeld();
+    const g = (r.basis || 8) + (r.perAanval || 2) * (nr - 1) + (r.thuis ?? 1) * thuis + (r.veld ?? 0.25) * veld;
+    // De eerste aanvallen lopen op: 40%, 60%, 80%, daarna alles.
+    const aanloop = Math.min(1, 0.4 + (nr - 1) * 0.2);
+    return klem(g * aanloop * piek(nr), r.min || 6, r.max || 40);
+  }
+  function kiesSoort(nr) {
+    const r = RO();
+    const lijst = (r.soorten || ['bestorming']).filter((s) => NAAM[s]);
+    if (nr === 1 || lijst.length < 2) return lijst.includes('bestorming') ? 'bestorming' : lijst[0];
+    // Een overval pas vanaf aanval 2, een koningsmoord pas vanaf aanval 3.
+    const keuze = lijst.filter((s) => s !== vorigeSoort && !(s === 'overval' && nr < 2) && !(s === 'koningsmoord' && nr < 3));
+    return keuze[Math.floor(toeval() * keuze.length)];
+  }
+  // Wat rood meestuurt bij deze soort aanval (in gewichten, ridder = 1).
+  function samenstelling(soort, gewicht, nr) {
+    const inh = {};
+    const voeg = (s, n) => { if (n > 0 && soorten[s]) inh[s] = (inh[s] || 0) + Math.round(n); };
+    const w = (s) => H.gewicht[s] || 1.2;
+    const mix = Object.entries(H.leger || {}).filter(([s, m]) => soorten[s] && !isMachine(soorten[s]) && (m.vanaf || 0) <= nr - 1);
+    const vul = (budget) => {
+      let over = budget;
+      let n = 0;
+      const totaal = mix.reduce((a, [, m]) => a + (m.aandeel || 1), 0) || 1;
+      while (over > 0.4 && mix.length && n < 60) {
+        let x = toeval() * totaal;
+        let gekozen = mix[0][0];
+        for (const [s, m] of mix) { x -= m.aandeel || 1; if (x <= 0) { gekozen = s; break; } }
+        voeg(gekozen, 1);
+        over -= w(gekozen);
+        n++;
+      }
+    };
+    const voet = () => Object.entries(inh).filter(([s]) => !isMachine(soorten[s])).reduce((a, [, n]) => a + n, 0);
+    if (soort === 'overval') {
+      voeg(soorten.ruiter ? 'ruiter' : 'ridder', klem(gewicht * 0.75 / 1.8, 4, 14));
+      return inh;
+    }
+    if (soort === 'koningsmoord') {
+      voeg('sluipmoordenaar', klem(gewicht * 0.4 / 1.5, 3, 6));
+      vul(gewicht * 0.45);
+      voeg('ladder', 3);
+      return inh;
+    }
+    if (soort === 'brand') {
+      voeg(soorten.vlammenwever ? 'vlammenwever' : 'boogschutter', klem(gewicht * 0.3 / 2, 2, 7));
+      vul(gewicht * 0.6);
+      voeg('ladder', klem(voet() / 7, 1, 3));
+      return inh;
+    }
+    if (soort === 'belegering') {
+      vul(gewicht * 0.7);
+      voeg('katapult', klem(1 + gewicht / 15, 1, 3));
+      voeg('ram', 1);
+      voeg('ladder', klem(voet() / 8, 1, 3));
+      return inh;
+    }
+    vul(soort === 'schijn' ? gewicht * 1.1 : gewicht);
+    voeg('ladder', klem(voet() / 6, 1, 4));
+    if (voet() >= 6) voeg('ram', klem(voet() / 8, 1, 3));
+    return inh;
+  }
+  // Een ingang aan de rand van de kaart, ver van jouw veldleger en niet te ver van je kasteel
+  // (een bergpas): voor overvallers en sluipmoordenaars. Null als er geen is.
+  function zijIngang(minAfstand = 12) {
+    // Een plek langs de rotswand, tussen jouw veldleger en je kasteel (Greyford is een kloof zonder
+    // zijpas): ver van je soldaten, niet te ver van je kasteel, liefst tegen de rand. Null als er geen is.
+    const b = strijd.burcht();
+    if (!b) return null;
+    const veldMannen = leger.lijst.filter((e) => !e.dood && e.soldaat && Math.hypot(e.x - b.x, e.y - b.y) > 16);
+    const legerAf = veldMannen.length ? Math.hypot(veldMannen.reduce((s, e) => s + e.x, 0) / veldMannen.length - b.x, veldMannen.reduce((s, e) => s + e.y, 0) / veldMannen.length - b.y) : Infinity;
+    // Waar rood kan komen: vanaf al zijn mannen die nu op de kaart staan (de burcht zelf is ommuurd).
+    const rk = strijd.roodKoning ? strijd.roodKoning() : null;
+    const zaden = [...strijd.vijanden(), ...(strijd.wachters ? strijd.wachters() : []), ...(rk ? [rk] : [])].filter((e) => e && !e.dood).map(vakVan);
+    if (!zaden.length) return null;
+    const bereik = strijd.bereikbaar(zaden);
+    let beste = null;
+    let score = -Infinity;
+    for (const v of bereik) {
+      const x = v % B, y = Math.floor(v / B);
+      const d = Math.hypot(x - b.x, y - b.y);
+      if (d < minAfstand || d > 40) continue;
+      const leeg = veldMannen.length ? Math.min(...veldMannen.map((e) => Math.hypot(e.x - x, e.y - y))) : 30;
+      if (leeg < 9) continue;
+      // Tegen de rand: hoeveel vakken in de buurt zijn niet begaanbaar?
+      let rots = 0;
+      for (const [ax, ay] of [[3, 0], [-3, 0], [0, 3], [0, -3]]) if (!bereik.has(v + ay * B + ax)) rots++;
+      const voorbij = d < legerAf - 4 ? 8 : 0;   // aan jouw kant van je veldleger
+      const s = Math.min(leeg, 25) - 0.3 * d + 2 * rots + voorbij;
+      if (s > score) { score = s; beste = { x, y }; }
+    }
+    return beste;
+  }
+  // Een overval: geen verzamelpunt, recht op jouw boeren, velden en werken af, ver van je soldaten.
+  function planOverval(lijst) {
+    const mannen = lijst.filter((e) => !e.dood);
+    if (!mannen.length) return;
+    const bereik = strijd.bereikbaar(mannen.map(vakVan));
+    const doelen = economieDoelen(bereik, mannen[0]);
+    const g = { id: volgende++, thuis: vakVan(mannen[0]), eenheden: [], hp0: 0, doel: null, vrijNa: strijd.stapNr(), gemeld: false, herstel: [], fase: 'aanval', eind: doelen.length ? midden(doelen[0]) : { x: strijd.burcht().x, y: strijd.burcht().y }, eindVak: doelen[0] ?? -1, rally: -1, start: strijd.stapNr(), stil: new Map(), hoofd: true, leven: new Map(), overval: true };
+    mannen.forEach((e, i) => {
+      const t = strijd.tak(e);
+      t.groep = g.id;
+      t.overval = true;
+      t.verzamel = -1; t.rem = false; t.mars = false;
+      t.doel = doelen.length ? strijd.bouwDoelOp(doelen[Math.floor(i / 2) % doelen.length]) : null;
+      g.eenheden.push(e);
+      g.hp0 += e.levenMax;
+    });
+    groepen.push(g);
+  }
+  // Gebouwen van jou die geen muur, poort, toren of burcht zijn en die rood zonder hakken bereikt.
+  const VERDEDIGING = () => new Set([OBJECT.MUUR, OBJECT.POORT, OBJECT.TOREN, OBJECT.WACHTTOREN, OBJECT.BURCHT, OBJECT.MOORDGATENTOREN, OBJECT.BANIER_BLAUW, OBJECT.BANIER_ROOD].filter((x) => x !== undefined));
+  function economieDoelen(bereik, van) {
+    const nee = VERDEDIGING();
+    const lijst = [];
+    for (let v = 0; v < B * HOOG; v++) {
+      if (kaart.eigenaar[v] !== 1 || !kaart.object[v] || nee.has(kaart.object[v])) continue;
+      let buiten = false;
+      for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (bereik.has(v + ay * B + ax)) buiten = true;
+      if (buiten) lijst.push(v);
+    }
+    const p = (v) => midden(v);
+    lijst.sort((a, b) => Math.hypot(p(a).x - van.x, p(a).y - van.y) - Math.hypot(p(b).x - van.x, p(b).y - van.y));
+    return lijst.slice(0, 8);
+  }
+  // Houten gebouwen van jou dicht bij het doel (de poort eerst) die van buiten in bereik liggen.
+  function houtDoelen(bereik, eind) {
+    const hout = new Set(['POORT', 'HOUTHAKKER', 'BOOMGAARD', 'ZAGERIJ', 'TARWEVELD', 'STEENGROEVE', 'VOORRAADKAMER', 'WONING', 'KAZERNE', 'STAL', 'BAKKERIJ', 'KOPERMIJN', 'BELEGERINGSWERKPLAATS'].map((n) => OBJECT[n]).filter((x) => x !== undefined));
+    const buitenVakken = [...bereik];
+    const lijst = [];
+    for (let v = 0; v < B * HOOG; v++) {
+      if (kaart.eigenaar[v] !== 1 || !hout.has(kaart.object[v])) continue;
+      const p = midden(v);
+      if (Math.hypot(p.x - eind.x, p.y - eind.y) > 12) continue;
+      let dichtbij = false;
+      for (let i = 0; i < buitenVakken.length && !dichtbij; i += 3) {
+        const w = buitenVakken[i];
+        if (Math.abs(w % B - p.x) < 6 && Math.abs(Math.floor(w / B) - p.y) < 6) dichtbij = true;
+      }
+      if (dichtbij) lijst.push(v);
+    }
+    lijst.sort((a, b) => (kaart.object[b] === OBJECT.POORT ? 1 : 0) - (kaart.object[a] === OBJECT.POORT ? 1 : 0) || Math.hypot(midden(a).x - eind.x, midden(a).y - eind.y) - Math.hypot(midden(b).x - eind.x, midden(b).y - eind.y));
+    return lijst.slice(0, 4);
+  }
+  // Uitval (0.96.0): staan jouw belegeraars of schutters vlak bij een muur van rood, dan geeft dit
+  // het punt waar zijn bezetting uitvalt (aan zijn kant, een paar tegels terug). Anders null.
+  function uitvalPunt() {
+    const rk = strijd.rood && strijd.rood();
+    if (!rk) return null;
+    let beste = null;
+    for (const e of leger.lijst) {
+      if (e.dood || !e.soldaat) continue;
+      const d = soorten[e.soldaat.sleutel];
+      if (!d || !(d.alleenBouw || d.staand || d.bereik > 2 || d.ladder)) continue;
+      // Ligt er een muur of poort van rood binnen 8 tegels?
+      const x0 = Math.floor(e.x), y0 = Math.floor(e.y);
+      let muur = -1;
+      for (let dy = -8; dy <= 8 && muur < 0; dy++) for (let dx = -8; dx <= 8 && muur < 0; dx++) {
+        const v = (y0 + dy) * B + x0 + dx;
+        if (x0 + dx < 0 || y0 + dy < 0 || x0 + dx >= B || y0 + dy >= HOOG) continue;
+        if (kaart.eigenaar[v] === 2 && (kaart.object[v] === OBJECT.MUUR || kaart.object[v] === OBJECT.POORT)) muur = v;
+      }
+      if (muur < 0) continue;
+      // Het uitvalpunt: aan de kant van de rode burcht, 3 tegels achter die muur.
+      const m = midden(muur);
+      const dx = rk.x - m.x, dy = rk.y - m.y, l = Math.hypot(dx, dy) || 1;
+      const p = { x: Math.round(m.x + dx / l * 3), y: Math.round(m.y + dy / l * 3) };
+      if (!beste || Math.hypot(e.x - m.x, e.y - m.y) < beste.afstand) beste = { ...p, doel: { x: e.x, y: e.y }, afstand: Math.hypot(e.x - m.x, e.y - m.y) };
+    }
+    return beste;
+  }
+
   // Is er al een weg naar jouw burcht (geen muur meer tussen rood en de burcht)?
   function open(bereik) {
     const b = strijd.burcht();
@@ -310,6 +514,8 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
   }
   // weg = een plek die we juist verlaten (verder weg van jouw schutters dan die).
   function zoekVerzamel(eind, bereik, van, dr, maxAfstand, weg) {
+    const kb = strijd.burcht();
+    const veldPunten = leger.lijst.filter((e) => !e.dood && e.soldaat && kb && Math.hypot(e.x - kb.x, e.y - kb.y) > 16).map((e) => ({ x: e.x, y: e.y }));
     const werk = [];
     for (let v = 0; v < B * HOOG; v++) {
       if (kaart.eigenaar[v] !== 1) continue;
@@ -337,7 +543,9 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       if (open < 14) continue;
       // Liefst rond VERZAMEL_BEST van het doel, aan de kant van het leger, open, en ruim buiten bereik.
       const ruimte = dr.length ? Math.min(...dr.map((s) => Math.hypot(s.x - p.x, s.y - p.y) - s.r)) : 6;
-      const score = Math.abs(d - VERZAMEL_BEST) + 0.25 * Math.hypot(p.x - van.x, p.y - van.y) + 0.3 * (25 - open) - 0.3 * Math.min(ruimte, 4);
+      // Om jouw veldleger heen (0.96.0): liever ver van jouw soldaten buiten het kasteel.
+      const veldDicht = veldPunten.length ? Math.min(...veldPunten.map((q) => Math.hypot(q.x - p.x, q.y - p.y))) : 20;
+      const score = Math.abs(d - VERZAMEL_BEST) + 0.25 * Math.hypot(p.x - van.x, p.y - van.y) + 0.3 * (25 - open) - 0.3 * Math.min(ruimte, 4) + 0.5 * Math.max(0, 12 - veldDicht);
       if (score < min) {
         min = score;
         beste = v;
@@ -371,7 +579,14 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
 
   // De aanval plannen. lijst = de mannen die net bij de rode burcht staan.
   function plan(lijst, { golf, hut = -1 }) {
-    const I = instelling(golf);
+    const I = { ...instelling(golf) };
+    // De soort aanval (rooster, 0.96.0) stuurt het plan bij.
+    const soort = soortNu;
+    soortNu = null;
+    if (soort === 'overval') return planOverval(lijst);
+    if (soort === 'schijn') { I.flank = 0.4; I.schijn = I.schijn || 20; }
+    if (soort === 'belegering') I.belegering = true;
+    if (soort === 'koningsmoord') { I.koningsjagers = true; I.scouts = 1; }
     const nu = strijd.stapNr();
     const mannen = lijst.filter((e) => !e.dood && !e.koning);
     if (!mannen.length) return;
@@ -400,10 +615,10 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     // De flank: een deel van de hoofdmacht kiest een andere weg.
     const flank = [];
     const hoofd = [];
-    const ff = I.flank > 0 && (hut >= 0 ? hoofdVoet.length >= 6 : hoofdVoet.length >= 12) ? I.flank : 0;
+    const ff = I.flank > 0 && (hut >= 0 ? hoofdVoet.length >= 6 : hoofdVoet.length >= (soort === 'schijn' ? 8 : 12)) ? I.flank : 0;
     hoofdVoet.forEach((e, i) => ((Math.floor((i + 1) * ff) > Math.floor(i * ff)) ? flank : hoofd).push(e));
     // Een flank (of schijnaanval) van minder dan 5 man heeft geen zin: dan blijft iedereen bij elkaar.
-    if (hut < 0 && flank.length < 5) hoofd.push(...flank.splice(0));
+    if (hut < 0 && flank.length < (soort === 'schijn' ? 3 : 5)) hoofd.push(...flank.splice(0));
     for (const e of machines) hoofd.push(e);
 
     // Doelen: de bres van de hoofdmacht en van de flank.
@@ -451,6 +666,13 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
         if (isSchutter(d) || isSteun(d)) continue;
         r.doel = strijd.bouwDoelOp(werkA[Math.floor(i++ / 3) % werkA.length]);
       }
+    }
+    if (soort === 'koningsmoord') for (const r of rijen) if (!isMachine(def(r.e)) && !isSchutter(def(r.e))) r.soort = 'jager';
+    if (soort === 'brand') {
+      // Vlammenwevers mikken op wat van hout is: jouw poort, huizen en werken dicht bij de muur.
+      const hout = houtDoelen(bereik, eindA);
+      let i = 0;
+      for (const r of rijen) if (def(r.e).brand && hout.length) r.doel = strijd.bouwDoelOp(hout[i++ % hout.length]);
     }
     zet(tweede, 'tweede', doelA, eindA, I.tweedeNa || 10, -1);
     zet(flank, 'flank', doelF || doelA, doelF ? eindF : eindA, 4, omweg);
@@ -534,15 +756,25 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const opPlek = new Map();
     for (const g of new Set([gHoofd, gTweede, gFlank])) {
       if (g.rally < 0) continue;
-      if (!opPlek.has(g.rally)) opPlek.set(g.rally, plekkenRond(g.rally, rijen.length, bereik, dr));
+      if (!opPlek.has(g.rally)) {
+        // Formatie (0.96.0): de vakken het dichtst bij het doel eerst, zodat de voetsoldaten
+        // vooraan staan, de belegering in het midden en de schutters achteraan.
+        const p = plekkenRond(g.rally, rijen.length, bereik, dr);
+        p.sort((a, b) => Math.hypot(midden(a).x - g.eind.x, midden(a).y - g.eind.y) - Math.hypot(midden(b).x - g.eind.x, midden(b).y - g.eind.y));
+        opPlek.set(g.rally, p);
+      }
     }
+    const rang = (e) => { const d = def(e); return isMachine(d) ? 1 : isSchutter(d) ? 3 : isSteun(d) ? 2 : 0; };
+    rijen.sort((a, b) => rang(a.e) - rang(b.e));
     for (const r of rijen) {
       const g = groepVan(r);
       const t = strijd.tak(r.e);
       t.groep = g.id;
       t.doel = r.doel;
       t.rem = false;
-      t.jager = r.soort === 'jager' && !!I.koningsjagers;
+      // Koningsjagers: bij een koningsmoord altijd, anders pas vanaf aanval 3 (een koning die bij de
+      // eerste aanval sneuvelt, voelt oneerlijk).
+      t.jager = r.soort === 'jager' && !!I.koningsjagers && (soort === 'koningsmoord' || golf >= 3);
       if (g.fase === 'verzamel') {
         t.verzamel = opPlek.get(g.rally).shift();
         t.slot = t.verzamel;
@@ -694,7 +926,11 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     let geraakt = false;
     for (const e of g.eenheden) {
       const oud = g.leven.get(e);
-      if (oud !== undefined && e.leven < oud - 0.5) geraakt = true;
+      // Alleen wie al op (of vlak bij) zijn verzamelvak staat telt: wie onderweg slaags raakt, is
+      // niet "onder vuur op het verzamelpunt".
+      const t = takVan(e);
+      const opPlek = t && t.verzamel >= 0 && afstand(e, midden(t.verzamel)) <= 4;
+      if (opPlek && oud !== undefined && e.leven < oud - 0.5) geraakt = true;
       g.leven.set(e, e.leven);
     }
     if (geraakt) return true;
@@ -886,7 +1122,10 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     for (const e of R.achter) {
       const t = takVan(e);
       const marge = t && t.rem ? 1 : 0;
-      zetRem(e, R.melee.length > 0 && d(e) < voorste + 1 + marge && !onder(e));
+      const dd = def(e);
+      // Dekking: een schutter die zijn bres in bereik heeft, blijft staan en schiet.
+      const opBereik = isSchutter(dd) && !dd.brand && !!g.doel && d(e) <= dd.bereik - 0.3;
+      zetRem(e, opBereik || (R.melee.length > 0 && d(e) < voorste + 1 + marge && !onder(e)));
     }
   }
 
@@ -894,6 +1133,28 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
   // die nog niet bij de muur is terug naar het verzamelpunt (en sluit aan bij de volgende aanval).
   function aanvalStap(g) {
     const R = rollen(g);
+    // Overvallers: is hun doel weg, dan het volgende stuk van jouw economie.
+    if (g.overval) {
+      for (const e of g.eenheden) {
+        const t = takVan(e);
+        if (!t || (t.doel && !(kaart.eigenaar[t.doel.vak] === t.doel.van && kaart.object[t.doel.vak] === t.doel.soort))) {
+          const nieuw = economieDoelen(strijd.bereikbaar([vakVan(e)]), e);
+          if (t) {
+            t.doel = nieuw.length ? strijd.bouwDoelOp(nieuw[0]) : null;
+            // Niets meer te plunderen: terug naar waar ze binnenkwamen, en aanvallen wat daar komt.
+            if (!nieuw.length) { t.overval = false; t.uitval = g.thuis >= 0 ? g.thuis : vakVan(e); }
+          }
+        }
+      }
+      return;
+    }
+    // Schutters geven dekking (0.96.0): op hun bereik van de bres blijven staan en schieten, tot de bres valt.
+    for (const e of R.achter) {
+      const t = takVan(e);
+      const d = def(e);
+      if (!t || t.terug || !isSchutter(d) || d.brand) continue;
+      t.rem = !gevallen(g) && !!g.doel && afstand(e, g.eind) <= d.bereik - 0.3;
+    }
     if (R.melee.length || R.achter.length) return;
     for (const e of R.machine) {
       const t = takVan(e);
@@ -970,6 +1231,16 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
   return {
     plan, behoud, tegenFactor, extraRam, piek, rust, stap,
     sterkteDoel, hulp, katapultVanaf, jouwSterkte, belegNodig,
+    rooster: RO, aanvalsGrootte, samenstelling, zijIngang, uitvalPunt, thuisEnVeld,
+    kiesSoort, naam: (s) => NAAM[s] || s,
+    // De waarschuwing; bij een aanval langs de rotswand met de richting erbij.
+    waarschuwing(s, plek = null) {
+      if (plek && s === 'overval') return `Riders spotted along the ${richting(Math.floor(plek.y) * B + Math.floor(plek.x))} cliffs! They are after your farms and workers.`;
+      if (plek && s === 'koningsmoord') return `Scouts report: assassins are on the move along the ${richting(Math.floor(plek.y) * B + Math.floor(plek.x))} cliffs. Guard your king!`;
+      return WAARSCHUWING[s] || '';
+    },
+    zijAfstand: (s) => (s === 'koningsmoord' ? 26 : 12),
+    zetSoort(s) { soortNu = s; vorigeSoort = s; },
     // Een koningsjager heeft een weg naar jouw koning gevonden (eenmaal per groep melden).
     jagerDoor(e) {
       const t = takVan(e);

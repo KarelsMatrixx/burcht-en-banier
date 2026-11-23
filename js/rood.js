@@ -65,6 +65,12 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
   let kooptKlok;
   let herbouwKlok;
   let uitvalKlok;
+  // Aanvalsrooster (veldheer, 0.96.0): geen sparen, een vaste klok.
+  const RO = H.rooster || null;
+  let roosterKlok = Infinity;   // seconden tot de volgende aanval
+  let roosterSoort = null;
+  let gewaarschuwd = false;
+  let zijPlek = null;
 
   function begin() {
     if (groei) groei.wis();
@@ -76,6 +82,9 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
     kooptKlok = H.kooptElke;
     herbouwKlok = H.herbouwElke;
     uitvalKlok = 0;
+    roosterKlok = RO ? RO.eerste ?? H.eersteAanval : Infinity;
+    roosterSoort = null;
+    gewaarschuwd = false;
   }
   begin();
 
@@ -87,7 +96,8 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
   // Sinds 0.81.0 meet rood ook jouw sterkte (veldheer): zijn aanval is minstens zoveel keer jouw leger
   // als het niveau zegt (aanpas), begrensd. Zo blijft het spannend als jouw kasteel groeit.
   const basisDoel = () => Math.max(Math.min(H.doelMax, H.doelBegin + H.doelPerAanval * aanvallen), veld ? veld.sterkteDoel(aanvallen + 1) : 0);
-  const doel = () => basisDoel() * piek() * zwaarder() + (groei ? groei.doelBonus() : 0);
+  // Met een rooster koopt hij alleen nog een kleine reserve voor uitvallen.
+  const doel = () => (RO ? RO.uitvalReserve ?? 8 : basisDoel() * piek() * zwaarder() + (groei ? groei.doelBonus() : 0));
   const wachtTijd = () => (aanvallen === 0 ? H.eersteAanval : H.tussen * (veld ? veld.rust(aanvallen) : 1));
   const sterkte = () => sterkteVan(reserve);
   const aantal = () => Object.values(reserve).reduce((a, b) => a + b, 0);
@@ -172,7 +182,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
 
   function koop() {
     // Eerst het belegeringstuig en de schutters die bij een aanval op muren horen (bovenop zijn doel).
-    const beleg = belegNu();
+    const beleg = RO ? null : belegNu();
     if (beleg) {
       const prijs = belegPrijs(soorten[beleg].kosten);
       if ((voorraad.goud || 0) >= prijs.goud && (voorraad.hout || 0) >= prijs.hout) {
@@ -250,7 +260,8 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
 
     // Kan hij zijn aanval niet betalen terwijl het tijd is, dan krijgt hij hulp (veldheer: goud
     // van zijn bondgenoten). Zonder die hulp zou een sterke speler nooit meer aangevallen worden.
-    if (veld && sinds >= wachtTijd() && (sterkte() < doel() || belegNu())) voorraad.goud = Math.min(H.voorraadMax, voorraad.goud + veld.hulp(aanvallen + 1) * dt);
+    if (RO) roosterStap();
+    if (!RO && veld && sinds >= wachtTijd() && (sterkte() < doel() || belegNu())) voorraad.goud = Math.min(H.voorraadMax, voorraad.goud + veld.hulp(aanvallen + 1) * dt);
     if ((kooptKlok -= dt) <= 0) {
       kooptKlok += H.kooptElke;
       koop();
@@ -265,11 +276,52 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
       stuur((n) => `The red lord makes a sally with ${n} ${n === 1 ? 'man' : 'men'}!`, false);
       return;
     }
+    // Uitval bij de muren (rooster): staan jouw belegeraars vlak bij een muur van rood, dan valt zijn
+    // reserve daar uit, aan zijn kant van de muur.
+    if (RO && veld && uitvalKlok <= 0 && aantal() >= 3 && (uitvalKijk -= dt) <= 0) {
+      uitvalKijk = 2;
+      const p = veld.uitvalPunt();
+      if (p) {
+        uitvalKlok = H.uitvalPauze;
+        const inhoud = { ...reserve };
+        reserve = {};
+        const n = strijd.stuurLeger(inhoud, false, { rond: { x: p.x, y: p.y }, straal: 3, uitval: p.doel });
+        if (n) opMelding(`Red sallies out against your siege with ${n} ${n === 1 ? 'man' : 'men'}!`);
+      }
+    }
+    if (RO) return;
     // Mist hij nog belegeringstuig, dan wacht hij daar hooguit 40 s extra op.
     if (sinds >= wachtTijd() && sterkte() >= doel() && (!belegNu() || sinds >= wachtTijd() + 40)) {
       stuur((n) => `Attack ${aanvallen + 1}! ${n} ${n === 1 ? 'enemy is' : 'enemies are'} coming at you from the red keep.`, true);
       opVerandering();
     }
+  }
+
+  let uitvalKijk = 2;
+  // Het rooster: waarschuwen, en op tijd de aanval sturen (samengesteld op het moment zelf).
+  function roosterStap() {
+    roosterKlok -= dt;
+    if (!roosterSoort) roosterSoort = veld.kiesSoort(aanvallen + 1);
+    if (!gewaarschuwd && roosterKlok <= 40) {
+      gewaarschuwd = true;
+      zijPlek = roosterSoort === 'overval' || roosterSoort === 'koningsmoord' ? veld.zijIngang(veld.zijAfstand(roosterSoort)) : null;
+      opMelding(veld.waarschuwing(roosterSoort, zijPlek));
+    }
+    if (roosterKlok > 0) return;
+    const nr = aanvallen + 1;
+    const gewicht = veld.aanvalsGrootte(nr);
+    const inhoud = veld.samenstelling(roosterSoort, gewicht, nr);
+    veld.zetSoort(roosterSoort);
+    const zij = roosterSoort === 'overval' || roosterSoort === 'koningsmoord' ? zijPlek || veld.zijIngang(veld.zijAfstand(roosterSoort)) : null;
+    zijPlek = null;
+    const n = strijd.stuurLeger(inhoud, true, zij ? { rond: zij, straal: 3, plan: true } : undefined);
+    if (n) opMelding(`Attack ${nr} (${veld.naam(roosterSoort).toLowerCase()})! ${n} ${n === 1 ? 'enemy is' : 'enemies are'} coming at you${zij ? ' along the cliffs' : ' from the red keep'}.`);
+    aanvallen++;
+    sinds = 0;
+    roosterKlok = Math.max(RO.minTussen ?? 75, (RO.tussen ?? 150) * Math.pow(RO.krimp ?? 0.95, aanvallen - 1));
+    roosterSoort = null;
+    gewaarschuwd = false;
+    opVerandering();
   }
 
   // Voor de cijfers in beeld.
@@ -281,7 +333,8 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
       aantal: aantal(),
       sterkte: Math.round(sterkte() * 10) / 10,
       doel: doel(),
-      wacht: rest,                      // seconden tot hij ten vroegste weer mag
+      wacht: RO ? Math.max(0, Math.ceil(roosterKlok)) : rest,   // seconden tot hij ten vroegste weer mag
+      rooster: RO ? { volgende: Math.max(0, Math.ceil(roosterKlok)), soort: roosterSoort, naam: roosterSoort ? veld.naam(roosterSoort) : 'Attack' } : null,
       werken: staand().length,
       werkenTotaal: werken.length,
       inkomen: inkomen(),
@@ -295,6 +348,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
     s: Math.round(sinds),
     a: aanvallen,
     g: groei ? groei.stappen() : 0,
+    k: RO ? Math.round(roosterKlok) : undefined,   // seconden tot de volgende aanval (rooster)
   });
 
   function zet(s) {
@@ -311,6 +365,7 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
     if (Number.isInteger(s.a) && s.a >= 0 && s.a < 9999) aanvallen = s.a;
     if (Number.isFinite(s.s) && s.s >= 0) sinds = Math.min(s.s, 3600);
     if (groei && Number.isInteger(s.g) && s.g > 0) groei.herstelNaar(s.g);
+    if (RO && Number.isFinite(s.k) && s.k >= 0) roosterKlok = Math.min(s.k, 3600);
   }
 
   return {

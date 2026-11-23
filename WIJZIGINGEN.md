@@ -1211,3 +1211,24 @@ Naar aanleiding van Karels feedback (17 november 2026).
 ## 0.100.0: rood bouwt nooit meer muren terug
 - Op verzoek, in alle levels: rood herstelt geen muren, torens, wachttorens, moordgatentorens en poorten meer (rood.js VERDEDIGING). Zijn werken (hout, steen, voedsel) herstelt hij nog wel, behalve in level 7 (geenHerbouw).
 - tests/test_stap15.mjs: de check "muur hersteld" is omgedraaid naar "muur wordt niet hersteld".
+
+## 0.101.0: aanvalsrooster in Greyford (geen sparen, zes soorten aanval, formatie, uitval)
+- Wens van Karel (23 november): de aanvallen op zijn kasteel in Greyford waren altijd kansloos. Hij wil: geen sparen, een rooster; hoe sterker hij is, hoe sterker rood; voetvolk voorop, belegering ertussen, schutters erachter als dekking; en alles wat het gevaarlijker en interessanter maakt. Eerst in Greyford, daarna uitrollen.
+- Gemeten (0.95.0): met een veldleger van 55 man voor muur 1 spaarde rood voor een aanval van 61 ("Red 38/61") en liep die aanval altijd in het veldleger. Greyford stond bovendien op aanvalsniveau 3, lager dan level 5 en 6.
+- Rooster (rood.js, veldheer.js, `rood.rooster` in campagne.json): eerste aanval na 200 s, daarna elke 150 s, steeds 6% korter, minstens 80 s. Het leger wordt bij vertrek samengesteld: 6 + 2,5 per aanval + jouw sterkte thuis (binnen 16 tegels van je burcht, plus torens) + een kwart van je veldleger, met een aanloop (aanval 1 40%, 2 60%, 3 80%, daarna alles), pieken en bestormingen, hooguit 42. Rood koopt alleen nog een reserve van 9 voor uitvallen. De balk toont de soort en de klok ("Assault 1:20").
+- Zes soorten, afwisselend (nooit twee keer dezelfde; overval vanaf aanval 2, koningsmoord vanaf aanval 3; aanval 1 altijd een bestorming), met 40 s vooraf een waarschuwing van de verkenners:
+  - Bestorming: het gewone leger met ladders (1 per 6) en rammen (1 per 8).
+  - Belegering: katapulten beschieten eerst de bres, de rest wacht buiten bereik.
+  - Overval: ruiters komen langs de rotswand binnen (een plek ver van je veldleger, minstens 12 tegels van je kasteel), plunderen huizen, velden en werken buiten je muren, en blijven daarna in de buurt.
+  - Brand: vlammenwevers mikken op je poort en houten gebouwen dicht bij de muur.
+  - Schijn: altijd een schijnaanval op een tweede muur.
+  - Koningsmoord: sluipmoordenaars (hooguit 6) met ladders, langs de rotswand minstens 26 tegels van je kasteel, allemaal koningsjagers.
+- Formatie: op het verzamelpunt staat het voetvolk vooraan (het dichtst bij de muur), de belegering in het midden, de schutters achteraan. Schutters blijven staan zodra de bres binnen hun bereik ligt en schieten (liefst op jouw muurschutters) tot de bres valt.
+- Koningsjagers bij een gewone aanval pas vanaf aanval 3.
+- Uitval: staan jouw belegeringswapens, schutters of ladders binnen 8 tegels van een muur van rood, dan valt zijn reserve uit aan zijn kant van die muur, gaat 30 s op je af en keert terug (hooguit 12 tegels najagen). "Red sallies out against your siege with 8 men!"
+- Om je heen: het verzamelpunt mijdt je veldleger (strafpunten binnen 12 tegels); overvallers en sluipmoordenaars komen langs de rotswand binnen.
+- Onder vuur op het verzamelpunt telt alleen voor wie er al staat (wie onderweg slaags raakt, laat de belegering niet overslaan).
+- Greyford aanvalsniveau 4 (tot 5). Andere levels ongewijzigd.
+- Proeven zonder speler (niemand reageert): met 8 schutters en 4 zwaardvechters thuis en 25 man in het veld valt de koning in aanval 1 via de ladders (5 min); met 20 schutters thuis in aanval 2 (7 min, voorheen 8 min 47). Een speler die op de waarschuwing reageert hoort het te halen; niet op de iPhone gespeeld.
+- Test: tests/rooster96.mjs (18). aanval41 aangepast. Bekende fouten die ook op main zonder deze versie optreden: kasteel33 (12), hut36, campagne30, veldheer38 (zonder plan).
+- Alle meldingen door Claude geschreven (Engels); alle getallen schattingen.
