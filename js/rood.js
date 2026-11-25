@@ -83,6 +83,8 @@ export function maakRood({ regels, kaart, bouwwerken, leger, strijd, eenheden, w
     herbouwKlok = H.herbouwElke;
     uitvalKlok = 0;
     roosterKlok = RO ? RO.eerste ?? H.eersteAanval : Infinity;
+    // Schilden in de opmars en instortende torens (alleen met een aanvalsrooster, Greyford).
+    if (strijd.zetSchild) strijd.zetSchild(RO ? RO.schild : 1, RO ? RO.instort : 0, RO ? RO.katapultBereik : 0);
     roosterSoort = null;
     gewaarschuwd = false;
   }

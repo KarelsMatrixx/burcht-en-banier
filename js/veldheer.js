@@ -112,6 +112,34 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     return lijst;
   }
 
+  // Hoeveel van jouw schutters op een toren staan, per torenvak.
+  function torenBezetting() {
+    const n = new Map();
+    for (const e of leger.lijst) {
+      if (e.dood || !e.soldaat || !e.opMuur || !isSchutter(soorten[e.soldaat.sleutel] || {})) continue;
+      const v = vakVan(e);
+      const o = kaart.object[v];
+      if (kaart.eigenaar[v] !== 1 || !(o === OBJECT.TOREN || o === OBJECT.WACHTTOREN || o === OBJECT.MOORDGATENTOREN)) continue;
+      n.set(v, (n.get(v) || 0) + 1);
+    }
+    return n;
+  }
+  // De drukst bezette toren van jou bij een punt (binnen straal), met minstens drie schutters erop. -1 als er geen is.
+  function drukkeToren(p, straal = 14) {
+    let beste = -1;
+    let max = 2;
+    for (const [v, n] of torenBezetting()) {
+      const m = midden(v);
+      const d = Math.hypot(m.x - p.x, m.y - p.y);
+      if (d > straal) continue;
+      const score = n - d * 0.05;
+      if (score > max) { max = score; beste = v; }
+    }
+    return beste;
+  }
+  // Hoeveel van jouw schutters op muren en torens staan.
+  const muurSchutters = () => leger.lijst.filter((e) => !e.dood && e.soldaat && e.opMuur && isSchutter(soorten[e.soldaat.sleutel] || {})).length;
+
   // Hoe zwaar jouw verdediging bij dit vak weegt: soldaten (op de muur zwaarder) en torens.
   function verdediging(vak, soldaten, torens) {
     const p = midden(vak);
@@ -155,7 +183,9 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       if (e.dood || !e.soldaat) continue;
       const d = soorten[e.soldaat.sleutel];
       if (!d || d.koning) continue;
-      const w = H.gewicht[e.soldaat.sleutel] || 1.2;
+      // Een schutter op de muur of toren weegt zwaarder (verder bereik, halve schade): rooster.muurGewicht.
+      const r = H.rooster || {};
+      const w = (H.gewicht[e.soldaat.sleutel] || 1.2) * (e.opMuur && isSchutter(d) ? r.muurGewicht || 1 : 1);
       if (b && Math.hypot(e.x - b.x, e.y - b.y) <= 16) thuis += w; else veld += w;
     }
     return { thuis: thuis + jouwTorens().length, veld };
@@ -214,14 +244,17 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     }
     if (soort === 'belegering') {
       vul(gewicht * 0.7);
-      voeg('katapult', klem(1 + gewicht / 15, 1, 3));
+      voeg('katapult', klem(1 + gewicht / 15 + muurSchutters() / 30, 1, 4));
       voeg('ram', 1);
       voeg('ladder', klem(voet() / 8, 1, 3));
       return inh;
     }
-    vul(soort === 'schijn' ? gewicht * 1.1 : gewicht);
+    // Staan er veel schutters van jou op de muren, dan neemt rood katapulten mee tegen je torens.
+    const geschut = nr >= katapultVanaf(nr) && muurSchutters() >= 12 ? klem(Math.round(muurSchutters() / 20), 1, 3) : 0;
+    vul((soort === 'schijn' ? gewicht * 1.1 : gewicht) - geschut * w('katapult'));
     voeg('ladder', klem(voet() / 6, 1, 4));
     if (voet() >= 6) voeg('ram', klem(voet() / 8, 1, 3));
+    voeg('katapult', geschut);
     return inh;
   }
   // Een ingang aan de rand van de kaart, ver van jouw veldleger en niet te ver van je kasteel
@@ -896,14 +929,16 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     g.voorsteSinds = nu;
     if (fase === 'beleg') {
       // Alleen de katapulten gaan; de rest blijft op het verzamelpunt.
+      const toren = H.rooster && g.doel ? drukkeToren(midden(g.doel.vak)) : -1;   // alleen met een aanvalsrooster (Greyford)
       for (const e of katapulten(g)) {
         const t = takVan(e);
         if (!t) continue;
         t.verzamel = -1;
         t.rem = false;
         t.mars = false;
+        if (toren >= 0) t.doel = strijd.bouwDoelOp(toren);
       }
-      if (g.hoofd) opMelding('Red catapults open fire on your walls!');
+      if (g.hoofd) opMelding(toren >= 0 ? `Red catapults shell your ${richting(toren)} tower and the archers on it!` : 'Red catapults open fire on your walls!');
       return;
     }
     for (const e of g.eenheden) {
@@ -1181,6 +1216,16 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     });
     const nu = strijd.stapNr();
     for (const g of groepen) {
+      // Een katapult van rood waarvan de toren is gevallen, zoekt de volgende volle toren bij de bres.
+      if (!H.rooster || g.fase === 'verzamel' || !g.doel || !g.beleg) continue;
+      for (const e of katapulten(g)) {
+        const t = takVan(e);
+        if (!t || t.terug || (t.doel && t.doel.vak !== g.doel.vak && kaart.eigenaar[t.doel.vak] === 1 && kaart.object[t.doel.vak] === t.doel.soort)) continue;
+        const toren = drukkeToren(midden(g.doel.vak));
+        if (toren >= 0) t.doel = strijd.bouwDoelOp(toren);
+      }
+    }
+    for (const g of groepen) {
       if (g.fase === 'verzamel') verzamelStap(g, nu);
       else if (g.fase === 'beleg') belegStap(g, nu);
       else if (g.fase === 'opmars') opmarsStap(g, nu);
@@ -1230,7 +1275,7 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
 
   return {
     plan, behoud, tegenFactor, extraRam, piek, rust, stap,
-    sterkteDoel, hulp, katapultVanaf, jouwSterkte, belegNodig,
+    sterkteDoel, hulp, katapultVanaf, jouwSterkte, belegNodig, drukkeToren, torenBezetting, muurSchutters,
     rooster: RO, aanvalsGrootte, samenstelling, zijIngang, uitvalPunt, thuisEnVeld,
     kiesSoort, naam: (s) => NAAM[s] || s,
     // De waarschuwing; bij een aanval langs de rotswand met de richting erbij.

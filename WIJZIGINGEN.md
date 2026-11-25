@@ -1267,3 +1267,13 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Knop "Release crew": eerste druk maakt de ingenieurs vrij en zet de trebuchet stil, tweede druk op een stille trebuchet zonder bedieners breekt hem af. Je krijgt een deel van de kosten terug (fractie van economie.geefTerug, na te lezen).
 - Limiet van 2 trebuchets tegelijk blijft; afbreken maakt dus ruimte voor een nieuwe.
 - Test: tests/bemannen101.mjs.
+
+## 0.106.0: Greyford, aanvallen die een volle muur aankunnen
+Aanleiding: Karel (24 nov) met 62 schutters op torens en muren en 22 melee, ook de grootste aanvallen van rood kansloos. Alles hieronder geldt alleen met een aanvalsrooster (nu alleen Greyford); andere levels blijven gelijk.
+- Zwaardere aanval tegen een volle muur: een schutter op muur of toren telt dubbel mee voor de grootte van de aanval (rooster.muurGewicht 2), maximum van 42 naar 60.
+- Schilden: wie van rood verzamelt, opmarcheert of als schutter dekking geeft, krijgt de helft van een pijl (rooster.schild 0.5). Bij de aanval op de muur zelf zijn de schilden weer laag.
+- Katapulten tegen volle torens: staan er 12 of meer schutters op je muren, dan neemt rood bij elke aanval 1 tot 3 katapulten mee (vanaf de katapultaanval van het niveau), bij een belegering tot 4. Ze schieten op de toren met de meeste schutters bij de bres, daarna op de volgende. Melding: "Red catapults shell your … tower".
+- Katapult van rood reikt 2,5 tegel verder (rooster.katapultBereik): hij staat buiten bereik van een schutter op de toren (8). Jouw katapult verandert niet.
+- Instorten: valt een toren of muur, dan krijgt wie erop stond 60% van zijn leven als schade en valt eraf (rooster.instort 0.6). Geldt voor beide kanten.
+- Proef (Claude, passieve verdediging, ring met 8 torens vol schutters plus 16 zwaardvechters): belegering en bestorming van 60 doden de koning in 2,5 tot 3,5 minuut; een toren valt met 7 schutters. Karels echte verdediging is sterker dan deze proef (de oude proef verloor ook al, Karel niet), dus de echte balans moet uit spelen blijken.
+- Test: tests/torens106.mjs (8). Groen: rooster96, aanval41, trebuchet80, posten79. Bestaande fouten onveranderd: veldheer38 "zonder plan", siege52 (4).

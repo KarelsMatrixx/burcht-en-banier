@@ -918,7 +918,11 @@
      "thuis": 1,
      "veld": 0.25,
      "min": 8,
-     "max": 42,
+     "max": 60,
+     "muurGewicht": 2,
+     "schild": 0.5,
+     "instort": 0.6,
+     "katapultBereik": 2.5,
      "uitvalReserve": 9,
      "soorten": ["bestorming", "belegering", "overval", "brand", "schijn", "koningsmoord"]
     },

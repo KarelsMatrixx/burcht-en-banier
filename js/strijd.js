@@ -571,9 +571,18 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // Een stormram en een ladderdrager vechten niet met soldaten.
   const vreedzaam = (k) => !!(k.def.alleenBouw || k.def.ladder || k.def.steun);
   // Hoeveel van een pijl er doorkomt: een stormram heeft een dak.
+  // Schilden (aanvalsrooster, Greyford): wie van rood in de opmars, op het verzamelpunt of achter
+  // een pavese staat (dekking), houdt zijn schild omhoog en krijgt maar een deel van een pijl.
+  let schildDeel = 1;
+  let instortDeel = 0;   // valt een toren of muur, dan krijgt wie erop stond dit deel van zijn leven als schade
+  let katapultExtra = 0;   // zoveel tegels verder gooit een katapult van rood (aanvalsrooster): buiten bereik van je torens
+  const bouwBereik = (e, k) => k.def.bereik + (katapultExtra && e.team === VIJAND && k.def.soort === 'KATAPULT' ? katapultExtra : 0);
   const dekkingVan = (doel) => {
     const d = doel.krijg && doel.krijg.def.pijlDekking;
-    return d > 0 && d < 1 ? d : 1;
+    let f = d > 0 && d < 1 ? d : 1;
+    const t = doel.team === VIJAND && doel.krijg && doel.krijg.tak;
+    if (schildDeel < 1 && t && (t.mars || t.verzamel >= 0 || t.rem)) f *= schildDeel;
+    return f;
   };
   // Een sluipmoordenaar die al even niet heeft geslagen, zie je pas van dichtbij.
   const verborgenVoor = (a, d) => {
@@ -921,6 +930,13 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       geluid.speel(b.soort === OBJECT.POORT ? 'gate_break' : STEEN_GELUID.has(b.soort) ? 'wall_collapse' : 'build_demolish', { x: b.x, y: b.y });
       schade.delete(b.vak);
       if (b.van === ROOD && roodOrigineel.has(b.vak)) roodWeg.add(b.vak);   // een bouwloods komt niet terug
+      // Stort een toren of muur in, dan vallen de mannen erop naar beneden.
+      if (instortDeel > 0 && SPERWERK.has(b.soort)) {
+        const wie = b.van === 1 ? lijstVan(SPELER) : lijstVan(VIJAND);
+        let n = 0;
+        for (const a of wie) if (!a.dood && a.opMuur && vakVan(a) === b.vak) { raak(a, Math.max(1, Math.round((a.levenMax || a.leven) * instortDeel)), door); n++; }
+        if (n >= 3 && b.van === 1) opMelding(`Your tower collapses: ${n} soldiers fall from it!`);
+      }
       const werk = bouwer.verwoest(b.vak % B, Math.floor(b.vak / B));
       if (werk) opVerwoest(werk, b.van);
     }
@@ -935,7 +951,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (k.def.bereik > 2) {
       const ver = Math.hypot(Math.max(0, dx - b.straal), Math.max(0, dy - b.straal));
       if (k.def.minBereik && ver < k.def.minBereik) return false;   // een trebuchet raakt niets dichtbij (dode zone)
-      return ver <= k.def.bereik - 1;
+      return ver <= bouwBereik(e, k) - 1;
     }
     return Math.max(dx, dy) <= b.straal + 1.2;
   }
@@ -1334,7 +1350,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   // achter de muur staat, zonder dat er een weg naartoe is.
   function padOpAfstand(e, k, doel) {
     const straal = doel.straal || 0;
-    const reik = k.def.bereik - 1.5;   // iets binnen het bereik, voor de zekerheid
+    const reik = bouwBereik(e, k) - 1.5;   // iets binnen het bereik, voor de zekerheid
     const mx = Math.floor(doel.x);
     const my = Math.floor(doel.y);
     const hier = vakVan(e);
@@ -3480,6 +3496,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   zetWachters(null);   // rood begint met een wachter op elk stuk muur
 
   return {
+    zetSchild: (schild, instort, katapult = 0) => { schildDeel = schild > 0 && schild < 1 ? schild : 1; instortDeel = instort > 0 ? Math.min(1, instort) : 0; katapultExtra = katapult > 0 ? Math.min(6, katapult) : 0; },
     beschermKoning: (aan) => { koningBeschermd = !!aan; },
     // Level 10: het gevecht staken. Iedereen blijft staan waar hij staat, niemand vecht nog.
     // Proloog: het hele leger van rood trekt zich terug naar een vak buiten de poort (de ruiter heeft Wessel).
