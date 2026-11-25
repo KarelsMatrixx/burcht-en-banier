@@ -1301,3 +1301,42 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Code: economie.js (`eigenReserve`, `restVan`, `reserveVan`, `zetReserve`, in `bewaarStand`/`zetStand`/`herstel`), main.js (`toonZagerij`, gebruikt het handelpaneel). Niet in de proloog.
 - Nieuwe Engelse teksten (na te lezen): het paneel, de meldingen en de tip van de zagerij. Keuzes 0 tot 120 zijn een schatting.
 - Test: tests/zager106.mjs (gebouwd als 0.106.0, opgehoogd na samenvoegen) (13). Groen: planken21, handel.
+
+## 0.111.0 (deel 1, was 0.108.0): havens in The White Dike (level 8), hopboerderij en kroeg
+- Kaart White Dike (kaarten.json `witte_dijk`): meer water. Zee iets dichterbij (zee 0.22 naar 0.20), meer plassen (water 0.1 naar 0.2), vier plassen in het midden (soort `WATER` in `midden`), en een havenbekken met een geul naar zee bij jouw burcht (`havens`, kaart.js 5a2), gespiegeld bij rood. Bij rood staat een haven als decor aan zijn bekken (eigenaar 0, met rood wimpeltje en rood schip).
+- Haven (Port, groep Village, 30 hout + 10 planken): moet direct naast water staan (`aanWater` in bouwen.js). Ontgrendeld na level 7 (beloning), dus vanaf level 8; in vrij spel altijd.
+  - Tik hem aan: Buy/Sell, partij 10, 20 of 50, en een knop per goed. Kopen: goud nu, goederen na 2 minuten. Verkopen: goederen nu weg, goud na 2 minuten, ongeveer het dubbele van de voorraadkamer.
+  - Een schip per haven, een bestelling tegelijk; meer havens is meer schepen. Is de voorraad vol als het schip terug is, dan wacht het aan de kade tot er plek is.
+  - Het schip ligt aan de kade, vaart zichtbaar uit (30 s, vervaagt), en vaart de laatste 30 s weer binnen.
+  - Code: js/haven.js (nieuw), economie.js `lever`, `neem`, `munt`, main.js `toonHaven` (hergebruikt het handelpaneel, klasse `haven`), tekenaar.js tekent de schepen, kunst.js `tekenHaven`, `tekenSchip`. Prijzen en reistijd in economie.json `haven` (schattingen, na te lezen). Bestellingen worden bewaard.
+- Havenles aan het begin van level 8 (js/havenles.js, campagne.json `havenLes`): Bartholt, dan bouwen (hamer, Village, Port, gouden plek aan het water), de haven aantikken, hout kopen, slotkaartje. Zolang de les loopt staan de oorlog en de berichten stil. Je krijgt zo nodig genoeg hout, planken en goud om de les te doen. Gids (gids.js) kent nu soort `haven`. Les wordt maar een keer gegeven (bewaard).
+- Hopboerderij (Hop Farm, Work, 15 hout) met hopboer, en kroeg (Tavern, Village, 20 planken + 10 steen) met waard: beloning level 8, dus vanaf level 9. Een kroeg kan pas als je een hopboerderij hebt. Nieuwe grondstof Hops (icoon hop.svg).
+  - Per ronde (30 s) schenkt elke kroeg met waard 2 hop en geeft +3 populariteit, maximaal 3 kroegen (economie.json `kroeg`, schattingen). Zonder hop geen bonus. In het volkspaneel staat "tavern".
+- Nieuwe Engelse teksten (havenles, haven, kroeg): na te lezen.
+- Test: tests/haven106.mjs (30). Groen: test_stap15 (22), test_stap17 (23), level8_74 (11). kasteel33: dezelfde 12 tolhuis-fouten als voor deze versie.
+
+## 0.111.0 (deel 2, was 0.109.0): White Dike opnieuw: tien golven van Rutger de Gekke, Vikingdorp, Rutger als held
+- Doel van level 8 is nu overleven (Karels wens): geen sluis en geen koning meer verslaan. Nieuw doeltype `golven` (js/golven.js, campagne.json level 8 `doel`).
+  - Tien golven. Rutger stuurt ze met drakenschepen vanaf zijn dorp over het water naar landingsplekken bij jouw kust (twee of drie, 9 tot 22 tegels van je burcht, over land bereikbaar). De mannen gaan daar aan land en vallen aan. Golfgrootte 8, plus 4 per golf, max 44; vanaf golf 3 kruisbogen, vanaf 5 hellebaardiers, vanaf 6 saboteurs, vanaf 7 vuurboogschutters. Eerste golf na 3 minuten, daarna elke 110 s. Schattingen, na te lezen.
+  - Golf 10: Rutger vaart zelf mee. Hij is een held (economie.json soldaat `rutger`: 3000 leven, 45 schade, raakt zijn doel en vier anderen). In de test hield hij 30 ridders tegen en verloor maar 640 leven. Hij kan niet sterven (`onsterfelijk`, strijd.js raak): op 1 leven is hij verslagen, lacht, sluit zich bij je aan, en na 6 s heb je gewonnen.
+  - Geen rode koning in dit level (`rood.geenKoning`, strijd `geenRoodKoning`); de gewone aanvallen van rood staan uit (eersteAanval 99999).
+  - Rutger is een gekke Viking met eigen teksten bij elke golf (Engels, na te lezen).
+  - Tijdens de havenles staan ook de golven stil.
+- Kaart: het rode kasteel is een Vikingdorp (kastelen.json `vikingdorp`, materiaal `viking`): langhuizen met schilden en drakenkoppen, runenstenen, kampvuren, en midden de grote zaal van Rutger (kunst.js `tekenJarlshal`, `tekenLanghuis`, `tekenRunensteen`, `tekenErf`). Langs het water rond het dorp de witte dijk (OBJECT DIJK, kaarten.json `witteDijk`).
+- Rutger als figuur: nieuwe Viking-figuur (heren.js `viking`: hoornhelm, vlechtbaard, berenvel, blote beschilderde armen, baardbijl), mantel in de kleur van zijn kant. Drakenschip met gestreept zeil en schilden (assets `schip.viking`).
+- Beloning level 8: ook `rutger`. Vanaf level 9 staat Rutger bij het begin naast je koning als held die je zelf bestuurt (main.js, alleen in de campagne, alleen bij een nieuwe start van het level).
+- Tests: tests/golven109.mjs (14). tests/level8_74.mjs weg (testte de oude sluis). kasteel33: vikingdorp telt als kamp; dezelfde 12 oude tolhuis-fouten. Groen: haven106 (30), test_stap15 (22), test_stap17 (23).
+- Niet gedaan: de rode soldaten zien er in dit level nog niet uit als Vikingen; het verhaalbeeld en het portret van Rutger tonen nog de oude dijkgraaf (Gemini).
+
+## 0.111.0 (deel 3, was 0.110.0): Vikingdorp vol kroegen en hopvelden, en de berserker
+- Het dorp van Rutger (kastelen.json `vikingdorp`) heeft nu 8 kroegen en 10 groene hopvelden als decor (kaart.js DECOR kent `kroeg` en `hopveld`; ze tellen niet mee voor jouw economie of bouwregels).
+- Nieuwe soldaat: berserker (economie.json `berserker`, SOORT 45, kazerne klassiek). Onbloot bovenlijf, rode baard, band in teamkleur, twee strijdhamers (soldaten.js `berserker`). Snel (3,1), 42 leven, 13 schade per slag, slagtijd 0,8.
+- Sprong (strijd.js `springStap`, regels `sprong`): vanaf 2,5 tot 7 tegels springt hij op zijn doelwit, landt er vlak voor, doet 34 schade (en de helft aan twee anderen binnen 1,4 tegel) en slaat daarna gewoon door. Wacht 8 s tussen twee sprongen. Springt niet vanaf of naar een muur en niet tijdens een bevel om ergens heen te lopen. De boog van de sprong komt uit `e.sprongH` (tekenaar.js tilt de figuur op).
+- Beloning level 8: ook `berserker` (jij kunt hem vanaf level 9 opleiden). Rutgers golven bevatten hem vanaf golf 2 (aandeel 3).
+- Test tests/berserker110.mjs (7). Groen: golven109 (14), haven106 (30), test_stap15 (22), test_stap17 (23).
+- Alle getallen zijn schattingen (na te lezen). Niet op een iPhone gezien; sprite en sprong niet als screenshot bekeken.
+
+## 0.111.0 (deel 4, was 0.110.1): nieuw portret van Rutger en nieuw wachtschermbeeld van level 8
+- `beelden/portretten/rutger.jpg` (256 x 256): Rutger de Gekke met hoornhelm, vlechtbaard, berenvel en bijl (Gemini, door Karel gemaakt). Vervangt de dijkgraaf.
+- `beelden/verhaal/level08.webp` (1024 x 434): Karel aan zijn kust, de witte dijk met het Vikingdorp (langhuizen, hopvelden, kroegen), Rutger met zijn berserkers en zes drakenschepen onderweg. Vervangt het oude beeld met de sluis.
+- Alleen beelden en versienummer; geen code. De verhaaltekst van level 8 (campagne.json) is al die van 0.109.0.

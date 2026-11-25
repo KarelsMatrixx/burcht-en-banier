@@ -72,6 +72,10 @@
    "naam": "Copper",
    "begin": 0
   },
+  "hop": {
+   "naam": "Hops",
+   "begin": 0
+  },
   "goud": {
    "naam": "Gold",
    "begin": 30
@@ -85,7 +89,8 @@
    "voedsel",
    "tarwe",
    "brood",
-   "koper"
+   "koper",
+   "hop"
   ],
   "burcht": 150,
   "voorraadkamer": 150
@@ -268,6 +273,31 @@
    "bezig": "is digging copper from the rock",
    "mist": "finds no copper ore nearby",
    "raad": "Build the mine closer to the rocks with orange veins."
+  },
+  "hopboer": {
+   "naam": "hop farmer",
+   "soort": "HOPBOER",
+   "haalt": "hop",
+   "bij": "HOPVELD",
+   "ruimtOp": false,
+   "last": 5,
+   "werkTijd": 7,
+   "snelheid": 1.6,
+   "snelheidMetLast": 1.3,
+   "bereik": 3,
+   "plek": "the hop farm",
+   "bezig": "is picking hops",
+   "mist": "cannot reach his hop farm",
+   "raad": "Clear a tile next to it."
+  },
+  "waard": {
+   "naam": "innkeeper",
+   "soort": "WAARD",
+   "verzorgt": true,
+   "snelheid": 1.2,
+   "bereik": 2,
+   "plek": "the tavern",
+   "bezig": "is pouring ale"
   },
   "paardenboer": {
    "naam": "horse keeper",
@@ -793,6 +823,43 @@
    "bonusTegen": { "boogschutter": 1.3, "ram": 0.5, "katapult": 0.5, "toren": 0.5, "ladder": 0.5 },
    "tip": "A knight on a warhorse. Fast, and his first blow after a run of five tiles hits two and a half times as hard. Strong against archers, weak against crossbows and spears, and he does little to siege machines. Takes two army places, cannot climb walls and needs a stable."
   },
+  "berserker": {
+   "naam": "Berserker",
+   "meervoud": "Berserkers",
+   "soort": "BERSERKER",
+   "kosten": {
+    "goud": 24,
+    "koper": 3
+   },
+   "snelheid": 3.1,
+   "leven": 42,
+   "schade": 13,
+   "schadeBouw": 4,
+   "slagTijd": 0.8,
+   "bereik": 1.5,
+   "zicht": 6,
+   "sprong": { "min": 2.5, "max": 7, "schade": 34, "tijd": 0.45, "wacht": 8, "hoogte": 18, "stoot": 1.4, "stootAantal": 2 },
+   "tip": "A Viking madman with a hammer in each hand and no armour. Fast, and he leaps up to seven tiles onto his target for heavy damage (and a little to those beside it), then hammers on. Dies quickly once the fighting starts.",
+   "kazerne": "klassiek"
+  },
+  "rutger": {
+   "naam": "Rutger the Mad",
+   "meervoud": "Rutgers",
+   "soort": "RUTGER",
+   "kazerne": "geen",
+   "held": true,
+   "kosten": {},
+   "snelheid": 2.1,
+   "leven": 3000,
+   "schade": 45,
+   "schadeBouw": 30,
+   "slagTijd": 1.1,
+   "bereik": 1.9,
+   "zicht": 7,
+   "zwaai": 1,
+   "zwaaiAantal": 4,
+   "tip": "Rutger the Mad, dike reeve and berserker. A hero: his axe hits his target and four enemies around it. He can hold off thirty soldiers on his own."
+  },
   "koning": {
    "naam": "King",
    "meervoud": "Kings",
@@ -994,7 +1061,22 @@
    "voedsel": 2,
    "tarwe": 2,
    "brood": 4,
-   "koper": 8
+   "koper": 8,
+   "hop": 3
   }
+ },
+ "haven": {
+  "_uitleg": "Haven (vanaf level 8, js/haven.js): een schip per haven, een bestelling tegelijk. reis = seconden tot het schip terug is. per = hoeveel goederen in een partij. koop = goud voor een partij kopen, verkoop = goud voor een partij verkopen (meer dan de voorraadkamer, maar je wacht). Alle getallen zijn schattingen.",
+  "reis": 120,
+  "per": 10,
+  "partijen": [1, 2, 5],
+  "koop": { "hout": 6, "planken": 10, "steen": 8, "voedsel": 6, "tarwe": 6, "brood": 10, "koper": 18, "hop": 8 },
+  "verkoop": { "hout": 4, "planken": 8, "steen": 6, "voedsel": 4, "tarwe": 4, "brood": 8, "koper": 16, "hop": 6 }
+ },
+ "kroeg": {
+  "_uitleg": "Kroeg (beloning level 8): per maaltijdronde schenkt elke kroeg met een waard bier van hop. hop = hop per kroeg per ronde, stemming = populariteit per schenkende kroeg, max = hoeveel kroegen tellen. Schattingen.",
+  "hop": 2,
+  "stemming": 3,
+  "max": 3
  }
 }

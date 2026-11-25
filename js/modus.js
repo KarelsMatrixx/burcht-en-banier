@@ -141,6 +141,7 @@ function pasRoodToe(regels, rood) {
   // hoog: ladders passen niet, alleen een belegeringstoren.
   if (rood.hoog) regels.strijd.roodMuurHoog = true;
   if (Number.isFinite(rood.eersteAanval)) h.eersteAanval = rood.eersteAanval;
+  if (rood.geenKoning) regels.strijd.geenRoodKoning = true;   // White Dike: geen rode koning, de golven beslissen (js/golven.js)
   if (rood.geenHerbouw) h.geenHerbouw = true;   // rood herstelt zijn gesneuvelde muren en werken niet (Greyford)
   // begin: extra grondstoffen voor rood bij de start (bijvoorbeeld goud: een groter eerste leger).
   if (rood.begin) h.begin = { ...h.begin, ...rood.begin };

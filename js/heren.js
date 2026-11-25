@@ -933,6 +933,90 @@ function rutger(ctx, houding, beeld) {
   }
 }
 
+// ---------- Rutger de Gekke (White Dike, 0.109.0): wilde Viking. Hoornhelm, wilde grijsrode vlechtbaard,
+// berenvel over blote, beschilderde armen, een zware baardbijl. Mantelkleur = de kant waarvoor hij vecht (def.kleur).
+function viking(ctx, houding, beeld, def = {}) {
+  const huid = '#d9a888';
+  const vecht = houding !== 'lopen';
+  const wip = !vecht && beeld % 2 ? -1 : 0;
+  const pas = vecht ? 2 : [0, 1.9, 0, -1.9][beeld];
+  const wapper = vecht ? 0 : [0, 1.3, 0, -1.3][beeld];
+  const mx = 13;
+  const kant = def.kleur || ROOD;
+  const bont = '#6b4a30', bontL = '#8a6440', leer = '#3e2c20', verf = '#2f5fae';
+  // mantel in de kleur van zijn kant, gerafeld
+  vlak(ctx, [[mx - 5.2, 17.5 + wip], [mx + 5.2, 17.5 + wip], [mx + 4.4 - wapper, 30.6], [mx + 1 - wapper, 29.4], [mx - 2 - wapper, 30.8], [mx - 6.8 - wapper, 30]], tint(kant, -0.25));
+  benen(ctx, mx, wip, pas, { top: 26.6, b: 4.2, sp: 2.8, been: ['#5a4632', '#6a543c'], laars: '#2a1f18', laarsH: 6 });
+  // windsels om de benen
+  for (const sx of [-2.8 + pas * 0.5, 2.8 - pas * 0.5]) for (const dy of [28.6, 30.2]) lijn(ctx, mx + sx - 1.4, dy + wip, mx + sx + 1.4, dy + 0.8 + wip, '#b8a27c', 0.6);
+  // leren tuniek met riem en een grote gesp
+  vlak(ctx, [[mx - 5.4, 18.4 + wip], [mx + 5.4, 18.4 + wip], [mx + 6, 27.4 + wip], [mx - 6, 27.4 + wip]], leer);
+  blok(ctx, mx - 6, 24.2 + wip, 12, 1.6, '#1f1712');
+  ovaal(ctx, mx, 25 + wip, 1.3, 1, '#c9a24a');
+  // berenvel over de schouders
+  vlak(ctx, [[mx - 7.6, 19.8 + wip], [mx - 5, 16.2 + wip], [mx, 17.4 + wip], [mx + 5, 16.2 + wip], [mx + 7.6, 19.8 + wip], [mx + 5, 21.4 + wip], [mx, 20.4 + wip], [mx - 5, 21.4 + wip]], bont);
+  for (let i = -6; i <= 6; i += 2) lijn(ctx, mx + i, 17.6 + wip, mx + i * 1.1, 20.8 + wip, bontL, 0.7);
+  // hoofd: wilde baard in vlechten, grijs met rood
+  const hx = mx + 0.2, hy = 12.2 + wip;
+  gezicht(ctx, hx, hy, { huid, brauw: 'zwaar', mond: 'lach', brauwKleur: '#9a6a4a' }, 4.2, 4.4);
+  // oorlogsverf over de ogen
+  lijn(ctx, hx - 3.4, hy - 0.4, hx + 3.4, hy - 0.4, 'rgba(47,95,174,0.55)', 1.1);
+  for (const [bx, k] of [[-2.6, '#a8642e'], [0, '#9a9a9a'], [2.6, '#b8743a']]) {
+    vlak(ctx, [[hx + bx - 1.3, hy + 2.4], [hx + bx + 1.3, hy + 2.4], [hx + bx + 0.5, hy + 8.4], [hx + bx - 0.5, hy + 8.4]], k);
+    ovaal(ctx, hx + bx, hy + 8.6, 0.7, 0.6, '#c9a24a');   // kraal aan de vlecht
+  }
+  ovaal(ctx, hx, hy + 2.6, 3.9, 1.6, '#a06036');
+  ovaal(ctx, hx - 3.8, hy + 1, 1.2, 2.6, '#8a5a36');
+  ovaal(ctx, hx + 3.8, hy + 1, 1.2, 2.6, '#9a9a9a');
+  // ijzeren helm met hoorns
+  vlak(ctx, [[hx - 4.6, hy - 2], [hx - 4, hy - 5.2], [hx, hy - 7], [hx + 4, hy - 5.2], [hx + 4.6, hy - 2]], '#8e949c');
+  lijn(ctx, hx - 4.6, hy - 2, hx + 4.6, hy - 2, '#5e646c', 1.1);
+  lijn(ctx, hx, hy - 7, hx, hy - 2, '#b9bfc8', 0.8);
+  for (const z of [-1, 1]) {
+    ctx.fillStyle = '#ece2c8';
+    ctx.beginPath();
+    ctx.moveTo(hx + z * 3.8, hy - 4.6);
+    ctx.quadraticCurveTo(hx + z * 8.6, hy - 6, hx + z * 8.4, hy - 11.6);
+    ctx.quadraticCurveTo(hx + z * 6.6, hy - 7.4, hx + z * 4.2, hy - 3);
+    ctx.closePath();
+    ctx.fill();
+    lijn(ctx, hx + z * 8.4, hy - 11.6, hx + z * 7.6, hy - 9.6, '#b9ac8a', 0.5);
+  }
+  // de bijl: lange steel, brede baardbijl, rood koord
+  const bijl = (x1, y1, x2, y2) => {
+    const hoek = Math.atan2(y2 - y1, x2 - x1);
+    const dx = Math.cos(hoek), dy = Math.sin(hoek), nx = -dy, ny = dx;
+    lijn(ctx, x1 - dx * 2, y1 - dy * 2, x2, y2, '#5a3d22', 1.6);
+    const kx = x2 - dx * 1.5, ky = y2 - dy * 1.5;
+    vlak(ctx, [[kx - dx * 1.6, ky - dy * 1.6], [kx + nx * 5.6 - dx * 2.6, ky + ny * 5.6 - dy * 2.6], [kx + nx * 6.4 + dx * 1.8, ky + ny * 6.4 + dy * 1.8], [kx + nx * 1.4 + dx * 1.6, ky + ny * 1.4 + dy * 1.6]], '#aeb4bc');
+    lijn(ctx, kx + nx * 5.6 - dx * 2.6, ky + ny * 5.6 - dy * 2.6, kx + nx * 6.4 + dx * 1.8, ky + ny * 6.4 + dy * 1.8, '#e6e9ee', 0.8);
+    for (let i = 0; i < 3; i++) lijn(ctx, x2 - dx * (4 + i * 1.2) - nx * 0.9, y2 - dy * (4 + i * 1.2) - ny * 0.9, x2 - dx * (4.6 + i * 1.2) + nx * 0.9, y2 - dy * (4.6 + i * 1.2) + ny * 0.9, ROOD, 0.7);
+  };
+  // blote armen met blauwe verf
+  const blootArm = (x1, y1, x2, y2) => { arm(ctx, x1, y1, x2, y2, huid, 3); lijn(ctx, (x1 + x2) / 2 - 1, (y1 + y2) / 2, (x1 + x2) / 2 + 1, (y1 + y2) / 2 + 0.6, verf, 0.8); };
+  if (houding === 'lopen') {
+    bijl(mx + 7.4, 31, mx + 5, 5 + wip);
+    blootArm(mx + 5.6, 19.6 + wip, mx + 6.4, 23.6 + wip);
+    hand(ctx, mx + 6.4, 24 + wip, huid, 1.9);
+    blootArm(mx - 5.6, 19.6 + wip, mx - 6.2, 24.4 + wip);
+    hand(ctx, mx - 6.2, 24.8 + wip, huid, 1.8);
+  } else if (houding === 'hoog') {
+    bijl(mx + 2, 23, mx + 9, 2);
+    blootArm(mx + 5.6, 19.6, mx + 3.6, 22.4);
+    hand(ctx, mx + 3.4, 22.6, huid, 1.9);
+    blootArm(mx - 5.6, 19.6, mx - 0.6, 23.4);
+    hand(ctx, mx - 0.4, 23.6, huid, 1.9);
+  } else {
+    bijl(mx - 2, 19, mx + 18, 25);
+    blootArm(mx - 5.6, 19.6, mx - 1.4, 20.6);
+    hand(ctx, mx - 1.2, 20.6, huid, 1.9);
+    blootArm(mx + 5.6, 19.6, mx + 5.6, 22.4);
+    hand(ctx, mx + 5.6, 22.6, huid, 1.9);
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.arc(mx + 3, 15, 17, -0.6, 1.1); ctx.stroke();
+  }
+}
+
 // ---------- Valkenier: elegant, zwart en zilver, valk op de borst, rode sjerp, zwaard en parerdolk
 function valkenier(ctx, houding, beeld) {
   const huid = '#e0c3a8';
@@ -1208,6 +1292,7 @@ export const HEREN = {
   lambrecht: { teken: lambrecht, brede: 11.5 },
   everhard: { teken: everhard, brede: 11.2 },
   rutger: { teken: rutger, brede: 12 },
+  viking: { teken: viking, brede: 13 },
   valkenier: { teken: valkenier, brede: 10.2 },
   ottger: { teken: ottger, brede: 10.5 },
   koning: { teken: koning, brede: 11 },

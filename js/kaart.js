@@ -37,6 +37,12 @@ export const OBJECT = {
   GRAF: 41,      // grafstenen en kruisen van een begraafplaats (level 10, bij de kerk), decor
   MOORDGATENTOREN: 50,   // toren met moordgaten (level 7): kokende olie recht omlaag op alles vlak voor de toren (1 tegel)
   ARCHIEFTOREN: 51,      // het tolarchief achter de laatste muur van Greyford (level 7), decor
+  HAVEN: 52,     // haven aan het water (vanaf level 8): een schip haalt en brengt goederen (js/haven.js)
+  HOPVELD: 53,   // hopboerderij: hopranken aan palen, met een hopboer (beloning level 8)
+  KROEG: 54,     // kroeg: de waard schenkt bier van hop, je volk wordt blijer (beloning level 8)
+  LANGHUIS: 55,  // langhuis in het Vikingdorp van Rutger (White Dike), decor
+  RUNENSTEEN: 56, // runensteen (White Dike), decor
+  DIJK: 57,      // de witte dijk langs het water bij het Vikingdorp (White Dike), decor
 };
 
 // Namen waarmee de tekenlaag het juiste plaatje opzoekt in data/assets.json.
@@ -48,13 +54,13 @@ export const OBJECT_ASSET = [
   'kasteel.muur', 'kasteel.toren', 'kasteel.poort', 'kasteel.burcht',
   'kasteel.banier_blauw', 'kasteel.banier_rood', 'kasteel.wachttoren',
   'dorp.huis', 'dorp.hut', 'dorp.tent', 'dorp.hooiberg', 'dorp.put', 'dorp.vaten',
-  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf', 'werk.sluis', 'dorp.raaftoren', 'dorp.kraan', 'dorp.werkbank', 'dorp.houtstapel', 'dorp.ramgeraamte', 'dorp.hamervlag', 'dorp.steiger', 'kasteel.moordgatentoren', 'dorp.archieftoren',
+  'werk.houthakker', 'werk.steengroeve', 'werk.boomgaard', 'dorp.woning', 'leger.kazerne', 'dorp.voorraadkamer', 'werk.zagerij', 'werk.tarweveld', 'werk.bakkerij', 'werk.kopermijn', 'leger.magiertoren', 'dorp.vlaggen', 'werk.loods', 'dorp.cel', 'dorp.cel_open', 'dorp.kerk', 'leger.stal', 'dorp.mijngang', 'dorp.steenhouwer', 'dorp.smederij', 'dorp.ijzerpoort', 'dorp.kampvuur', 'dorp.jagerstent', 'leger.belegering', 'dorp.graf', 'werk.sluis', 'dorp.raaftoren', 'dorp.kraan', 'dorp.werkbank', 'dorp.houtstapel', 'dorp.ramgeraamte', 'dorp.hamervlag', 'dorp.steiger', 'kasteel.moordgatentoren', 'dorp.archieftoren', 'dorp.haven', 'werk.hopveld', 'dorp.kroeg', 'dorp.langhuis', 'dorp.runensteen', 'dorp.dijk',
 ];
 
 const GROND_TEKST = ['grass', 'grass', 'sand', 'water', 'earth', 'farmland'];
 const OBJECT_TEKST = [
   '', 'forest', 'rock', 'copper ore', 'wall', 'watchtower', 'gate', 'keep', 'keep', 'keep', 'tower',
-  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mystic lodge', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church', 'stable', 'coal mine', 'stonemason', 'smithy', 'iron gatehouse', 'campfire', "hunter's tent", 'siege workshop', 'graveyard', 'sluice', 'Raven Tower', 'timber crane', 'workbench', 'timber stack', 'half-built ram', 'hammer banner', 'scaffolding',
+  'cottage', 'hut', 'tent', 'haystack', 'well', 'barrels', "woodcutter's hut", 'stone mine', 'orchard', 'house', 'barracks', 'storehouse', 'sawmill', 'wheat field', 'bakery', 'copper mine', 'mystic lodge', 'festive flags', 'siege shed', 'prison cell', 'prison cell', 'church', 'stable', 'coal mine', 'stonemason', 'smithy', 'iron gatehouse', 'campfire', "hunter's tent", 'siege workshop', 'graveyard', 'sluice', 'Raven Tower', 'timber crane', 'workbench', 'timber stack', 'half-built ram', 'hammer banner', 'scaffolding', 'murder-hole tower', 'archive tower', 'port', 'hop farm', 'tavern', 'longhouse', 'rune stone', 'white dike',
 ];
 
 // Hoe ver de ringmuur van het proefkasteel van het midden af ligt.
@@ -230,7 +236,7 @@ export async function laadKaarten() {
   const k = await antwoord.json();
   for (const [naam, r] of Object.entries(k.kaarten)) {
     if (!(r.breedte >= 40 && r.hoogte >= 40 && r.breedte <= 96 && r.hoogte <= 96)) throw new Error(`kaarten.json: kaart ${naam} moet tussen 40 en 96 tegels groot zijn`);
-    for (const v of [...(r.vindplaatsen || []), ...(r.midden || [])]) if (OBJECT[v.soort] === undefined) throw new Error(`kaarten.json: kaart ${naam} kent geen ${v.soort}`);
+    for (const v of [...(r.vindplaatsen || []), ...(r.midden || [])]) if (v.soort !== 'WATER' && OBJECT[v.soort] === undefined) throw new Error(`kaarten.json: kaart ${naam} kent geen ${v.soort}`);
   }
   return k.kaarten;
 }
@@ -330,14 +336,16 @@ export function maakKaart(recept) {
         if (x < 0 || y < 0 || x >= breedte || y >= hoogte) continue;
         if (Math.hypot(x - mx, y - my) > straal - toeval() * 0.8) continue;
         const i = y * breedte + x;
+        // soort 'WATER' (kaarten.json): een plas of kreek
+        if (soort === 'WATER') { grond[i] = GROND.WATER; object[i] = OBJECT.GEEN; continue; }
         if (grond[i] === GROND.ZAND || grond[i] === GROND.WATER) grond[i] = GROND.GRAS;
         object[i] = soort;
       }
     }
   };
-  for (const v of r.vindplaatsen) vlek(eigen.x + v.dx, eigen.y + v.dy, v.straal, OBJECT[v.soort]);
+  for (const v of r.vindplaatsen) vlek(eigen.x + v.dx, eigen.y + v.dy, v.straal, v.soort === 'WATER' ? 'WATER' : OBJECT[v.soort]);
   // In het midden van de kaart, om over te vechten.
-  for (const v of r.midden) vlek(Math.round(breedte / 2) + v.dx, Math.round(hoogte / 2) + v.dy, v.straal, OBJECT[v.soort]);
+  for (const v of r.midden) vlek(Math.round(breedte / 2) + v.dx, Math.round(hoogte / 2) + v.dy, v.straal, v.soort === 'WATER' ? 'WATER' : OBJECT[v.soort]);
 
   // 3. Een kasteel rond de startplek, met een dorp en een legerkamp. Dit
   //    is decor uit de kaartgenerator, zonder functie in het spel.
@@ -522,7 +530,7 @@ export function maakKaart(recept) {
       }
       // Decor binnen en buiten de muren (detailronde): [naam, dx, dy] in dezelfde maat als de ringen.
       // Alleen op een lege tegel zonder water; het pad naar de poort blijft vrij omdat het ontwerp dat bewaakt.
-      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR, kraan: OBJECT.KRAAN, werkbank: OBJECT.WERKBANK, houtstapel: OBJECT.HOUTSTAPEL, ramgeraamte: OBJECT.RAMGERAAMTE, hamervlag: OBJECT.HAMERVLAG, steiger: OBJECT.STEIGER, stal: OBJECT.STAL, kerk: OBJECT.KERK, graf: OBJECT.GRAF, raaftoren: OBJECT.RAAFTOREN, archieftoren: OBJECT.ARCHIEFTOREN };
+      const DECOR = { tent: OBJECT.TENT, hooiberg: OBJECT.HOOIBERG, put: OBJECT.PUT, vaten: OBJECT.VATEN, huis: OBJECT.HUIS, hut: OBJECT.HUT, boom: OBJECT.BOOM, steen: OBJECT.STEEN, vlaggen: OBJECT.VLAGGEN, mijn: OBJECT.MIJNGANG, houwer: OBJECT.STEENHOUWER, smederij: OBJECT.SMEDERIJ, ijzerpoort: OBJECT.IJZERPOORT, jagerstent: OBJECT.JAGERSTENT, kampvuur: OBJECT.KAMPVUUR, kraan: OBJECT.KRAAN, werkbank: OBJECT.WERKBANK, houtstapel: OBJECT.HOUTSTAPEL, ramgeraamte: OBJECT.RAMGERAAMTE, hamervlag: OBJECT.HAMERVLAG, steiger: OBJECT.STEIGER, stal: OBJECT.STAL, kerk: OBJECT.KERK, graf: OBJECT.GRAF, raaftoren: OBJECT.RAAFTOREN, archieftoren: OBJECT.ARCHIEFTOREN, langhuis: OBJECT.LANGHUIS, runensteen: OBJECT.RUNENSTEEN, kroeg: OBJECT.KROEG, hopveld: OBJECT.HOPVELD };
       // Moerasplekjes midden in het kamp ([dx, dy]): water op een lege tegel buiten de burcht.
       for (const [dx, dy] of ontwerp.water || []) {
         const i = plek(dx, dy);
@@ -576,6 +584,89 @@ export function maakKaart(recept) {
       const kern = Math.abs(dx) <= 1 && Math.abs(dy) <= 1;
       const vesting = soort === OBJECT.MUUR || soort === OBJECT.TOREN || soort === OBJECT.WACHTTOREN || soort === OBJECT.MOORDGATENTOREN || soort === OBJECT.POORT;
       if (vesting || (kern && (soort === OBJECT.BURCHT || soort === OBJECT.BANIER_ROOD))) eigenaar[i] = 2;
+    }
+  }
+
+  // 5a2. Havens (kaarten.json havens, level 8): een bekken met een geul naar zee, bij jou en
+  //      gespiegeld bij rood. dx, dy vanaf jouw burcht; naar is de richting van de geul (zee).
+  //      Muren, torens en alles van een eigenaar blijven staan. Bij rood komt er een haven
+  //      als decor aan de kade (met een schip, js/haven.js). Jouw haven bouw je zelf.
+  const havenBekkens = [];
+  for (const h of r.havens || []) {
+    for (const kant of [0, 1]) {
+      const t = kant === 0 ? 1 : -1;
+      const mx = start[kant].x + t * h.dx;
+      const my = start[kant].y + t * h.dy;
+      const nat = (x, y) => {
+        if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1) return;
+        const i = y * breedte + x;
+        if (eigenaar[i]) return;
+        grond[i] = GROND.WATER;
+        object[i] = OBJECT.GEEN;
+      };
+      const straal = h.straal || 2.2;
+      for (let y = Math.floor(my - straal); y <= Math.ceil(my + straal); y++) {
+        for (let x = Math.floor(mx - straal); x <= Math.ceil(mx + straal); x++) if (Math.hypot(x - mx, y - my) <= straal) nat(x, y);
+      }
+      // De geul: schuin naar zee, twee tegels breed, tot hij open water raakt.
+      const [nx, ny] = (h.naar || [1, 1]).map((v) => v * t);
+      let x = mx;
+      let y = my;
+      for (let k = 0; k < 30; k++) {
+        x += nx; y += ny;
+        if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1) break;
+        const al = grond[y * breedte + x] === GROND.WATER && Math.hypot(x - mx, y - my) > straal + 1.5;
+        nat(x, y); nat(x + (nx ? 0 : 1), y + (nx ? 1 : 0));
+        if (al) break;
+      }
+      havenBekkens.push({ kant, x: Math.round(mx), y: Math.round(my) });
+    }
+  }
+  // De rode haven: op de vrije oever van zijn bekken, zo dicht mogelijk bij zijn burcht.
+  for (const b of havenBekkens.filter((b) => b.kant === 1)) {
+    let beste = null;
+    for (let y = b.y - 5; y <= b.y + 5; y++) {
+      for (let x = b.x - 5; x <= b.x + 5; x++) {
+        if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1) continue;
+        const i = y * breedte + x;
+        if (grond[i] === GROND.WATER || object[i] !== OBJECT.GEEN || eigenaar[i]) continue;
+        const bijWater = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => grond[(y + dy) * breedte + x + dx] === GROND.WATER);
+        if (!bijWater) continue;
+        // Niet tegen zijn muren of gracht aan: liefst aan het open bekken.
+        let water = 0;
+        let muur = false;
+        for (let dy = -2; dy <= 2; dy++) {
+          for (let dx = -2; dx <= 2; dx++) {
+            const j = (y + dy) * breedte + x + dx;
+            if (j < 0 || j >= aantal) continue;
+            if (grond[j] === GROND.WATER) water++;
+            if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && eigenaar[j]) muur = true;
+          }
+        }
+        if (muur) continue;
+        const d = Math.hypot(x - b.x, y - b.y) - water * 0.4;
+        if (!beste || d < beste.d) beste = { x, y, d };
+      }
+    }
+    if (beste) object[beste.y * breedte + beste.x] = OBJECT.HAVEN;
+  }
+  // De witte dijk (kaarten.json witteDijk, White Dike): een wal van witte steen langs het water
+  // rond het dorp van rood. Alleen op de oever, niet naast de haven.
+  if (r.witteDijk) {
+    const st = r.witteDijk.straal || 16;
+    const m = start[1];
+    for (let y = Math.max(1, m.y - st); y <= Math.min(hoogte - 2, m.y + st); y++) {
+      for (let x = Math.max(1, m.x - st); x <= Math.min(breedte - 2, m.x + st); x++) {
+        const i = y * breedte + x;
+        if (grond[i] === GROND.WATER || eigenaar[i] || (object[i] !== OBJECT.GEEN && object[i] !== OBJECT.BOOM && object[i] !== OBJECT.STEEN)) continue;
+        if (Math.hypot(x - m.x, y - m.y) > st || Math.max(Math.abs(x - m.x), Math.abs(y - m.y)) <= omvang + 1) continue;
+        const buren = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        if (!buren.some(([dx, dy]) => grond[(y + dy) * breedte + x + dx] === GROND.WATER)) continue;
+        let bijHaven = false;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (object[(y + dy) * breedte + x + dx] === OBJECT.HAVEN) bijHaven = true;
+        if (bijHaven) continue;
+        object[i] = OBJECT.DIJK;
+      }
     }
   }
 

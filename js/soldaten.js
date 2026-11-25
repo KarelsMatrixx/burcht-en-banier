@@ -201,6 +201,56 @@ function bijlridder(def) {
   return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
 }
 
+// ------------------------------------------------------------- berserker
+// Onbloot bovenlijf, rode baard, een band in teamkleur om het hoofd en twee
+// strijdhamers. Rent en springt; weinig harnas.
+function berserker(def) {
+  const K = def.kleur;
+  const teken = (ctx, houding, beeld) => {
+    const vecht = houding !== 'lopen';
+    const hoog = houding === 'hoog';
+    const wip = !vecht && beeld % 2 ? -1 : 0;
+    const pas = vecht ? 1.8 : LOOP[beeld] * 1.2;
+    const mx = 13;
+    // strijdhamer: korte steel met een zwaar stalen blok
+    const hamer = (x1, y1, x2, y2) => {
+      lijn(ctx, x1, y1, x2, y2, HOUT, 1.5);
+      const l = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / l, uy = (y2 - y1) / l, nx = -uy, ny = ux;
+      vlak(ctx, [[x2 + nx * 3 + ux * 1.6, y2 + ny * 3 + uy * 1.6], [x2 - nx * 3 + ux * 1.6, y2 - ny * 3 + uy * 1.6], [x2 - nx * 3 - ux * 2.4, y2 - ny * 3 - uy * 2.4], [x2 + nx * 3 - ux * 2.4, y2 + ny * 3 - uy * 2.4]], '#9aa0a8');
+      vlak(ctx, [[x2 + nx * 3 + ux * 1.6, y2 + ny * 3 + uy * 1.6], [x2 + nx * 3 - ux * 2.4, y2 + ny * 3 - uy * 2.4], [x2 + nx * 1.4 - ux * 2.4, y2 + ny * 1.4 - uy * 2.4], [x2 + nx * 1.4 + ux * 1.6, y2 + ny * 1.4 + uy * 1.6]], '#dfe3e8');
+    };
+    // lage hamers langs het lijf als hij loopt
+    if (!vecht) { hamer(mx - 6.6, 25 + wip, mx - 9.4, 12 + wip); hamer(mx + 6.6, 25 + wip, mx + 9.6, 12 + wip); }
+    benen(ctx, mx, wip, pas, { top: 27, b: 3.6, sp: 2.7, been: ['#5a4630', '#473623'], laars: '#2a2018', laarsH: 3.2 });
+    // bovenlijf: bloot, met spieren en een leren riem met lendendoek in teamkleur
+    lichtBlok(ctx, mx - 5.6, 16.5 + wip, 11.2, 11, HUID, 0.3);
+    ovaal(ctx, mx - 2.2, 20 + wip, 2.4, 2.1, 'rgba(150,80,50,0.28)');
+    ovaal(ctx, mx + 2.4, 20 + wip, 2.4, 2.1, 'rgba(150,80,50,0.28)');
+    lijn(ctx, mx, 18.4 + wip, mx, 25 + wip, 'rgba(120,60,40,0.35)', 0.5);
+    for (let i = 0; i < 3; i++) blok(ctx, mx - 2.2, 22.2 + i * 1.6 + wip, 4.4, 0.4, 'rgba(120,60,40,0.3)');
+    blok(ctx, mx - 5.8, 25.4 + wip, 11.6, 1.8, LEER);
+    vlak(ctx, [[mx - 5.4, 27 + wip], [mx + 5.4, 27 + wip], [mx + 4, 31 + wip], [mx - 4, 31 + wip]], K);
+    ovaal(ctx, mx + 0.4, 26.3 + wip, 1.1, 0.8, '#c9a64a');
+    // schouders en armen blijven bloot
+    ovaal(ctx, mx - 5.8, 18 + wip, 2.4, 2.2, tint(HUID, -0.1));
+    ovaal(ctx, mx + 5.8, 18 + wip, 2.4, 2.2, tint(HUID, 0.05));
+    // hoofd: wilde baard, lang haar en een band in teamkleur
+    ovaal(ctx, mx - 0.4, 9.4 + wip, 5.2, 4.4, '#8a4a22');
+    gezichtje(ctx, mx + 0.4, 12 + wip, { baard: '#9a5426', haar: '#5a2c12' });
+    ovaal(ctx, mx + 0.2, 8.4 + wip, 4.2, 2.4, '#8a4a22');
+    blok(ctx, mx - 3.6, 8.6 + wip, 7.8, 1.5, K);
+    blok(ctx, mx + 1.2, 8.6 + wip, 3, 1.5, tint(K, 0.2));
+    if (vecht) {
+      if (hoog) { hamer(mx - 2, 20, mx - 10, 3); hamer(mx + 3, 21, mx + 12, 4); hand(ctx, mx - 4, 19, HUID, 1.6); hand(ctx, mx + 5, 19, HUID, 1.6); }
+      else { hamer(mx - 3, 18, mx - 8, 31); hamer(mx + 3, 17, mx + 13, 29); hand(ctx, mx - 4.4, 19, HUID, 1.6); hand(ctx, mx + 5.6, 19, HUID, 1.6); }
+    } else {
+      hand(ctx, mx - 6.6, 24 + wip, HUID, 1.6);
+      hand(ctx, mx + 6.6, 24 + wip, HUID, 1.6);
+    }
+  };
+  return pakket(teken, { sla: [['hoog', 0], ['slag', 0]] });
+}
+
 // ----------------------------------------------------------- boogschutter
 // Kap in teamkleur, lange boog, pijlkoker op de rug, leren borstkleed.
 function boogschutter(def) {
@@ -525,7 +575,7 @@ function werkerFiguur(def) {
   const kiel = def.kiel || '#b39a6b';
   const naam = (def.sleutel || '');
   const beroep = def.beroep;
-  const gereedsoort = { hout: 'bijl', planken: 'zaag', tarwe: 'sikkel', steen: 'houweel', koper: 'houweel' }[def.vracht] || null;
+  const gereedsoort = { hout: 'bijl', planken: 'zaag', tarwe: 'sikkel', hop: 'sikkel', steen: 'houweel', koper: 'houweel' }[def.vracht] || null;
   const mand = def.gereedschap === 'mand';
   const geen = def.gereedschap === 'geen';
   const teken = (ctx, houding, beeld) => {
@@ -581,6 +631,18 @@ function werkerFiguur(def) {
       for (let j = 0; j < 4; j++) lijn(ctx, mx + 0.5 + j * 2, 13.5 + wip, mx + 1 + j * 2, 22.5 + wip, 'rgba(120,90,30,0.45)', 0.5);
       blok(ctx, mx, 18 + wip, 8.5, 1.2, '#8a6a2a');
       arm(mx + 3, 18 + wip, mx + 4, 21 + wip);
+    } else if (last && def.vracht === 'hop') {
+      // een mand vol groene hopbellen op de heup (de hopboer)
+      vlak(ctx, [[mx - 0.2, 18.4 + wip], [mx + 8, 18.4 + wip], [mx + 7, 23.6 + wip], [mx + 0.8, 23.6 + wip]], RIET);
+      for (const [ax, ay] of [[1.6, 17.3], [3.8, 16.4], [6, 17.2], [4.9, 18], [2.8, 18.1]]) ovaal(ctx, mx + ax, ay + wip, 1.3, 1.6, '#b8d878');
+      arm(mx + 3, 19 + wip, mx + 7, 22 + wip);
+    } else if (last && def.vracht === 'kroes') {
+      // de waard met een volle bierkroes in de hand en een witte schort
+      blok(ctx, mx - 3, 19.4 + wip, 6, 8.6, 'rgba(250,247,238,0.92)');
+      arm(mx + 3, 18.6 + wip, mx + 6, 19.6 + wip);
+      blok(ctx, mx + 5.4, 15.8 + wip, 3, 4, '#c9a24a');
+      ovaal(ctx, mx + 6.9, 15.8 + wip, 1.6, 0.8, '#f4efe0');
+      lijn(ctx, mx + 8.4, 16.6 + wip, mx + 9.4, 18.4 + wip, '#a8842a', 0.7);
     } else if (last && def.vracht === 'brood') {
       blok(ctx, mx - 1, 18.8 + wip, 10, 1.4, '#9c7446');
       for (const bx of [0.8, 3.8, 6.8]) { ovaal(ctx, mx + bx, 17.6 + wip, 1.7, 1.3, '#b9773a'); ovaal(ctx, mx + bx + 0.5, 17.2 + wip, 0.7, 0.4, '#d9a05a'); }
@@ -612,7 +674,7 @@ function werkerFiguur(def) {
   return teken;
 }
 
-const BEROEP = { houthakker: 'houthakker', steenhouwer: 'steenhouwer', fruitteler: 'fruitteler', zager: 'zager', tarweboer: 'tarweboer', bakker: 'bakker', mijnwerker: 'mijnwerker', boer: 'boer', paardenboer: 'boer' };
+const BEROEP = { houthakker: 'houthakker', steenhouwer: 'steenhouwer', fruitteler: 'fruitteler', zager: 'zager', tarweboer: 'tarweboer', bakker: 'bakker', mijnwerker: 'mijnwerker', boer: 'boer', paardenboer: 'boer', hopboer: 'tarweboer', waard: 'bakker' };
 function werker(def, sleutel) {
   const beroep = BEROEP[(sleutel || '').replace('eenheid.', '').replace(/_(blauw|rood)$/, '')] || 'houthakker';
   const teken = werkerFiguur({ ...def, beroep });
@@ -1146,7 +1208,7 @@ function vuurboogschutter(def) {
 
 // ------------------------------------------------------------------ export
 export const SOLDATEN = {
-  ridder, bijlridder, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
+  ridder, bijlridder, berserker, boogschutter, kruisboogschutter, sluipmoordenaar, vlammenwever, ladderdrager,
   hellebaardier, vuurboogschutter, zwaardvechter, banierdrager, heler, steenwachter, ingenieur, windzanger, saboteur, ziener, ruiter, paard: (def) => ruiter(def, true),
 };
 

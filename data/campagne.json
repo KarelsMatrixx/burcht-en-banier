@@ -862,7 +862,8 @@
    "uit": "In the archive lies a letter from Ottger, sent three times and never answered: \"My daughter is nine winters dead and I have one blood left. Send the boy, Karel, before I die too.\" Gesina says: \"You knew.\" Karel: \"He could have asked without an army.\"",
    "wessel": "A letter to his father: \"Grandpa is old. He cries when he thinks I am asleep.\"",
    "beloning": [
-    "moordgatentoren"
+    "moordgatentoren",
+    "haven"
    ],
    "rood": {
     "legerMax": 150,
@@ -992,31 +993,35 @@
    "id": 8,
    "naam": "White Dike",
    "titel": "Level 8: The White Dike",
-   "heer": "Dike Reeve Rutger of Westerdike",
+   "heer": "Rutger the Mad, Dike Reeve of Westerdike",
    "portret": "rutger",
    "profiel": "zwaar",
    "kaart": "witte_dijk",
+   "havenLes": true,
    "landschap": "polder",
    "punt": {
     "x": 76.1,
     "y": 56.2
    },
    "speelbaar": true,
-   "intro": "Behind the White Dike lies low land. Dike Reeve Rutger's stone sluice keeps his keep dry and his men supplied. Break the sluice first, then take the keep. Spare the polder.",
+   "intro": "Across the water lies the White Dike, and on it the Viking village of Rutger the Mad. His longships raid every shore. Build the strongest keep you can and survive ten waves of axes, hammers and berserkers. In the last wave, Rutger comes himself.",
    "beeld": "beelden/verhaal/level08.webp",
-   "verhaal": "Behind the White Dike lies low land, green and full of farms. Dike Reeve Rutger serves the duke out of debt, not love. The sluice must fall, but the fields must be spared. Karel will not drown a land to win.",
-   "uit": "Rutger lays his boathook on the dike. \"I held back the water. That is all I can do.\" The sluice gates hang open, but the polder stays dry: the Silent Folk closed the old dam behind it. The road to the Mourngate is open.",
+   "verhaal": "Across the water lies the White Dike, and on it a Viking village. Dike Reeve Rutger, called the Mad, serves the duke out of debt. His longships come for every shore. Karel must hold.",
+   "uit": "Rutger sits down in the mud and laughs until he cries. \"Nobody beats Rutger! So Rutger joins the one who did.\" The Viking of the White Dike now fights for Aldervale, and the road to the Mourngate is open.",
    "wessel": "A little sailing boat made of bark, found in the reeds.",
    "beloning": [
     "saboteur",
     "hellebaardier",
-    "vuurboogschutter"
+    "vuurboogschutter",
+    "hopveld",
+    "kroeg",
+    "rutger",
+    "berserker"
    ],
    "rood": {
-    "legerMax": 180,
+    "legerMax": 240,
     "sterkte": 110,
     "tempo": 70,
-    "wachters": 6,
     "leger": {
      "boogschutter": {
       "aandeel": 3
@@ -1039,76 +1044,74 @@
       "baard": "#9a9a9a"
      }
     },
-    "muur": 180,
     "aanval": {
      "niveau": 5
     },
-    "extra_soorten": {
-     "saboteur": {
-      "vanaf": 2,
-      "max": 2
-     },
-     "katapult": {
-      "vanaf": 3,
-      "max": 1
-     },
-     "toren": {
-      "vanaf": 4,
-      "max": 1
-     }
-    },
-    "eersteAanval": 120,
+    "eersteAanval": 99999,
     "begin": {
      "goud": 160,
      "hout": 20,
      "steen": 20
     },
-    "lijfwacht": {
-     "soort": "kruisboog",
-     "aantal": 2
+    "geenKoning": true,
+    "garnizoen": {
+     "bijlridder": 8,
+     "boogschutter": 6
     }
    },
-   "kasteel": "gracht",
+   "kasteel": "vikingdorp",
    "doel": {
-    "soort": "loodsen",
-    "object": "SLUIS",
-    "aantal": 1,
-    "leven": 700,
-    "afstand": 9,
-    "bijWater": true,
-    "daarna": "koning",
-    "teksten": {
-     "naam": "Dike Reeve Rutger",
-     "portret": "rutger",
-     "wie": "Rutger's",
-     "begin": "The sluice holds back the sea and keeps my keep standing, Karel. Touch it, and my crossbows will be waiting.",
-     "eerste": "",
-     "alles": "The sluice is broken! Rutger's keep lies open.",
-     "taak": "Destroy Rutger's sluice by the water",
-     "daarna": "My sluice... Then come, king. I will not run from my own walls.",
-     "daarnaTaak": "Now defeat Rutger in his keep",
-     "omschrijving": "Your goal: first destroy Rutger's stone sluice by the water. While it stands, his men pull him to safety and he cannot fall. Then defeat Rutger in his keep. If your king falls, you lose.",
-     "daarnaOmschrijving": "The sluice is broken. Your goal now: defeat Rutger in his keep. If your king falls, you lose."
+    "soort": "golven",
+    "aantal": 10,
+    "eerste": 180,
+    "tussen": 110,
+    "begin": 8,
+    "erbij": 4,
+    "max": 44,
+    "perSchip": 10,
+    "vaart": 40,
+    "leger": {
+     "bijlridder": 3,
+     "ridder": 2,
+     "boogschutter": 2,
+     "berserker": {
+      "aandeel": 3,
+      "vanaf": 2
+     },
+     "kruisboog": {
+      "aandeel": 1,
+      "vanaf": 2
+     },
+     "hellebaardier": {
+      "aandeel": 1,
+      "vanaf": 4
+     },
+     "saboteur": {
+      "aandeel": 1,
+      "vanaf": 5
+     },
+     "vuurboogschutter": {
+      "aandeel": 1,
+      "vanaf": 6
+     }
+    },
+    "rutger": {
+     "golf": 10,
+     "sleutel": "rutger"
     }
    },
    "berichten": [
     {
      "bij": "tijd",
-     "waarde": 8,
+     "waarde": 10,
      "wie": "bartholt",
-     "tekst": "Spare the polder, Sire. Break the sluice, not the dike. Without it, Rutger cannot hold out."
+     "tekst": "Rutger raids by sea, Sire. Wherever his longships land, his men attack. Build walls and towers by the shore and keep your army close."
     },
     {
      "bij": "tijd",
-     "waarde": 25,
+     "waarde": 60,
      "wie": "bartholt",
-     "tekst": "His crossbowmen stand on every wall, Sire. Lady Mechteld's wind singers can blow them down."
-    },
-    {
-     "bij": "aanval",
-     "waarde": 1,
-     "wie": "heer",
-     "tekst": "I owe the duke more than I can pay. So I fight. Do not take it personally, Karel."
+     "tekst": "They call him the Mad, Sire. He laughs when he fights. Do not laugh back, just shoot."
     }
    ]
   },

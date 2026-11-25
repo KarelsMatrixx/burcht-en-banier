@@ -130,7 +130,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const koningVan = (team) => (team === SPELER ? leger.lijst.find((e) => e.soldaat && soorten[e.soldaat.sleutel].koning && !e.dood) || null : roodKoning && !roodKoning.dood ? roodKoning : null);
   const bijThuis = (e, r) => Math.hypot(e.x - burchten[e.team].x, e.y - burchten[e.team].y) <= r;
   function maakRoodKoning(leven) {
-    if (!koningSleutel || roodKoning || R.proloog) return;   // in de proloog is er nog geen rode heer
+    if (!koningSleutel || roodKoning || R.proloog || R.geenRoodKoning) return;   // in de proloog is er nog geen rode heer; White Dike (golven): Rutger is een held, geen koning
     // Aan de voorkant van de burcht (de kant naar de camera), anders staat de
     // heer achter zijn eigen toren en zie je hem niet.
     const voorkant = [...rood.plekken].sort((a, b) => ((b % B) + Math.floor(b / B)) - ((a % B) + Math.floor(a / B)));
@@ -865,6 +865,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (R.proloog && krijgVan(doel).def.koning && doel.team === SPELER) doel.leven = Math.max(doel.leven, Math.ceil(doel.levenMax / 2));   // naar Karel: niet onder de helft
     // Level 8: zolang de sluis staat, kan de rode koning niet sneuvelen (js/loodsen.js, daarna: 'koning').
     if (koningBeschermd && doel.team === VIJAND && krijgVan(doel).def.koning) doel.leven = Math.max(doel.leven, 1);
+    // Een onsterfelijke (Rutger in White Dike, js/golven.js): op 1 leven is hij verslagen, niet dood.
+    if (doel.onsterfelijk && doel.leven <= 1) { doel.leven = 1; if (!doel.verslagen) { doel.verslagen = true; geluid.speel('king_falls', { x: doel.x, y: doel.y }); } return; }
     const kd = krijgVan(doel);
     kd.rust = 0;
     if (doel.leven <= 0) {
@@ -2653,6 +2655,8 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const trebuchetStand = (team = SPELER) => ({ n: aantalStaand(team), max: STAAND_MAX() });
 
   function denk(e, k, anderen) {
+    // Verslagen maar niet dood (Rutger, js/golven.js): hij vecht niet meer.
+    if (e.verslagen) { k.doelwit = null; k.bevel = null; if (e.pad) zetPad(e, null); return; }
     if (k.def.geschut && !e.torenPost && !heeftBediener(e)) {
       // Een ballista schiet alleen zolang zijn ingenieur erbij is.
       k.doelwit = null;
@@ -2829,6 +2833,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       k.duw = 0;
     }
     if (k.doelwit && (k.doelwit.dood || verborgenVoor(k.doelwit, Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y)))) k.doelwit = null;
+    if (k.def.sprong && springStap(e, k, anderen)) return;
     if (--k.denk <= 0) {
       k.denk = DENK;
       denk(e, k, anderen);
@@ -2842,6 +2847,61 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     else if (k.bouw) beuk(e, k);
     else if (k.ing && (k.ing.fase === 'bouw' || k.ing.fase === 'bedien')) { /* de houding komt uit ingenieurDenk: hameren of aan de windas draaien */ }
     else zetHouding(e, null);
+  }
+
+  // De sprong van de berserker (0.110.0): vanaf een afstand springt hij op zijn doelwit.
+  // Hij landt vlak voor hem, doet sprongschade (met een stoot om hem heen) en slaat daarna gewoon door.
+  // Geeft true zolang hij in de lucht is (dan doet hij niets anders).
+  function springStap(e, k, anderen) {
+    const s = k.def.sprong;
+    const p = k.spr;
+    if (p) {
+      p.t++;
+      const f = Math.min(1, p.t / p.duur);
+      e.x = p.x0 + (p.x1 - p.x0) * f;
+      e.y = p.y0 + (p.y1 - p.y0) * f;
+      e.vorigeX = e.x;
+      e.vorigeY = e.y;
+      e.sprongH = Math.sin(f * Math.PI) * s.hoogte;
+      if (f < 1) return true;
+      // geland
+      k.spr = null;
+      e.sprongH = 0;
+      const doel = p.doel;
+      kijkNaar(e, doel.x, doel.y);
+      slaToe(e, k);
+      zetHouding(e, houdingVan(k.def));
+      rook(e.x, e.y);
+      geluid.speel('axe_hit', { x: e.x, y: e.y });
+      const sterkte = sterkteVan(e, k);
+      const slachtoffers = [doel, ...anderen.filter((a) => a !== doel && !a.dood && Math.hypot(a.x - e.x, a.y - e.y) <= s.stoot)];
+      for (const a of slachtoffers.slice(0, 1 + (s.stootAantal || 3))) {
+        if (a.dood) continue;
+        raak(a, Math.max(1, Math.round(s.schade * sterkte * (a === doel ? 1 : 0.5))), e);
+      }
+      k.sprongKlaar = stapNr + stappen(s.wacht);
+      return false;
+    }
+    const doel = k.doelwit;
+    if (!doel || doel.dood || !(doel.soldaat || doel.vijand) || e.opMuur || e.klimt || doel.opMuur || doel.hoogte || stapNr < (k.sprongKlaar || 0)) return false;
+    if (e.team === SPELER && e.soldaat && e.soldaat.doel >= 0) return false;   // op bevel onderweg: niet springen
+    const ver = Math.hypot(doel.x - e.x, doel.y - e.y);
+    if (ver < s.min || ver > s.max) return false;
+    // landing vlak voor het doelwit, op een vrij vak
+    for (const af of [1.2, 0.9, 1.6]) {
+      const x1 = doel.x - (doel.x - e.x) / ver * af;
+      const y1 = doel.y - (doel.y - e.y) / ver * af;
+      const vx = Math.floor(x1), vy = Math.floor(y1);
+      if (wegvinder.isMuur(vx, vy, e.team) || !wegvinder.isVrij(vx, vy, e.team)) continue;
+      if (e.pad) zetPad(e, null);
+      kijkNaar(e, x1, y1);
+      zetHouding(e, 'sla');
+      e.pose = 0;
+      k.spr = { x0: e.x, y0: e.y, x1, y1, t: 0, duur: Math.max(2, stappen(s.tijd)), doel };
+      geluid.speel('cavalry_charge', { x: e.x, y: e.y });
+      return true;
+    }
+    return false;
   }
 
   // De wacht op een burcht schiet op de dichtstbijzijnde tegenstander. Na
@@ -3190,7 +3250,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       einde('verloren');
       return;
     }
-    if (!R.proloog && !vrede && (koningSleutel ? !koningVan(VIJAND) : rood.leven <= 0)) {
+    if (!R.proloog && !vrede && !R.geenRoodKoning && (koningSleutel ? !koningVan(VIJAND) : rood.leven <= 0)) {
       // De rode heer is verslagen: zijn mannen geven het op.
       for (const e of vijanden) e.dood = true;
       ruimOp();
@@ -3427,7 +3487,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       if (rk !== 0 && !R.proloog) maakRoodKoning(Number.isFinite(rk) ? rk : undefined);
     }
     if (R.proloog) return;
-    if (koningSleutel ? s.koningRood === 0 && !vrede : rood.leven <= 0 && !vrede) einde('gewonnen');
+    if (!R.geenRoodKoning && (koningSleutel ? s.koningRood === 0 && !vrede : rood.leven <= 0 && !vrede)) einde('gewonnen');
     else if (!koningSleutel && burcht.leven <= 0) einde('verloren');
   }
 
@@ -3560,6 +3620,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     uitslag: () => uitslag,
     aantalVijanden: aantalAanvallers,
     vijanden: aanvallers,
+    alleVijanden: () => vijanden,
+    // Een held van rood op een plek, ook als het leger van rood vol is (Rutger, js/golven.js).
+    maakHeld(sleutel, vak) { if (!soorten[sleutel] || vak < 0) return null; const e = maakVijand(sleutel, vak); opVerandering(); opStand(); return e; },
     wachters: () => vijanden.filter((e) => e.wachter !== undefined),
     torenPosten: () => vijanden.filter((e) => e.torenPost && !e.dood),
     lijfwachten: () => vijanden.filter((e) => e.lijfwacht && !e.dood),

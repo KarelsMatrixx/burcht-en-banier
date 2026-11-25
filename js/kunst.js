@@ -4313,3 +4313,374 @@ export function tekenRaaftoren(naam, def) {
   raaf(cx + 9, voet - hoog - 8, 0.9);
   return { beeld: doek, b, h, ax: b / 2, ay: h };
 }
+
+// --- Haven, hop en kroeg (0.106.0, level 8) ----------------------------------------
+
+// Een haven: een houten steiger op palen aan het water, met een klein pakhuis van planken,
+// een hijsbalk, kisten, vaten en een lantaarn. Het schip ligt er los naast (js/haven.js).
+export function tekenHaven(naam, def) {
+  const b = TB + 10;
+  const h = TH + 62;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - 1 - HH;
+  const plank = def.hout || '#9a7448';
+  ovaal(ctx, cx + 2, voet + 2, HB - 2, HH, 'rgba(0,0,0,0.22)');
+  // Palen in het water rondom
+  for (const [x, y] of [[-28, 0], [0, 14], [28, 0], [-14, 7], [14, 7]]) blok(ctx, cx + x - 1.4, voet + y - 6, 2.8, 9, HOUT_DONKER);
+  // De plankenvloer van de kade
+  vlak(ctx, [[cx, voet - 15], [cx + 30, voet], [cx, voet + 15], [cx - 30, voet]], plank);
+  vlak(ctx, [[cx - 30, voet], [cx, voet + 15], [cx, voet + 18], [cx - 30, voet + 3]], tint(plank, -0.35));
+  vlak(ctx, [[cx, voet + 15], [cx + 30, voet], [cx + 30, voet + 3], [cx, voet + 18]], tint(plank, -0.2));
+  for (let i = 1; i < 8; i++) {
+    const t = i / 8;
+    lijn(ctx, cx - 30 + 30 * t, voet - 15 * t, cx + 30 * t, voet + 15 - 15 * t, 'rgba(50,30,15,0.35)', 0.6);
+  }
+  // Een klein pakhuis achteraan links, met een rood pannendak
+  const px = cx - 9;
+  const py = voet - 3;
+  const w = 13;
+  const wand = 15;
+  vlak(ctx, [[px - w, py], [px, py + w / 2], [px, py + w / 2 - wand], [px - w, py - wand]], tint(plank, -0.28));
+  vlak(ctx, [[px, py + w / 2], [px + w, py], [px + w, py - wand], [px, py + w / 2 - wand]], tint(plank, -0.05));
+  for (let r = 1; r < 4; r++) lijn(ctx, px, py + w / 2 - r * 4, px + w, py - r * 4, 'rgba(0,0,0,0.18)', 0.5);
+  blok(ctx, px + 3, py - 9, 5, 9, '#3a2816');
+  vlak(ctx, [[px - w - 2, py - wand], [px, py + w / 2 - wand + 1], [px, py - wand - 11], [px - w / 2, py - wand - 14]], def.dak || '#9a4a32');
+  vlak(ctx, [[px, py + w / 2 - wand + 1], [px + w + 2, py - wand], [px + w / 2, py - wand - 14], [px, py - wand - 11]], tint(def.dak || '#9a4a32', 0.15));
+  // Een hijsbalk met touw en een net met goederen boven het water
+  balk(ctx, cx + 12, voet + 2, cx + 12, voet - 36, 2.4);
+  balk(ctx, cx + 12, voet - 34, cx + 30, voet - 26, 1.8);
+  lijn(ctx, cx + 29, voet - 26, cx + 29, voet - 12, '#c9b98a', 0.8);
+  vlak(ctx, [[cx + 25, voet - 12], [cx + 33, voet - 12], [cx + 32, voet - 6], [cx + 26, voet - 6]], '#b89a64');
+  for (let i = 0; i < 3; i++) lijn(ctx, cx + 26 + i * 2.5, voet - 12, cx + 26.5 + i * 2.5, voet - 6, 'rgba(60,40,20,0.5)', 0.5);
+  // Kisten en een vat op de kade
+  const kist = (x, y, s) => {
+    vlak(ctx, [[x - s, y], [x, y + s / 2], [x, y + s / 2 - s], [x - s, y - s]], '#7b5a34');
+    vlak(ctx, [[x, y + s / 2], [x + s, y], [x + s, y - s], [x, y + s / 2 - s]], '#9a7444');
+    vlak(ctx, [[x - s, y - s], [x, y + s / 2 - s], [x + s, y - s], [x, y - s / 2 - s]], '#b38c58');
+    lijn(ctx, x, y + s / 2, x, y + s / 2 - s, 'rgba(0,0,0,0.3)', 0.6);
+  };
+  kist(cx + 4, voet + 8, 5);
+  kist(cx + 13, voet + 4, 4.5);
+  kist(cx + 8, voet + 1, 4);
+  ovaal(ctx, cx - 12, voet + 9, 3.6, 1.8, '#5d4430');
+  blok(ctx, cx - 15.6, voet + 1, 7.2, 8, '#6d4f32');
+  ovaal(ctx, cx - 12, voet + 1, 3.6, 1.8, '#8a6a44');
+  lijn(ctx, cx - 15.6, voet + 4, cx - 8.4, voet + 4, '#2f2a26', 0.8);
+  // Lantaarn op een paaltje vooraan
+  balk(ctx, cx - 22, voet + 3, cx - 22, voet - 16, 1.4);
+  blok(ctx, cx - 24, voet - 21, 4, 5, '#2f2a26');
+  blok(ctx, cx - 23.2, voet - 20.2, 2.4, 3.4, WARM);
+  // Een blauw wimpeltje (of rood bij rood) op het pakhuis
+  lijn(ctx, px, py - wand - 12, px, py - wand - 26, '#3a2a1a', 1);
+  vlak(ctx, [[px, py - wand - 26], [px + 9, py - wand - 23.5], [px, py - wand - 21]], def.vlag || '#2f5fc4');
+  return { beeld: doek, b, h, ax: b / 2, ay: h - 1 };
+}
+
+// Een schip (kogge): bolle romp van planken, één mast met een vierkant zeil in teamkleur,
+// een kajuit achterop. Twee kanten: richting 1 vaart naar rechts, -1 naar links.
+export function tekenSchip(naam, def) {
+  const maak = (richting) => {
+    const b = 92;
+    const h = 96;
+    const { doek, ctx } = nieuwDoek(b, h);
+    if (richting < 0) { ctx.translate(b, 0); ctx.scale(-1, 1); }
+    const cx = b / 2;
+    const wl = h - 14;   // waterlijn
+    const romp = def.romp || '#6b4a2c';
+    // Kielwater en schaduw op het water
+    ovaal(ctx, cx, wl + 4, 34, 7, 'rgba(10,30,50,0.28)');
+    ovaal(ctx, cx - 30, wl + 3, 8, 2.2, 'rgba(255,255,255,0.35)');
+    // De romp: een bolle vorm, achter hoog, voor iets lager
+    ctx.fillStyle = romp;
+    ctx.beginPath();
+    ctx.moveTo(cx - 34, wl - 18);
+    ctx.lineTo(cx + 32, wl - 15);
+    ctx.quadraticCurveTo(cx + 30, wl + 2, cx + 12, wl + 4);
+    ctx.lineTo(cx - 20, wl + 4);
+    ctx.quadraticCurveTo(cx - 34, wl + 2, cx - 34, wl - 18);
+    ctx.closePath();
+    ctx.fill();
+    for (let i = 1; i < 4; i++) lijn(ctx, cx - 33 + i * 0.6, wl - 18 + i * 5, cx + 31 - i * 1.5, wl - 15 + i * 5, 'rgba(0,0,0,0.25)', 0.8);
+    vlak(ctx, [[cx - 34, wl - 18], [cx + 32, wl - 15], [cx + 32, wl - 13], [cx - 34, wl - 16]], tint(romp, 0.25));
+    // Dek (lichter) en de kajuit achterop
+    vlak(ctx, [[cx - 32, wl - 18], [cx + 30, wl - 15.5], [cx + 26, wl - 19], [cx - 28, wl - 22]], tint(romp, 0.35));
+    vlak(ctx, [[cx - 34, wl - 18], [cx - 16, wl - 17], [cx - 16, wl - 28], [cx - 34, wl - 30]], tint(romp, -0.1));
+    vlak(ctx, [[cx - 34, wl - 30], [cx - 16, wl - 28], [cx - 18, wl - 31], [cx - 32, wl - 33]], tint(romp, 0.3));
+    blok(ctx, cx - 28, wl - 26, 3, 3, WARM);
+    blok(ctx, cx - 22, wl - 25.5, 3, 3, WARM);
+    // Lading: kisten en een vat op het dek
+    blok(ctx, cx + 8, wl - 24, 7, 6, '#9a7444');
+    blok(ctx, cx + 15, wl - 23, 6, 5, '#7b5a34');
+    ovaal(ctx, cx - 6, wl - 21, 3, 1.5, '#5d4430');
+    blok(ctx, cx - 9, wl - 27, 6, 6, '#6d4f32');
+    // Mast, ra en een bol zeil in teamkleur met een witte baan
+    balk(ctx, cx + 2, wl - 18, cx + 2, wl - 88, 2.6, HOUT_DONKER);
+    balk(ctx, cx - 18, wl - 78, cx + 22, wl - 76, 2, HOUT_DONKER);
+    const zeil = def.zeil || '#2f5fc4';
+    if (def.draak) {
+      // Een drakenschip: drakenkop voorop, krul achterop, een rij schilden langs de boord.
+      ctx.strokeStyle = romp; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(cx + 30, wl - 15); ctx.quadraticCurveTo(cx + 40, wl - 24, cx + 36, wl - 34); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx - 33, wl - 18); ctx.quadraticCurveTo(cx - 42, wl - 26, cx - 36, wl - 32); ctx.stroke();
+      ctx.lineCap = 'butt';
+      ovaal(ctx, cx + 38, wl - 35, 3.6, 2.4, tint(romp, -0.2));
+      ovaal(ctx, cx + 39.4, wl - 35.6, 0.8, 0.8, '#e8c25a');
+      vlak(ctx, [[cx + 40, wl - 36], [cx + 44, wl - 34], [cx + 40, wl - 33.4]], tint(romp, -0.2));
+      const kl = ['#c23a2e', '#e8e0cc', '#c9a24a', '#2f2a26'];
+      for (let i = 0; i < 7; i++) {
+        const x = cx - 24 + i * 8;
+        const y = wl - 16.6 + i * 0.4;
+        ovaal(ctx, x, y, 3.4, 3, '#3a2a1a');
+        ovaal(ctx, x, y, 2.7, 2.4, kl[i % kl.length]);
+        ovaal(ctx, x, y, 0.8, 0.8, '#9aa0a8');
+      }
+    }
+    ctx.fillStyle = zeil;
+    ctx.beginPath();
+    ctx.moveTo(cx - 17, wl - 77);
+    ctx.lineTo(cx + 21, wl - 75);
+    ctx.quadraticCurveTo(cx + 28, wl - 55, cx + 20, wl - 36);
+    ctx.lineTo(cx - 15, wl - 38);
+    ctx.quadraticCurveTo(cx - 10, wl - 58, cx - 17, wl - 77);
+    ctx.closePath();
+    ctx.fill();
+    if (def.draak) for (const d of [-11, 3, 15]) vlak(ctx, [[cx + d, wl - 76.4], [cx + d + 6, wl - 76], [cx + d + 6 + (d > 0 ? 3 : 2), wl - 37], [cx + d + (d > 0 ? 3 : 3), wl - 37.4]], 'rgba(255,255,255,0.8)');
+    else vlak(ctx, [[cx - 1, wl - 76], [cx + 5, wl - 75.8], [cx + 6, wl - 37], [cx, wl - 37.4]], 'rgba(255,255,255,0.75)');
+    lijn(ctx, cx - 15, wl - 38, cx + 20, wl - 36, tint(zeil, -0.35), 1);
+    // Touwen naar voor en achter, en een wimpel bovenin
+    lijn(ctx, cx + 2, wl - 86, cx + 31, wl - 16, 'rgba(60,40,20,0.7)', 0.6);
+    lijn(ctx, cx + 2, wl - 86, cx - 30, wl - 31, 'rgba(60,40,20,0.7)', 0.6);
+    vlak(ctx, [[cx + 2, wl - 88], [cx + 14, wl - 86], [cx + 2, wl - 84]], zeil);
+    return { beeld: doek, b, h, ax: cx, ay: wl };
+  };
+  return { varianten: [maak(1), maak(-1)] };
+}
+
+// Een hopboerderij: rijen hoge palen met draden waar groene hopranken langs omhoog groeien,
+// met lichtgroene bellen, op omgeploegde grond, en een mand met geplukte hop.
+export function tekenHopveld(naam, def) {
+  const b = TB + 4;
+  const h = TH + 50;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const toeval = toevalVoor(naam);
+  vlak(ctx, [[cx, cy - 15], [cx + 30, cy], [cx, cy + 15], [cx - 30, cy]], '#7d6038');
+  const rank = def.rank || '#4f8a3a';
+  const bel = def.bel || '#b8d878';
+  // Drie rijen palen van achter naar voren
+  for (let r = 0; r < 3; r++) {
+    const t = (r + 0.5) / 3;
+    const P = [cx - 30 + 30 * t, cy - 15 * t];
+    const Q = [P[0] + 30, P[1] + 15];
+    lijn(ctx, P[0], P[1], Q[0], Q[1], 'rgba(60,40,20,0.35)', 0.8);
+    const palen = [0.15, 0.5, 0.85].map((s) => [P[0] + (Q[0] - P[0]) * s, P[1] + (Q[1] - P[1]) * s]);
+    // Draad tussen de toppen
+    for (let k = 0; k < palen.length - 1; k++) lijn(ctx, palen[k][0], palen[k][1] - 40, palen[k + 1][0], palen[k + 1][1] - 40, 'rgba(70,60,50,0.6)', 0.5);
+    for (const [x, y] of palen) {
+      lijn(ctx, x, y, x, y - 42, '#6a4a2a', 1.3);
+      // De rank: een groene slinger om de paal met bladeren en bellen
+      for (let j = 0; j < 9; j++) {
+        const hg = 2 + j * 4.3;
+        const zij = j % 2 ? 1 : -1;
+        ovaal(ctx, x + zij * 2.2, y - hg, 2.4, 1.6, tint(rank, (toeval() - 0.5) * 0.25));
+        if (j > 1 && toeval() < 0.75) ovaal(ctx, x - zij * 1.6, y - hg - 1.5, 1.2, 1.6, tint(bel, (toeval() - 0.5) * 0.2));
+      }
+    }
+  }
+  // Een mand met geplukte hop vooraan
+  vlak(ctx, [[cx - 6, cy + 6], [cx + 4, cy + 6], [cx + 3, cy + 11], [cx - 5, cy + 11]], '#a6824e');
+  for (const [dx, dy] of [[-4, 5], [-1.5, 4.4], [1.2, 5], [-2.6, 3.6], [0, 3.4]]) ovaal(ctx, cx + dx, cy + dy, 1.3, 1.6, bel);
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
+// Een kroeg: een vakwerkhuis met een uithangbord met een bierkroes, een lantaarn,
+// vaten tegen de muur en een bank met kroezen voor de deur.
+export function tekenKroeg(naam, def) {
+  const huis = huisVariant(naam, def, 0);
+  const ctx = huis.beeld.getContext('2d');
+  const cx = huis.ax;
+  const cy = huis.ay - HH;
+  // Vakwerk op de lichte wand
+  for (const t of [0.2, 0.5, 0.8]) lijn(ctx, cx + 25 * t, cy + 12.5 - 12.5 * t, cx + 25 * t, cy + 12.5 - 12.5 * t - 15, '#3a2816', 1.2);
+  lijn(ctx, cx, cy + 12.5 - 7.5, cx + 25, cy - 7.5, '#3a2816', 1.1);
+  // Een warm verlicht raam en de deur
+  blok(ctx, cx + 13, cy - 1, 4, 4, WARM);
+  vlak(ctx, [[cx + 3, cy + 11], [cx + 8, cy + 8.5], [cx + 8, cy - 1], [cx + 3, cy + 1.5]], '#3a2816');
+  // Uithangbord met een gouden kroes aan een arm
+  balk(ctx, cx + 25, cy - 12, cx + 34, cy - 16.5, 1.4, HOUT_DONKER);
+  lijn(ctx, cx + 30, cy - 14.5, cx + 30, cy - 12, '#2f2a26', 0.6);
+  lijn(ctx, cx + 34, cy - 16.5, cx + 34, cy - 14, '#2f2a26', 0.6);
+  vlak(ctx, [[cx + 29, cy - 12], [cx + 35, cy - 15], [cx + 35, cy - 7], [cx + 29, cy - 4]], '#6b4a2c');
+  blok(ctx, cx + 30.6, cy - 11.2, 2.6, 4, '#e0b040');
+  ovaal(ctx, cx + 31.9, cy - 11.4, 1.6, 0.8, '#f4efe0');
+  lijn(ctx, cx + 33.2, cy - 10.6, cx + 34, cy - 9, '#e0b040', 0.7);
+  // Vaten tegen de linker wand
+  for (const [x, y] of [[-20, 4], [-14, 7.5]]) {
+    ovaal(ctx, cx + x, cy + y, 3.2, 1.6, '#5d4430');
+    blok(ctx, cx + x - 3.2, cy + y - 7, 6.4, 7, '#7a5634');
+    ovaal(ctx, cx + x, cy + y - 7, 3.2, 1.6, '#9a7444');
+    lijn(ctx, cx + x - 3.2, cy + y - 3.5, cx + x + 3.2, cy + y - 3.5, '#2f2a26', 0.7);
+  }
+  // Een bank met twee kroezen voor de deur
+  blok(ctx, cx + 10, cy + 10, 10, 1.6, '#7f6040');
+  blok(ctx, cx + 11, cy + 11.6, 1, 2.4, '#4a3624');
+  blok(ctx, cx + 18, cy + 11.6, 1, 2.4, '#4a3624');
+  for (const x of [12.5, 16]) { blok(ctx, cx + x, cy + 7.6, 1.8, 2.4, '#c9a24a'); ovaal(ctx, cx + x + 0.9, cy + 7.6, 1, 0.5, '#f4efe0'); }
+  return huis;
+}
+
+// --- Het Vikingdorp van Rutger (White Dike, 0.109.0) ------------------------------------
+
+// Een langhuis in iso: een lang huis langs de as van L naar R, wanden van donkere planken,
+// een steil rieten dak met een gebogen nok en gekruiste drakenkoppen op beide gevels.
+// lengte en breedte in halve tegels; hoog = wandhoogte.
+function langhuisVorm(ctx, cx, cy, { lengte = 1.3, breedte = 0.7, wand = 12, dak = 26, hout = '#4e3a28', riet = '#8f7a4a', schilden = true, toeval }) {
+  const hb = HB * lengte;
+  const hh = HH * lengte;
+  const bx = HB * breedte;
+  const by = HH * breedte;
+  // grondvlak: van achter-links (A) naar voor-rechts (C)
+  const A = [cx - hb + bx, cy - hh - by];
+  const Bv = [cx + hb + bx, cy + hh - by];
+  const C = [cx + hb - bx, cy + hh + by];
+  const D = [cx - hb - bx, cy - hh + by];
+  const op = ([x, y], k) => [x, y - k];
+  ovaal(ctx, cx, cy + 3, hb + 6, hh + 6, 'rgba(0,0,0,0.25)');
+  // voorwand (D-C) en gevel (C-Bv)
+  vlak(ctx, [D, C, op(C, wand), op(D, wand)], tint(hout, -0.12));
+  vlak(ctx, [C, Bv, op(Bv, wand), op(C, wand)], tint(hout, 0.08));
+  for (let i = 1; i < 10; i++) { const p = tussen(D, C, i / 10); lijn(ctx, p[0], p[1], p[0], p[1] - wand, 'rgba(0,0,0,0.28)', 0.7); }
+  for (let i = 1; i < 4; i++) { const p = tussen(C, Bv, i / 4); lijn(ctx, p[0], p[1], p[0], p[1] - wand, 'rgba(0,0,0,0.22)', 0.6); }
+  // deur met warm licht in het midden van de voorwand
+  const m = tussen(D, C, 0.5);
+  vlak(ctx, [[m[0] - 4, m[1] + 2], [m[0] + 4, m[1] - 2], [m[0] + 4, m[1] - 11], [m[0] - 4, m[1] - 7]], '#2a1c12');
+  vlak(ctx, [[m[0] - 2.6, m[1] + 0.6], [m[0] + 2.6, m[1] - 2], [m[0] + 2.6, m[1] - 9], [m[0] - 2.6, m[1] - 6.4]], 'rgba(240,181,80,0.55)');
+  // schilden langs de voorwand
+  if (schilden) {
+    const kleuren = ['#c23a2e', '#e8e0cc', '#2f5f8a', '#c9a24a', '#c23a2e'];
+    for (let i = 0; i < 5; i++) {
+      const t = 0.12 + i * 0.19;
+      if (Math.abs(t - 0.5) < 0.08) continue;
+      const p = tussen(D, C, t);
+      ovaal(ctx, p[0], p[1] - wand * 0.55, 3, 3.2, '#3a2a1a');
+      ovaal(ctx, p[0], p[1] - wand * 0.55, 2.4, 2.6, kleuren[i]);
+      ovaal(ctx, p[0], p[1] - wand * 0.55, 0.8, 0.8, '#9aa0a8');
+    }
+  }
+  // het dak: twee vlakken naar een gebogen nok
+  const nokA = op(tussen(A, D, 0.5), wand + dak);
+  const nokB = op(tussen(Bv, C, 0.5), wand + dak);
+  const zak = 5;   // de nok zakt in het midden: een scheepsromp op zijn kop
+  const nokM = [(nokA[0] + nokB[0]) / 2, (nokA[1] + nokB[1]) / 2 + zak];
+  // achterste dakvlak (alleen de rand zichtbaar boven de nok), donker
+  vlak(ctx, [op(A, wand), op(Bv, wand), nokB, nokA], tint(riet, -0.35));
+  const voorDak = () => { ctx.beginPath(); ctx.moveTo(...op(D, wand)); ctx.lineTo(...op(C, wand)); ctx.lineTo(...nokB); ctx.quadraticCurveTo(nokM[0], nokM[1] + zak, ...nokA); ctx.closePath(); };
+  ctx.fillStyle = riet; voorDak(); ctx.fill();
+  ctx.save(); voorDak(); ctx.clip();
+  for (let i = 0; i < 26; i++) { const p = tussen(op(D, wand), op(C, wand), i / 26); lijn(ctx, p[0], p[1], p[0] + 4, p[1] - dak - 6, 'rgba(60,45,20,0.25)', 0.6); }
+  for (let i = 0; i < 4; i++) { const p = tussen(op(D, wand), op(C, wand), 0.2 + toeval() * 0.6); ovaal(ctx, p[0] + 3, p[1] - dak * (0.3 + toeval() * 0.4), 4, 2, 'rgba(70,100,40,0.35)'); }   // mos
+  ctx.restore();
+  // nokbalk en de onderrand van het dak
+  ctx.strokeStyle = '#3a2816'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(...nokA); ctx.quadraticCurveTo(nokM[0], nokM[1] + zak, ...nokB); ctx.stroke();
+  lijn(ctx, ...op(D, wand), ...op(C, wand), 'rgba(40,25,10,0.6)', 1.2);
+  // gevel rechts: planken met een kruisbalk
+  vlak(ctx, [op(C, wand), op(Bv, wand), nokB], tint(hout, 0.15));
+  lijn(ctx, ...op(C, wand), ...nokB, '#3a2816', 1);
+  lijn(ctx, ...op(Bv, wand), ...nokB, '#3a2816', 1);
+  // gekruiste drakenkoppen op de gevels
+  const draak = ([x, y], z) => {
+    lijn(ctx, x, y, x + 5 * z, y - 9, '#3a2816', 1.8);
+    lijn(ctx, x, y, x - 5 * z, y - 9, '#3a2816', 1.8);
+    ovaal(ctx, x + 5.8 * z, y - 10, 2, 1.4, '#3a2816');
+    ovaal(ctx, x + 6.6 * z, y - 10.4, 0.5, 0.5, '#e8c25a');
+    ovaal(ctx, x - 5.8 * z, y - 10, 2, 1.4, '#3a2816');
+  };
+  draak(nokA, -1);
+  draak(nokB, 1);
+  // rook uit een gat in het dak
+  ovaal(ctx, nokM[0] + 2, nokM[1] - 6, 3.4, 2.4, 'rgba(210,210,210,0.35)');
+  ovaal(ctx, nokM[0] + 5, nokM[1] - 12, 4.4, 3, 'rgba(210,210,210,0.22)');
+}
+
+// De zaal van Rutger: een groot langhuis midden op het houten erf (middelste tegel van het kamp).
+export function tekenJarlshal(naam, def) {
+  const b = TB * 2.6;
+  const h = 120;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - HH - 6;
+  langhuisVorm(ctx, cx, cy, { lengte: 2.1, breedte: 0.95, wand: 20, dak: 32, hout: def.hout || '#6e4c30', riet: def.riet || '#9c8650', toeval: toevalVoor(naam) });
+  // een rode banier met een witte golf (de dijk) op een paal voor de deur
+  lijn(ctx, cx + 22, cy + 8, cx + 22, cy - 46, '#3a2a1a', 1.4);
+  vlak(ctx, [[cx + 22, cy - 46], [cx + 36, cy - 44], [cx + 34, cy - 30], [cx + 22, cy - 32]], '#c23a2e');
+  ctx.strokeStyle = '#f2eee4'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(cx + 23, cy - 38); ctx.quadraticCurveTo(cx + 27, cy - 42, cx + 29, cy - 38); ctx.quadraticCurveTo(cx + 31, cy - 34, cx + 34, cy - 38); ctx.stroke();
+  return { beeld: doek, b, h, ax: b / 2, ay: cy + HH };
+}
+
+// Een klein langhuis als decor in het dorp (een tegel).
+export function tekenLanghuis(naam, def) {
+  const b = TB + 26;
+  const h = 84;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - HH - 2;
+  const toeval = toevalVoor(naam);
+  langhuisVorm(ctx, cx, cy, { lengte: 0.95, breedte: 0.5, wand: 13, dak: 20, hout: def.hout || '#74503a', riet: def.riet || '#a89050', schilden: true, toeval });
+  return { beeld: doek, b, h, ax: b / 2, ay: cy + HH };
+}
+
+// Een runensteen: grijze staande steen met een rode slang van runen.
+export function tekenRunensteen(naam, def) {
+  const b = TB;
+  const h = 64;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - HH;
+  ovaal(ctx, cx + 2, voet + 2, 11, 4.5, 'rgba(0,0,0,0.25)');
+  vlak(ctx, [[cx - 8, voet + 2], [cx + 7, voet + 3], [cx + 8, voet - 26], [cx + 3, voet - 38], [cx - 5, voet - 37], [cx - 9, voet - 24]], '#8c8a84');
+  vlak(ctx, [[cx + 1, voet + 3], [cx + 7, voet + 3], [cx + 8, voet - 26], [cx + 3, voet - 38], [cx + 1, voet - 37]], '#a7a49c');
+  ctx.strokeStyle = '#b8402e'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(cx - 5, voet - 2); ctx.bezierCurveTo(cx - 9, voet - 18, cx + 6, voet - 20, cx + 3, voet - 33); ctx.bezierCurveTo(cx, voet - 36, cx - 4, voet - 32, cx - 3, voet - 28); ctx.stroke();
+  for (let i = 0; i < 6; i++) lijn(ctx, cx - 3 + (i % 2) * 3, voet - 8 - i * 4, cx - 1 + (i % 2) * 3, voet - 10 - i * 4, '#4a3a2e', 0.7);
+  return { beeld: doek, b, h, ax: b / 2, ay: h };
+}
+
+// De witte dijk: een lage wal van witte steen en kalk met gras erop, aan de waterkant.
+export function tekenDijk(naam, def) {
+  const b = TB + 2;
+  const h = TH + 18;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const H = 9;
+  const L = [cx - HB, cy], R = [cx + HB, cy], Bv = [cx, cy + HH], T = [cx, cy - HH];
+  const op = ([x, y]) => [x, y - H];
+  vlak(ctx, [L, Bv, op(Bv), op(L)], '#c9c6bc');
+  vlak(ctx, [Bv, R, op(R), op(Bv)], '#e6e3da');
+  const toeval = toevalVoor(naam);
+  for (let i = 0; i < 10; i++) {
+    const p = tussen(L, Bv, toeval());
+    blok(ctx, p[0] - 2, p[1] - H + 2 + toeval() * 5, 4, 2.4, 'rgba(120,115,100,0.25)');
+    const q = tussen(Bv, R, toeval());
+    blok(ctx, q[0] - 2, q[1] - H + 2 + toeval() * 5, 4, 2.4, 'rgba(255,255,255,0.35)');
+  }
+  vlak(ctx, [op(L), op(Bv), op(R), op(T)], '#7fa25a');
+  for (let i = 0; i < 12; i++) { const p = tussen(tussen(op(L), op(R), toeval()), tussen(op(T), op(Bv), toeval()), 0.5); lijn(ctx, p[0], p[1], p[0] + 1, p[1] - 2.5, '#5f8a3e', 0.7); }
+  return { beeld: doek, b, h, ax: cx, ay: h - 1 };
+}
+
+// Het erf rond de zaal van Rutger: platte, vertrapte aarde (niets dat over de zaal heen valt).
+export function tekenErf(naam, def) {
+  const b = TB;
+  const h = TH + 2;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const cy = h - 1 - HH;
+  const toeval = toevalVoor(naam);
+  for (let i = 0; i < 6; i++) ovaal(ctx, cx + (toeval() - 0.5) * 36, cy + (toeval() - 0.5) * 14, 4 + toeval() * 5, 1.6 + toeval() * 2, 'rgba(80,55,30,0.18)');
+  return { beeld: doek, b, h, ax: b / 2, ay: h - 1 };
+}

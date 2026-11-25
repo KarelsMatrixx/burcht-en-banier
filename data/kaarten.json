@@ -7,7 +7,8 @@
   "vindplaatsen: steen (STEEN), kopererts (IJZER) en bos (BOOM) bij jou, met dx en dy vanaf je burcht; rood krijgt ze gespiegeld. midden: hetzelfde, vanaf het midden van de kaart.",
   "vorm: de vorm van het land (stap 34): pas, kloof, rotsrug, moeras of polder; zie js/kaart.js stap 1b. Rotsen zijn steen: onbegaanbaar, en een steengroeve kan ertegen.",
   "De generator zorgt altijd dat er een weg over land is van jouw poort naar die van rood: zo nodig maakt hij een doorwaadbare plek en kapt hij een pad.",
-  "zonderRood, eigenMuur, feest (proloog): geen kasteel van rood; jouw ringmuur met poort staat er al; extra huisjes, gehuchten, feesttenten en vlaggen (FEEST in js/kaart.js)."
+  "zonderRood, eigenMuur, feest (proloog): geen kasteel van rood; jouw ringmuur met poort staat er al; extra huisjes, gehuchten, feesttenten en vlaggen (FEEST in js/kaart.js).",
+  "havens (level 8): per haven dx, dy vanaf jouw burcht, straal van het bekken en naar = de richting van de geul naar zee. Rood krijgt hetzelfde gespiegeld, met een haven als decor. Een vindplaats of midden met soort WATER is een plas."
  ],
  "kaarten": {
   "standaard": {
@@ -334,7 +335,7 @@
     0.49,
     0.875
    ],
-    "vorm": {
+   "vorm": {
     "soort": "tol"
    },
    "vindplaatsen": [
@@ -364,7 +365,7 @@
    "breedte": 64,
    "hoogte": 64,
    "zaad": 8808,
-   "water": 0.1,
+   "water": 0.2,
    "zand": 0.3,
    "bos": 0.66,
    "start": [
@@ -373,7 +374,7 @@
    ],
    "vorm": {
     "soort": "polder",
-    "zee": 0.22
+    "zee": 0.2
    },
    "vindplaatsen": [
     {
@@ -395,7 +396,46 @@
      "straal": 3.2
     }
    ],
-   "midden": []
+   "midden": [
+    {
+     "soort": "WATER",
+     "dx": -6,
+     "dy": -6,
+     "straal": 2.2
+    },
+    {
+     "soort": "WATER",
+     "dx": 6,
+     "dy": 6,
+     "straal": 2.2
+    },
+    {
+     "soort": "WATER",
+     "dx": -4,
+     "dy": 5,
+     "straal": 1.8
+    },
+    {
+     "soort": "WATER",
+     "dx": 4,
+     "dy": -5,
+     "straal": 1.8
+    }
+   ],
+   "witteDijk": {
+    "straal": 15
+   },
+   "havens": [
+    {
+     "dx": 10,
+     "dy": 3,
+     "straal": 2.3,
+     "naar": [
+      1,
+      1
+     ]
+    }
+   ]
   },
   "veen": {
    "naam": "The Fen",

@@ -840,9 +840,12 @@ export function maakUi() {
     },
     // Het paneel van de voorraadkamer: verkopen voor goud.
     //   knoppen = [{ sleutel, naam, kost, kan }]
-    toonHandel({ open, regels = [], knoppen = [] }, opVerkoop) {
+    // Het bouw- of legerpaneel rechtsonder dicht (de havenles, na het bouwen).
+    sluitPaneel() { zetPaneel(null); },
+    toonHandel({ open, regels = [], knoppen = [], haven = false }, opVerkoop) {
       el('handelpaneel').hidden = !open;
       if (!open) return;
+      el('handelpaneel').classList.toggle('haven', haven);
       klapVolk(false);
       el('legerpaneel').hidden = true;
       el('handel-tekst').replaceChildren(...regels.map((r) => { const p = document.createElement('div'); p.textContent = r; return p; }));
@@ -867,6 +870,8 @@ export function maakUi() {
         knop.firstChild.textContent = k.naam;
         knop.lastChild.textContent = k.kost;
         knop.classList.toggle('kanniet', !k.kan);
+        knop.classList.toggle('gekozen', !!k.gekozen);
+        knop.lastChild.hidden = !k.kost;
       });
     },
     opHandelSluit(functie) {

@@ -56,7 +56,7 @@ const uitslag = await p.evaluate(async () => {
 for (const u of uitslag) {
   const n = `${u.kn}/${u.on}`;
   // Een tentenkamp (level 4) heeft geen muren: niets om dicht te houden en geen wachterroutes.
-  const kamp = u.on === 'tentenkamp';
+  const kamp = u.on === 'tentenkamp' || u.on === 'vikingdorp';   // ook het Vikingdorp (White Dike) is een kamp zonder muren
   const goed = kamp
     ? u.poorten === 0 && u.roodEruit && u.jijOpen && u.weg && u.werken === 3 && u.routes === 0
     : u.poorten >= u.verwacht && u.poorten <= u.verwacht + u.postMax && u.roodEruit && u.jijDicht && u.jijOpen && u.weg && u.werken === 3 && u.routes > 0;

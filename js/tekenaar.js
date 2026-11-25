@@ -168,7 +168,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
   // Het kasteel van rood kan in de campagne een eigen materiaal hebben (stap 33):
   // dan staan er plaatjes onder 'rood.muur', 'rood.toren', enzovoort.
   const objectenRood = OBJECT_ASSET.map((naam) => (naam && assets.heeft('rood.' + naam.split('.')[1]) ? assets.haal('rood.' + naam.split('.')[1]) : null));
-  const objectOp = (i) => (kaart.eigenaar[i] === 2 && objectenRood[kaart.object[i]]) || objecten[kaart.object[i]];
+  const objectOp = (i) => ((kaart.eigenaar[i] === 2 || (kaart.object[i] === OBJECT.HAVEN && !kaart.eigenaar[i])) && objectenRood[kaart.object[i]]) || objecten[kaart.object[i]];   // de rode haven is decor zonder eigenaar
   // soldaten[soort][team]
   const soldaten = [
     [assets.haal('eenheid.ridder_blauw'), assets.haal('eenheid.ridder_rood')],
@@ -213,6 +213,10 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     [assets.haal('eenheid.ballista_blauw'), assets.haal('eenheid.ballista_rood')],
     [assets.haal('eenheid.hellebaard_blauw'), assets.haal('eenheid.hellebaard_rood')],
     [assets.haal('eenheid.vuurboog_blauw'), assets.haal('eenheid.vuurboog_rood')],
+    [assets.haal('eenheid.hopboer_blauw'), assets.haal('eenheid.hopboer_rood')],
+    [assets.haal('eenheid.waard_blauw'), assets.haal('eenheid.waard_rood')],
+    [assets.haal('eenheid.rutger_blauw'), assets.haal('eenheid.rutger_rood')],
+    [assets.haal('eenheid.berserker_blauw'), assets.haal('eenheid.berserker_rood')],
   ];
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
@@ -852,7 +856,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
         continue;
       }
       plekX[i] = wx;
-      plekY[i] = wy - e.hoogte;
+      plekY[i] = wy - e.hoogte - (e.sprongH || 0);
       // Wie op een muur staat, wordt getekend na het stuk muur waar hij
       // naartoe loopt. Anders zakt hij er tijdens het lopen even achter.
       diepte[i] = x + y + (e.hoogte > 0 ? 1 : 0);
@@ -904,6 +908,22 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
         tekenSchaduw(ctx, basis, kiesBeeld(e, i, s), s.b, s.h, plekX[i] - s.ax, plekY[i] - s.ay, plekY[i]);
       }
       ctx.globalAlpha = 1;
+    }
+
+    // Schepen van de havens (0.106.0): op het water, onder alles wat rechtop staat.
+    if (staat.schepen) {
+      const blauw = assets.haal('schip.blauw').varianten;
+      const roodS = assets.haal('schip.rood').varianten;
+      const vikingS = assets.haal('schip.viking').varianten;
+      for (const sch of staat.schepen()) {
+        const wx = (sch.x - sch.y) * HALVE_BREEDTE;
+        const wy = (sch.x + sch.y) * HALVE_HOOGTE;
+        if (wx < zichtLinks - 60 || wx > zichtRechts + 60 || wy < zichtBoven - 20 || wy > zichtOnder + 100 || sch.alpha <= 0) continue;
+        const v = (sch.viking ? vikingS : sch.rood ? roodS : blauw)[sch.richting > 0 ? 0 : 1];
+        ctx.globalAlpha = sch.alpha;
+        ctx.drawImage(v.beeld, wx - v.ax * 0.9, wy - v.ay * 0.9, v.b * 0.9, v.h * 0.9);
+        ctx.globalAlpha = 1;
+      }
     }
 
     // --- Ronde 2: alles wat rechtop staat, van achter naar voren ---------------

@@ -76,6 +76,17 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       }
       return { e: hamer, tekst: 'Tap the hammer to open the building menu.' };
     }
+    if (doel.soort === 'haven') {
+      // De havenles (js/havenles.js): de haven aantikken, dan hout kopen.
+      const paneel = el('handelpaneel');
+      if (zichtbaar(paneel) && paneel.classList.contains('haven')) {
+        const koop = el('handel-knoppen').querySelector('[data-verkoop="modus:koop"]');
+        if (koop && !koop.classList.contains('gekozen')) return { e: koop, tekst: 'Tap Buy.' };
+        const knop = el('handel-knoppen').querySelector('[data-verkoop="ruil:hout"]');
+        if (knop) return { e: knop, tekst: 'Tap Wood to order wood. You pay now, the ship brings it later.' };
+      }
+      return { e: null, tekst: 'Tap your port on the map (the golden spot).' };
+    }
     if (doel.soort === 'opleiden') {
       const paneel = el('legerpaneel');
       if (zichtbaar(paneel)) {
@@ -153,7 +164,8 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     const sol = wijsSoldaat();
     const p = sol ? { x: Math.floor(sol.x), y: Math.floor(sol.y) } : doel && doel.plek;
     if (!p || !plekNaarScherm) { plek.hidden = true; return; }
-    if (doel.soort === 'opleiden' && zichtbaar(el('legerpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open
+    if (doel.soort === 'opleiden' && zichtbaar(el('legerpaneel'))) { plek.hidden = true; return; }
+    if (doel.soort === 'haven' && zichtbaar(el('handelpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open
     // Een plek op de muur: de ruit op de bovenkant, waar de tik de soldaat de muur op stuurt
     const sc = plekNaarScherm(p.x, p.y, !sol && !!doel && (doel.soort === 'muur' || !!doel.opMuur));
     const z = sc.zoom;

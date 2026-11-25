@@ -338,6 +338,7 @@ button:active {
 .icoon-tarwe { background-image: url(../beelden/hud/res/tarwe.svg); }
 .icoon-brood { background-image: url(../beelden/hud/res/brood.svg); }
 .icoon-koper { background-image: url(../beelden/hud/res/koper.svg); }
+.icoon-hop { background-image: url(../beelden/hud/res/hop.svg); }
 
 .grondstof {
   display: inline-flex;
@@ -774,6 +775,9 @@ body:has(#handelpaneel:not([hidden])) #legerhint { display: none !important; }
 
 #handel-knoppen { flex-wrap: wrap; gap: 4px; }
 #handelpaneel[hidden] { display: none; }
+/* De haven (0.106.0): Buy/Sell en de partijgrootte als schakelaars */
+#handelpaneel.haven #handel-knoppen button.gekozen { outline: 2px solid #e8c25a; background: rgba(232, 194, 90, 0.28); }
+#handelpaneel.haven #handel-knoppen button[data-verkoop^="modus"], #handelpaneel.haven #handel-knoppen button[data-verkoop^="partij"] { min-width: 0; padding-left: 8px; padding-right: 8px; }
 
 /* De bouwknoppen op één rij; past het niet, dan schuif je met je vinger. */
 #bouw-knoppen {

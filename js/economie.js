@@ -689,7 +689,18 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       { naam: 'variety', waarde: genoeg && soorten > 1 ? stem.afwisseling || 0 : 0 },
       { naam: 'tax', waarde: tarieven[belasting].effect },
       { naam: 'housing', waarde: volk > ruimte() ? stem.krap : 0 },
+      ...(kroegen() ? [{ naam: 'tavern', waarde: schenkend() * ((regels.kroeg && regels.kroeg.stemming) || 0) }] : []),
     ];
+  }
+
+  // Kroegen (0.106.0): elke kroeg met een waard schenkt per ronde bier van kroeg.hop hop.
+  function kroegen() {
+    return [...werkplaatsen.values()].filter((e) => e.werk.beroep.sleutel === 'waard').length;
+  }
+  function schenkend() {
+    const k = regels.kroeg;
+    if (!k) return 0;
+    return Math.min(kroegen(), k.max || 99, Math.floor((voorraad.hop || 0) / Math.max(1, k.hop)));
   }
 
   // Een boer wordt gedood (door vijandelijke soldaten, js/slachting.js): weg uit je volk.
@@ -721,6 +732,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   // Het eten zelf gaat apart (voedselRonde).
   function maaltijd() {
     const factoren = stemFactoren();   // hoe het er nu voor staat
+    if (regels.kroeg && schenkend()) voorraad.hop -= schenkend() * regels.kroeg.hop;   // de kroegen schenken
     voorraad[volkRegels.munt] += volk * tarieven[belasting].goud;
     if (!bevroren) {
       const was = populariteit;
@@ -904,6 +916,20 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       opVerandering();
       return '';
     },
+    // De haven (js/haven.js): goederen erbij, zoveel als er past. Geeft het aantal dat paste.
+    lever(naam, aantal) {
+      const past = Math.max(0, Math.min(aantal, opslagMax(naam) - voorraad[naam]));
+      voorraad[naam] += past;
+      if (past) { opVoorraad(); opVerandering(); }
+      return past;
+    },
+    // De haven: iets uit de voorraad of goud eraf (al gecontroleerd door de haven).
+    neem(naam, aantal) {
+      voorraad[naam] = Math.max(0, voorraad[naam] - aantal);
+      opVoorraad();
+      opVerandering();
+    },
+    munt: () => volkRegels.munt,
     voorraad, opslagMax, maakt: (naam) => [...werkplaatsen.values()].some((e) => e.werk.beroep.haalt === naam) || wachtend.some((w) => regels.beroepen[w.beroepNaam] && regels.beroepen[w.beroepNaam].haalt === naam), opslagKamers: () => kamers, herzieOpslag, kostTekst, tekort, tekortAan, betaal, geefTerug, geefAllesTerug,
     nieuweWerkplaats, werkplaatsWeg, stap, beschrijf,
     bewaarStand, zetStand, herstel,
