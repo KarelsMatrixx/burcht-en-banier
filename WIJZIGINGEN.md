@@ -1293,3 +1293,11 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - De melding van Bartholt in level 7 ("wind singers wait at your Mystic Lodge") klopte niet: de windzanger was de beloning van level 7 en dus pas vanaf level 8 op te leiden.
 - Beloning verplaatst: windzanger nu in de beloning van level 6 (Giant's Spine), level 7 geeft nog alleen de moordgatentoren. Vanaf level 7 kun je ze opleiden in de Mystic Lodge; vanaf level 8 blijft alles gelijk.
 - Tests level7_72 en level8_74 aangepast.
+
+## 0.110.0: zelf kiezen vanaf hoeveel hout de zagers planken maken
+- Karels probleem: de ingenieur kost meer dan 30 hout, en vanaf 30 hout zaagt de zager alles tot planken, dus je spaart nooit genoeg hout.
+- Tik een zagerij aan: paneel met Keep 0, 10, 20, 30, 50, 80, 120. De zager laat zoveel hout in de voorraad liggen en zaagt alleen wat erboven zit. Keep 0 = alles zagen. Standaard blijft 30.
+- De keuze geldt voor elke zagerij tegelijk, ook voor zagerijen die je later bouwt. Wordt bewaard bij opslaan, gaat terug naar 30 bij een nieuw level.
+- Code: economie.js (`eigenReserve`, `restVan`, `reserveVan`, `zetReserve`, in `bewaarStand`/`zetStand`/`herstel`), main.js (`toonZagerij`, gebruikt het handelpaneel). Niet in de proloog.
+- Nieuwe Engelse teksten (na te lezen): het paneel, de meldingen en de tip van de zagerij. Keuzes 0 tot 120 zijn een schatting.
+- Test: tests/zager106.mjs (gebouwd als 0.106.0, opgehoogd na samenvoegen) (13). Groen: planken21, handel.

@@ -239,6 +239,17 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   let bevroren = false;   // proloog: populariteit staat vast, niemand vertrekt, honger kost niets (bevries)
   let belasting = volkRegels.beginBelasting;   // welke stand uit de lijst tarieven
 
+  // Hoeveel een werker in de voorraad laat liggen voor het bouwen (beroep.reserve).
+  // De speler kan dat per beroep zelf zetten (de zager: tik een zagerij aan). Wat hij
+  // kiest geldt voor elke werkplaats met dat beroep tegelijk. { zager: 60 }
+  const eigenReserve = {};
+  function restVan(beroep, naam) {
+    const standaard = (beroep.reserve || {})[naam] || 0;
+    const eigen = eigenReserve[beroep.sleutel];
+    return beroep.reserve && naam in beroep.reserve && Number.isInteger(eigen) ? eigen : standaard;
+  }
+  const spaarRaad = (beroep, rest) => (beroep.spaarRaad || '').replace(/\d+/, String(rest));
+
   // Boeren zonder werk, als figuur op de kaart.
   const lopers = [];
   const gok = maakToeval(7719);
@@ -453,7 +464,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
         hier = thuis;
       }
       // Eerst kijken of er genoeg is: anders hoeft hij niet te lopen.
-      for (const [naam, n] of Object.entries(beroep.neemt)) { const rest = (beroep.reserve || {})[naam] || 0; if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3); if (voorraad[naam] < n + rest) return klem(e, beroep.spaart || beroep.mist, beroep.spaarRaad || '', 3); }
+      for (const [naam, n] of Object.entries(beroep.neemt)) { const rest = restVan(beroep, naam); if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3); if (voorraad[naam] < n + rest) return klem(e, beroep.spaart || beroep.mist, spaarRaad(beroep, rest), 3); }
       if (afleverplek[hier]) w.staat = 'haal';
       else {
         const doel = zoekDichtbij(hier, bijBurcht, B * H);
@@ -466,7 +477,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     if (w.staat === 'haal') {
       if (e.pad) return;
       if (!afleverplek[hier]) { w.staat = 'zoek'; return; }
-      for (const [naam, n] of Object.entries(beroep.neemt)) { const rest = (beroep.reserve || {})[naam] || 0; if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3); if (voorraad[naam] < n + rest) return klem(e, beroep.spaart || beroep.mist, beroep.spaarRaad || '', 3); }
+      for (const [naam, n] of Object.entries(beroep.neemt)) { const rest = restVan(beroep, naam); if (voorraad[naam] < n) return klem(e, beroep.mist, beroep.raad, 3); if (voorraad[naam] < n + rest) return klem(e, beroep.spaart || beroep.mist, spaarRaad(beroep, rest), 3); }
       for (const [naam, n] of Object.entries(beroep.neemt)) voorraad[naam] -= n;
       opVoorraad();
       opVerandering();
@@ -814,7 +825,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
 
   // --- Bewaren en terugzetten -------------------------------------------------------
   function bewaarStand() {
-    return { voorraad: { ...voorraad }, gekapt: gekapt.slice(), volk, populariteit, belasting };
+    return { voorraad: { ...voorraad }, gekapt: gekapt.slice(), volk, populariteit, belasting, reserve: { ...eigenReserve } };
   }
 
   // Zet een bewaarde stand terug. Alleen wat klopt wordt overgenomen.
@@ -831,6 +842,9 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     if (Number.isInteger(stand.volk) && stand.volk >= 0 && stand.volk <= 500) volk = stand.volk;
     if (Number.isInteger(stand.populariteit) && stand.populariteit >= 0 && stand.populariteit <= 100) populariteit = stand.populariteit;
     if (Number.isInteger(stand.belasting) && tarieven[stand.belasting]) belasting = stand.belasting;
+    if (stand.reserve && typeof stand.reserve === 'object') {
+      for (const [sleutel, n] of Object.entries(stand.reserve)) if (regels.beroepen[sleutel] && Number.isInteger(n) && n >= 0 && n <= 999) eigenReserve[sleutel] = n;
+    }
     werkLopersBij();
     if (Array.isArray(stand.gekapt)) {
       for (const vak of stand.gekapt) {
@@ -857,6 +871,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     honger = false;
     populariteit = stem.begin;
     belasting = volkRegels.beginBelasting;
+    for (const k of Object.keys(eigenReserve)) delete eigenReserve[k];
     while (lopers.length) eenheden.verwijder(lopers.pop());
     totBoer = stappen(volkRegels.komtElke);
     totMaal = stappen(volkRegels.maaltijdElke);
@@ -917,6 +932,21 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
         totaal: factoren.reduce((som, f) => som + f.waarde, 0),
         ronde: volkRegels.maaltijdElke, lopers: lopers.length, munt: volkRegels.munt,
       };
+    },
+    // De grens van een beroep (de zager: vanaf hoeveel hout hij planken maakt). Geldt voor
+    // alle werkplaatsen met dat beroep. reserveVan('zager') geeft de grens die nu geldt.
+    reserveVan(sleutel) {
+      const beroep = regels.beroepen[sleutel];
+      if (!beroep || !beroep.reserve) return null;
+      return restVan(beroep, Object.keys(beroep.reserve)[0]);
+    },
+    zetReserve(sleutel, n) {
+      const beroep = regels.beroepen[sleutel];
+      if (!beroep || !beroep.reserve || !Number.isInteger(n) || n < 0) return;
+      eigenReserve[sleutel] = n;
+      // Werkers die stonden te sparen kijken meteen opnieuw
+      for (const e of werkplaatsen.values()) if (e.werk.beroep.sleutel === sleutel && e.werk.staat === 'zoek') e.werk.wacht = 0;
+      opVerandering();
     },
     zetBelasting(stand) {
       if (!tarieven[stand]) return;

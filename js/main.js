@@ -536,8 +536,37 @@ async function start() {
       toonHandel();
     });
   };
-  verversHandel = () => { if (handelVak >= 0) toonHandel(); };
-  ui.opHandelSluit(() => { handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); });
+  // De zagerij: tik hem aan en kies vanaf hoeveel hout de zagers planken maken.
+  // Die grens geldt voor elke zagerij tegelijk (economie.zetReserve). Gebruikt het paneel van de handel.
+  const ZAAG_GRENZEN = [0, 10, 20, 30, 50, 80, 120];
+  let zagerVak = -1;
+  let zagerBericht = '';
+  const toonZagerij = () => {
+    const gebouw = zagerVak >= 0 ? bouwer.werkOp(zagerVak % kaart.breedte, Math.floor(zagerVak / kaart.breedte)) : null;
+    const grens = economie.reserveVan('zager');
+    if (!gebouw || gebouw.werker !== 'zager' || grens === null) {
+      zagerVak = -1;
+      ui.toonHandel({ open: false });
+      return;
+    }
+    const aantal = economie.aantalMetBeroep('zager');
+    ui.toonHandel({
+      open: true,
+      regels: [
+        `Sawmill. Wood: ${economie.voorraad.hout}. Your sawyers (${aantal}) leave ${grens} wood in the stores for building and only saw what is above that.`,
+        zagerBericht || 'Choose how much wood to keep. This counts for every sawmill.',
+      ],
+      knoppen: ZAAG_GRENZEN.map((n) => ({ sleutel: String(n), naam: `Keep ${n}`, kost: n === grens ? 'now' : n === 0 ? 'saw all' : 'wood', kan: true })),
+    }, (sleutel) => {
+      const n = Number(sleutel);
+      economie.zetReserve('zager', n);
+      geluid.speel('ui_click');
+      zagerBericht = n === 0 ? 'Your sawyers now saw all wood into planks.' : `Your sawyers now keep ${n} wood for building.`;
+      toonZagerij();
+    });
+  };
+  verversHandel = () => { if (handelVak >= 0) toonHandel(); else if (zagerVak >= 0) toonZagerij(); };
+  ui.opHandelSluit(() => { handelVak = -1; handelBericht = ''; zagerVak = -1; zagerBericht = ''; ui.toonHandel({ open: false }); });
 
   // Soldaten kiezen: de knoppen rechts onderin en de uitleg erboven.
   let kaderAan = false;        // staat de knop Kader aan?
@@ -1225,7 +1254,16 @@ async function start() {
       const aangetikt = binnenKaart(kaart, x, y) ? bouwer.werkOp(x, y) : null;
       // Proloog: een gebouw aantikken opent alleen een paneel als de les erom vraagt
       if (aangetikt && proloog && ((aangetikt.handel && !proloog.mag('handel')) || (aangetikt.leidtOp && !proloog.mag('kazerne')))) return;
+      if (aangetikt && aangetikt.werker === 'zager' && !proloog) {
+        handelVak = -1;
+        zagerVak = y * kaart.breedte + x;
+        zagerBericht = '';
+        staat.gekozen = { x, y };
+        toonZagerij();
+        return;
+      }
       if (aangetikt && aangetikt.handel) {
+        zagerVak = -1;
         handelVak = y * kaart.breedte + x;
         handelBericht = '';
         staat.gekozen = { x, y };
@@ -1233,6 +1271,7 @@ async function start() {
         return;
       }
       if (aangetikt && aangetikt.leidtOp) {
+        zagerVak = -1;
         kazerneVak = y * kaart.breedte + x;
         kazerneBericht = '';
         staat.gekozen = { x, y };

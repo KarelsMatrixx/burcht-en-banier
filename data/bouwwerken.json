@@ -35,7 +35,7 @@
                      "dichtbij": { "object": "STEEN", "afstand": 1, "reden": "a stone mine must stand right against the rocks" },
                      "tip": "Build it right against the rocks." },
     "zagerij":     { "naam": "Sawmill",     "groep": "werk",    "object": "ZAGERIJ",     "kosten": { "hout": 25 }, "werker": "zager",
-                     "tip": "The sawyer takes wood from your stores and brings back planks." },
+                     "tip": "The sawyer takes wood from your stores and brings back planks. Tap the sawmill to choose how much wood he leaves for building." },
     "boomgaard":   { "naam": "Orchard",   "groep": "werk",    "object": "BOOMGAARD",   "kosten": { "hout": 15 }, "werker": "fruitteler",
                      "tip": "Apples are food for your peasants." },
     "magiertoren": { "naam": "Mystic Lodge", "groep": "leger",   "object": "MAGIERTOREN", "kosten": { "planken": 15, "steen": 15, "koper": 5 }, "leidtOp": "mystiek",

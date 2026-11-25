@@ -211,7 +211,7 @@
     "hout": 30
    },
    "spaart": "is leaving wood for building",
-   "spaarRaad": "He saws again once the stores hold more than 30 wood."
+   "spaarRaad": "He saws again once the stores hold more than 30 wood. Tap a sawmill to change this."
   },
   "tarweboer": {
    "naam": "wheat farmer",
