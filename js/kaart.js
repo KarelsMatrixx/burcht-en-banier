@@ -442,6 +442,8 @@ export function maakKaart(recept) {
       // Een tentenkamp (kamp: true) heeft geen muren: de ring bepaalt alleen hoe groot het vrije erf is.
       for (const ring of (ontwerp.kamp ? [] : ringen)) {
         const M = ring.maat;
+        // ring.moord: true = overal olietorens; 'hoeken' = alleen de vier hoektorens (de rest is gewone torens)
+        const moordOp = (rol) => ring.moord === true || (ring.moord === 'hoeken' && rol === 'hoek');
         const poorten = new Set((ring.poorten || ['voor']).map((k) => {
           const [px, py] = POORTPLEK[k] || POORTPLEK.voor;
           return `${px * M},${py * M}`;
@@ -475,9 +477,9 @@ export function maakKaart(recept) {
             const hoek = ring.rond ? torenTegels.has(`${dx},${dy}`) : Math.abs(dx) === M && Math.abs(dy) === M;
             const midden = !ring.rond && (dx === 0 || dy === 0);
             let soort = OBJECT.MUUR;
-            if (hoek) soort = ring.moord ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN;
+            if (hoek) soort = moordOp('hoek') ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN;
             else if (poorten.has(`${dx},${dy}`)) soort = OBJECT.POORT;
-            else if (midden) soort = ring.moord ? OBJECT.MOORDGATENTOREN : ring.middenTorens ? OBJECT.TOREN : OBJECT.WACHTTOREN;
+            else if (midden) soort = moordOp('midden') ? OBJECT.MOORDGATENTOREN : ring.middenTorens ? OBJECT.TOREN : OBJECT.WACHTTOREN;
             object[i] = soort;
             grond[i] = GROND.GRAS_DONKER;
           }
@@ -490,10 +492,11 @@ export function maakKaart(recept) {
           for (const sx of [-1, 1]) for (const sy of [-1, 1]) extra.push([sx * (M + 1), sy * M, OBJECT.TOREN], [sx * M, sy * (M + 1), OBJECT.TOREN]);
           for (const [px, py] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
             if (poortRicht.some(([qx, qy]) => qx === px && qy === py)) {
+              if ((ring.open || []).length) continue;   // een open poort: geen torens ernaast, de weg blijft breed
               const zx = py ? 1 : 0;
               const zy = px ? 1 : 0;
-              for (const t of [-1, 1]) extra.push([px * (M + 1) + zx * t, py * (M + 1) + zy * t, ring.moord ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN]);
-            } else extra.push([px * (M + 1), py * (M + 1), ring.moord ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN]);
+              for (const t of [-1, 1]) extra.push([px * (M + 1) + zx * t, py * (M + 1) + zy * t, moordOp('poort') ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN]);
+            } else extra.push([px * (M + 1), py * (M + 1), moordOp('bastion') ? OBJECT.MOORDGATENTOREN : OBJECT.TOREN]);
           }
           for (const [ex, ey, soort] of extra) {
             const i = plek(ex + ox, ey + oy);

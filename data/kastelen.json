@@ -744,9 +744,12 @@
    "ringen": [
     {
      "maat": 3,
-     "moord": true,
+     "moord": "hoeken",
      "bastions": true,
      "poorten": [
+      "links"
+     ],
+     "open": [
       "links"
      ]
     }

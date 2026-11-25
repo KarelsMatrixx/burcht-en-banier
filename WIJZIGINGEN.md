@@ -1267,3 +1267,8 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Knop "Release crew": eerste druk maakt de ingenieurs vrij en zet de trebuchet stil, tweede druk op een stille trebuchet zonder bedieners breekt hem af. Je krijgt een deel van de kosten terug (fractie van economie.geefTerug, na te lezen).
 - Limiet van 2 trebuchets tegelijk blijft; afbreken maakt dus ruimte voor een nieuwe.
 - Test: tests/bemannen101.mjs.
+
+## 0.106.0: Greyford, het rode kasteel is inloopbaar
+- De poort van het rode kasteel is nu een open doorgang (3 breed, ring.open), zonder torens ernaast. Is muur 3 doorbroken, dan loop je het kasteel in.
+- Olietorens bij het kasteel: van 12 naar 4. Nieuwe ringoptie `moord: "hoeken"`: alleen de vier hoektorens hebben olie, de rest is gewone torens. De drie muren in de kloof en de schansen zijn niet aangeraakt.
+- Test: tests/kasteelopen105.mjs.
