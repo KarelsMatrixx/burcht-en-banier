@@ -1288,3 +1288,8 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Gevecht bij gelijke kosten (tests/balans.mjs, goud + planken + 2 per koper): tegen boogschutters van +25 naar -17, tegen ridders van -33 naar -54 (de boogschutter: -51). Waarden zijn schattingen van Claude.
 - Ook rood wordt iets zwakker: kruisbogen in zijn leger (vanaf aanval 3) en op de torens van het rotseiland in Greyford, en de 12 van Ottger in de proloog (de lijfwacht van Karel valt iets later, de ontvoering komt een paar seconden later).
 - Tests: soldaten26 (16 in plaats van 18), proloog77 wacht tot de lijfwacht gevallen is, torens107 vraagt alleen nog dat er een toren valt. Bestaande fouten onveranderd: soldaten26 knoppen, soldaten36 werkers, ruiter68 (2).
+
+## 0.109.0: windzangers al in Greyford beschikbaar
+- De melding van Bartholt in level 7 ("wind singers wait at your Mystic Lodge") klopte niet: de windzanger was de beloning van level 7 en dus pas vanaf level 8 op te leiden.
+- Beloning verplaatst: windzanger nu in de beloning van level 6 (Giant's Spine), level 7 geeft nog alleen de moordgatentoren. Vanaf level 7 kun je ze opleiden in de Mystic Lodge; vanaf level 8 blijft alles gelijk.
+- Tests level7_72 en level8_74 aangepast.

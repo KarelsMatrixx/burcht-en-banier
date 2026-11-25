@@ -1,5 +1,5 @@
 // Level 7 Greyford (versie 0.73.0): speelbaar, drie poorten, rood heeft zwaardvechters en
-// later windzangers; de windzanger is de beloning (vanaf level 8 op te leiden in de Mystic Lodge)
+// later windzangers; de windzanger is de beloning van level 6 (vanaf level 7 op te leiden in de Mystic Lodge)
 // en blaast een rode wachter van zijn muur.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
 import { autoVerder } from './hulp_beeld.mjs';
@@ -28,7 +28,7 @@ const a = await p.evaluate(() => { const s = window.spel; const tel = {}; for (c
 check('level 7 geladen', a.modus.soort === 'campagne' && a.modus.missie === 7, JSON.stringify(a.modus));
 check('drie poorten van rood (en jouw poort)', a.poorten >= 3, a.poorten);
 check('landschap kloof', a.landschap === 'berg', a.landschap);
-check('windzanger nog niet op te leiden in level 7', !!a.wind, a.wind);
+check('windzanger is in level 7 beschikbaar (geen unlock-reden)', !a.wind || !/unlock|later|not yet|win /i.test(a.wind), a.wind);
 check('rood heeft wachters op de muren', a.wachters >= 6, a.wachters);
 // ---- Vrij spel (alles vrij, gewone ringmuur zonder gracht): leid een windzanger op en zet hem bij een rode wachter
 await p.goto('http://localhost:8297/?x=' + Date.now()); await wacht();

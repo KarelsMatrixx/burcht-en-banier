@@ -31,7 +31,7 @@ check('de sluis ligt bij het water', a.water);
 check('sluis heeft 700 leven', a.leven === 700, a.leven);
 check('rode koning beschermd zolang de sluis staat', a.beschermd === true);
 check('saboteur nog niet op te leiden in level 8', !!a.sab, a.sab);
-check('windzanger wel (beloning level 7)', !a.wind || !/unlock|later|not yet|win /i.test(a.wind), a.wind);
+check('windzanger wel (beloning level 6)', !a.wind || !/unlock|later|not yet|win /i.test(a.wind), a.wind);
 // De koning raken: hij kan niet vallen
 const k1 = await p.evaluate(() => { const s = window.spel; const kon = s.strijd.vijanden().find((e) => e.krijg && e.krijg.def.koning) || s.strijd.koningVan?.(2);
   return { gevonden: !!kon }; });

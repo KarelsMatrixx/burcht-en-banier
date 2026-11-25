@@ -676,7 +676,8 @@
    "uit": "Lambrecht falls beside his own masterpiece, the mallet still in his hand. Bartholt kneels and finds a roll of waxed parchment inside his coat: the plans for the trebuchet, every beam and counterweight drawn to scale. \"It was never meant to end with him alive, Sire. But his craft does not have to die with him. Train two engineers at your siege workshop, stock wood and stone, and plant the machine where it can see the walls. And guard it well: a trebuchet cannot run.\"",
    "wessel": "A wooden trebuchet the size of two hands, its counterweight a bag of pebbles.",
    "beloning": [
-    "ingenieur"
+    "ingenieur",
+    "windzanger"
    ],
    "rood": {
     "legerMax": 150,
@@ -861,7 +862,6 @@
    "uit": "In the archive lies a letter from Ottger, sent three times and never answered: \"My daughter is nine winters dead and I have one blood left. Send the boy, Karel, before I die too.\" Gesina says: \"You knew.\" Karel: \"He could have asked without an army.\"",
    "wessel": "A letter to his father: \"Grandpa is old. He cries when he thinks I am asleep.\"",
    "beloning": [
-    "windzanger",
     "moordgatentoren"
    ],
    "rood": {
