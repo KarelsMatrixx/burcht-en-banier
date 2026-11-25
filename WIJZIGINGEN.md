@@ -1340,3 +1340,13 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - `beelden/portretten/rutger.jpg` (256 x 256): Rutger de Gekke met hoornhelm, vlechtbaard, berenvel en bijl (Gemini, door Karel gemaakt). Vervangt de dijkgraaf.
 - `beelden/verhaal/level08.webp` (1024 x 434): Karel aan zijn kust, de witte dijk met het Vikingdorp (langhuizen, hopvelden, kroegen), Rutger met zijn berserkers en zes drakenschepen onderweg. Vervangt het oude beeld met de sluis.
 - Alleen beelden en versienummer; geen code. De verhaaltekst van level 8 (campagne.json) is al die van 0.109.0.
+## 0.111.0: Greyford, de aanvallen zijn milder
+- Wens van Karel (25 november): de waves in Greyford waren nog iets te zwaar.
+- rood.rooster in campagne.json (level 7): eerste aanval na 260 s (was 200), daarna elke 190 s (was 150), krimp 0,96 (was 0,94), minimaal 110 s (was 80). Aanvalsgrootte: basis 5 (was 6), per aanval +2 (was 2,5), jouw sterkte thuis telt 0,75 (was 1), veldleger 0,2 (was 0,25), minimaal 6 (was 8), hooguit 40 (was 60). Ruwweg een kwart kleinere aanvallen en een derde meer tijd ertussen; schattingen van Claude, niet gespeeld.
+- Niet aangeraakt: soorten aanval, ruiters, uitval, olietorens. Het kan nog zachter via dezelfde getallen.
+
+## 0.112.0: Greyford, de koningsmoord (ninja's) is milder
+- Wens van Karel (25 november): de aanval waarin voor het eerst sluipmoordenaars komen was kansloos. Eerder in deze sessie had ik per ongeluk The Fen bekeken; die wijziging is teruggedraaid, level 4 is ongewijzigd.
+- Koningsmoord komt pas vanaf aanval 4 (was 3): nieuwe rooster-optie moordVanaf (Greyford 4).
+- Samenstelling: sluipmoordenaars 2 tot 4 (was 3 tot 6), gewoon voetvolk 0,3 van het gewicht (was 0,45), 2 ladders (was 3). Schattingen van Claude, niet gespeeld.
+- Eerder (0.111.0) was het hele rooster van Greyford al kleiner en trager gemaakt.

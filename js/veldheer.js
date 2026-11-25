@@ -202,8 +202,8 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const r = RO();
     const lijst = (r.soorten || ['bestorming']).filter((s) => NAAM[s]);
     if (nr === 1 || lijst.length < 2) return lijst.includes('bestorming') ? 'bestorming' : lijst[0];
-    // Een overval pas vanaf aanval 2, een koningsmoord pas vanaf aanval 3.
-    const keuze = lijst.filter((s) => s !== vorigeSoort && !(s === 'overval' && nr < 2) && !(s === 'koningsmoord' && nr < 3));
+    // Een overval pas vanaf aanval 2, een koningsmoord pas vanaf aanval 3 (rooster.moordVanaf).
+    const keuze = lijst.filter((s) => s !== vorigeSoort && !(s === 'overval' && nr < 2) && !(s === 'koningsmoord' && nr < (r.moordVanaf || 3)));
     return keuze[Math.floor(toeval() * keuze.length)];
   }
   // Wat rood meestuurt bij deze soort aanval (in gewichten, ridder = 1).
@@ -231,9 +231,9 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
       return inh;
     }
     if (soort === 'koningsmoord') {
-      voeg('sluipmoordenaar', klem(gewicht * 0.4 / 1.5, 3, 6));
-      vul(gewicht * 0.45);
-      voeg('ladder', 3);
+      voeg('sluipmoordenaar', klem(gewicht * 0.3 / 1.5, 2, 4));
+      vul(gewicht * 0.3);
+      voeg('ladder', 2);
       return inh;
     }
     if (soort === 'brand') {
