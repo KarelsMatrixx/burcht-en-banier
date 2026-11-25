@@ -1350,3 +1350,9 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Koningsmoord komt pas vanaf aanval 4 (was 3): nieuwe rooster-optie moordVanaf (Greyford 4).
 - Samenstelling: sluipmoordenaars 2 tot 4 (was 3 tot 6), gewoon voetvolk 0,3 van het gewicht (was 0,45), 2 ladders (was 3). Schattingen van Claude, niet gespeeld.
 - Eerder (0.111.0) was het hele rooster van Greyford al kleiner en trager gemaakt.
+
+## 0.113.0: Greyford, de eerste drie aanvallen op de helft
+- Wens van Karel (25 november): de eerste drie aanvallen moeten maar de helft van de soldaten zijn.
+- Nieuwe rooster-optie beginFactor (Greyford: 0,5 voor aanval 1, 2 en 3), een extra factor bovenop de aanloop. Aanval 4 en verder ongewijzigd. Minimale aanvalsgrootte 4 (was 6), anders hield de ondergrens de eerste aanval op te veel mannen.
+- Ladders en rammen komen er nog bij. Meting bij een kasteel zonder leger: aanval 1 en 2 op 4 man, aanval 3 op 5 (zonder factor: 4, 4, 10); met een groter leger thuis halveert het gewoon. Niet gespeeld.
+- Test: rooster96 (19).

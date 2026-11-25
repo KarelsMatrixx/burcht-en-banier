@@ -25,8 +25,11 @@ const a = await p.evaluate(() => {
   const vroeg = new Set(); for (let i = 0; i < 40; i++) vroeg.add(v.kiesSoort(2));
   uit.vroeg = [...vroeg];
   uit.g1 = v.aanvalsGrootte(1); uit.g4 = v.aanvalsGrootte(4);
+  const ro = v.rooster(); uit.met = [1, 2, 3, 4].map((n) => v.aanvalsGrootte(n)); const bf = ro.beginFactor; ro.beginFactor = null; uit.zonder = [1, 2, 3, 4].map((n) => v.aanvalsGrootte(n)); ro.beginFactor = bf;
   return uit;
 });
+console.log('aanvalsgrootte met/zonder beginFactor', JSON.stringify([a.met, a.zonder]));
+check('eerste drie aanvallen ongeveer de helft', [0, 1, 2].every((k) => a.met[k] <= Math.max(4, Math.ceil(a.zonder[k] * 0.55))) && a.met[3] === a.zonder[3], JSON.stringify([a.met, a.zonder]));
 check('Greyford heeft een aanvalsrooster', a.rooster && a.stand && a.stand.volgende > 0, JSON.stringify(a.stand));
 check('geen sparen: rood koopt alleen een kleine reserve voor uitvallen', a.doel <= 12, a.doel);
 check('bestorming: ladders en een ram', a.soorten.bestorming.ladder >= 1 && a.soorten.bestorming.ram >= 1, JSON.stringify(a.soorten.bestorming));

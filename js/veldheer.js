@@ -196,7 +196,9 @@ export function maakVeldheer({ regels, kaart, leger, strijd, perSeconde, opMeldi
     const g = (r.basis || 8) + (r.perAanval || 2) * (nr - 1) + (r.thuis ?? 1) * thuis + (r.veld ?? 0.25) * veld;
     // De eerste aanvallen lopen op: 40%, 60%, 80%, daarna alles.
     const aanloop = Math.min(1, 0.4 + (nr - 1) * 0.2);
-    return klem(g * aanloop * piek(nr), r.min || 6, r.max || 40);
+    // rooster.beginFactor: een extra factor voor de eerste aanvallen, bijvoorbeeld [0.5, 0.5, 0.5].
+    const begin = (r.beginFactor && r.beginFactor[nr - 1]) ?? 1;
+    return klem(g * aanloop * piek(nr) * begin, r.min || 6, r.max || 40);
   }
   function kiesSoort(nr) {
     const r = RO();
