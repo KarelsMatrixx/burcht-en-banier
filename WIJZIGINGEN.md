@@ -1374,3 +1374,8 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Rutger staat vooraan op de dijk, het stuk dat het dichtst bij jou ligt (golven.js), en schreeuwt tussen de golven door, met een tekstballon en een melding.
 - Twee eilandjes in de zeestraat (kaarten.json `eilandjes`, kaart.js) met een kist. Tik het eilandje aan: je schip van jouw haven vaart erheen en terug (planken en goud). Zonder eigen haven meldt het spel dat je er een nodig hebt. Het ophalen wordt niet bewaard bij herladen.
 - Test: tests/zeeleven112.mjs (17).
+## 0.115.0: ruiters van rood liepen de kaart af
+- Gemeld door Karel (25 november, schermafbeelding): tijdens een aanval stonden twee ruiters van rood in de zwarte leegte buiten de kaart ("Attack!" bleef staan).
+- Oorzaak (nagebootst en gemeten: een ruiter kwam op y 181 terecht bij een kaart van 96 hoog): ruiters jagen op je koning. Staat die op het dak van je burcht, dan eindigt de route op een dakvak (vak + N). Wie de muur niet op kan, las dat in eenheden.js als een gewoon vak en liep naar een plek ver buiten de kaart.
+- Fix (eenheden.js): wie de muur niet op kan stopt bij zo'n routestap, en een vangnet houdt iedereen binnen de kaartrand. De ruiters blijven nu bij de burcht staan in plaats van te verdwijnen.
+- Test: tests/buitenkaart113.mjs (faalde zonder de fix: 146 metingen buiten de kaart, nu 0). trebuchet80 liep achter sinds 0.109.0 (beloning level 6 heeft nu ook de windzanger): verwachting aangepast.

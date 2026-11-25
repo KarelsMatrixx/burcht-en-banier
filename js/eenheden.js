@@ -146,6 +146,9 @@ export function maakEenheden(kaart, wegvinder, muurHoogte, hoogteOp = () => muur
       let rest = e.snelheid * dt;
       while (rest > 0 && e.stap < e.pad.length) {
         let vak = e.pad[e.stap];
+        // Een route die op een dak of muurtop eindigt (vak + N) is niets voor wie de muur niet op kan, zoals een
+        // ruiter van rood op weg naar je koning op het dak van je burcht: hij liep anders de kaart af, de leegte in.
+        if (vak >= N && !e.lagen) { e.pad = null; e.stap = 0; rest = 0; break; }
         // Voor wie de muur op kan: vak + N is boven op de muur.
         const boven = e.lagen && vak >= N;
         if (boven) vak -= N;
@@ -177,7 +180,9 @@ export function maakEenheden(kaart, wegvinder, muurHoogte, hoogteOp = () => muur
         e.loopt = true;
       }
 
-      if (e.stap >= e.pad.length) {
+      // Nooit van de kaart af (een vangnet: niemand hoort buiten de rand te staan).
+      if (e.x < 0.01 || e.y < 0.01 || e.x > B - 0.01 || e.y > N / B - 0.01) { e.x = Math.max(0.01, Math.min(B - 0.01, e.x)); e.y = Math.max(0.01, Math.min(N / B - 0.01, e.y)); }
+      if (e.pad && e.stap >= e.pad.length) {
         if (e.ronde) {
           e.ronde.reverse();   // wachter: omkeren en teruglopen
           e.pad = e.ronde;

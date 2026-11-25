@@ -39,7 +39,7 @@ check('steenwachter niet meer op te leiden', data.steen.kazerne === 'geen', data
 check('0.81.1: bereik van de trebuchet 28 (twee keer zo groot)', data.treb.bereik === 28, data.treb.bereik);
 const standen = await p.evaluate(async () => { const m = await import('./js/machines.js'); const set = m.MACHINES.trebuchet('x', { kleur: '#2f5fc4' }); return set.houdingen.schiet.rechts.length; });
 check('0.81.1: de arm heeft 24 standen (12 worp, 12 terug) voor een soepele beweging', standen === 24, standen);
-check('beloning level 6 is de ingenieur', data.beloning.length === 1 && data.beloning[0] === 'ingenieur', JSON.stringify(data.beloning));
+check('beloning level 6 bevat de ingenieur', data.beloning.includes('ingenieur'), JSON.stringify(data.beloning));
 check('geen steenwachter meer in level 6', !data.steenInLevel);
 check('rood zet ingenieurs in (level 6)', data.ingInRood);
 
