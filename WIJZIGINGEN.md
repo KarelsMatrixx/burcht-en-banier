@@ -1388,3 +1388,6 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Gids (gids.js): nieuwe taaksoort `voorraad`. Economie: `aantalVerkocht()`.
 - Fout opgelost (ui.js): het handelpaneel opende onder de vinger en de klik die de browser na de tik stuurt landde op Close, waardoor het paneel meteen weer dicht ging. Binnen 400 ms na openen tellen Close en de verkoopknoppen niet.
 - Test: tests/handelles116.mjs (20). haven106, handel, opslag20 blijven groen. Engelse teksten van Bartholt: na te lezen. Niet op een iPhone gezien.
+
+## 0.116.1: handelles zonder tweede kaartje
+- Karel (25 november): het kaartje van Bartholt over de extra kar hout hoeft niet. Na het bouwen wijst de gids meteen de storehouse aan; de extra 10 hout komt stil. tests/handelles116.mjs: 19 goed.

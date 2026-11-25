@@ -58,10 +58,7 @@ if (await p.evaluate(() => document.getElementById('knop-hamer').classList.conta
 await p.waitForTimeout(600);
 const gebouwd = await p.evaluate(() => !!(window.spel.bouwer.eigenBouwwerken().voorraadkamer || []).length);
 check('voorraadkamer gebouwd', gebouwd, JSON.stringify(plek));
-check('kaartje 2 (tik je voorraadkamer)', await wachtTot(() => { const k = document.getElementById('gids-kaart'); return k && !k.hidden; }, 6000));
-const houtVoorKar = await p.evaluate(() => window.spel.economie.voorraad.hout);
-await tikOp('#gids-kaart button');
-check('extra kar hout erbij', await p.evaluate((h) => window.spel.economie.voorraad.hout === h + 10, houtVoorKar));
+check('geen kaartje 2', await p.evaluate(() => document.getElementById('gids-kaart').hidden));
 check('doel: voorraad aantikken', await p.evaluate(() => window.spel.gids.doel().soort === 'voorraad'));
 await p.waitForTimeout(500);
 await tikOp('#gids-plek');

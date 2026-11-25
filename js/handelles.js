@@ -77,13 +77,11 @@ export function maakHandelLes({ gids, bouwer, bouwwerken, kaart, economie, regel
   function naarTik() {
     gids.stop();
     sluitPanelen();   // het bouwmenu dicht, anders bouwt een tik op de kamer er nog een
-    fase = 'kaart2';
-    gids.kaart({ ...BARTHOLT, tekst: `I also had the woodcutters bring an extra cart of ${per} wood, so you lose nothing. Tap your storehouse and sell it.`, knop: 'Show me ›' }, () => {
-      economie.lever(WAAR, per);   // de extra kar: na de les heb je nog alles wat je had
-      verkochtBij = economie.aantalVerkocht();
-      fase = 'tik';
-      richtOpKamer();
-    });
+    // Geen kaartje meer (Karel, 25 nov): de extra kar hout komt stil, de gids wijst meteen de kamer aan.
+    economie.lever(WAAR, per);   // de extra kar: na de les heb je nog alles wat je had
+    verkochtBij = economie.aantalVerkocht();
+    fase = 'tik';
+    richtOpKamer();
   }
 
   function richtOpKamer() {
