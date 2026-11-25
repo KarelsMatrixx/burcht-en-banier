@@ -15,6 +15,7 @@
 //   doelPerStap   erbij op zijn aanvalsdoel per stap    (0,2 plus 0,06 per level)
 //   wachtersMax   extra wachters op zijn muren          (1 plus een per twee levels)
 //   burgersMax    burgers van rood op de kaart          (6 plus 2 per level)
+//   dorpelingen   zoveel burgers van rood lopen vanaf het begin rond zijn dorp (standaard 0; level 8, het Vikingdorp)
 //   werkvolk      rode ingenieurs die tussen de werven en het decor lopen en met de hamer werken (standaard 0; level 6)
 
 import { OBJECT, GROND } from './kaart.js';
@@ -31,6 +32,7 @@ export function maakGroei({ kaart, strijd, eenheden, wegvinder, niveau = 3, conf
     wachtersMax: 1 + Math.floor(n / 2),
     burgersMax: 6 + 2 * n,
     werkvolk: 0,
+    dorpelingen: 0,
     ...(config || {}),
   };
   const B = kaart.breedte;
@@ -88,6 +90,22 @@ export function maakGroei({ kaart, strijd, eenheden, wegvinder, niveau = 3, conf
       }
     }
     return beste;
+  }
+
+  // Dorpelingen (level 8): vanaf het begin lopen er burgers rond het dorp van rood.
+  let dorpGemaakt = false;
+  function maakDorpelingen() {
+    dorpGemaakt = true;
+    let nog = Math.max(0, Math.min(80, Math.round(c.dorpelingen) || 0));
+    for (let poging = 0; nog > 0 && poging < 600; poging++) {
+      const x = midden.x + Math.round((toeval() * 2 - 1) * 9);
+      const y = midden.y + Math.round((toeval() * 2 - 1) * 9);
+      if (Math.hypot(x - midden.x, y - midden.y) < 3 || !wegvinder.isVrij(x, y, 1)) continue;
+      const e = eenheden.maakWerker(y * B + x, 1, BURGER[burgers.length % 4], 0.45 + toeval() * 0.25);
+      e.burgerVanRood = true;
+      burgers.push({ e, thuis: { x, y }, wacht: toeval() * 5 });
+      nog--;
+    }
   }
 
   function maakBurger(vak) {
@@ -227,6 +245,7 @@ export function maakGroei({ kaart, strijd, eenheden, wegvinder, niveau = 3, conf
     stap(dt) {
       if (strijd.rood().leven <= 0) return;
       klok += dt;
+      if (!dorpGemaakt && c.dorpelingen > 0) maakDorpelingen();
       if (!volkGemaakt && c.werkvolk > 0) maakVolk();
       volkStap(dt);
       if (klok >= c.elke && stappen < c.max) { klok -= c.elke; groeiStap(); }

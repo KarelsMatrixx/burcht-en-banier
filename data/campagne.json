@@ -999,7 +999,9 @@
    "portret": "rutger",
    "profiel": "zwaar",
    "kaart": "witte_dijk",
+   "zeeleven": true,
    "havenLes": true,
+   "begin": { "hout": 140, "planken": 40 },
    "landschap": "polder",
    "punt": {
     "x": 76.1,
@@ -1055,6 +1057,7 @@
      "hout": 20,
      "steen": 20
     },
+    "groei": { "dorpelingen": 36, "burgersMax": 36, "max": 0, "wachtersMax": 0, "doelPerStap": 0 },
     "geenKoning": true,
     "garnizoen": {
      "bijlridder": 8,
@@ -1068,9 +1071,9 @@
     "eerste": 180,
     "tussen": 110,
     "begin": 8,
-    "erbij": 4,
-    "max": 44,
-    "perSchip": 10,
+    "erbij": 7,
+    "max": 72,
+    "perSchip": 6,
     "vaart": 40,
     "leger": {
      "bijlridder": 3,

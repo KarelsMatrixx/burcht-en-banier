@@ -31,6 +31,7 @@ import { maakGids } from './gids.js';
 import { maakHaven } from './haven.js';
 import { maakHavenLes } from './havenles.js';
 import { maakGolven } from './golven.js';
+import { maakZeeleven } from './zeeleven.js';
 import { maakFiguranten } from './figuranten.js';
 import { maakSlachting } from './slachting.js';
 import { maakDoel } from './doel.js';
@@ -139,6 +140,7 @@ async function start() {
   const regels = await laadEconomie();
   // Vrij spel of een missie: de regels van die modus over de gewone regels heen.
   pasProfielToe(regels, profielVan(missies, modus), missie && missie.rood);
+  if (missie && missie.begin) pasProfielToe(regels, { begin: missie.begin });   // eigen beginvoorraad van dit level (White Dike: hout voor de haven en voor de rest)
   if (ontwerp && ontwerp.hoog) regels.strijd.roodMuurHoog = true;   // te hoog voor ladders
   // De proloog: geen winst of verlies, geen rode heer in zijn burcht (js/proloog.js).
   if (missie && missie.proloog) regels.strijd.proloog = true;
@@ -276,7 +278,8 @@ async function start() {
   const staat = {
     gekozen: null, schim: null, eenheden: eenheden.lijst, doel: null, kader: null, nacht: () => (proloog ? proloog.nacht() : 0),
     effecten: strijd.effecten, balken: strijd.balken,
-    schepen: () => (doel && doel.schepen ? [...haven.schepen(), ...doel.schepen()] : haven.schepen()),
+    schepen: () => [...haven.schepen(), ...(doel && doel.schepen ? doel.schepen() : []), ...(zeeleven ? zeeleven.schepen() : [])],
+    zee: null,
     ladders: () => strijd.ladders(),
   };
 
@@ -1171,6 +1174,15 @@ async function start() {
     kijkNaar: (x, y) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); camera.kijkNaar(w.x, w.y); },
     kaartGewijzigd,
   }) : null;
+  // Zeeleven (0.112.0, White Dike): walvissen, meeuwen, vissersboten, mist, avondlicht, Rutger op de dijk, eilandjes met een kist.
+  const zeeleven = missie && missie.zeeleven ? maakZeeleven({
+    kaart, economie, haven,
+    melding: (t, toon) => ui.toonMelding(t, { soort: /^Rutger/.test(t) ? 'vijand' : 'uitleg', toon: !!toon }),
+    volgendeGolf: () => (doel && doel.volgende ? doel.volgende() : Infinity),
+    rutger: () => (doel && doel.rutgerThuis ? doel.rutgerThuis() : null),
+    onderweg: () => (doel && doel.stand ? doel.stand().onderweg : 0),
+  }) : null;
+  staat.zee = zeeleven;
   // Je poorten gaan vanzelf dicht als er vijandelijke soldaten dichtbij komen (js/poortwacht.js).
   const poortwacht = maakPoortwacht({
     kaart, wegvinder, vijanden: () => strijd.vijanden(), kaartGewijzigd: (v) => kaartGewijzigd(v),
@@ -1309,6 +1321,8 @@ async function start() {
           return;
         }
       }
+      // Zeeleven: de gelukkige walvis en de kist op het eilandje.
+      if (zeeleven && zeeleven.tik(x, y)) return;
       // De kazerne aangetikt: daar leid je soldaten op.
       const aangetikt = binnenKaart(kaart, x, y) ? bouwer.werkOp(x, y) : null;
       // Proloog: een gebouw aantikken opent alleen een paneel als de les erom vraagt
@@ -1568,6 +1582,7 @@ async function start() {
       if (!(havenLes && havenLes.actief())) verhaal.stap(dt, verhaalStand);   // havenles: ook de berichten wachten
       if (proloog) { if (!leest) proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); ui.beperkKnoppen(proloog.mag); if (kazerneVak >= 0 && !proloog.mag('kazerne')) sluitKazerne(); }   // opleidles klaar: het kazernepaneel dicht
       if (doel && !(havenLes && havenLes.actief())) doel.stap(dt);   // havenles: de golven wachten
+      if (zeeleven) zeeleven.stap(dt);
       if (hinderlaag && !strijd.uitslag()) hinderlaag.stap(dt);
       if (reserve) reserve.stap(dt);
       if (sluipers) sluipers.stap(dt);
@@ -1619,7 +1634,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { haven, havenLes, gids, hinderlaag, reserve, sluipers, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
+  window.spel = { zeeleven, haven, havenLes, gids, hinderlaag, reserve, sluipers, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

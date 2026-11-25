@@ -362,9 +362,10 @@
   },
   "witte_dijk": {
    "naam": "The White Dike",
-   "breedte": 64,
-   "hoogte": 64,
+   "breedte": 96,
+   "hoogte": 96,
    "zaad": 8808,
+   "eilandjes": 2,
    "water": 0.2,
    "zand": 0.3,
    "bos": 0.66,
@@ -373,7 +374,8 @@
     0.8
    ],
    "vorm": {
-    "soort": "polder",
+    "soort": "eilanden",
+    "straat": 0.1,
     "zee": 0.2
    },
    "vindplaatsen": [
@@ -396,32 +398,7 @@
      "straal": 3.2
     }
    ],
-   "midden": [
-    {
-     "soort": "WATER",
-     "dx": -6,
-     "dy": -6,
-     "straal": 2.2
-    },
-    {
-     "soort": "WATER",
-     "dx": 6,
-     "dy": 6,
-     "straal": 2.2
-    },
-    {
-     "soort": "WATER",
-     "dx": -4,
-     "dy": 5,
-     "straal": 1.8
-    },
-    {
-     "soort": "WATER",
-     "dx": 4,
-     "dy": -5,
-     "straal": 1.8
-    }
-   ],
+   "midden": [],
    "witteDijk": {
     "straal": 15
    },
@@ -434,6 +411,66 @@
       1,
       1
      ]
+    },
+    {
+     "dx": 14,
+     "dy": 8,
+     "straal": 2.1,
+     "naar": [
+      1,
+      1
+     ],
+     "alleenRood": true
+    },
+    {
+     "dx": 6,
+     "dy": 11,
+     "straal": 2.1,
+     "naar": [
+      1,
+      1
+     ],
+     "alleenRood": true
+    },
+    {
+     "dx": 21,
+     "dy": 2,
+     "straal": 2.1,
+     "naar": [
+      1,
+      1
+     ],
+     "alleenRood": true
+    },
+    {
+     "dx": -8,
+     "dy": -9,
+     "straal": 2.1,
+     "naar": [
+      -1,
+      -1
+     ],
+     "alleenRood": true
+    },
+    {
+     "dx": -4,
+     "dy": -16,
+     "straal": 2.1,
+     "naar": [
+      -1,
+      -1
+     ],
+     "alleenRood": true
+    },
+    {
+     "dx": -12,
+     "dy": -2,
+     "straal": 2.1,
+     "naar": [
+      -1,
+      -1
+     ],
+     "alleenRood": true
     }
    ]
   },

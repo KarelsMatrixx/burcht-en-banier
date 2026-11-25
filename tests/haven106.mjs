@@ -49,8 +49,8 @@ const kaartInfo = await p.evaluate(() => {
   return { water, roodHaven, totaal, verbonden: K.verbonden };
 });
 check('water binnen je bouwgebied', kaartInfo.water > 20, JSON.stringify(kaartInfo));
-check('rode haven als decor', kaartInfo.roodHaven === 1);
-check('land tussen de burchten blijft verbonden', kaartInfo.verbonden === true);
+check('rode havens als decor (veel)', kaartInfo.roodHaven >= 6, String(kaartInfo.roodHaven));
+check('twee eilanden: geen land tussen de burchten', kaartInfo.verbonden === false);
 check('Port in het bouwmenu ontgrendeld', await p.evaluate(() => !!document.querySelector('#bouw-knoppen [data-sleutel="haven"]')));
 check('kroeg nog niet in level 8', await p.evaluate(() => !document.querySelector('#bouw-knoppen [data-sleutel="kroeg"]')));
 

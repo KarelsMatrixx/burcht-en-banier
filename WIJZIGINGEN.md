@@ -1356,3 +1356,21 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Nieuwe rooster-optie beginFactor (Greyford: 0,5 voor aanval 1, 2 en 3), een extra factor bovenop de aanloop. Aanval 4 en verder ongewijzigd. Minimale aanvalsgrootte 4 (was 6), anders hield de ondergrens de eerste aanval op te veel mannen.
 - Ladders en rammen komen er nog bij. Meting bij een kasteel zonder leger: aanval 1 en 2 op 4 man, aanval 3 op 5 (zonder factor: 4, 4, 10); met een groter leger thuis halveert het gewoon. Niet gespeeld.
 - Test: rooster96 (19).
+
+
+## 0.114.0 (deel 1, was 0.111.1): White Dike als twee eilanden, veel rode havens, veel schepen, meer hout, burgers op het rode eiland
+- Kaart `witte_dijk` (kaarten.json): 96 x 96 (was 64 x 64). Nieuwe vorm `eilanden` (kaart.js): een brede zeestraat diagonaal over het midden en zee rond de twee eilanden. Jouw eiland en dat van rood hangen niet aan elkaar; stap 5c (het pad tussen de burchten) is voor deze vorm uit. `kaart.eilanden` is waar, `kaart.verbonden` onwaar. De losse plassen in het midden zijn weg.
+- Rode havens: zes extra bekkens met havenkade, alleen voor rood (`alleenRood` in kaarten.json), samen met de oude zeven. Schepen van rood liggen er als decor.
+- Golven (golven.js): elk schip vertrekt van een andere rode haven (breedte eerst per haven), tot vijf landingsplekken bij jouw kust (was drie), tot vier schepen per landing. Level 8: 6 man per schip, begin 8, erbij 7 per golf, maximum 72: golf 10 is ongeveer 12 schepen (was 5).
+- Beginvoorraad per level (`begin` in campagne.json, main.js): level 8 start met 140 hout en 40 planken (was 60 en 20), zodat de haventutorial je hout niet opmaakt. Meer dan 140 past niet: de burcht houdt 150 vast.
+- Rode burgers: `rood.groei.dorpelingen` (roodgroei.js): 36 burgers lopen vanaf het begin rond het Vikingdorp. De groei van rood zelf (nieuwe gebouwen, wachters) staat uit in dit level.
+- Tests: tests/eilanden111.mjs (10), haven106 aangepast (geen verbonden land meer, 6 of meer rode havens). Alle getallen zijn schattingen (na te lezen). Niet op een iPhone gezien; 96 x 96 kan op een oudere iPhone zwaarder lopen.
+
+## 0.114.0 (deel 2, was 0.112.0)
+- White Dike krijgt zeeleven (nieuw js/zeeleven.js, aan via `zeeleven: true` in campagne.json): alles is decor behalve de gelukkige walvis en de kist.
+- Walvissen springen af en toe langs de kust op, met plons, kringen in het water en een melding. Een walvis bij jouw kust blijft even zichtbaar: tik hem aan voor 25 voedsel (hoogstens 3 keer per level).
+- Meeuwen cirkelen boven alle havens. Bij elke rode haven vaart een kleine rode vissersboot heen en weer (tekenaar: `schaal` per schip).
+- Zeemist trekt af en toe over het water; vlak voor een golf (35 seconden ervoor) kleurt het scherm oranje (avondlicht).
+- Rutger staat vooraan op de dijk, het stuk dat het dichtst bij jou ligt (golven.js), en schreeuwt tussen de golven door, met een tekstballon en een melding.
+- Twee eilandjes in de zeestraat (kaarten.json `eilandjes`, kaart.js) met een kist. Tik het eilandje aan: je schip van jouw haven vaart erheen en terug (planken en goud). Zonder eigen haven meldt het spel dat je er een nodig hebt. Het ophalen wordt niet bewaard bij herladen.
+- Test: tests/zeeleven112.mjs (17).

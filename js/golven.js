@@ -13,7 +13,7 @@
 //
 // De stand staat in localStorage, zodat herladen verder telt. Was een golf onderweg, dan vaart hij opnieuw uit.
 
-import { GROND } from './kaart.js';
+import { GROND, OBJECT } from './kaart.js';
 
 const SLEUTEL = 'burcht-banier.golven.';
 const BUREN = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -65,16 +65,17 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
   // --- De zeeweg: van het water bij het dorp naar landingsplekken bij jouw kust -----------------
   const rood = kaart.start[1];
   const jij = kaart.start[0];
-  const vorige = new Int32Array(B * H).fill(-2);
-  {
+  // Elke haven van rood (decor aan zijn kade) is een startplek. Per haven een eigen zeekaart (breedte eerst),
+  // zodat de schepen van veel verschillende kaden vertrekken. Zonder havens: het water rond zijn dorp.
+  const bfs = (bronnen) => {
+    const vorige = new Int32Array(B * H).fill(-2);
     const rij = [];
-    for (let y = rood.y - 14; y <= rood.y + 14; y++) {
-      for (let x = rood.x - 14; x <= rood.x + 14; x++) {
-        if (!isWater(x, y)) continue;
-        const i = y * B + x;
-        vorige[i] = -1;
-        rij.push(i);
-      }
+    for (const [x, y] of bronnen) {
+      if (!isWater(x, y)) continue;
+      const i = y * B + x;
+      if (vorige[i] !== -2) continue;
+      vorige[i] = -1;
+      rij.push(i);
     }
     for (let k = 0; k < rij.length; k++) {
       const i = rij[k];
@@ -88,14 +89,29 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
         rij.push(j);
       }
     }
+    return vorige;
+  };
+  const havens = [];
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < B - 1; x++) {
+      const i = y * B + x;
+      if (kaart.object[i] !== OBJECT.HAVEN || kaart.eigenaar[i]) continue;
+      const bron = BUREN.map(([dx, dy]) => [x + dx, y + dy]).filter(([wx, wy]) => isWater(wx, wy));
+      if (bron.length) havens.push({ x, y, vorige: bfs(bron) });
+    }
   }
-  const routeNaar = (i) => {
+  if (!havens.length) {
+    const bron = [];
+    for (let y = rood.y - 14; y <= rood.y + 14; y++) for (let x = rood.x - 14; x <= rood.x + 14; x++) if (isWater(x, y)) bron.push([x, y]);
+    havens.push({ x: rood.x, y: rood.y, vorige: bfs(bron) });
+  }
+  const routeNaar = (vorige, i) => {
     const r = [];
-    for (let k = i; k >= 0 && r.length < 400; k = vorige[k]) r.unshift({ x: (k % B) + 0.5, y: Math.floor(k / B) + 0.5 });
+    for (let k = i; k >= 0 && r.length < 600; k = vorige[k]) r.unshift({ x: (k % B) + 0.5, y: Math.floor(k / B) + 0.5 });
     return r;
   };
   // Landingsplekken: droog land aan bevaarbaar water, 9 tot 22 tegels van jouw burcht, over land
-  // bereikbaar voor rood. Tot drie, ver uit elkaar.
+  // bereikbaar voor rood. Tot vijf, ver uit elkaar.
   const landingen = [];
   {
     const thuisVak = (() => {
@@ -108,17 +124,17 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
         if (isWater(x, y) || !wegvinder.isVrij(x, y, 1)) continue;
         const d = Math.hypot(x - jij.x, y - jij.y);
         if (d < 9 || d > 22) continue;
-        const water = BUREN.map(([dx, dy]) => [x + dx, y + dy]).find(([wx, wy]) => isWater(wx, wy) && vorige[wy * B + wx] !== -2);
+        const water = BUREN.map(([dx, dy]) => [x + dx, y + dy]).find(([wx, wy]) => isWater(wx, wy) && havens.some((h) => h.vorige[wy * B + wx] !== -2));
         if (!water) continue;
         kandidaten.push({ x, y, d, w: water[1] * B + water[0] });
       }
     }
     kandidaten.sort((a, b) => Math.abs(a.d - 14) - Math.abs(b.d - 14));
     for (const k of kandidaten) {
-      if (landingen.length >= 3) break;
-      if (landingen.some((l) => Math.hypot(l.x - k.x, l.y - k.y) < 9)) continue;
+      if (landingen.length >= 5) break;
+      if (landingen.some((l) => Math.hypot(l.x - k.x, l.y - k.y) < 8)) continue;
       if (thuisVak >= 0 && wegvinder.verbonden && !wegvinder.verbonden(k.y * B + k.x, thuisVak, 1)) continue;
-      landingen.push({ ...k, route: routeNaar(k.w) });
+      landingen.push({ ...k, routes: havens.map((h) => (h.vorige[k.w] !== -2 ? routeNaar(h.vorige, k.w) : null)) });
     }
   }
 
@@ -148,7 +164,7 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
     const inhoud = inhoudVan(nr);
     const totaal = Object.values(inhoud).reduce((a, b) => a + b, 0);
     const metRutger = nr + 1 === heldGolf;
-    const nSchepen = Math.max(1, Math.min(landingen.length * 2, Math.ceil(totaal / (d.perSchip || 10))));
+    const nSchepen = Math.max(1, Math.min(landingen.length * 4, Math.ceil(totaal / (d.perSchip || 10))));
     // De mannen verdelen over de schepen, om en om.
     const ladingen = Array.from({ length: nSchepen }, () => ({}));
     let k = 0;
@@ -157,8 +173,12 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
     const T = d.vaart || 40;
     ladingen.forEach((lading, i) => {
       const landing = landingen[(nr + i) % landingen.length];
-      if (!landing || landing.route.length < 2) return;
-      schepen.push({ route: landing.route, pos: 0, snel: (landing.route.length - 1) / (T + i * 2), terug: false, lading, landing, golf: nr + 1, eerste: i === 0, rutger: metRutger && i === 0 });
+      // Elk schip vertrekt van een andere kade van rood; is die niet verbonden, dan de eerste die wel kan.
+      let h = (nr + i * 3) % havens.length;
+      for (let n = 0; n < havens.length && !(landing && landing.routes[h]); n++) h = (h + 1) % havens.length;
+      const route = landing && landing.routes[h];
+      if (!route || route.length < 2) return;
+      schepen.push({ route, pos: 0, snel: (route.length - 1) / (T + i * 1.2), terug: false, lading, landing, golf: nr + 1, eerste: i === 0, rutger: metRutger && i === 0 });
     });
     s.golven++;
     s.onderweg = schepen.filter((x) => !x.terug).length;
@@ -198,6 +218,27 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
   // Rutger in zijn dorp, voor golf 10: hij staat voor zijn zaal en zwaait met zijn bijl.
   function zetRutgerThuis() {
     for (const e of strijd.alleVijanden()) if (isHeld(e)) e.dood = true;   // na herladen: opnieuw neerzetten
+    // Liefst vooraan op de dijk, het stuk dat het dichtst bij jou ligt: dan zie je hem vanaf jouw kant.
+    let voor = null;
+    let voorD = Infinity;
+    for (let i = 0; i < B * H; i++) {
+      if (kaart.object[i] !== OBJECT.DIJK) continue;
+      const ix = i % B;
+      const iy = (i - ix) / B;
+      const dd = Math.hypot(ix - jij.x, iy - jij.y);
+      if (dd < voorD) { voorD = dd; voor = { x: ix, y: iy }; }
+    }
+    if (voor) {
+      let beste = null;
+      let besteD = Infinity;
+      for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
+        if (!wegvinder.isVrij(voor.x + dx, voor.y + dy, 1)) continue;
+        const dd = Math.hypot(voor.x + dx - jij.x, voor.y + dy - jij.y);
+        if (dd < besteD) { besteD = dd; beste = (voor.y + dy) * B + voor.x + dx; }
+      }
+      const e = beste === null ? null : strijd.hinderlaag(heldSleutel, beste);
+      if (e) { e.onsterfelijk = true; e.rutgerThuis = true; rutgerThuis = e; return; }
+    }
     for (let r = 3; r < 9; r++) {
       for (let dy = -r; dy <= r; dy++) {
         for (let dx = -r; dx <= r; dx++) {
@@ -313,7 +354,8 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
       }
       return lijst;
     },
-    landingen: () => landingen.map(({ x, y, route }) => ({ x, y, lengte: route.length })),
+    landingen: () => landingen.map(({ x, y, routes }) => ({ x, y, lengte: Math.min(...routes.filter(Boolean).map((r) => r.length)) })),
+    havens: () => havens.map(({ x, y }) => ({ x, y })),
     stand: () => ({ ...s, schepen: schepen.length }),
     rutger: () => rutger,
     rutgerThuis: () => rutgerThuis,

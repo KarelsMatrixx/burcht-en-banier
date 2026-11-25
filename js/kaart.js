@@ -312,6 +312,11 @@ export function maakKaart(recept) {
         } else if (v.soort === 'moeras') {
           const nat = grof(x, y) * 0.5 + fijn(x, y) * 0.5;
           water = nat < (v.nat || 0.45) && fijn(x, y) < 0.55;
+        } else if (v.soort === 'eilanden') {
+          // Twee eilanden (0.112.0): een brede zeestraat dwars over het midden, zee rond de twee eilanden.
+          // Jouw eiland ligt aan de ene kant, dat van rood aan de andere; er is geen weg over land.
+          const rafel = (grof(x, y) - 0.5) * 0.09;
+          water = langs < (v.straat || 0.1) + rafel || dwars > (v.zee || 0.2) + rafel * 0.6 + rand;
         } else if (v.soort === 'polder') {
           const zee = v.zee || 0.24;
           water = dwars > zee + rand;
@@ -594,6 +599,7 @@ export function maakKaart(recept) {
   const havenBekkens = [];
   for (const h of r.havens || []) {
     for (const kant of [0, 1]) {
+      if (kant === 0 && h.alleenRood) continue;   // een haven alleen voor rood (Rutger heeft er veel)
       const t = kant === 0 ? 1 : -1;
       const mx = start[kant].x + t * h.dx;
       const my = start[kant].y + t * h.dy;
@@ -830,7 +836,7 @@ export function maakKaart(recept) {
       }
       return false;
     };
-    if (!verbonden()) {
+    if (!verbonden() && !(r.vorm && r.vorm.soort === 'eilanden')) {
       const stappen = Math.max(Math.abs(naar.x - van.x), Math.abs(naar.y - van.y));
       for (let k = 0; k <= stappen; k++) {
         const x = Math.round(van.x + ((naar.x - van.x) * k) / stappen);
@@ -1365,12 +1371,36 @@ export function maakKaart(recept) {
     }
     return routes;
   };
+  // Kleine onbewoonde eilandjes in de zeestraat (r.eilandjes, White Dike): zand in open water, met iets te halen (js/zeeleven.js).
+  const eilandjes = [];
+  if (r.eilandjes) {
+    const ruim = (cx, cy, rad) => {
+      for (let dy = -rad; dy <= rad; dy++) for (let dx = -rad; dx <= rad; dx++) {
+        const x = cx + dx;
+        const y = cy + dy;
+        if (x < 2 || y < 2 || x >= breedte - 2 || y >= hoogte - 2 || grond[y * breedte + x] !== GROND.WATER) return false;
+      }
+      return true;
+    };
+    for (let poging = 0; poging < 1500 && eilandjes.length < r.eilandjes; poging++) {
+      const t = 0.3 + toeval() * 0.4;
+      const cx = Math.round(start[0].x + (start[1].x - start[0].x) * t + (toeval() - 0.5) * 26);
+      const cy = Math.round(start[0].y + (start[1].y - start[0].y) * t + (toeval() - 0.5) * 26);
+      if (!ruim(cx, cy, 4) || eilandjes.some((e) => Math.hypot(e.x - cx, e.y - cy) < 12)) continue;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (Math.abs(dx) + Math.abs(dy) === 2 && toeval() < 0.5) continue;
+        grond[(cy + dy) * breedte + cx + dx] = GROND.ZAND;
+        object[(cy + dy) * breedte + cx + dx] = OBJECT.GEEN;
+      }
+      eilandjes.push({ x: cx, y: cy });
+    }
+  }
   const kastelen = [
     { team: 0, midden: start[0], routes: [] },   // nog geen muren, dus geen wachters
     { team: 1, midden: start[1], routes: r.zonderRood ? [] : [...ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat, ring.rond)), ...tolRoutes.filter((rt) => rt.length > 1)] },
   ];
 
-  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, tolMuren, reservePlekken, batterijPlekken, eilandTorens, eilandSterkte: (r.kasteel && r.kasteel.tol && r.kasteel.tol.eiland && r.kasteel.tol.eiland.sterkte) || 1, verbonden: padGemaakt === 'ja' || !!(r.kasteel && r.kasteel.tol) };
+  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, tolMuren, reservePlekken, batterijPlekken, eilandTorens, eilandSterkte: (r.kasteel && r.kasteel.tol && r.kasteel.tol.eiland && r.kasteel.tol.eiland.sterkte) || 1, verbonden: padGemaakt === 'ja' || !!(r.kasteel && r.kasteel.tol), eilanden: !!(r.vorm && r.vorm.soort === 'eilanden'), eilandjes };
 }
 
 export function binnenKaart(kaart, x, y) {
