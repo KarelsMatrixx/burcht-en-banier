@@ -1281,3 +1281,10 @@ Aanleiding: Karel (24 nov) met 62 schutters op torens en muren en 22 melee, ook 
 - Instorten: valt een toren of muur, dan krijgt wie erop stond 60% van zijn leven als schade en valt eraf (rooster.instort 0.6). Geldt voor beide kanten.
 - Proef (Claude, passieve verdediging, ring met 8 torens vol schutters plus 16 zwaardvechters): belegering en bestorming van 60 doden de koning in 2,5 tot 3,5 minuut; een toren valt met 7 schutters. Karels echte verdediging is sterker dan deze proef (de oude proef verloor ook al, Karel niet), dus de echte balans moet uit spelen blijken.
 - Test: tests/torens107.mjs (8). Groen: rooster96, aanval41, trebuchet80, posten79. Bestaande fouten onveranderd: veldheer38 "zonder plan", siege52 (4).
+
+## 0.108.0: kruisboog minder sterk (alle levels, ook voor rood)
+Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde (2,5 keer de boogschutter, bijna een zwaardvechter) op 6 tegels, en schild of pantser helpt niet tegen zijn bout.
+- Schade per schot 18 naar 16, tijd tussen schoten 1,9 naar 2,6 s: 6,2 schade per seconde (1,6 keer de boogschutter). Hij blijft door schild en pantser heen schieten: tegen zwaardvechter, hellebaardier en steenwachter blijft hij de beste schutter.
+- Gevecht bij gelijke kosten (tests/balans.mjs, goud + planken + 2 per koper): tegen boogschutters van +25 naar -17, tegen ridders van -33 naar -54 (de boogschutter: -51). Waarden zijn schattingen van Claude.
+- Ook rood wordt iets zwakker: kruisbogen in zijn leger (vanaf aanval 3) en op de torens van het rotseiland in Greyford, en de 12 van Ottger in de proloog (de lijfwacht van Karel valt iets later, de ontvoering komt een paar seconden later).
+- Tests: soldaten26 (16 in plaats van 18), proloog77 wacht tot de lijfwacht gevallen is, torens107 vraagt alleen nog dat er een toren valt. Bestaande fouten onveranderd: soldaten26 knoppen, soldaten36 werkers, ruiter68 (2).

@@ -32,14 +32,14 @@ const r2 = await p.evaluate(async ([x, y]) => {
 }, veld);
 console.log('zwaai', JSON.stringify(r2));
 check('bijl raakt twee vijanden', r2.a < 60 && r2.c < 60, JSON.stringify(r2));
-// 3. Kruisboog door het dak van een stormram: volle schade (18)
+// 3. Kruisboog door het dak van een stormram: volle schade (16)
 const r3 = await p.evaluate(async ([x, y]) => {
   const s = window.spel; for (const v of s.strijd.vijanden()) v.dood = true; s.leger.zetStand([['kruisboog', x, y, 9999, 0]]);
   const ram = s.strijd.zetVijand('ram', x + 4, y, 240);
   await new Promise((r) => setTimeout(r, 2600));
   return 240 - ram.leven;
 }, veld);
-check('kruisboog doorboort het dak (veelvoud van 18)', r3 >= 18 && r3 % 18 === 0, r3);
+check('kruisboog doorboort het dak (veelvoud van 16)', r3 >= 16 && r3 % 16 === 0, r3);
 // 4. Bijl dubbel op een rode werkplaats
 const r4 = await p.evaluate(async () => {
   const s = window.spel; const k = s.kaart; let werk = -1;

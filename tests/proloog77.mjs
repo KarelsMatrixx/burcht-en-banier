@@ -119,8 +119,11 @@ console.log('lijfwacht na 6 s storm:', JSON.stringify(lw2));
 check('lijfwacht: blijft bij de posten (hooguit 3 man ver weg)', lw2.ver <= 3, JSON.stringify(lw2));
 const mwVer = await p.evaluate(() => { const w = window.spel.leger.lijst.filter((e) => !e.dood && e.vastePost); return Math.max(0, ...w.map((e) => Math.min(...window._mw.map(([x, y]) => Math.hypot(e.x - x, e.y - y))))); });
 check('muurwacht: blijft op zijn plek', mwVer < 0.6, mwVer);
-await p.evaluate(() => { const k = window.spel.strijd.koning(0); k.leven = Math.ceil(k.levenMax / 2); });
-await p.waitForTimeout(1500);
+// De lijfwacht houdt Karel heel zolang er 5 of meer staan: wacht tot die gevallen is (hooguit 15 s; 0.108.0: de kruisboog van Ottger is trager).
+for (let i = 0; i < 30 && (await st()).fase !== 'ontvoering'; i++) {
+  await p.evaluate(() => { const k = window.spel.strijd.koning(0); k.leven = Math.ceil(k.levenMax / 2); });
+  await p.waitForTimeout(500);
+}
 check('Karel op de helft: de ontvoering begint', (await st()).fase === 'ontvoering', JSON.stringify({ fase: (await st()).fase }));
 // 0.77.0: eerst het gesprek (kaartjes), de ruiter pas daarna
 check('eerst het gesprek: kaartje open, nog geen ruiter', await p.isVisible('#gids-kaart') && !(await p.evaluate(() => window.spel.strijd.effecten.some((f) => f.soort === 'ruiter'))));

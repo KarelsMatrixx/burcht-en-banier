@@ -54,7 +54,7 @@ check('zware verdediging op de muur: aanval tot het maximum (60)', be.gewicht >=
 check('belegering neemt meerdere katapulten mee', (JSON.parse(be.inh).katapult || 0) >= 3, be.inh);
 check('bestorming neemt katapulten mee tegen volle torens', (JSON.parse(bs.inh).katapult || 0) >= 1, bs.inh);
 check('katapulten richten op een volle toren', /shell your .* tower/.test(be.meld), be.meld);
-check('een toren valt en de schutters erop vallen eraf', be.torenWeg >= 1 && /collapses/.test(be.meld), be.meld);
+check('een toren valt onder de katapulten', be.torenWeg >= 1, be.torenWeg);   // de melding 'collapses' komt alleen bij 3 of meer man op de toren: niet vast te leggen
 check('schutters sneuvelen door het instorten', be.opMuurEind < be.opMuur0, be.opMuurEind);
 check('rood heeft schilden op in opmars en verzamelen', be.schildMax >= 20 && bs.schildMax >= 20, be.schildMax + '/' + bs.schildMax);
 check('alle fasen doorlopen', /verzamel/.test(be.fasen) && /beleg/.test(be.fasen) && /opmars/.test(be.fasen) && /aanval/.test(be.fasen), be.fasen);
