@@ -256,7 +256,10 @@ async function start() {
     if (bomenWeg.size) kaartGewijzigd(bomenWeg);
     const teruggezet = bouwer.zetTerug(bewaard.bouwwerken);
     haven.laad(bewaard.haven);
-    havenLesKlaar = !!bewaard.havenLes;
+    // De havenles begint elke keer dat je het level vanaf de levelkaart start; bij een herlaad midden in het level blijft hij gedaan.
+    let vanKaart = false;
+    try { vanKaart = window.sessionStorage.getItem(TOON_BEELD) === '1'; } catch (fout) { /* niet erg */ }
+    havenLesKlaar = !!bewaard.havenLes && !vanKaart;
     handelLesKlaar = !!bewaard.handelLes;
     if (teruggezet) ui.toonMelding(`Your castle is back: ${teruggezet} ${teruggezet === 1 ? 'building' : 'buildings'}.`, { soort: 'uitleg' });
     leger.zetStand(bewaard.leger);
@@ -899,6 +902,8 @@ async function start() {
     verhaal.wis();
     if (proloog) proloog.wis();
     if (doel) doel.wis();
+    havenLesKlaar = false;   // na Start over begint de havenles weer
+    if (havenLes) havenLes.zetOpnieuw();
     // Wie op de plek van een teruggekomen boom stond, krijgt een nieuwe plek.
     eenheden.zetAantal(aantal(), false);
     opslag.wis();

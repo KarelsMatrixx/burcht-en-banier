@@ -132,6 +132,19 @@ await p.waitForTimeout(1500);
 const herladen = await p.evaluate(() => ({ order: (window.spel.haven.havens().find((x) => !x.rood) || {}).order, les: window.spel.havenLes ? window.spel.havenLes.fase() : 'geen' }));
 check('na herladen: schip nog op zee', herladen.order && herladen.order.soort === 'koop', JSON.stringify(herladen));
 check('na herladen: les niet opnieuw', herladen.les === 'klaar' || herladen.les === 'geen', herladen.les);
+// Het level opnieuw starten vanaf de levelkaart: de havenles begint weer
+await p.evaluate(() => sessionStorage.setItem('burcht-banier.toonBeeld', '1'));
+await p.reload();
+await p.waitForFunction(() => window.spel && window.spel.strijd);
+await p.waitForTimeout(1500);
+const vanKaart = await p.evaluate(() => (window.spel.havenLes ? window.spel.havenLes.fase() : 'geen'));
+check('levelkaart: havenles begint weer', vanKaart !== 'klaar' && vanKaart !== 'geen', vanKaart);
+// Start over: de havenles begint ook dan weer
+await p.evaluate(() => window.spel.havenLes.sla());
+await p.evaluate(() => { const k = document.getElementById('knop-opnieuw'); k.click(); k.click(); });
+await p.waitForTimeout(500);
+const naOpnieuw = await p.evaluate(() => window.spel.havenLes.fase());
+check('Start over: havenles begint weer', naOpnieuw !== 'klaar', naOpnieuw);
 check('geen fouten in level 8', fouten.length === 0, fouten.join(' | '));
 
 // Level 9: hopboerderij en kroeg

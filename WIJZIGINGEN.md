@@ -1391,3 +1391,9 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 
 ## 0.116.1: handelles zonder tweede kaartje
 - Karel (25 november): het kaartje van Bartholt over de extra kar hout hoeft niet. Na het bouwen wijst de gids meteen de storehouse aan; de extra 10 hout komt stil. tests/handelles116.mjs: 19 goed.
+
+
+## 0.117.0 (was 0.114.1): havenles begint elke keer weer
+- De havenles van level 8 begint elke keer dat je het level vanaf de levelkaart start, ook als er een bewaarde stand is (main.js). Bij een herlaad midden in het level blijft de les gedaan.
+- Start over zet de havenles ook terug (havenles.js: zetOpnieuw).
+- tests/haven106.mjs: twee controles erbij (32).

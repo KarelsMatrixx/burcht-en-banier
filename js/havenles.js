@@ -79,6 +79,7 @@ export function maakHavenLes({ gids, haven, bouwer, bouwwerken, kaart, economie,
     actief: () => fase !== 'klaar' && fase !== 'wacht',
     klaar: () => fase === 'klaar',
     fase: () => fase,
+    zetOpnieuw() { gids.stop(); gids.verbergKaart(); sluitPanelen(); fase = 'wacht'; },   // Start over: de les begint weer
     sla() { gids.stop(); gids.verbergKaart(); fase = 'klaar'; opKlaar(); },   // voor tests
     // magBegin: het verhaalbeeld en de briefing zijn weg
     stap(dt, magBegin) {
