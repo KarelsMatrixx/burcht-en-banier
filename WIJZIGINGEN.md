@@ -1268,7 +1268,11 @@ Naar aanleiding van Karels feedback (17 november 2026).
 - Limiet van 2 trebuchets tegelijk blijft; afbreken maakt dus ruimte voor een nieuwe.
 - Test: tests/bemannen101.mjs.
 
-## 0.106.0: Greyford, aanvallen die een volle muur aankunnen
+## 0.106.0: Greyford, het rode kasteel is inloopbaar
+- De poort van het rode kasteel is nu een open doorgang (3 breed, ring.open), zonder torens ernaast. Is muur 3 doorbroken, dan loop je het kasteel in.
+- Olietorens bij het kasteel: van 12 naar 4. Nieuwe ringoptie `moord: "hoeken"`: alleen de vier hoektorens hebben olie, de rest is gewone torens. De drie muren in de kloof en de schansen zijn niet aangeraakt.
+- Test: tests/kasteelopen105.mjs.
+## 0.107.0: Greyford, aanvallen die een volle muur aankunnen
 Aanleiding: Karel (24 nov) met 62 schutters op torens en muren en 22 melee, ook de grootste aanvallen van rood kansloos. Alles hieronder geldt alleen met een aanvalsrooster (nu alleen Greyford); andere levels blijven gelijk.
 - Zwaardere aanval tegen een volle muur: een schutter op muur of toren telt dubbel mee voor de grootte van de aanval (rooster.muurGewicht 2), maximum van 42 naar 60.
 - Schilden: wie van rood verzamelt, opmarcheert of als schutter dekking geeft, krijgt de helft van een pijl (rooster.schild 0.5). Bij de aanval op de muur zelf zijn de schilden weer laag.
@@ -1276,4 +1280,4 @@ Aanleiding: Karel (24 nov) met 62 schutters op torens en muren en 22 melee, ook 
 - Katapult van rood reikt 2,5 tegel verder (rooster.katapultBereik): hij staat buiten bereik van een schutter op de toren (8). Jouw katapult verandert niet.
 - Instorten: valt een toren of muur, dan krijgt wie erop stond 60% van zijn leven als schade en valt eraf (rooster.instort 0.6). Geldt voor beide kanten.
 - Proef (Claude, passieve verdediging, ring met 8 torens vol schutters plus 16 zwaardvechters): belegering en bestorming van 60 doden de koning in 2,5 tot 3,5 minuut; een toren valt met 7 schutters. Karels echte verdediging is sterker dan deze proef (de oude proef verloor ook al, Karel niet), dus de echte balans moet uit spelen blijken.
-- Test: tests/torens106.mjs (8). Groen: rooster96, aanval41, trebuchet80, posten79. Bestaande fouten onveranderd: veldheer38 "zonder plan", siege52 (4).
+- Test: tests/torens107.mjs (8). Groen: rooster96, aanval41, trebuchet80, posten79. Bestaande fouten onveranderd: veldheer38 "zonder plan", siege52 (4).

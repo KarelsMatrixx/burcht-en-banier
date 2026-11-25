@@ -1,4 +1,4 @@
-// 0.106.0 (Greyford, aanvalsrooster): katapulten tegen volle torens, instorten, schilden, zwaardere aanval.
+// 0.107.0 (Greyford, aanvalsrooster): katapulten tegen volle torens, instorten, schilden, zwaardere aanval.
 import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
 import { spawn } from 'child_process';
 const srv = spawn('python3', ['-m', 'http.server', '8287'], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
@@ -58,5 +58,5 @@ check('een toren valt en de schutters erop vallen eraf', be.torenWeg >= 1 && /co
 check('schutters sneuvelen door het instorten', be.opMuurEind < be.opMuur0, be.opMuurEind);
 check('rood heeft schilden op in opmars en verzamelen', be.schildMax >= 20 && bs.schildMax >= 20, be.schildMax + '/' + bs.schildMax);
 check('alle fasen doorlopen', /verzamel/.test(be.fasen) && /beleg/.test(be.fasen) && /opmars/.test(be.fasen) && /aanval/.test(be.fasen), be.fasen);
-console.log(`torens106: ${goed} goed, ${fout} fout`);
+console.log(`torens107: ${goed} goed, ${fout} fout`);
 await b.close(); srv.kill();
