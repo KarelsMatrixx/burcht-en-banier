@@ -318,6 +318,8 @@ export function maakUi() {
   let kiesBelasting = () => {};
   let leidOp = () => {};
   let verkoopActie = () => {};
+  let handelOpen = -1e9;   // wanneer het handelpaneel openging
+  const spookTik = () => performance.now() - handelOpen < 400;
   const klapVolk = (open) => {
     el('volkpaneel').hidden = !open;
     if (open) el('volk-scroll').scrollTop = 0;   // altijd bij het begin
@@ -843,6 +845,9 @@ export function maakUi() {
     // Het bouw- of legerpaneel rechtsonder dicht (de havenles, na het bouwen).
     sluitPaneel() { zetPaneel(null); },
     toonHandel({ open, regels = [], knoppen = [], haven = false }, opVerkoop) {
+      // Net geopend door een tik op de kaart? Dan geen 'spooktik': de klik die de browser na
+      // die tik stuurt mag niet op Close of een verkoopknop landen die nu onder de vinger ligt.
+      if (open && el('handelpaneel').hidden) handelOpen = performance.now();
       el('handelpaneel').hidden = !open;
       if (!open) return;
       el('handelpaneel').classList.toggle('haven', haven);
@@ -860,7 +865,7 @@ export function maakUi() {
           knop.type = 'button';
           knop.dataset.verkoop = k.sleutel;
           knop.append(document.createElement('span'), document.createElement('small'));
-          knop.addEventListener('click', () => verkoopActie(k.sleutel));
+          knop.addEventListener('click', () => { if (!spookTik()) verkoopActie(k.sleutel); });
           return knop;
         }));
       }
@@ -875,7 +880,7 @@ export function maakUi() {
       });
     },
     opHandelSluit(functie) {
-      el('handel-sluit').addEventListener('click', functie);
+      el('handel-sluit').addEventListener('click', (ev) => { if (!spookTik()) functie(ev); });
     },
     opOpleiden(functie) {
       leidOp = functie;

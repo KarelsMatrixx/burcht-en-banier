@@ -87,6 +87,15 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       }
       return { e: null, tekst: 'Tap your port on the map (the golden spot).' };
     }
+    if (doel.soort === 'voorraad') {
+      // De handelles (js/handelles.js): de voorraadkamer aantikken, dan hout verkopen.
+      const paneel = el('handelpaneel');
+      if (zichtbaar(paneel) && !paneel.classList.contains('haven')) {
+        const knop = el('handel-knoppen').querySelector('[data-verkoop="hout"]');
+        if (knop) return { e: knop, tekst: 'Tap Wood to sell ten wood for gold.' };
+      }
+      return { e: null, tekst: 'Tap your storehouse on the map (the golden spot).' };
+    }
     if (doel.soort === 'opleiden') {
       const paneel = el('legerpaneel');
       if (zichtbaar(paneel)) {
@@ -165,7 +174,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     const p = sol ? { x: Math.floor(sol.x), y: Math.floor(sol.y) } : doel && doel.plek;
     if (!p || !plekNaarScherm) { plek.hidden = true; return; }
     if (doel.soort === 'opleiden' && zichtbaar(el('legerpaneel'))) { plek.hidden = true; return; }
-    if (doel.soort === 'haven' && zichtbaar(el('handelpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open
+    if ((doel.soort === 'haven' || doel.soort === 'voorraad') && zichtbaar(el('handelpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open
     // Een plek op de muur: de ruit op de bovenkant, waar de tik de soldaat de muur op stuurt
     const sc = plekNaarScherm(p.x, p.y, !sol && !!doel && (doel.soort === 'muur' || !!doel.opMuur));
     const z = sc.zoom;

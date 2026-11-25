@@ -1379,3 +1379,12 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Oorzaak (nagebootst en gemeten: een ruiter kwam op y 181 terecht bij een kaart van 96 hoog): ruiters jagen op je koning. Staat die op het dak van je burcht, dan eindigt de route op een dakvak (vak + N). Wie de muur niet op kan, las dat in eenheden.js als een gewoon vak en liep naar een plek ver buiten de kaart.
 - Fix (eenheden.js): wie de muur niet op kan stopt bij zo'n routestap, en een vangnet houdt iedereen binnen de kaartrand. De ruiters blijven nu bij de burcht staan in plaats van te verdwijnen.
 - Test: tests/buitenkaart113.mjs (faalde zonder de fix: 146 metingen buiten de kaart, nu 0). trebuchet80 liep achter sinds 0.109.0 (beloning level 6 heeft nu ook de windzanger): verwachting aangepast.
+
+## 0.116.0: handelles in level 1 (Witherheath)
+- Karels wens (25 november): in het eerste level een tutorial voor verkopen in de storehouse, en daarna nog genoeg spullen hebben.
+- Nieuw js/handelles.js (aan via `handelLes: true` in campagne.json, level 1), zelfde opzet als de havenles: Bartholt met kaartjes en de gouden plek, geen klok. Zolang de les loopt staan aanvallen, berichten en het doel stil.
+- Stappen: kaartje, storehouse bouwen op de gouden plek (alleen als je er nog geen hebt), kaartje, storehouse aantikken, Wood tikken (10 hout voor 2 goud), slotkaartje. Bewaard: na herladen of opnieuw spelen komt de les niet terug zolang de stand bestaat.
+- Genoeg spullen: Bartholt brengt de 30 bouwhout voor de storehouse mee en een extra kar van 10 hout voor de verkoop. In de test: hout 80 voor en 80 na, goud 40 naar 42, steen, voedsel en planken gelijk.
+- Gids (gids.js): nieuwe taaksoort `voorraad`. Economie: `aantalVerkocht()`.
+- Fout opgelost (ui.js): het handelpaneel opende onder de vinger en de klik die de browser na de tik stuurt landde op Close, waardoor het paneel meteen weer dicht ging. Binnen 400 ms na openen tellen Close en de verkoopknoppen niet.
+- Test: tests/handelles116.mjs (20). haven106, handel, opslag20 blijven groen. Engelse teksten van Bartholt: na te lezen. Niet op een iPhone gezien.

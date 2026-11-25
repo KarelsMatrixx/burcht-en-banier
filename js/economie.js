@@ -904,6 +904,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   // De boeren van het begin lopen meteen rond.
   werkLopersBij();
 
+  let verkocht = 0;
   return {
     // Verkoop handel.per stuks van een grondstof voor goud. Geeft '' of de reden.
     verkoop(naam) {
@@ -912,10 +913,13 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       if (voorraad[naam] < h.per) return `you have less than ${h.per} ${klein(naam)}`;
       voorraad[naam] -= h.per;
       voorraad[volkRegels.munt] += h.prijs[naam];
+      verkocht++;
       opVoorraad();
       opVerandering();
       return '';
     },
+    // Hoe vaak er in de voorraadkamer is verkocht (de handelles van level 1, js/handelles.js).
+    aantalVerkocht: () => verkocht,
     // De haven (js/haven.js): goederen erbij, zoveel als er past. Geeft het aantal dat paste.
     lever(naam, aantal) {
       const past = Math.max(0, Math.min(aantal, opslagMax(naam) - voorraad[naam]));
