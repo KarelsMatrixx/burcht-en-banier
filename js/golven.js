@@ -347,7 +347,7 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
       if (s.golven === 0 && volgendeGolf() < 40 && !s.gemeld.waarschuw) { s.gemeld.waarschuw = true; bartholt('Sails on the horizon, Sire! Rutger\'s longships land on our shore. Put archers and soldiers where they come ashore.'); }
       toonKlok();
       const nogTeGaan = aantal - s.golven;
-      if (s.golven < aantal) toonTaak(`Survive Rutger's raids: wave ${s.golven} of ${aantal}${nogTeGaan ? (s.golfBezig ? `, ${mannenOver()} raiders left. The next wave comes ${klok(d.tussen || 100)} after the last one falls` : `, next in ${klok(Math.max(0, volgendeGolf()))}`) : ''}`);
+      if (s.golven < aantal) toonTaak(`Survive Rutger's raids: wave ${s.golven} of ${aantal}${nogTeGaan ? (s.golfBezig ? `: ${mannenOver()} raiders left` : `, next in ${klok(Math.max(0, volgendeGolf()))}`) : ''}`);
       else toonTaak(s.rutgerGeland ? 'Defeat Rutger the Mad. He will not die, but he can be beaten.' : 'Rutger is coming! Hold the shore.');
       if (Math.round(s.tijd) % 5 === 0) bewaar();
     },

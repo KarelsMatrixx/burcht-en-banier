@@ -1469,3 +1469,6 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Visles: eindigt ook zodra een bootje met vangst terug is, ook als de voorraad vis vol is (`visserij.tochten()`).
 - sw.js: .js, .json, .css en .html worden altijd bij de server nagevraagd (`cache: 'no-cache'`, bij installeren `reload`), zodat oude gegevens niet naast nieuwe code komen. Plaatjes en geluid niet.
 - Test: nieuw tests/visvers121.mjs (17).
+
+## 0.122.2: tekst bovenin korter en eerlijk
+- De regel bovenin (Survive Rutger's raids) toont de timer naar de volgende wave alleen als hij echt telt ("wave 2 of 10, next in 1:40"). Terwijl een wave bezig is staat er "wave 2 of 10: 8 raiders left", zonder tijd, want dan telt de klok niet. Tekst Engels, na te lezen.
