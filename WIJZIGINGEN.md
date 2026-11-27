@@ -1516,3 +1516,10 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - All en Box zijn dicht tijdens deze twee kieslessen (proloog.js `mag('alle')`, `mag('kader')`, ui.js `beperkKnoppen`); in de legerles van level 1 blijven ze open.
 - Teksten van Bartholt aangepast (Engels, na te lezen).
 - Tests: proloog70 volgt bij de kieslessen de gids zoals een speler en controleert dat All dicht is; proloog43 kiest via Ranged en Melee; de level 1 controle in proloog70 slaat het eerste bericht over zolang level 1 met lessen begint. proloog70 45 goed, proloog43 35, proloog35 82, proloog77 35, legerles121 39, alle groen.
+
+## 0.124.6: voorraadbalk zakt nooit meer naar een tweede rij
+- Oorzaak: de bovenste rij (`#hud-boven`) mocht omslaan (`flex-wrap: wrap`). In level 8 met vis, brood, tarwe en de golfklok ("1:20 · Wave 8/10") werd de voorraad breder dan de ruimte naast de adviseur, en sprong hij met oog en tandwiel onder het portret.
+- Nu: de rij slaat nooit om. Adviseur, voorraad, oog en tandwiel staan altijd bovenaan. Is de voorraad te breed, dan krimpt hij in twee stappen (ui.js `pasBalk`, klassen `.krap` en `.krapst`: minder ruimte tussen de getallen, daarna kleinere pictogrammen en letters, pijltje weg). Past het dan nog niet, dan valt het einde van de grondstoffen weg; de klok blijft altijd heel.
+- De uitleg bij een aangetikte tegel (`#tegelinfo`) hangt nu los onder de voorraad in plaats van mee te doen in de rij.
+- Test `tests/bovenbalk125.mjs` (36, op 859x396, 844x390, 740x360 en 667x375 met de langste klokteksten). Groen: balk38, hud35, menureset103, selectie, golven109, test_stap17, proloog35, legerles121, bouwles124. test_stap15 was al rood (reserve).
+- NIET op een iPhone gezien.

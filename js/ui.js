@@ -319,6 +319,18 @@ export function maakUi() {
   }
 
   // Tik je bovenin op je voorraad, dan klapt het paneel over je volk open.
+  // 0.124.6: past de voorraadbalk niet naast adviseur, oog en tandwiel, dan wordt
+  // hij kleiner (.krap, dan .krapst) in plaats van naar een tweede rij te zakken.
+  const pasBalk = () => {
+    const v = el('voorraad');
+    if (!v || !v.offsetWidth) return;
+    const l = el('voorraad-lijst');
+    const teBreed = () => v.scrollWidth > v.clientWidth + 1 || l.scrollWidth > l.clientWidth + 1;
+    v.classList.remove('krap', 'krapst');
+    if (teBreed()) v.classList.add('krap');
+    if (teBreed()) v.classList.add('krapst');
+  };
+  window.addEventListener('resize', () => requestAnimationFrame(pasBalk));
   const voorraadVorige = new Map();   // vorige getallen, voor de flits in de balk
   const voorraadFlits = new Map();
   let kiesBelasting = () => {};
@@ -425,6 +437,7 @@ export function maakUi() {
         el('voorraad-lijst').appendChild(vak);
       }
       el('voorraad').setAttribute('aria-label', lijst.map((g) => `${g.naam} ${g.aantal}`).join(', '));
+      pasBalk();
     },
     // Het paneel over je volk. regels = de zinnen, tarieven = de standen
     // van de belasting [{ naam, uitleg }], gekozen = welke stand aanstaat.
@@ -490,7 +503,7 @@ export function maakUi() {
       el('strijdinfo').hidden = !kort;
       el('strijdinfo').classList.toggle('slecht', !!slecht);
       el('strijdinfo').title = lang || '';
-      if (el('strijd-kort').textContent !== kort) el('strijd-kort').textContent = kort;
+      if (el('strijd-kort').textContent !== kort) { el('strijd-kort').textContent = kort; pasBalk(); }
       if (el('volk-strijd').textContent !== lang) el('volk-strijd').textContent = lang || '';
     },
     // Het beginscherm. weergave = 'voorpagina' of 'kaart'.

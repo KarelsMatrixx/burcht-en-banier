@@ -87,8 +87,9 @@ html.gedraaid body {
    aangetikte tegel krijgt wat overblijft en mag over twee regels lopen.
    Op een smal scherm schuift wat niet past naar een tweede rij. */
 #hud-boven {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: flex-start;
   justify-content: flex-start;
   gap: 8px;
@@ -122,6 +123,40 @@ html.gedraaid body {
 #tegelinfo {
   order: 3;
 }
+
+/* 0.124.6: de bovenste rij springt nooit meer om (Karel: "dat mag nooit gebeuren").
+   Adviseur, voorraad, oog en tandwiel staan altijd op één rij. Wordt de voorraad
+   te breed (vis, lange golfklok, smal scherm), dan krimpt hij: ui.js pasBalk()
+   zet eerst .krap en dan .krapst; wat dan nog niet past wordt afgeknipt, niet
+   naar beneden geschoven. De uitleg bij een tegel hangt los onder de voorraad. */
+#voorraad {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+/* Past het echt niet, dan valt het einde van de grondstoffen weg, nooit de klok. */
+#voorraad-lijst { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; }
+#voorraad .strijdvak { flex: none; }
+#voorraad .strijdvak[hidden] { display: none; }
+#voorraad::after { flex: none; }
+#tegelinfo {
+  position: absolute;
+  left: 66px;
+  top: 52px;
+  max-width: min(300px, calc(var(--vw, 1vw) * 40));
+}
+#voorraad.krap { padding: 6px 8px; }
+#voorraad.krap .grondstof + .grondstof { margin-left: 7px; }
+#voorraad.krap .grondstof { gap: 3px; }
+#voorraad.krap .strijdvak { margin-left: 8px; gap: 3px; }
+#voorraad.krap::after { margin-left: 5px; }
+#voorraad.krapst { font-size: 0.88em; padding: 6px 6px; }
+#voorraad.krapst .icoon { width: 19px; height: 19px; }
+#voorraad.krapst .grondstof + .grondstof { margin-left: 5px; }
+#voorraad.krapst .grondstof b { margin-left: 1px; }
+#voorraad.krapst::after { display: none; }
 
 #hud-onder {
   display: flex;
