@@ -77,7 +77,7 @@ await p.screenshot({ path: '/home/claude/0120-hut.png' });
 await tikOp('#gids-kaart button');
 check('visles: kijken naar het bootje', await p.evaluate(() => window.spel.gids.doel().soort === 'kijk'));
 check('een visser aan het werk', await wachtTot(() => window.spel.economie.aantalMetBeroep('visser') === 1, 8000));
-const voedsel0 = await p.evaluate(() => window.spel.economie.voorraad.voedsel);
+const voedsel0 = await p.evaluate(() => window.spel.economie.voorraad.vis);
 check('bootje vaart uit', await wachtTot(() => { const h = window.spel.visserij.hutten()[0]; return h && h.fase === 'uit' && h.pos > 1; }, 15000));
 const posA = await p.evaluate(() => window.spel.visserij.bootje());
 await p.waitForTimeout(1200);
@@ -91,8 +91,8 @@ await p.waitForTimeout(500);
 await p.screenshot({ path: '/home/claude/0120-vissen.png' });
 check('bootje komt terug', await wachtTot(() => window.spel.visserij.hutten()[0].fase === 'terug', 20000));
 check('vangst in de voorraad, slotkaartje', await wachtTot(() => window.spel.visLes.fase() === 'kaart3', 30000));
-const voedsel1 = await p.evaluate(() => window.spel.economie.voorraad.voedsel);
-check('voedsel erbij (12, min wat er gegeten is)', voedsel1 - voedsel0 >= 8 || await p.evaluate(() => window.spel.visserij.gevangen() >= 12), `${voedsel0} -> ${voedsel1}, gevangen ${await p.evaluate(() => window.spel.visserij.gevangen())}`);
+const voedsel1 = await p.evaluate(() => window.spel.economie.voorraad.vis);
+check('vis erbij (12, min wat er gegeten is)', voedsel1 - voedsel0 >= 8 || await p.evaluate(() => window.spel.visserij.gevangen() >= 12), `${voedsel0} -> ${voedsel1}, gevangen ${await p.evaluate(() => window.spel.visserij.gevangen())}`);
 check('bootje terug aan zijn eigen hut', await p.evaluate(() => { const h = window.spel.visserij.hutten()[0]; const b = window.spel.visserij.bootje(); return Math.hypot(b.x - h.ligplaats.x, b.y - h.ligplaats.y) < 0.01; }));
 await tikOp('#gids-kaart button');
 check('visles klaar, oorlog loopt weer', await p.evaluate(() => window.spel.visLes.klaar() && !window.spel.visLes.actief()));
@@ -106,6 +106,11 @@ await p.waitForTimeout(6000);
 check('golf op zee: bootje blijft aan wal', await p.evaluate(() => window.spel.visserij.hutten()[0].fase === 'thuis'));
 await p.evaluate(() => { window.spel.doel.stand = window.__oud; });
 check('na de golf: weer uit', await wachtTot(() => window.spel.visserij.hutten()[0].fase === 'uit', 12000));
+// vis is een eigen voedselsoort: in de balk, wordt gegeten, telt voor afwisseling
+check('vis in de voorraadbalk', await p.evaluate(() => !!document.querySelector('#voorraad .icoon-vis')));
+const eet = await p.evaluate(() => { const E = window.spel.economie; E.voorraad.voedsel = 20; E.voorraad.brood = 20; E.voorraad.vis = 20; const v = E.stemming().factoren.find((f) => f.naam === 'variety').waarde; E.voorraad.brood = 0; const v2 = E.stemming().factoren.find((f) => f.naam === 'variety').waarde; return { v, v2 }; });
+check('afwisseling: drie soorten +4, twee soorten +2', eet.v === 4 && eet.v2 === 2, JSON.stringify(eet));
+check('haven verkoopt en koopt vis', await p.evaluate(() => window.spel.haven.regels.koop.vis > 0 && window.spel.haven.regels.verkoop.vis > 0));
 // tegelinfo
 check('tegelinfo noemt het bootje', /boat/.test(await p.evaluate((v) => window.spel.visserij.beschrijf(v), vak)));
 // herladen: les blijft klaar, hut terug met bootje

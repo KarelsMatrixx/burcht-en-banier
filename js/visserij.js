@@ -1,8 +1,8 @@
 // VISSERIJ (0.120.0, vanaf level 8): de Fisherman's Hut.
 // Een hut aan het water met een visser (een boer, beroep "visser"). Bij elke bemande hut hoort
 // een klein bootje. Het vaart uit naar een eigen visplek op open water, vist daar zichtbaar
-// (net uit, kringen in het water), vaart terug naar zijn eigen hut en lost de vangst: voedsel,
-// automatisch in je voorraad. Zijn de schepen van rood op zee (een golf), dan blijft het bootje
+// (net uit, kringen in het water), vaart terug naar zijn eigen hut en lost de vangst: vis (een eigen
+// voedselsoort sinds 0.121.0), automatisch in je voorraad. Zijn de schepen van rood op zee (een golf), dan blijft het bootje
 // aan wal; was het al buiten, dan keert het om.
 //
 // Getallen in data/economie.json, onder "visserij". Alle getallen zijn schattingen (na te lezen).
@@ -24,7 +24,7 @@ export function maakVisserij({ kaart, economie, regels = {}, gevaar = () => fals
   const isWater = (x, y) => x >= 0 && y >= 0 && x < B && y < H && kaart.grond[y * B + x] === GROND.WATER;
   const hutten = new Map();   // vak -> { vak, ligplaats, route, visplek, fase, tijd, pos, vangst, ... }
   let snelleTocht = false;    // de les: de eerste tocht is korter
-  let gevangen = 0;           // hoeveel voedsel er in totaal is binnengebracht (voor de les en tests)
+  let gevangen = 0;           // hoeveel vis er in totaal is binnengebracht (voor de les en tests)
   let gemeldGevaar = false;
   let t = 0;
 
@@ -162,7 +162,7 @@ export function maakVisserij({ kaart, economie, regels = {}, gevaar = () => fals
       }
       if (h.fase === 'lost') {
         if (h.rest > 0) {
-          const past = economie.lever('voedsel', h.rest);
+          const past = economie.lever('vis', h.rest);
           h.rest -= past;
           gevangen += past;
           if (past && geluid) geluid.speel('goods_delivered', { x: h.ligplaats.x, y: h.ligplaats.y });

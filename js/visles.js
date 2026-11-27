@@ -74,7 +74,7 @@ export function maakVisLes({ gids, visserij, bouwer, bouwwerken, kaart, economie
     sluitPanelen();
     fase = 'kaart3';
     const R = visserij.regels;
-    gids.kaart({ ...BARTHOLT, tekst: `The catch goes straight into your stores: ${R.vangst} food each trip, about once a minute. Every hut needs a peasant and open water in front of it. When Rutger's longships are at sea, the fishermen stay ashore.`, knop: 'Got it' }, () => {
+    gids.kaart({ ...BARTHOLT, tekst: `The catch goes straight into your stores: ${R.vangst} fish each trip, about once a minute. Fish is food, like apples and bread: the more kinds of food your people have, the happier they are. Every hut needs a peasant and open water in front of it. When Rutger's longships are at sea, the fishermen stay ashore.`, knop: 'Got it' }, () => {
       fase = 'klaar';
       opKlaar();
     });

@@ -76,6 +76,10 @@
    "naam": "Hops",
    "begin": 0
   },
+  "vis": {
+   "naam": "Fish",
+   "begin": 0
+  },
   "goud": {
    "naam": "Gold",
    "begin": 30
@@ -90,7 +94,8 @@
    "tarwe",
    "brood",
    "koper",
-   "hop"
+   "hop",
+   "vis"
   ],
   "burcht": 150,
   "voorraadkamer": 150
@@ -104,11 +109,12 @@
   "voedselElke": 60,
   "eet": [
    "brood",
-   "voedsel"
+   "voedsel",
+   "vis"
   ],
   "eetPerPersoon": 2,
   "eetPerSoldaat": 0.5,
-  "raadHonger": "Build an orchard, or a wheat field with a bakery.",
+  "raadHonger": "Build an orchard, or a wheat field with a bakery, or a fisherman's hut on the shore.",
   "munt": "goud",
   "stemming": {
    "begin": 60,
@@ -302,6 +308,7 @@
   "visser": {
    "naam": "fisherman",
    "soort": "VISSER",
+   "haalt": "vis",
    "verzorgt": true,
    "snelheid": 1.2,
    "bereik": 2,
@@ -1071,7 +1078,8 @@
    "tarwe": 2,
    "brood": 4,
    "koper": 8,
-   "hop": 3
+   "hop": 3,
+   "vis": 2
   }
  },
  "haven": {
@@ -1079,11 +1087,11 @@
   "reis": 120,
   "per": 10,
   "partijen": [1, 2, 5],
-  "koop": { "hout": 6, "planken": 10, "steen": 8, "voedsel": 6, "tarwe": 6, "brood": 10, "koper": 18, "hop": 8 },
-  "verkoop": { "hout": 4, "planken": 8, "steen": 6, "voedsel": 4, "tarwe": 4, "brood": 8, "koper": 16, "hop": 6 }
+  "koop": { "hout": 6, "planken": 10, "steen": 8, "voedsel": 6, "tarwe": 6, "brood": 10, "koper": 18, "hop": 8, "vis": 6 },
+  "verkoop": { "hout": 4, "planken": 8, "steen": 6, "voedsel": 4, "tarwe": 4, "brood": 8, "koper": 16, "hop": 6, "vis": 4 }
  },
  "visserij": {
-  "_uitleg": "Vissershut (vanaf level 8, js/visserij.js): een bootje per bemande hut. vangst = voedsel per tocht, vissen = seconden op de visplek, snelheid = tegels per seconde varen, rust = seconden aan de hut tussen twee tochten, minAfstand en maxAfstand = hoe ver de visplek over water ligt, diep = minstens zoveel tegels van land, lesVissen = vistijd van de eerste tocht in de les. Alle getallen zijn schattingen.",
+  "_uitleg": "Vissershut (vanaf level 8, js/visserij.js): een bootje per bemande hut. vangst = vis per tocht, vissen = seconden op de visplek, snelheid = tegels per seconde varen, rust = seconden aan de hut tussen twee tochten, minAfstand en maxAfstand = hoe ver de visplek over water ligt, diep = minstens zoveel tegels van land, lesVissen = vistijd van de eerste tocht in de les. Alle getallen zijn schattingen.",
   "vangst": 12,
   "vissen": 25,
   "snelheid": 0.7,

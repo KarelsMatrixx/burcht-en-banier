@@ -339,6 +339,7 @@ button:active {
 .icoon-brood { background-image: url(../beelden/hud/res/brood.svg); }
 .icoon-koper { background-image: url(../beelden/hud/res/koper.svg); }
 .icoon-hop { background-image: url(../beelden/hud/res/hop.svg); }
+.icoon-vis { background-image: url(../beelden/hud/res/vis.svg); }
 
 .grondstof {
   display: inline-flex;

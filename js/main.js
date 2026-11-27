@@ -444,10 +444,10 @@ async function start() {
     const stem = economie.stemming();
     // Een grondstof die je (nog) niet hebt en niet maakt, laat de lijst weg. Koper
     // pas als je de kopermijn hebt ontgrendeld. Is hij vol, dan staat hij in het rood.
-    const eten = (economie.voorraad.voedsel || 0) + (economie.voorraad.brood || 0);
+    const eten = (economie.voorraad.voedsel || 0) + (economie.voorraad.brood || 0) + (economie.voorraad.vis || 0);
     const oudste = metingen.length ? metingen[0] : null;
     const grondstoffen = Object.entries(regels.grondstoffen)
-      .filter(([naam, def]) => def.begin > 0 || economie.voorraad[naam] > 0 || (economie.maakt(naam) && (naam !== 'koper' || mag('kopermijn')) && (naam !== 'hop' || mag('hopveld'))))
+      .filter(([naam, def]) => def.begin > 0 || economie.voorraad[naam] > 0 || (economie.maakt(naam) && (naam !== 'koper' || mag('kopermijn')) && (naam !== 'hop' || mag('hopveld')) && (naam !== 'vis' || mag('vissershut'))))
       .map(([naam, def]) => {
         const max = economie.opslagMax(naam);
         const vol = Number.isFinite(max) && economie.voorraad[naam] >= max;
@@ -459,7 +459,8 @@ async function start() {
     const boeren = { sleutel: 'boeren', naam: 'Peasants', aantal: `${volk.volk}/${volk.ruimte}` };
     const pop = { sleutel: 'populariteit', naam: 'Popularity', aantal: stem.populariteit, slecht: stem.populariteit < stem.grens };
     // In de balk staat de kern. Iets anders komt erbij zodra het in het rood staat.
-    const balk = [...grondstoffen, boeren, pop].filter((g) => KERN.includes(g.sleutel) || g.slecht);
+    // Vis (0.121.0) staat in de balk zodra je een vissershut hebt of vis in voorraad.
+    const balk = [...grondstoffen, boeren, pop].filter((g) => KERN.includes(g.sleutel) || g.slecht || (g.sleutel === 'vis' && (economie.voorraad.vis > 0 || economie.maakt('vis'))));
     ui.toonVoorraad(balk);
     // Het paneel achter de voorraad: alles met naam erbij, en de belasting.
     const plus = (getal) => (getal > 0 ? `+${getal}` : getal < 0 ? `−${-getal}` : '0');

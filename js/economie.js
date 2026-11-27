@@ -679,14 +679,14 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     opVerandering();
   }
 
-  // Wat de populariteit de volgende ronde doet, per oorzaak. Wie brood én
-  // fruit te eten heeft, is extra tevreden.
+  // Wat de populariteit de volgende ronde doet, per oorzaak. Wie meer soorten eten heeft
+  // (appels, brood, vis), is extra tevreden: afwisseling per soort boven de eerste (0.121.0).
   function stemFactoren() {
     const genoeg = eten() >= voedselNodig();
     const soorten = eetSoorten.filter((n) => voorraad[n] > 0).length;
     return [
       { naam: 'food', waarde: genoeg ? stem.eten : stem.honger },
-      { naam: 'variety', waarde: genoeg && soorten > 1 ? stem.afwisseling || 0 : 0 },
+      { naam: 'variety', waarde: genoeg && soorten > 1 ? (soorten - 1) * (stem.afwisseling || 0) : 0 },
       { naam: 'tax', waarde: tarieven[belasting].effect },
       { naam: 'housing', waarde: volk > ruimte() ? stem.krap : 0 },
       ...(kroegen() ? [{ naam: 'tavern', waarde: schenkend() * ((regels.kroeg && regels.kroeg.stemming) || 0) }] : []),

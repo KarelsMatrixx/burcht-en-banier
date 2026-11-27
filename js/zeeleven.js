@@ -11,7 +11,7 @@ import { maakToeval } from './toeval.js';
 const BUREN = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 const SPRONG = 1.8;          // seconden dat een walvis in de lucht is
 const MAX_VANGST = 3;        // zoveel keer per level geeft een walvis voedsel
-const VANGST = 25;           // voedsel per vangst
+const VANGST = 25;           // vis per vangst
 const VAART = 2.2;           // tegels per seconde van het schip naar het eilandje
 const MIST_RONDE = 140;      // seconden tussen twee mistbanken
 
@@ -224,12 +224,12 @@ export function maakZeeleven({ kaart, economie, haven, melding = () => {}, volge
     for (const w of walvissen) {
       if (!w.gelukkig || w.gevangen || w.t < SPRONG) continue;
       if (Math.hypot(w.x - px, w.y - py) > 2.2) continue;
-      const kreeg = economie.lever('voedsel', VANGST);
+      const kreeg = economie.lever('vis', VANGST);   // vis (0.121.0)
       if (kreeg <= 0) { melding('Your stores are full: the fishermen cannot land their catch.', true); return true; }
       w.gevangen = true;
       w.duur = w.t + 3;
       gevangen++;
-      melding(`The whale drives fish into your nets: +${kreeg} food.`, true);
+      melding(`The whale drives fish into your nets: +${kreeg} fish.`, true);
       return true;
     }
     for (const e of eilandjes) {

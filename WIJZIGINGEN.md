@@ -1446,3 +1446,12 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Voorheen liep de klok naar de volgende golf door vanaf het moment dat de vorige vertrok. Nu start hij pas als geen enkele man van de vorige golf meer leeft (schepen onderweg en mannen aan land, golven.js `s.aftel`, `s.golfBezig`, `mannenOver`). Daarna loopt de gewone wachttijd (`tussen`) af.
 - Tijdens een golf toont de klok linksboven "Raiders, N left" in plaats van een tijd, en de taakregel zegt hoeveel mannen er nog zijn. Als de golf verslagen is, komt een melding met de tijd tot de volgende.
 - Na een herladen midden in een golf tellen alle aanvallers van rood mee (de namen van de golfmannen zijn dan niet bewaard). `zetTijd` (test) springt naar een moment en wist de wachtstand. Tests golven109 (twee nieuwe checks) en eilanden111 aangepast. Teksten Engels, na te lezen; de wachttijd (100 s) is een schatting.
+
+## 0.121.0: vis als eigen voedselsoort
+- Karels wens (27 november): vis is een nieuwe voedseleenheid naast appels en brood, vanaf level 8.
+- Nieuwe grondstof `vis` (Fish) in data/economie.json: opslag 150 per burcht of storehouse, je volk eet hem (`eet`: brood, voedsel, vis), verkopen in de storehouse (10 voor 2 goud), haven koopt (6) en verkoopt (4). Icoon beelden/hud/res/vis.svg.
+- De vissershut levert vis in plaats van appels (visserij.js), de visser heeft `haalt: "vis"`. De gelukkige walvis geeft nu 25 vis (zeeleven.js).
+- In de voorraadbalk zodra je een vissershut hebt of vis in voorraad; alleen te zien in levels waar de vissershut ontgrendeld is.
+- Afwisseling: per extra soort eten +2 populariteit (twee soorten +2, drie soorten +4; was altijd +2). Alleen merkbaar waar je drie soorten kunt hebben.
+- Teksten: tip van de hut, slotkaartje van de visles en de hongertip noemen vis (Engels, na te lezen).
+- Tests: visserij120 (34), zeeleven112 (17, walvis geeft vis). Groen: haven106, handelles116, golven109, eilanden111, berserker110, zager106, brood22, opslag20, koper23, hud35, test_stap15, test_stap17.

@@ -43,10 +43,10 @@ const w = await p.evaluate(() => {
   const B = window.spel.kaart.breedte;
   const x = i % B, y = Math.floor(i / B);
   const wv = z.spring({ x: x + 0.5, y: y + 0.5, gelukkig: true });
-  const voor = economie.voorraad.voedsel;
+  const voor = economie.voorraad.vis;
   for (let k = 0; k < 40; k++) z.stap(0.05);   // 2 s: de sprong is voorbij
   const raak = z.tik(x, y);
-  const na = economie.voorraad.voedsel;
+  const na = economie.voorraad.vis;
   const tweede = z.tik(x, y);
   return { raak, plus: na - voor, tweede, gevangen: z.gevangen(), nog: z.walvissen().length };
 });
