@@ -34,6 +34,7 @@ import { maakVisserij } from './visserij.js';
 import { maakVisLes } from './visles.js';
 import { maakHandelLes } from './handelles.js';
 import { maakLegerLes } from './legerles.js';
+import { maakBouwLes } from './bouwles.js';
 import { maakGolven } from './golven.js';
 import { maakZeeleven } from './zeeleven.js';
 import { maakFiguranten } from './figuranten.js';
@@ -157,7 +158,7 @@ async function start() {
   let bewaren = false;   // pas aan als het spel helemaal is opgebouwd
   const bewaar = () => {
     if (!bewaren) return;
-    const stand = { bouwwerken: bouwer.eigenBouwwerken(), ...economie.bewaarStand(), leger: leger.bewaarStand(), strijd: strijd.bewaarStand(), haven: haven ? haven.stand() : [], havenLes: havenLesKlaar, visLes: visLesKlaar, handelLes: handelLesKlaar, legerLes: legerLesKlaar };
+    const stand = { bouwwerken: bouwer.eigenBouwwerken(), ...economie.bewaarStand(), leger: leger.bewaarStand(), strijd: strijd.bewaarStand(), haven: haven ? haven.stand() : [], havenLes: havenLesKlaar, visLes: visLesKlaar, handelLes: handelLesKlaar, legerLes: legerLesKlaar, bouwLes: bouwLesKlaar };
     if (opslag.bewaar(stand) || bewaarFoutGemeld) return;
     bewaarFoutGemeld = true;
     ui.toonMelding('Saving does not work here. Your progress is lost when you close the game.', { soort: 'uitleg', toon: true });
@@ -181,8 +182,10 @@ async function start() {
   let handelLesKlaar = false;  // de handelles is gedaan (bewaard)
   let legerLes = null;         // de legerles van level 3 (js/legerles.js): box, groep, formatie, Hold
   let legerLesKlaar = false;   // de legerles is gedaan (bewaard)
+  let bouwLes = null;          // de bouwles van level 1 (js/bouwles.js): muur, poort, toren, slopen
+  let bouwLesKlaar = false;    // de bouwles is gedaan (bewaard)
   // Loopt er een les (haven of handel)? Dan staat de oorlog stil.
-  const lesLoopt = () => !!((havenLes && havenLes.actief()) || (visLes && visLes.actief()) || (handelLes && handelLes.actief()) || (legerLes && legerLes.actief()));
+  const lesLoopt = () => !!((havenLes && havenLes.actief()) || (visLes && visLes.actief()) || (handelLes && handelLes.actief()) || (legerLes && legerLes.actief()) || (bouwLes && bouwLes.actief()));
   let naVoorraad = () => {};
   let naGeveld = () => {};     // een gevelde boom valt om (beeld); ingevuld als het gevecht er is
   let verversHandel = () => {};   // het paneel van de voorraadkamer, als het openstaat   // wordt verderop ingevuld, als de bouwbalk er is
@@ -275,6 +278,7 @@ async function start() {
     visLesKlaar = !!bewaard.visLes && !vanKaart;   // de visles net zo
     visserij.zoek();
     handelLesKlaar = !!bewaard.handelLes;
+    bouwLesKlaar = !!bewaard.bouwLes;   // de bouwles net zo
     legerLesKlaar = !!bewaard.legerLes;   // de legerles net zo (de acht man staan al in je bewaarde leger)
     if (teruggezet) ui.toonMelding(`Your castle is back: ${teruggezet} ${teruggezet === 1 ? 'building' : 'buildings'}.`, { soort: 'uitleg' });
     leger.zetStand(bewaard.leger);
@@ -390,6 +394,7 @@ async function start() {
     if (meting.isBezig()) return;
     // Proloog: alleen het bouwwerk van de les is te kiezen (de knoppen zijn dan ook dicht).
     if (sleutel && proloog && proloog.bouwSleutel() !== sleutel) return;
+    if (sleutel && bouwLes && bouwLes.actief() && bouwLes.bouwSleutel() !== sleutel) return;   // bouwles: idem
     bouw.sleutel = sleutel;
     bouw.begin = null;
     bouw.eind = null;
@@ -404,6 +409,7 @@ async function start() {
 
   function bevestigBouw() {
     if (!bouw.sleutel || !staat.schim) return;
+    if (bouwLes && bouwLes.actief() && !bouwLes.magBevestig(bouw)) { geluid.speel('ui_denied'); return; }   // bouwles: pas als het klopt
     if (bouw.sleutel === SLOOP) geluid.speel(bouwer.sloop(bouw.begin.x, bouw.begin.y) ? 'build_demolish' : 'ui_denied');
     else geluid.speel(bouwer.plaats(bouwwerken[bouw.sleutel], staat.schim.tegels.filter((t) => t.ok)) ? 'build_place' : 'ui_denied');
     bouw.begin = null;
@@ -413,6 +419,7 @@ async function start() {
 
   // Een tik op de kaart terwijl je bouwt.
   function tikBouw(x, y) {
+    if (bouwLes && bouwLes.actief() && !bouwLes.magTik(x, y, bouw)) { geluid.speel('ui_denied'); return; }   // bouwles: alleen de gouden plek
     const werk = bouwwerken[bouw.sleutel];
     if (werk && werk.lijn && bouw.begin) bouw.eind = { x, y };
     else bouw.begin = { x, y };
@@ -987,6 +994,8 @@ async function start() {
     if (visLes) visLes.zetOpnieuw();
     legerLesKlaar = false;   // de legerles ook (het leger is weg)
     if (legerLes) legerLes.zetOpnieuw();
+    bouwLesKlaar = false;    // de bouwles ook (de muur is weg)
+    if (bouwLes) bouwLes.zetOpnieuw();
     // Wie op de plek van een teruggekomen boom stond, krijgt een nieuwe plek.
     eenheden.zetAantal(aantal(), false);
     opslag.wis();
@@ -1229,7 +1238,7 @@ async function start() {
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
   // De proloog: taken van Bartholt, de nacht en de scène.
-  const gids = missie && (missie.proloog || missie.havenLes || missie.visLes || missie.handelLes || missie.legerLes) ? maakGids({
+  const gids = missie && (missie.proloog || missie.havenLes || missie.visLes || missie.handelLes || missie.legerLes || missie.bouwLes) ? maakGids({
     // Waar staat een tegel op het scherm, en hoe groot is hij? Voor de gouden ruit op de bouwplek.
     // boven: de bovenkant van het bouwwerk op die plek (een muur), daar tikt de speler om er een soldaat op te zetten
     plekNaarScherm: (x, y, boven = false) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); const h = boven ? hoogteOp(y * kaart.breedte + x) : 0; const sc = camera.wereldNaarScherm(w.x, w.y - h); return { x: sc.x, y: sc.y, zoom: camera.zoom }; },
@@ -1246,6 +1255,13 @@ async function start() {
     sluitPanelen: () => { stopBouw(); ui.sluitPaneel(); handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); } }) : null;
   // Level 1: Bartholt leert je verkopen in de voorraadkamer (js/handelles.js).
   handelLes = missie && missie.handelLes && !strijd.uitslag() ? maakHandelLes({ gids, bouwer, bouwwerken, kaart, economie, regels, klaarAl: handelLesKlaar, opKlaar: () => { handelLesKlaar = true; bewaar(); }, sluitPanelen: () => { stopBouw(); ui.sluitPaneel(); handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); } }) : null;
+  // Level 1, na de handelles: Bartholt leert je muur, poort, toren en slopen (js/bouwles.js).
+  bouwLes = missie && missie.bouwLes && !strijd.uitslag() ? maakBouwLes({ gids, bouwer, bouwwerken, kaart, economie, klaarAl: bouwLesKlaar,
+    bouwStand: () => bouw,
+    wachtOp: () => !handelLes || handelLes.klaar(),
+    opKlaar: () => { bouwLesKlaar = true; ui.vrijBouw(); bewaar(); },
+    glijNaar: (x, y) => { const w = rasterNaarWereld(x, y); camera.glijNaar(w.x, w.y, 900); },
+    sluitPanelen: () => { stopBouw(); ui.sluitPaneel(); handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); } }) : null;
   // Level 3: Bartholt leert je het leger besturen: box, groep, formatie en Hold (js/legerles.js).
   legerLes = missie && missie.legerLes && !strijd.uitslag() ? maakLegerLes({ gids, leger, kaart, wegvinder, klaarAl: legerLesKlaar,
     opKlaar: () => { legerLesKlaar = true; ui.beperkKnoppen(null); ui.vrijBouw(); naLeger(); bewaar(); },
@@ -1708,6 +1724,10 @@ async function start() {
         legerLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
         if (legerLes.actief()) { ui.beperkKnoppen(legerLes.mag); ui.beperkBouw(null); if (kazerneVak >= 0) sluitKazerne(); }
       }
+      if (bouwLes) {
+        bouwLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
+        if (bouwLes.actief()) ui.beperkBouw(bouwLes.bouwSleutel());
+      }
       if (handelLes) handelLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
       if (havenLes) havenLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
       if (visLes) visLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
@@ -1767,7 +1787,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { legerLes, zeeleven, haven, havenLes, visserij, visLes, handelLes, gids, hinderlaag, reserve, sluipers, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
+  window.spel = { bouwLes, legerLes, zeeleven, haven, havenLes, visserij, visLes, handelLes, gids, hinderlaag, reserve, sluipers, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

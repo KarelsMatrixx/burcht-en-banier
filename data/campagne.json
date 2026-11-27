@@ -116,6 +116,7 @@
    "naam": "Witherheath",
    "titel": "Level 1: Witherheath",
    "handelLes": true,
+   "bouwLes": true,
    "heer": "Lord Reinout of Witherheath",
    "portret": "reinout",
    "profiel": "rustig",

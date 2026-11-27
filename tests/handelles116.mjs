@@ -76,6 +76,9 @@ await tikOp('#gids-kaart button');
 check('les klaar', await p.evaluate(() => window.spel.handelLes.klaar()));
 const na = await p.evaluate(() => ({ ...window.spel.economie.voorraad }));
 for (const n of ['hout', 'steen', 'voedsel', 'planken', 'goud']) check(`na de les niet minder ${n}`, na[n] >= voor[n], `${voor[n]} -> ${na[n]}`);
+// 0.124.0: daarna komt de bouwles; die slaan we hier over
+check('bouwles volgt', await wachtTot(() => window.spel.bouwLes && window.spel.bouwLes.actief(), 4000));
+await p.evaluate(() => window.spel.bouwLes && window.spel.bouwLes.sla());
 await p.waitForTimeout(1200);
 const klok3 = await p.evaluate(() => JSON.stringify(window.spel.strijd.stand()));
 check('oorlog loopt weer', klok3 !== klok2);

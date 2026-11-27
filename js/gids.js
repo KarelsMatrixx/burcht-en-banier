@@ -56,6 +56,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     if (!doel) return null;
     const hamer = el('knop-hamer');
     if (doel.soort === 'bouw') {
+      if (doel.eigen) { const r = doel.eigen(); if (r) return r; }   // de bouwles: eigen zin bij de muur en het slopen
       if (hamer.classList.contains('plaats')) return { e: hamer, tekst: 'Now tap the glowing hammer to build it.' };
       const knoppen = el('bouw-knoppen');
       const bouwt = knoppen && knoppen.querySelector('.actief');
