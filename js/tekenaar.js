@@ -12,7 +12,7 @@
 // "Diepte" is x + y in rastermaat: hoe groter, hoe verder naar voren.
 
 import { CONFIG } from './config.js';
-import { GROND_ASSET, OBJECT_ASSET, OBJECT, GROND, aansluiting, dijkMasker } from './kaart.js';
+import { GROND_ASSET, OBJECT_ASSET, OBJECT, GROND, aansluiting, dijkSleutel } from './kaart.js';
 import { maakNabewerking } from './nabewerking.js';
 import { maakSfeer, tekenSchaduw } from './sfeer.js';
 import { maakLandschap } from './landschap.js';
@@ -290,10 +290,10 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
   // variant die past bij de buren. Opnieuw aanroepen als de kaart verandert.
   function kiesPlaatjes() {
     const kies = (asset, x, y, extra) => {
+      if (asset && asset.kies === 'dijk') { const v = asset.maak(dijkSleutel(kaart, x, y)); v.spreiding = 0; return v; }
       if (!asset || !asset.varianten) return asset;
       const nummer = asset.kies === 'toeval'
         ? Math.floor(tegelToeval(x, y, extra) * asset.varianten.length)
-        : asset.kies === 'dijk' ? dijkMasker(kaart, x, y)
         : variantBijBuren(asset, aansluiting(kaart, x, y));
       const variant = asset.varianten[nummer];
       variant.spreiding = asset.spreiding;
@@ -329,7 +329,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
 
         // Slagschaduw: de voet van het object, opgeschoven naar linksboven.
         // (Met sfeer aan komt de schaduw uit het plaatje zelf, zie onder.)
-        const hoog = !sfeerAan && objectOp(i) ? objectOp(i).hoogte : 0;
+        const hoog = !sfeerAan && objectOp(i) && objectOp(i).kies !== 'dijk' ? objectOp(i).hoogte : 0;
         if (hoog > 0) {
           const wx = (x - y) * HALVE_BREEDTE;
           const wy = (x + y) * HALVE_HOOGTE;
@@ -358,7 +358,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     for (let y = 0; y < kaart.hoogte; y++) {
       for (let x = 0; x < kaart.breedte; x++) {
         const o = objectBeeld[y * kaart.breedte + x];
-        if (!o || !o.beeld) continue;
+        if (!o || !o.beeld || o.geenSchaduw) continue;
         const wx = (x - y) * HALVE_BREEDTE;
         const wy = (x + y) * HALVE_HOOGTE;
         const dx = o.spreiding ? (tegelToeval(x, y, 1) - 0.5) * 2 * o.spreiding : 0;

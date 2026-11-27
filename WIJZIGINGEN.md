@@ -1409,3 +1409,9 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 ## 0.118.2: de White Dike als echte dijk
 - Een gebogen grasdijk langs het water in plaats van blokken: een voet van witte kalksteen, een talud met gras, een gebogen top en een zandpad erover (kunst.js `tekenDijk`). Elke tegel kijkt naar al zijn 8 buren (kaart.js `dijkMasker`, tekenaar.js), zodat de dijk één vloeiende lijn is zonder naden. 256 kleine plaatjes.
 - De proefstijlen (kalkoever, kade, rotsen, blokken, duin) zijn weer weg.
+
+## 0.118.3: White Dike: witte dijk met palissade en havenpoorten
+- De dijk loopt vanaf het land als grashelling omhoog naar een witte kruin; aan de waterkant een muur van witte steen met voegen en schuim op de waterlijn. Geen slang op het gras meer: geen slagschaduw en geen bolle randen aan de landkant.
+- Binnen 6 tegels van een haven staat er een houten palissade op de dijk.
+- Waar de dijk voor een haven ophoudt staan twee witte poortpijlers met rode kap, banier en een open houten deur naar de haven (kaart.js `dijkPoorten`).
+- Elke tegel kiest zijn plaatje op buren, waterkant, palissade en poort (kaart.js `dijkSleutel`); plaatjes worden pas getekend als ze nodig zijn. Losse dijkstukjes zonder buur verdwijnen.

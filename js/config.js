@@ -3,7 +3,7 @@
 // van de code hoeft te zijn.
 
 export const CONFIG = {
-  versie: '0.118.2',
+  versie: '0.118.3',
   stap: 46,
   verhaalbeeldSeconden: 10,   // zo lang staat het verhaalbeeld voor een level in beeld, daarna komt de knop "Continue to level"
 

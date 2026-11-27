@@ -66,7 +66,7 @@
     "schip.viking":   { "vorm": "schip", "romp": "#4a3424", "zeil": "#b8322a", "draak": true, "sprite": "" },
     "dorp.langhuis":  { "vorm": "langhuis", "hout": "#74503a", "riet": "#a89050", "hoogte": 30, "sprite": "" },
     "dorp.runensteen": { "vorm": "runensteen", "hoogte": 30, "sprite": "" },
-    "dorp.dijk":      { "vorm": "dijk", "kleur": "#d8d4c6", "hoogte": 4, "sprite": "" },
+    "dorp.dijk":      { "vorm": "dijk", "hoogte": 9, "sprite": "" },
     "werk.hopveld":   { "vorm": "hopveld", "rank": "#4f8a3a", "bel": "#b8d878", "hoogte": 40, "sprite": "" },
     "dorp.kroeg":     { "vorm": "kroeg", "wand": "#d8c49a", "daken": ["#7a3a2a"], "hoogte": 28, "sprite": "" },
     "dorp.raaftoren": { "vorm": "raaftoren", "kleur": "#4a4850", "hoogte": 146, "sprite": "" },

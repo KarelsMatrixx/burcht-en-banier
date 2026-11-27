@@ -4649,68 +4649,142 @@ export function tekenRunensteen(naam, def) {
   return { beeld: doek, b, h, ax: b / 2, ay: h };
 }
 
-// De witte dijk (White Dike): een echte dijk, een gebogen grasdijk langs het water met een voet van witte kalksteen en
-// een zandpad over de top. Geen blokken: elke tegel tekent een gebogen rug naar zijn buren (ook schuin, 8 bits),
-// zodat de rug als één vloeiende lijn de oever volgt. 256 kleine plaatjes, één per combinatie van buren.
-const DIJK_RICHTINGEN = [
-  [1, 0, -1], [2, 1, 0], [4, 0, 1], [8, -1, 0], [16, 1, -1], [32, 1, 1], [64, -1, 1], [128, -1, -1],
-];
+// De witte dijk (White Dike). Vanaf het land loopt een grashelling zacht omhoog naar een witte kruin; aan de
+// waterkant valt een muur van witte steen in het water. Bij de havens staat er een houten palissade op, en waar
+// de dijk voor een haven ophoudt staat een witte poortpijler met een open houten deur: de poort naar de haven.
+// Elke tegel kiest zijn plaatje op een sleutel (kaart.js dijkSleutel): welke buren ook dijk zijn (8 bits), aan welke
+// kant het water ligt, palissade ja of nee, poort ja of nee en de richting van de haven. Plaatjes worden pas
+// getekend als een tegel ze nodig heeft.
+const DIJK_BUREN = [[1, 0, -1], [2, 1, 0], [4, 0, 1], [8, -1, 0], [16, 1, -1], [32, 1, 1], [64, -1, 1], [128, -1, -1]];
+export const DIJK_ACHT = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
 
-function dijkTegel(naam, def, masker) {
-  const b = 100;
-  const h = 104;
+function dijkPaal(ctx, x, y, hoog, breed = 4) {
+  const l = x - breed / 2;
+  const r = x + breed / 2;
+  vlak(ctx, [[l, y], [l, y - hoog + 3], [x, y - hoog], [x, y]], '#5e4026');
+  vlak(ctx, [[x, y], [x, y - hoog], [r, y - hoog + 3], [r, y]], '#8a6238');
+}
+
+function dijkTegel(naam, def, sleutel) {
+  const b = 116;
+  const h = 116;
   const { doek, ctx } = nieuwDoek(b, h);
   const cx = b / 2;
-  const cy = 56;
-  const toeval = toevalVoor(naam + masker);
-  // het eindpunt van elk stuk: het midden van de overgang naar die buur
-  const einden = [];
-  for (const [bit, dx, dy] of DIJK_RICHTINGEN) if (masker & bit) einden.push([cx + (dx - dy) * HB / 2, cy + (dx + dy) * HH / 2]);
-  // Elke laag loopt met een vlakke kop precies tot het midden van de overgang (de buurtegel gaat daar verder),
-  // plus een rond kussen op het midden van de tegel: zo zie je geen naden tussen de tegels.
-  const laag = (breedte, kleur, dy, over = 0) => {
+  const cy = 70;
+  const toeval = toevalVoor(naam + sleutel);
+  const D = def.hoogte || 9;                       // hoogte van de kruin
+  const scherm = (gx, gy, f) => [(gx - gy) * HB * f, (gx + gy) * HH * f];
+  const naarEenheid = (v) => { const l = Math.hypot(v[0], v[1]) || 1; return [v[0] / l, v[1] / l]; };
+  const punten = [];
+  for (const [bit, dx, dy] of DIJK_BUREN) if (sleutel & bit) punten.push(scherm(dx, dy, 0.52));
+  const wi = (sleutel >> 8) & 15;
+  const water = naarEenheid(wi ? DIJK_ACHT[wi - 1] : [1, 1]);
+  const palissade = !!(sleutel & 4096);
+  const poort = !!(sleutel & 8192);
+  const hi = (sleutel >> 14) & 15;
+  const haven = naarEenheid(hi ? DIJK_ACHT[hi - 1] : water);
+  const voor = water[0] + water[1] > 0.2;          // het water ligt aan de kant van de kijker: de stenen muur is te zien
+
+  // Een band langs de dijklijn, opgeschoven naar het water (f > 0) of naar het land (f < 0), op hoogte dy.
+  const band = (breedte, kleur, f, dy, alfa = 1) => {
+    const [ox, oy] = scherm(water[0], water[1], f);
+    ctx.globalAlpha = alfa;
     ctx.strokeStyle = kleur;
     ctx.fillStyle = kleur;
     ctx.lineWidth = breedte;
     ctx.lineCap = 'butt';
     ctx.beginPath();
-    for (const [ex, ey] of einden) {
-      const lang = Math.hypot(ex - cx, ey - cy) || 1;
-      ctx.moveTo(cx, cy + dy);
-      ctx.lineTo(ex + (ex - cx) / lang * over, ey + (ey - cy) / lang * over + dy);
-    }
+    for (const [px, py] of punten) { ctx.moveTo(cx + ox, cy + oy + dy); ctx.lineTo(cx + px + ox, cy + py + oy + dy); }
     ctx.stroke();
     ctx.beginPath();
-    ctx.ellipse(cx, cy + dy, breedte / 2, breedte / 2.1, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx + ox, cy + oy + dy, breedte / 2, breedte / 2.3, 0, 0, Math.PI * 2);
     ctx.fill();
+    ctx.globalAlpha = 1;
   };
-  laag(28, 'rgba(30,40,20,0.22)', 5);        // schaduw op de grond
-  laag(24, '#b9b4a2', 5.5);                  // de voet van witte kalksteen, alleen aan de voorkant zichtbaar
-  laag(24, '#d8d3c1', 4.2);
-  laag(24, '#4f7d32', 0, 1.2);                    // het talud in de schaduw
-  laag(20, '#5f9040', -2.5, 1.2);                 // het gras
-  laag(13, '#78a84c', -5.5, 1.2);                 // de gebogen top, in het licht
-  laag(3.4, '#cdbf98', -6.5, 1.2);                // het zandpad over de dijk
-  // witte kalkstenen aan de voet, en grassprietjes op het talud
-  for (let k = 0; k < 7; k++) {
-    const [ex, ey] = einden.length ? einden[Math.floor(toeval() * einden.length)] : [cx, cy];
-    const t = toeval();
-    const x = cx + (ex - cx) * t + (toeval() - 0.5) * 6;
-    const y = cy + (ey - cy) * t + 9 + toeval() * 2;
-    ovaal(ctx, x, y, 1.6 + toeval() * 1.8, 0.9 + toeval() * 0.9, toeval() < 0.5 ? '#ece8da' : '#bdb7a4');
+  const helling = () => {
+    // gras dat vanaf het land omhoog loopt: brede, doorzichtige randen, naar boven steeds voller en lichter
+    band(36, '#6c904e', -0.2, -0.5, 0.55);
+    band(30, '#719552', -0.14, -2.5, 0.9);
+    band(24, '#789b56', -0.09, -4.8, 1);
+    band(19, '#8aa766', -0.04, -6.8, 1);
+    band(16, '#c9d3ad', 0, -D + 1, 1);              // de overgang van gras naar wit
+  };
+  const muur = () => {
+    // de muur van witte steen aan de waterkant, van de waterlijn tot de kruin
+    band(19, '#8f8b7c', 0.17, 3);
+    for (let dy = 2; dy >= -D; dy--) band(18, dy > 0 ? '#bdb8a7' : '#dcd8cb', 0.16, dy);
+  };
+  band(4, 'rgba(255,255,255,0.45)', 0.36, 4);       // schuim op de waterlijn
+  if (voor) { helling(); muur(); } else { muur(); helling(); }
+  // de kruin: wit kalkpad
+  band(14, '#e4e0d4', 0.07, -D - 0.5);
+  band(10, '#f3f1ea', 0.07, -D - 1.5);
+
+  // voegen in de muur, alleen als je de muur ziet
+  if (voor && punten.length) {
+    const [ox, oy] = scherm(water[0], water[1], 0.16);
+    for (const [px, py] of punten) {
+      for (let t = 0.12; t < 1; t += 0.22) {
+        for (const rij of [-2, -5.5]) {
+          const x = cx + px * t + ox + (toeval() - 0.5) * 2;
+          const y = cy + py * t + oy + 7 + rij;
+          blok(ctx, x - 1.8, y, 3.6, 0.8, 'rgba(120,112,92,0.28)');
+        }
+      }
+    }
   }
-  for (let k = 0; k < 8; k++) {
-    const [ex, ey] = einden.length ? einden[Math.floor(toeval() * einden.length)] : [cx, cy];
-    const t = toeval();
-    const x = cx + (ex - cx) * t + (toeval() - 0.5) * 8;
-    const y = cy + (ey - cy) * t - 1 - toeval() * 4;
-    lijn(ctx, x, y, x + (toeval() - 0.5) * 2, y - 2.5, '#4f7a2e', 0.8);
+
+  // palissade: puntige palen met een regel ertussen, op de landkant van de kruin
+  if (palissade && punten.length) {
+    const [ox, oy] = scherm(water[0], water[1], -0.03);
+    const palen = [];
+    for (const [px, py] of punten) {
+      const lang = Math.hypot(px, py);
+      for (let d = 2; d < lang + 1; d += 6.5) palen.push({ x: cx + ox + px * d / lang, y: cy + oy - D - 1 + py * d / lang, hoog: 11 + toeval() * 3 });
+    }
+    palen.sort((a, c) => a.y - c.y);
+    for (const p of punten) {
+      const [ex, ey] = [cx + ox + p[0], cy + oy - D - 1 + p[1]];
+      lijn(ctx, cx + ox, cy + oy - D - 7, ex, ey - 6, '#5a3d22', 1.6);
+    }
+    for (const pl of palen) dijkPaal(ctx, pl.x, pl.y, pl.hoog, 3);
   }
-  return { beeld: doek, b, h, ax: cx, ay: cy + HH };
+
+  // poort: een witte pijler met een kap, een rode banier en een open houten deur naar de haven
+  if (poort) {
+    const [ox, oy] = scherm(water[0], water[1], 0.04);
+    const px = cx + ox;
+    const py = cy + oy - D - 1;
+    const [hx, hy] = scherm(haven[0], haven[1], 0.42);
+    const deur = () => {
+      const A = [px + hx * 0.3, py + hy * 0.3];
+      const B = [px + hx, py + hy];
+      const H = 17;
+      vlak(ctx, [A, B, [B[0], B[1] - H], [A[0], A[1] - H]], '#7a5530');
+      for (let k = 1; k < 5; k++) { const P = tussen(A, B, k / 5); lijn(ctx, P[0], P[1], P[0], P[1] - H, 'rgba(40,24,10,0.55)', 0.8); }
+      for (const v of [4, 12]) lijn(ctx, A[0], A[1] - v, B[0], B[1] - v, '#2e2a26', 1.4);
+    };
+    if (hy < 0) deur();
+    steenBlok(ctx, px, py, 9, 4.5, 24, '#e8e4d8', toeval);
+    vlak(ctx, [[px - 10, py - 24], [px, py - 29], [px + 10, py - 24], [px, py - 19]], '#b8322a');
+    vlak(ctx, [[px - 10, py - 24], [px, py - 19], [px, py - 33]], '#8e2a22');
+    vlak(ctx, [[px, py - 19], [px + 10, py - 24], [px, py - 33]], '#c23a2e');
+    dijkPaal(ctx, px, py - 31, 10, 1.6);
+    vlak(ctx, [[px + 0.8, py - 40], [px + 11, py - 37], [px + 0.8, py - 34]], '#c23a2e');
+    if (hy >= 0) deur();
+  }
+  return { beeld: doek, b, h, ax: cx, ay: cy + HH, geenSchaduw: true };
 }
 
 export function tekenDijk(naam, def) {
-  return { kies: 'dijk', varianten: Array.from({ length: 256 }, (_, masker) => dijkTegel(naam, def, masker)) };
+  const klaar = new Map();
+  return {
+    kies: 'dijk',
+    maak(sleutel) {
+      if (!klaar.has(sleutel)) klaar.set(sleutel, dijkTegel(naam, def, sleutel));
+      return klaar.get(sleutel);
+    },
+  };
 }
 
 // Het erf rond de zaal van Rutger: platte, vertrapte aarde (niets dat over de zaal heen valt).
