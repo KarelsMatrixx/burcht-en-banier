@@ -12,7 +12,9 @@ const komma = (getal) => getal.toFixed(1).replace('.', ',');
 // door plaatjes.
 const LIJN = {
   kasteel: '<path d="M4 21V9h3V5h3v4h4V5h3v4h3v12z"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/>',
-  werk: '<path d="M13 4l7 3-3 5-6-3z"/><path d="M12 8L4 20"/>',
+  // Grondstof: een houweel. Voedsel: een korenaar (0.121.0, Work gesplitst).
+  grondstof: '<g transform="rotate(-40 12 12)"><path d="M3 9.5C7 4.5 17 4.5 21 9.5 16 7.5 8 7.5 3 9.5z"/><path d="M12 7v15"/></g>',
+  voedsel: '<path d="M12 21V8"/><path d="M12 8c-2-1-3-3-3-5 2 1 3 3 3 5zM12 8c2-1 3-3 3-5-2 1-3 3-3 5z"/><path d="M12 13c-2-1-4-2-4-5 2 1 4 2 4 5zM12 13c2-1 4-2 4-5-2 1-4 2-4 5z"/><path d="M12 18c-2-1-4-2-4-5 2 1 4 2 4 5zM12 18c2-1 4-2 4-5-2 1-4 2-4 5z"/>',
   dorp: '<path d="M3 11l9-7 9 7v10H3z"/><path d="M10 21v-6h4v6"/>',
   leger: '<path d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z"/>',
   melee: '<path d="M14 4h6v6L10 20l-6-6z"/><path d="M4 20l3-3"/>',
@@ -243,7 +245,11 @@ export function maakUi() {
   let knoppenStand = '';   // proloog: welke knoppen nu open zijn (beperkKnoppen)
   let beperktTot;   // proloog: undefined = geen beperking, anders de sleutel van het bouwwerk dat mag (of null)
   let legerStand = { zichtbaar: false };
+  // Gaat de bouwbalk open, dan laat je je gekozen soldaten los (0.121.0, Karel):
+  // anders loopt een soldaat weg als je daarna op de grond tikt.
+  let bijBouwOpen = () => {};
   function zetPaneel(nieuw) {
+    if (nieuw === 'bouw' && paneel !== 'bouw') bijBouwOpen();
     paneel = nieuw;
     try { sessionStorage.setItem('burcht-banier.paneel', paneel || ''); } catch (fout) { /* geen opslag */ }
     el('knop-hamer').classList.toggle('actief', paneel === 'bouw');
@@ -1046,6 +1052,9 @@ export function maakUi() {
       requestAnimationFrame(() => schuifLeger());
     },
     // Het zwaard zet de legerbalk terug naar de groepen.
+    opBouwOpen(functie) {
+      bijBouwOpen = functie;
+    },
     opLegerBegin(functie) {
       legerBegin = functie;
     },
@@ -1105,6 +1114,8 @@ export function maakUi() {
         return knop;
       };
       for (const [groep, naam] of Object.entries(groepen)) {
+        // Een groep zonder iets dat je al mag bouwen laat je weg.
+        if (!knoppen.some((k) => k.groep === groep)) continue;
         const knop = maak(naam, () => toonGroep(groep));
         knop.dataset.open = groep;
         const icoon = lijnIcoon(groep);

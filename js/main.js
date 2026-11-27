@@ -848,6 +848,7 @@ async function start() {
     leger.kiesGeen();
   });
   ui.opLegerBegin(() => { legerOpen = null; naLeger(); });
+  ui.opBouwOpen(() => { if (leger.aantalGekozen()) leger.kiesGeen(); });
   naLeger();
 
   // Waar staat deze soldaat op het scherm (het midden van zijn lijf)?

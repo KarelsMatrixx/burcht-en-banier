@@ -1455,3 +1455,10 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Afwisseling: per extra soort eten +2 populariteit (twee soorten +2, drie soorten +4; was altijd +2). Alleen merkbaar waar je drie soorten kunt hebben.
 - Teksten: tip van de hut, slotkaartje van de visles en de hongertip noemen vis (Engels, na te lezen).
 - Tests: visserij120 (34), zeeleven112 (17, walvis geeft vis). Groen: haven106, handelles116, golven109, eilanden111, berserker110, zager106, brood22, opslag20, koper23, hud35, test_stap15, test_stap17.
+
+## 0.122.0: bouwbalk opnieuw ingedeeld, soldaten los als de bouwbalk opengaat
+- De groep Work is gesplitst in Resources (Woodcutter's Hut, Sawmill, Stone Mine, Copper Mine) en Food (Wheat Field, Bakery, Orchard, Fisherman's Hut). Hop Farm staat nu bij Village, naast de Tavern. Elke groep in ketenvolgorde (data/bouwwerken.json). Sleutels van gebouwen ongewijzigd, bewaarde spelstanden blijven heel.
+- Eigen gouden lijniconen voor Resources (houweel) en Food (korenaar) in ui.js `LIJN`. Een groep waarin je nog niets mag bouwen wordt niet getoond.
+- Gaat de bouwbalk open (hamer, ook vanuit het legermenu), dan worden alle gekozen soldaten losgelaten (ui.js `opBouwOpen`, main.js). Het legermenu openen laat de keuze staan.
+- Test bouwlos121 (7). Groen: menureset103, proloog69, proloog35, proloog40, proloog42, gevecht40, visserij120, handelles116, haven106, balk38, zager106, berserker110. proloog43 (gids wijst Archer) was al rood zonder deze wijziging.
+- Open: Army past net niet op één rij (lange prijs bij Mystic Lodge, schuift); niet op iPhone gezien.

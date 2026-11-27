@@ -1,0 +1,37 @@
+// 0.121.0: bouwbalk opent = gekozen soldaten los; bouwbalk heeft vijf groepen (Work gesplitst).
+import { chromium } from '/home/claude/.npm-global/lib/node_modules/playwright/index.mjs';
+import { autoVerder } from './hulp_beeld.mjs';
+import { spawn } from 'child_process';
+const poort = 8421;
+const srv = spawn('python3', ['-m', 'http.server', String(poort)], { cwd: new URL('..', import.meta.url).pathname, stdio: 'ignore' });
+await new Promise((r) => setTimeout(r, 800));
+const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+const p = await (await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, deviceScaleFactor: 2 })).newPage();
+await autoVerder(p);
+const fouten = []; p.on('pageerror', (e) => fouten.push(String(e)));
+let ok = 0, fout = 0; const check = (n, w, x = '') => { if (w) ok++; else { fout++; console.log('FOUT:', n, x); } };
+const wacht = () => p.waitForFunction(() => window.spel && window.spel.strijd, null, { timeout: 20000 });
+await p.goto(`http://localhost:${poort}/`); await wacht();
+await p.evaluate(() => { localStorage.clear(); sessionStorage.clear(); sessionStorage.setItem('burcht-banier.geenTitel', '1'); localStorage.setItem('tipGesloten', '1');
+  localStorage.setItem('burcht-banier.campagne', JSON.stringify({ klaar: [0,1,2,3,4,5,6,7,8,9] }));
+  localStorage.setItem('burcht-banier.modus', JSON.stringify({ soort: 'campagne', missie: 9 })); });
+await p.reload(); await wacht(); await p.waitForTimeout(500);
+await p.tap('#missie-begin').catch(() => {}); await p.waitForTimeout(1500);
+await p.evaluate(() => window.spel.ui && window.spel.ui.verbergVerhaal && window.spel.ui.verbergVerhaal());
+const groepen = await p.evaluate(() => [...document.querySelectorAll('#bouw-knoppen [data-open]')].map((k) => k.dataset.open));
+check('vijf groepen', JSON.stringify(groepen) === JSON.stringify(['kasteel', 'grondstof', 'voedsel', 'dorp', 'leger']), JSON.stringify(groepen));
+const n = await p.evaluate(() => { window.spel.leger.kiesAlles(); return window.spel.leger.aantalGekozen(); });
+check('soldaten gekozen', n > 0, n);
+await p.tap('#knop-hamer'); await p.waitForTimeout(300);
+check('bouwbalk open', await p.evaluate(() => !document.getElementById('bouw-knoppen').hidden));
+check('na hamer niemand gekozen', await p.evaluate(() => window.spel.leger.aantalGekozen()) === 0);
+// Bouwbalk dicht en weer kiezen: dan blijft de keuze staan zolang je niet bouwt
+await p.tap('#knop-hamer'); await p.waitForTimeout(200);
+await p.evaluate(() => window.spel.leger.kiesAlles());
+await p.tap('#knop-zwaard'); await p.waitForTimeout(200);
+check('legermenu houdt keuze', await p.evaluate(() => window.spel.leger.aantalGekozen()) > 0);
+await p.tap('#knop-hamer'); await p.waitForTimeout(200);
+check('van leger naar bouw: los', await p.evaluate(() => window.spel.leger.aantalGekozen()) === 0);
+check('geen fouten', fouten.length === 0, fouten.join(' | '));
+console.log(`bouwlos121: ${ok} goed, ${fout} fout`);
+await b.close(); srv.kill(); process.exit(fout ? 1 : 0);
