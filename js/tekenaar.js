@@ -1386,7 +1386,6 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
       sfeer.tekenWaas(ctx, canvas.width / pixelRatio, canvas.height / pixelRatio, t);
     }
-    if (staat.zee) { ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0); staat.zee.tekenLicht(ctx, canvas.width / pixelRatio, canvas.height / pixelRatio); }
 
     // De nacht (proloog): een donkerblauwe waas over de wereld, 0 tot 1.
     const nacht = staat.nacht ? staat.nacht() : 0;

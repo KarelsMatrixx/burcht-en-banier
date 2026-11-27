@@ -1,6 +1,6 @@
 // ZEELEVEN (0.112.0, White Dike): wat er op en boven het water leeft.
 // Walvissen die opspringen (een enkele geeft je een vangst), meeuwen bij de havens, kleine rode
-// vissersboten, zeemist, avondlicht vlak voor een golf, Rutger die op zijn dijk schreeuwt en
+// vissersboten, zeemist, Rutger die op zijn dijk schreeuwt en
 // onbewoonde eilandjes met een kist die je met een schip van jouw haven kunt ophalen.
 // Bijna alles is decor: alleen de gelukkige walvis en de kist geven iets (voedsel, planken, goud).
 
@@ -14,7 +14,6 @@ const MAX_VANGST = 3;        // zoveel keer per level geeft een walvis voedsel
 const VANGST = 25;           // voedsel per vangst
 const VAART = 2.2;           // tegels per seconde van het schip naar het eilandje
 const MIST_RONDE = 140;      // seconden tussen twee mistbanken
-const AVOND = 35;            // seconden voor een golf waarop het avondlicht begint
 
 // Game text is English (na te lezen).
 const SCHREEUW = [
@@ -185,7 +184,7 @@ export function maakZeeleven({ kaart, economie, haven, melding = () => {}, volge
   let schreeuwKlok = 25;
   let schreeuw = null;   // { tekst, tot }
 
-  // --- Mist en avondlicht --------------------------------------------------------------------
+  // --- Mist --------------------------------------------------------------------
   const banken = [];
   for (let k = 0; k < 5 && open.length; k++) {
     const i = open[Math.floor(toeval() * open.length)];
@@ -195,7 +194,6 @@ export function maakZeeleven({ kaart, economie, haven, melding = () => {}, volge
     const ph = (((t + 40) % MIST_RONDE) + MIST_RONDE) % MIST_RONDE / MIST_RONDE;
     return ph < 0.3 ? Math.sin((ph / 0.3) * Math.PI) : 0;
   };
-  let licht = 0;
 
   // --- Elke stap ------------------------------------------------------------------------------
   function stap(dt) {
@@ -207,8 +205,6 @@ export function maakZeeleven({ kaart, economie, haven, melding = () => {}, volge
       if (walvissen[i].t > walvissen[i].duur) walvissen.splice(i, 1);
     }
     reisStap(dt);
-    const n = volgendeGolf();
-    licht += ((Number.isFinite(n) && n > 0 && n < AVOND ? 1 : 0) - licht) * Math.min(1, dt * 0.5);
     schreeuwKlok -= dt;
     if (schreeuw && t > schreeuw.tot) schreeuw = null;
     if (schreeuwKlok <= 0) {
@@ -466,18 +462,6 @@ export function maakZeeleven({ kaart, economie, haven, melding = () => {}, volge
     tekenMeeuwen(ctx, l, b, r, o);
     tekenMist(ctx, l, b, r, o);
   }
-  // Het scherm (zonder camera): het avondlicht voor een golf.
-  function tekenLicht(ctx, bw, hh) {
-    if (licht < 0.01) return;
-    ctx.fillStyle = `rgba(255, 150, 50, ${0.15 * licht})`;
-    ctx.fillRect(0, 0, bw, hh);
-    const g = ctx.createLinearGradient(0, hh * 0.5, 0, hh);
-    g.addColorStop(0, 'rgba(120, 40, 20, 0)');
-    g.addColorStop(1, `rgba(120, 40, 20, ${0.16 * licht})`);
-    ctx.fillStyle = g;
-    ctx.fillRect(0, hh * 0.5, bw, hh * 0.5);
-  }
-
   // Schepen voor de tekenlaag: vissersboten en het schip naar het eilandje.
   function schepen() {
     const lijst = boten.map(botPlek);
@@ -495,9 +479,9 @@ export function maakZeeleven({ kaart, economie, haven, melding = () => {}, volge
   }
 
   return {
-    stap, tik, teken, tekenBoven: tekenBubbel, tekenLicht, schepen, spring,
+    stap, tik, teken, tekenBoven: tekenBubbel, schepen, spring,
     walvissen: () => walvissen, eilandjes: () => eilandjes, boten: () => boten, kust: () => kust, jouwKust: () => jouwKust,
-    reis: () => reis, schreeuw: () => schreeuw, mist, licht: () => licht, gevangen: () => gevangen,
+    reis: () => reis, schreeuw: () => schreeuw, mist, gevangen: () => gevangen,
     schreeuwNu(tekst) { schreeuw = { tekst: tekst || SCHREEUW[0], tot: t + 5 }; },
   };
 }

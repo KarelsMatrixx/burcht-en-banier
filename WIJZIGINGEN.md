@@ -1438,3 +1438,6 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Tekeningen (kunst.js): `tekenVissershut` (hut op palen met rieten dak, droogrek met vis, net tussen palen, mand, vat, wimpel) en `tekenVisboot` (roeiboot met visser in teamkleur: varen, vissen, terug met volle mand). Werker `visser` met net en vis (soldaten.js).
 - Niet bewaard: waar een bootje is. Na herladen ligt het weer aan zijn hut.
 - Test: tests/visserij120.mjs (31). golven109 slaat nu ook de visles over (14). Groen: haven106 (34), eilanden111 (10), zeeleven112 (17), zager106 (13), handelles116 (19), berserker110 (7), test_stap15 (22), test_stap17 (23). Alle getallen en Engelse teksten zijn schattingen of na te lezen. Niet op een iPhone gezien.
+
+## 0.120.1: het gouden avondlicht in level 8 is weg
+- Het oranje avondlicht over het scherm in de minuut voor een golf is helemaal verwijderd (zeeleven.js `tekenLicht` en de klok `licht`, tekenaar.js). De zeemist blijft.

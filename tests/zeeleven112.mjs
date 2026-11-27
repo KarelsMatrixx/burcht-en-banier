@@ -60,16 +60,16 @@ const sp = await p.evaluate(() => {
 });
 check('spel loopt twee minuten door zonder fouten', fouten.length === 0, fouten.join('|'));
 
-// Mist en avondlicht
+// Mist (het avondlicht is weg sinds 0.120.1)
 const m = await p.evaluate(() => {
   const z = window.spel.zeeleven; const d = window.spel.doel;
   let max = 0; for (let t = 0; t < 140; t += 2) { /* mist hangt aan de eigen klok: stappen */ z.stap(2); max = Math.max(max, z.mist()); }
   d.zetTijd(d.stand().tijd + d.volgende() - 20);   // 20 s voor de eerste golf
   for (let k = 0; k < 120; k++) z.stap(0.1);
-  return { mistMax: max, licht: z.licht() };
+  return { mistMax: max, licht: typeof z.licht };
 });
 check('er komt mist voorbij', m.mistMax > 0.5, m.mistMax.toFixed(2));
-check('avondlicht vlak voor een golf', m.licht > 0.5, m.licht.toFixed(2));
+check('geen avondlicht meer', m.licht === 'undefined', m.licht);
 
 // Rutger op de dijk, schreeuwt
 const r = await p.evaluate(() => {
