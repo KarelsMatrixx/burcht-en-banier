@@ -4649,10 +4649,9 @@ export function tekenRunensteen(naam, def) {
   return { beeld: doek, b, h, ax: b / 2, ay: h };
 }
 
-// De witte dijk (White Dike): een lage, doorlopende wal van witte kalksteen met er bovenop een houten
-// Vikingpalissade: scherpe palen, hier en daar een rond schild en af en toe een rode wimpel.
-// 16 varianten naar de buren (zoals een muur), zodat de dijk de oever als een doorlopende lijn volgt.
-function dijkPaal(ctx, x, y, hoog, breed = 4.4) {
+// De witte dijk (White Dike): geen muur van blokken maar een witte kalkoever: platte kiezel en kalk langs het water,
+// hier en daar een paar houten palen met een rond schild of een rode wimpel. Zo volgt hij elke kustlijn zonder zaagtand.
+function dijkPaal(ctx, x, y, hoog, breed = 4) {
   const l = x - breed / 2;
   const r = x + breed / 2;
   vlak(ctx, [[l, y], [l, y - hoog + 3], [x, y - hoog], [x, y]], '#5e4026');
@@ -4660,43 +4659,55 @@ function dijkPaal(ctx, x, y, hoog, breed = 4.4) {
   lijn(ctx, l, y - hoog * 0.45, r, y - hoog * 0.45 + 0.6, 'rgba(30,18,8,0.55)', 0.9);
 }
 
-function dijkTegel(naam, def, masker) {
-  const H = def.hoogte;
+function dijkTegel(naam, def, nummer) {
   const b = TB + 2;
-  const h = TH + H + 44;
+  const h = TH + 40;
   const { doek, ctx } = nieuwDoek(b, h);
   const cx = b / 2;
   const cy = h - 1 - HH;
-  const toeval = toevalVoor(naam + masker);
-  steenBlok(ctx, cx, cy, HB + 1, HH + 0.5, H, def.kleur, toeval);
-  // Een rij witte kalkvlekken en groen mos onderaan, zodat het geen gladde doos is
-  for (let k = 0; k < 6; k++) blok(ctx, cx + (toeval() - 0.5) * 40, cy + HH * (0.2 + toeval() * 0.7) - 1, 3 + toeval() * 3, 1.6, 'rgba(110,140,80,0.22)');
-  // Palen: in het midden en, per aansluitende buur, op 0,67 van het midden naar de rand.
-  const top = cy - H;
-  const randen = [[1, HB / 2, -HH / 2], [2, HB / 2, HH / 2], [4, -HB / 2, HH / 2], [8, -HB / 2, -HH / 2]];
-  const palen = [{ x: cx, y: top, hoog: 21, midden: true }];
-  for (const [bit, dx, dy] of randen) if (masker & bit) palen.push({ x: cx + dx * 0.67, y: top + dy * 0.67, hoog: 17 + toeval() * 2 });
-  if (masker === 0) for (const [, dx, dy] of randen) palen.push({ x: cx + dx * 0.67, y: top + dy * 0.67, hoog: 15 });
-  palen.sort((a, c) => a.y - c.y);
-  const vlagTegel = toeval() < 0.16;
-  const schilden = ['#b8322a', '#e6dcc0', '#2f3a52', '#c9a23a'];
-  for (const pl of palen) {
-    dijkPaal(ctx, pl.x, pl.y, vlagTegel && pl.midden ? 34 : pl.hoog);
-    if (vlagTegel && pl.midden) {
-      vlak(ctx, [[pl.x + 1.7, pl.y - 33], [pl.x + 13, pl.y - 29], [pl.x + 1.7, pl.y - 25]], '#c23a2e');
-    } else if (pl.midden && toeval() < 0.75) {
-      // Een rond schild aan de voorkant van de middenpaal
-      const kleur = schilden[Math.floor(toeval() * schilden.length)];
-      ovaal(ctx, pl.x + 3.2, pl.y - 8, 4.4, 4.4, '#3a2412');
-      ovaal(ctx, pl.x + 3.2, pl.y - 8, 3.7, 3.7, kleur);
-      ovaal(ctx, pl.x + 3.2, pl.y - 8, 1.1, 1.1, '#6d6657');
-    }
+  const toeval = toevalVoor(naam + nummer);
+  const binnen = () => {
+    // een willekeurig punt in de ruit van de tegel, iets naar binnen
+    const u = toeval();
+    const v = toeval();
+    return [cx + (u - v) * HB * 0.82, cy + (u + v - 1) * HH * 0.82];
+  };
+  // Kalkvlekken en kiezel, plat op de grond
+  for (let k = 0; k < 9; k++) { const [x, y] = binnen(); ovaal(ctx, x, y, 4 + toeval() * 6, 1.8 + toeval() * 2.2, 'rgba(236,232,218,0.55)'); }
+  for (let k = 0; k < 16; k++) {
+    const [x, y] = binnen();
+    const lichtheid = 190 + Math.floor(toeval() * 55);
+    ovaal(ctx, x, y, 1.6 + toeval() * 2.4, 0.9 + toeval() * 1.2, `rgb(${lichtheid}, ${lichtheid - 3}, ${lichtheid - 14})`);
+  }
+  // Een paar witte keien met een schaduwkant
+  for (let k = 0; k < 2 + Math.floor(toeval() * 2); k++) {
+    const [x, y] = binnen();
+    const g = 2.2 + toeval() * 2.2;
+    ovaal(ctx, x + 0.6, y + 0.9, g + 0.6, g * 0.5 + 0.4, 'rgba(60,55,40,0.25)');
+    vlak(ctx, [[x - g, y], [x - g * 0.6, y - g * 0.9], [x + g * 0.5, y - g], [x + g, y - g * 0.2], [x + g * 0.7, y + g * 0.3], [x - g * 0.5, y + g * 0.4]], '#e4e0d4');
+    vlak(ctx, [[x - g, y], [x - g * 0.5, y + g * 0.4], [x + g * 0.7, y + g * 0.3], [x, y - g * 0.1]], '#bcb6a6');
+  }
+  if (nummer === 9 || nummer === 10) {
+    // twee palen met een rond schild ertussen
+    const x = cx + (toeval() - 0.5) * 16;
+    const y = cy + (toeval() - 0.5) * 6;
+    dijkPaal(ctx, x - 5, y, 19);
+    dijkPaal(ctx, x + 5, y + 1, 19);
+    const schilden = ['#b8322a', '#e6dcc0', '#2f3a52', '#c9a23a'];
+    ovaal(ctx, x, y - 10, 5.2, 5.2, '#3a2412');
+    ovaal(ctx, x, y - 10, 4.4, 4.4, schilden[Math.floor(toeval() * schilden.length)]);
+    ovaal(ctx, x, y - 10, 1.3, 1.3, '#6d6657');
+  } else if (nummer === 11) {
+    // een hoge paal met een rode wimpel
+    dijkPaal(ctx, cx, cy, 34, 4.4);
+    vlak(ctx, [[cx + 2.2, cy - 33], [cx + 15, cy - 28], [cx + 2.2, cy - 23]], '#c23a2e');
   }
   return { beeld: doek, b, h, ax: cx, ay: h - 1 };
 }
 
+// Twaalf varianten: negen gewone, twee met palen en schild, een met een wimpel.
 export function tekenDijk(naam, def) {
-  return { kies: 'masker', varianten: Array.from({ length: 16 }, (_, masker) => dijkTegel(naam, def, masker)) };
+  return { kies: 'toeval', varianten: Array.from({ length: 12 }, (_, nummer) => dijkTegel(naam, def, nummer)) };
 }
 
 // Het erf rond de zaal van Rutger: platte, vertrapte aarde (niets dat over de zaal heen valt).

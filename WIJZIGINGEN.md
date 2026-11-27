@@ -1402,3 +1402,6 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - De witte dijk is geen rij losse platte blokjes meer: het is een doorlopende lage wal van witte kalksteen met er bovenop een houten Vikingpalissade (scherpe palen, ronde schilden, af en toe een rode wimpel). kunst.js `tekenDijk`: 16 varianten naar de buren, net als een muur; kaart.js `aansluiting` kent de dijk.
 - Gaten op diagonale hoeken worden gedicht (kaart.js), zodat de dijk één lijn is. Bij de haven blijft een opening.
 - De dijk blijft decor.
+
+## 0.118.1: dijk als kalkoever
+- De muur met palissade (0.118.0) zag er te rommelig uit: een zaagtand langs de kust. De White Dike is nu een witte kalkoever: platte kiezel, kalk en witte keien langs het water, met hier en daar twee palen met een rond schild of een hoge paal met rode wimpel. Geen doorlopende wal meer, geen gaten dichten; hij volgt elke kustlijn rustig (kunst.js `tekenDijk`, 12 varianten op toeval).

@@ -81,7 +81,7 @@ const isVesting = (soort) => (soort >= OBJECT.MUUR && soort <= OBJECT.WACHTTOREN
 // mee als buur.
 export function aansluiting(kaart, x, y, alsSoort, ookHier) {
   const zelf = alsSoort !== undefined ? alsSoort : kaart.object[y * kaart.breedte + x];
-  const past = zelf === OBJECT.DIJK ? ((o) => o === OBJECT.DIJK) : isBurcht(zelf) ? isBurcht : isVesting;
+  const past = isBurcht(zelf) ? isBurcht : isVesting;
   const buur = (bx, by) =>
     bx >= 0 && by >= 0 && bx < kaart.breedte && by < kaart.hoogte &&
     (past(kaart.object[by * kaart.breedte + bx]) || (!!ookHier && ookHier(bx, by)));
@@ -672,26 +672,6 @@ export function maakKaart(recept) {
         for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (object[(y + dy) * breedte + x + dx] === OBJECT.HAVEN) bijHaven = true;
         if (bijHaven) continue;
         object[i] = OBJECT.DIJK;
-      }
-    }
-    // Sluit de gaten op diagonale hoeken: de dijk is één doorlopende lijn (palissade en wal sluiten op elkaar aan).
-    const dijkGeschikt = (x, y) => {
-      const k = y * breedte + x;
-      if (x < 1 || y < 1 || x >= breedte - 1 || y >= hoogte - 1 || grond[k] === GROND.WATER || eigenaar[k]) return false;
-      if (object[k] !== OBJECT.GEEN && object[k] !== OBJECT.BOOM && object[k] !== OBJECT.STEEN) return false;
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (object[(y + dy) * breedte + x + dx] === OBJECT.HAVEN) return false;
-      return true;
-    };
-    const dijken = [];
-    for (let k = 0; k < breedte * hoogte; k++) if (object[k] === OBJECT.DIJK) dijken.push(k);
-    for (const k of dijken) {
-      const x = k % breedte;
-      const y = (k - x) / breedte;
-      for (const [dx, dy] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
-        if (object[(y + dy) * breedte + x + dx] !== OBJECT.DIJK) continue;
-        if (object[y * breedte + x + dx] === OBJECT.DIJK || object[(y + dy) * breedte + x] === OBJECT.DIJK) continue;
-        if (dijkGeschikt(x + dx, y)) object[y * breedte + x + dx] = OBJECT.DIJK;
-        else if (dijkGeschikt(x, y + dy)) object[(y + dy) * breedte + x] = OBJECT.DIJK;
       }
     }
   }
