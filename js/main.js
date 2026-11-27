@@ -1032,9 +1032,23 @@ async function start() {
       kort = tijd(s.klok);
       lang = `Attack ${s.golf + 1} comes in ${tijd(s.klok)}.`;
     }
+    // Level 8 (golven van Rutger): bovenin staat de klok en hoeveel golven er geweest zijn. "Attack!" alleen als er
+    // echt een golf bezig is, tot de laatste man dood is; dan telt de klok weer.
+    if (missie && missie.doel && missie.doel.soort === 'golven' && doel && doel.stand && !s.vrede) {
+      const st = doel.stand();
+      const totaal = missie.doel.aantal || 10;
+      if (st.golfBezig || st.golven >= totaal) {
+        kort = `Attack! ${st.golven}/${totaal}`;
+        lang = st.golfBezig ? `Wave ${st.golven} of ${totaal}: ${doel.mannenOver()} raiders left. The next wave comes ${tijd(missie.doel.tussen || 100)} after the last one falls.` : `All ${totaal} waves have come. Hold the shore.`;
+      } else {
+        const nog = Math.max(0, Math.ceil(doel.volgende()));
+        kort = `${tijd(nog)} \u00b7 Wave ${st.golven}/${totaal}`;
+        lang = `Wave ${st.golven + 1} of ${totaal} lands in ${tijd(nog)}.`;
+      }
+    }
     lang += ` Keep: ${s.burcht} of ${s.burchtMax}.`;
     if (!s.vrede && !regels.strijd.proloog) lang += ' Defeating the red king wins the level.';
-    ui.toonStrijd({ kort, lang: lang.trim(), slecht: s.vijanden > 0 });
+    ui.toonStrijd({ kort, lang: lang.trim(), slecht: missie && missie.doel && missie.doel.soort === 'golven' && doel && doel.stand ? doel.stand().golfBezig : s.vijanden > 0 });
     // De uitleg bij je soldaten verandert als er vijanden zijn.
     if (vijandInBeeld !== s.vijanden > 0) {
       vijandInBeeld = s.vijanden > 0;

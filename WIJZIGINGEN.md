@@ -1481,3 +1481,7 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Gids (gids.js): soorten `kader`, `formatie`, `houd`; `kies` kent een eigen tekst en een terugval.
 - Test: tests/legerles121.mjs (39, met een controle op Shield). Groen: selectie (10), selectie_kader51 (12), handelles116 (19), menureset103, balk38, hud35 (48), ballista80, proloog77 (35), proloog35 (82), golven109 (16), test_stap15 (22), test_stap17 (23). proloog43 faalde al voor deze versie (zoekt een knop Archer in de oude legerbalk).
 - Na te lezen: alle nieuwe Engelse teksten. Schatting: de acht gratis soldaten (balans level 3). Hold is niet in een echt gevecht getest, niet op een iPhone gezien.
+
+## 0.123.1: klok en golfstand in de voorraadbalk (level 8)
+- Rechts in de voorraadbalk stond in level 8 altijd "Attack!", ook als er geen golf bezig was (rode soldaten in het dorp telden mee). Nu staat daar de klok naar de volgende golf met het aantal golven dat geweest is ("2:59 · Wave 0/10"). Zodra een golf bezig is staat er "Attack! 1/10", tot de laatste man dood is; dan telt de klok weer (main.js `naStrijd`).
+- De aparte klok onder de adviseur is in level 8 weggehaald (stond er dubbel). Na een herladen telt een bezige golf als voorbij, want de golfmannen zijn dan niet meer bekend. Teksten Engels, na te lezen.

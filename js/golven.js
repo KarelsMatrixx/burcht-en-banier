@@ -265,18 +265,12 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
   const mannenOpZee = () => schepen.reduce((a, sch) => a + (sch.terug ? 0 : Object.entries(sch.lading).reduce((b, [k, n]) => b + (k === heldSleutel ? 0 : n), 0)), 0);
   const mannenAanLand = () => {
     golfMannen = golfMannen.filter((e) => !e.dood);
-    // Na een herladen weten we niet meer wie van de golf was: dan tellen alle aanvallers.
-    return herlaad && !golfMannen.length ? strijd.vijanden().filter((e) => !isHeld(e)).length : golfMannen.length;
+    return golfMannen.length;
   };
   const mannenOver = () => mannenOpZee() + mannenAanLand();
   const volgendeGolf = () => (s.golven >= aantal ? Infinity : s.aftel);
-  const toonKlok = () => {
-    if (!toonAanvalKlok) return;
-    const nog = volgendeGolf();
-    if (!Number.isFinite(nog)) { toonAanvalKlok(null); return; }
-    if (s.golfBezig) toonAanvalKlok({ seconden: 0, golf: s.golven, totaal: aantal, over: mannenOver() });
-    else toonAanvalKlok({ seconden: Math.max(0, Math.ceil(nog)), golf: s.golven + 1, totaal: aantal });
-  };
+  // De klok staat bovenin de voorraadbalk (main.js naStrijd); de aparte klok onder de adviseur is niet meer nodig.
+  const toonKlok = () => { if (toonAanvalKlok) toonAanvalKlok(null); };
 
   function vaarStap(dt) {
     for (let i = schepen.length - 1; i >= 0; i--) {
@@ -312,7 +306,9 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
         if (l) { rutger = strijd.maakHeld(heldSleutel, vrijBij(l.x, l.y)); if (rutger) { rutger.onsterfelijk = true; if (s.rutgerLeven) rutger.leven = Math.max(2, s.rutgerLeven); } }
       }
       // Was een golf onderweg toen je herlaadde, dan vaart hij opnieuw uit.
-      if (s.onderweg > 0 && s.geland < s.golven) { s.golven = s.geland; s.onderweg = 0; s.golfBezig = s.geland > 0 && strijd.vijanden().length > 0; s.aftel = 0; }
+      if (s.onderweg > 0 && s.geland < s.golven) { s.golven = s.geland; s.onderweg = 0; s.golfBezig = false; s.aftel = 0; }
+      // Na een herladen weten we niet meer wie van de golf was (rood heeft ook vaste soldaten): de golf telt als voorbij.
+      if (s.golfBezig && !schepen.length) { s.golfBezig = false; s.aftel = Math.min(s.aftel, d.tussen || 100); }
       toonKlok();
       if (!s.gemeld.begin) {
         s.gemeld.begin = true;
