@@ -922,6 +922,9 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     aantalVerkocht: () => verkocht,
     // De haven (js/haven.js): goederen erbij, zoveel als er past. Geeft het aantal dat paste.
     lever(naam, aantal) {
+      // Onbekende grondstof (bijv. een oud data/economie.json uit de cache): begin bij 0, nooit NaN (0.121.1).
+      if (!Number.isFinite(voorraad[naam])) voorraad[naam] = 0;
+      if (!Number.isFinite(aantal) || aantal <= 0) return 0;
       const past = Math.max(0, Math.min(aantal, opslagMax(naam) - voorraad[naam]));
       voorraad[naam] += past;
       if (past) { opVoorraad(); opVerandering(); }

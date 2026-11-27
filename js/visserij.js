@@ -24,6 +24,7 @@ export function maakVisserij({ kaart, economie, regels = {}, gevaar = () => fals
   const isWater = (x, y) => x >= 0 && y >= 0 && x < B && y < H && kaart.grond[y * B + x] === GROND.WATER;
   const hutten = new Map();   // vak -> { vak, ligplaats, route, visplek, fase, tijd, pos, vangst, ... }
   let snelleTocht = false;    // de les: de eerste tocht is korter
+  let tochten = 0;            // hoe vaak een bootje met vangst terug is gekomen
   let gevangen = 0;           // hoeveel vis er in totaal is binnengebracht (voor de les en tests)
   let gemeldGevaar = false;
   let t = 0;
@@ -158,11 +159,12 @@ export function maakVisserij({ kaart, economie, regels = {}, gevaar = () => fals
         h.pos = 0;
         h.fase = 'lost';
         h.rest = h.vangst;
+        if (h.vangst > 0) tochten++;   // een bootje is met vangst terug (de visles wacht hierop, 0.121.1)
         h.wachtGemeld = false;
       }
       if (h.fase === 'lost') {
         if (h.rest > 0) {
-          const past = economie.lever('vis', h.rest);
+          const past = economie.lever('vis', h.rest) || 0;   // nooit NaN (0.121.1)
           h.rest -= past;
           gevangen += past;
           if (past && geluid) geluid.speel('goods_delivered', { x: h.ligplaats.x, y: h.ligplaats.y });
@@ -272,6 +274,7 @@ export function maakVisserij({ kaart, economie, regels = {}, gevaar = () => fals
     zoek, stap, schepen, teken, beschrijf, kanVissen, regels: R,
     hutten: () => [...hutten.values()],
     gevangen: () => gevangen,
+    tochten: () => tochten,
     snel(aan = true) { snelleTocht = !!aan; },
     // de plek van het eerste bootje dat buiten is (de les volgt het)
     bootje(vak) { const h = vak !== undefined ? hutten.get(vak) : [...hutten.values()][0]; return h ? plekVan(h) : null; },

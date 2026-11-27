@@ -1462,3 +1462,10 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Gaat de bouwbalk open (hamer, ook vanuit het legermenu), dan worden alle gekozen soldaten losgelaten (ui.js `opBouwOpen`, main.js). Het legermenu openen laat de keuze staan.
 - Test bouwlos121 (7). Groen: menureset103, proloog69, proloog35, proloog40, proloog42, gevecht40, visserij120, handelles116, haven106, balk38, zager106, berserker110. proloog43 (gids wijst Archer) was al rood zonder deze wijziging.
 - Open: Army past net niet op één rij (lange prijs bij Mystic Lodge, schuift); niet op iPhone gezien.
+
+## 0.122.1: geen "+NaN fish" meer en de visles eindigt
+- Karels melding (27 november): de walvis gaf "+NaN fish" en de visles bleef doorlopen nadat de visser vis had gebracht. Oorzaak: een oud data/economie.json (zonder grondstof vis) uit de cache naast de nieuwe code. Dan werd de vis-telling NaN en zag de les de vangst nooit. Nagespeeld in tests/visvers121.mjs: oude code geeft precies "+NaN fish" en een les die blijft hangen.
+- economie.js `lever`: een onbekende grondstof begint bij 0, nooit NaN. visserij.js telt alleen echte getallen.
+- Visles: eindigt ook zodra een bootje met vangst terug is, ook als de voorraad vis vol is (`visserij.tochten()`).
+- sw.js: .js, .json, .css en .html worden altijd bij de server nagevraagd (`cache: 'no-cache'`, bij installeren `reload`), zodat oude gegevens niet naast nieuwe code komen. Plaatjes en geluid niet.
+- Test: nieuw tests/visvers121.mjs (17).

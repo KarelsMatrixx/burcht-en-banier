@@ -17,6 +17,7 @@ export function maakVisLes({ gids, visserij, bouwer, bouwwerken, kaart, economie
   let fase = klaarAl ? 'klaar' : 'wacht';
   const werk = bouwwerken.vissershut;
   let gevangenBij = 0;
+  let tochtenBij = 0;
 
   // De gouden plek: een vrije tegel aan het water met open zee ervoor, zo dicht mogelijk bij je burcht.
   function kiesPlek() {
@@ -62,6 +63,7 @@ export function maakVisLes({ gids, visserij, bouwer, bouwwerken, kaart, economie
     gids.kaart({ ...BARTHOLT, tekst: 'A peasant takes the hut and becomes your fisherman. Watch: his boat rows out to sea, casts the net and comes back to his own hut.', knop: 'Watch ›' }, () => {
       fase = 'kijk';
       gevangenBij = visserij.gevangen();
+      tochtenBij = visserij.tochten();
       visserij.snel(true);
       const p = visserij.bootje();
       if (p) glijNaar(p.x, p.y);
@@ -92,7 +94,7 @@ export function maakVisLes({ gids, visserij, bouwer, bouwwerken, kaart, economie
       if (fase === 'bouw' && eigenHut()) naarKijk();
       else if (fase === 'kijk') {
         if (!eigenHut()) { fase = 'bouw'; gids.richt({ soort: 'bouw', sleutel: 'vissershut', plek: kiesPlek(), plekTekst: 'Build the hut here' }); }
-        else if (visserij.gevangen() > gevangenBij) naarKlaar();
+        else if (visserij.gevangen() > gevangenBij || visserij.tochten() > tochtenBij) naarKlaar();   // ook als de voorraad vol is (0.121.1)
         else {
           // Geen vrije boer voor de visser? Dan brengt Bartholt er stil een mee, anders blijft de les hangen.
           const bev = economie.bevolking();
