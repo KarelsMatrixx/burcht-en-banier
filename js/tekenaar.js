@@ -911,7 +911,10 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       ctx.globalAlpha = 1;
     }
 
-    // Schepen van de havens (0.106.0): op het water, onder alles wat rechtop staat.
+    // Schepen van de havens (0.106.0): sorteren we op diepte en tekenen we straks
+    // tussen de bomen en gebouwen door (0.118.5). Anders verdwijnen hun zeilen
+    // achter het land dat er in werkelijkheid achter ligt.
+    const schepenRij = [];
     if (staat.schepen) {
       const blauw = assets.haal('schip.blauw').varianten;
       const roodS = assets.haal('schip.rood').varianten;
@@ -921,12 +924,20 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
         const wy = (sch.x + sch.y) * HALVE_HOOGTE;
         if (wx < zichtLinks - 60 || wx > zichtRechts + 60 || wy < zichtBoven - 20 || wy > zichtOnder + 100 || sch.alpha <= 0) continue;
         const v = (sch.viking ? vikingS : sch.rood ? roodS : blauw)[sch.richting > 0 ? 0 : 1];
+        schepenRij.push({ sch, v, wx, wy, diepte: sch.x + sch.y + 1 });
+      }
+      schepenRij.sort((a, b) => a.diepte - b.diepte);
+    }
+    let volgendSchip = 0;
+    const tekenSchepenTot = (grens) => {
+      while (volgendSchip < schepenRij.length && schepenRij[volgendSchip].diepte < grens) {
+        const { sch, v, wx, wy } = schepenRij[volgendSchip++];
         ctx.globalAlpha = sch.alpha;
         const sc = 0.9 * (sch.schaal || 1);
         ctx.drawImage(v.beeld, wx - v.ax * sc, wy - v.ay * sc, v.b * sc, v.h * sc);
         ctx.globalAlpha = 1;
       }
-    }
+    };
 
     // Zeeleven (0.112.0): walvissen, meeuwen, mist en de kist op het eilandje, op het water.
     if (staat.zee) staat.zee.teken(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder);
@@ -1030,6 +1041,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     // Een object staat midden op zijn tegel: diepte x + y + 1.
     for (let som = minX + minY; som <= maxX + maxY; som++) {
       tekenEenhedenTot(som + 1);
+      tekenSchepenTot(som + 1);
       const vanX = Math.max(minX, som - maxY);
       const totX = Math.min(maxX, som - minY);
       for (let x = vanX; x <= totX; x++) {
@@ -1080,6 +1092,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       }
     }
     tekenEenhedenTot(Infinity);
+    tekenSchepenTot(Infinity);
     for (const [sx, sy] of scherven) tekenZegel(sx, sy, 0, false);
     for (const teken of oliestralen) teken();
 

@@ -87,8 +87,8 @@ export function maakHaven({ kaart, economie, regels, grondstoffen, opMelding = (
 
   const partijGrootte = () => regels.per || 10;
 
-  // Een bestelling plaatsen. soort 'koop' of 'verkoop'. Geeft '' of de reden.
-  function bestel(vak, soort, naam, partijen = 1) {
+  // Kan deze bestelling? Geeft '' of de reden. Doet niets (het havenbord gebruikt dit voor de bevestigknop).
+  function waaromNiet(vak, soort, naam, partijen = 1) {
     const h = havens.get(vak);
     if (!h || h.rood) return 'this is not your port';
     if (h.order) return 'the ship of this port is still at sea';
@@ -101,13 +101,27 @@ export function maakHaven({ kaart, economie, regels, grondstoffen, opMelding = (
       if (economie.voorraad[munt] < goud) return `you need ${goud} gold`;
       const ruimte = economie.opslagMax(naam) - economie.voorraad[naam];
       if (ruimte < aantal) return `your stores have room for only ${Math.max(0, ruimte)} more ${klein(naam)}`;
-      economie.neem(munt, goud);
-      h.order = { soort, naam, aantal, goud, tijd: regels.reis, rest: aantal };
     } else {
       const prijs = (regels.verkoop || {})[naam];
       if (!prijs) return 'nobody overseas buys that';
       if (economie.voorraad[naam] < aantal) return `you have less than ${aantal} ${klein(naam)}`;
-      const goud = prijs * partijen;
+    }
+    return '';
+  }
+
+  // Een bestelling plaatsen. soort 'koop' of 'verkoop'. Geeft '' of de reden.
+  function bestel(vak, soort, naam, partijen = 1) {
+    const reden = waaromNiet(vak, soort, naam, partijen);
+    if (reden) return reden;
+    const h = havens.get(vak);
+    const aantal = partijGrootte() * partijen;
+    const munt = economie.munt();
+    if (soort === 'koop') {
+      const goud = regels.koop[naam] * partijen;
+      economie.neem(munt, goud);
+      h.order = { soort, naam, aantal, goud, tijd: regels.reis, rest: aantal };
+    } else {
+      const goud = regels.verkoop[naam] * partijen;
       economie.neem(naam, aantal);
       h.order = { soort, naam, aantal, goud, tijd: regels.reis, rest: goud };
     }
@@ -192,5 +206,5 @@ export function maakHaven({ kaart, economie, regels, grondstoffen, opMelding = (
   }
 
   zoek();
-  return { zoek, bestel, stap, schepen, info, stand, laad, havens: () => [...havens.values()], regels };
+  return { zoek, bestel, waaromNiet, stap, schepen, info, stand, laad, havens: () => [...havens.values()], regels };
 }

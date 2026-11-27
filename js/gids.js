@@ -78,12 +78,15 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     }
     if (doel.soort === 'haven') {
       // De havenles (js/havenles.js): de haven aantikken, dan hout kopen.
-      const paneel = el('handelpaneel');
-      if (zichtbaar(paneel) && paneel.classList.contains('haven')) {
-        const koop = el('handel-knoppen').querySelector('[data-verkoop="modus:koop"]');
+      const paneel = el('havenpaneel');
+      if (zichtbaar(paneel)) {
+        const bord = (sl) => paneel.querySelector(`[data-haven="${sl}"]`);
+        const koop = bord('modus:koop');
         if (koop && !koop.classList.contains('gekozen')) return { e: koop, tekst: 'Tap Buy.' };
-        const knop = el('handel-knoppen').querySelector('[data-verkoop="ruil:hout"]');
-        if (knop) return { e: knop, tekst: 'Tap Wood to order wood. You pay now, the ship brings it later.' };
+        const hout = bord('goed:hout');
+        if (hout && !hout.classList.contains('gekozen')) return { e: hout, tekst: 'Tap Wood. You choose first, nothing is ordered yet.' };
+        const ok = bord('bevestig');
+        if (ok) return { e: ok, tekst: 'Now tap the gold button to order it. You pay now, the ship brings the wood later.' };
       }
       return { e: null, tekst: 'Tap your port on the map (the golden spot).' };
     }

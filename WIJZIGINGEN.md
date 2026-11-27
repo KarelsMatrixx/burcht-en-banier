@@ -1420,3 +1420,11 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - De hele kust van het eiland van rood is nu dijk (kaart.js: alle oevertegels die je vanaf zijn burcht over land bereikt), niet meer alleen binnen 15 tegels.
 - Geen palen meer op de witte dijk. Dicht bij het dorp van rood (witteDijk.straal) is de kust een houten muur: een lage aarden wal met een palissade van puntige stammen en twee regels. Witte dijk en houten muur sluiten op elkaar aan.
 - Bij de havens: witte poortpijlers in de dijk, dikke houten poortpalen in de houten muur, allebei met een open deur naar de haven.
+
+## 0.118.5: schepen tussen de bomen en het land
+- De zeilen van de schepen verdwenen achter bomen en land dat er in werkelijkheid achter lag, omdat schepen op de grond werden getekend. Ze worden nu op diepte gesorteerd en tussen de objecten door getekend (tekenaar.js `tekenSchepenTot`): alleen wat echt vóór een schip staat, kan het nog afdekken.
+
+## 0.119.0: nieuw havenbord met bevestigknop
+- Het havenmenu is een handelsbord (eigen paneel `#havenpaneel`): bovenaan de scheepsregel met een voortgangsbalk en je goud, dan Buy/Sell en de partij (10, 20, 50), dan de goederen als kaartjes met icoon, prijs en voorraad, onderaan het totaal, Close en één grote bevestigknop.
+- Een goed, kant of hoeveelheid aantikken kiest alleen nog. Pas "Buy for 6 gold" of "Sell for 6 gold" bestelt. De knop is grijs met de reden als het niet kan (geen goud, geen ruimte, schip op zee). Geen gele tooltip meer over het menu.
+- haven.js `waaromNiet` (zelfde controle als `bestel`, zonder iets te doen). De havenles loopt nu: Buy, Wood kiezen, bevestigen. Voorraadkamer en zagerij zijn ongewijzigd. Alle teksten zijn Engels en na te lezen.

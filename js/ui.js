@@ -318,6 +318,7 @@ export function maakUi() {
   let kiesBelasting = () => {};
   let leidOp = () => {};
   let verkoopActie = () => {};
+  let havenActie = () => {};
   let handelOpen = -1e9;   // wanneer het handelpaneel openging
   const spookTik = () => performance.now() - handelOpen < 400;
   const klapVolk = (open) => {
@@ -328,6 +329,7 @@ export function maakUi() {
   const tikVolk = () => {
     el('legerpaneel').hidden = true;
     el('handelpaneel').hidden = true;
+    el('havenpaneel').hidden = true;
     klapVolk(el('volkpaneel').hidden);
     el('knop-buidel').classList.toggle('actief', !el('volkpaneel').hidden);
   };
@@ -815,6 +817,7 @@ export function maakUi() {
       if (!open) return;
       klapVolk(false);
       el('handelpaneel').hidden = true;
+      el('havenpaneel').hidden = true;
       el('leger-tekst').textContent = '';
       for (const regel of regels) {
         const p = document.createElement('div');
@@ -849,6 +852,7 @@ export function maakUi() {
       // die tik stuurt mag niet op Close of een verkoopknop landen die nu onder de vinger ligt.
       if (open && el('handelpaneel').hidden) handelOpen = performance.now();
       el('handelpaneel').hidden = !open;
+      el('havenpaneel').hidden = true;
       if (!open) return;
       el('handelpaneel').classList.toggle('haven', haven);
       klapVolk(false);
@@ -878,6 +882,76 @@ export function maakUi() {
         knop.classList.toggle('gekozen', !!k.gekozen);
         knop.lastChild.hidden = !k.kost;
       });
+    },
+    // De haven (0.119.0): een handelsbord. Tikken op een goed of een hoeveelheid kiest alleen;
+    // pas de bevestigknop voert de bestelling uit.
+    //   schip = { tekst, voortgang (0..1 of null) }, modi/partijen/goederen = knoppen met sleutel
+    //   som = { tekst, sub }, bevestig = { tekst, kan }
+    toonHaven({ open, goud = 0, schip = {}, modi = [], partijen = [], goederen = [], som = {}, bevestig = {} }, opActie) {
+      const paneel = el('havenpaneel');
+      if (open && paneel.hidden) handelOpen = performance.now();
+      paneel.hidden = !open;
+      if (!open) return;
+      el('handelpaneel').hidden = true;
+      klapVolk(false);
+      el('legerpaneel').hidden = true;
+      havenActie = opActie;
+      el('haven-schip-tekst').textContent = schip.tekst || '';
+      el('haven-goud').lastChild.textContent = goud;
+      const reis = el('haven-reis');
+      reis.hidden = schip.voortgang == null;
+      if (schip.voortgang != null) reis.firstChild.style.width = `${Math.round(100 * schip.voortgang)}%`;
+      // Dezelfde knoppen bijwerken in plaats van vervangen (een tik gaat anders verloren).
+      const vul = (doel, lijst, maak) => {
+        const teken = lijst.map((k) => k.sleutel).join();
+        if (doel.dataset.teken !== teken) {
+          doel.dataset.teken = teken;
+          doel.replaceChildren(...lijst.map((k) => {
+            const knop = maak(k);
+            knop.type = 'button';
+            knop.dataset.haven = k.sleutel;
+            knop.addEventListener('click', () => { if (!spookTik()) havenActie(k.sleutel); });
+            return knop;
+          }));
+        }
+        lijst.forEach((k, i) => {
+          const knop = doel.children[i];
+          knop.classList.toggle('gekozen', !!k.gekozen);
+          knop.classList.toggle('kanniet', k.kan === false);
+          const tekst = knop.querySelector('.t');
+          if (tekst) tekst.textContent = k.naam;
+          const prijs = knop.querySelector('.p');
+          if (prijs) prijs.textContent = k.prijs || '';
+          const voorraad = knop.querySelector('.v');
+          if (voorraad) voorraad.textContent = k.voorraad == null ? '' : `Have ${k.voorraad}`;
+        });
+      };
+      const tekstKnop = (k) => { const b = document.createElement('button'); const t = document.createElement('span'); t.className = 't'; b.append(t); return b; };
+      vul(el('haven-modus'), modi, tekstKnop);
+      vul(el('haven-partij'), partijen, tekstKnop);
+      vul(el('haven-goederen'), goederen, (k) => {
+        const b = document.createElement('button');
+        const i = document.createElement('i');
+        i.className = `icoon icoon-${k.n}`;
+        const t = document.createElement('span'); t.className = 't';
+        const p = document.createElement('small'); p.className = 'p';
+        const v = document.createElement('small'); v.className = 'v';
+        b.append(i, t, p, v);
+        return b;
+      });
+      el('haven-som').firstChild.textContent = som.tekst || '';
+      el('haven-som').lastChild.textContent = som.sub || '';
+      const ok = el('haven-bevestig');
+      ok.textContent = bevestig.tekst || '';
+      ok.classList.toggle('kanniet', !bevestig.kan);
+      ok.classList.toggle('verkoop', !!bevestig.verkoop);
+      if (!ok.dataset.gebonden) {
+        ok.dataset.gebonden = '1';
+        ok.addEventListener('click', () => { if (!spookTik()) havenActie('bevestig'); });
+      }
+    },
+    opHavenSluit(functie) {
+      el('haven-sluit').addEventListener('click', (ev) => { if (!spookTik()) functie(ev); });
     },
     opHandelSluit(functie) {
       el('handel-sluit').addEventListener('click', (ev) => { if (!spookTik()) functie(ev); });

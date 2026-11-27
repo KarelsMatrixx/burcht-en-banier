@@ -83,10 +83,15 @@ await tikOp('#gids-kaart button');
 // 3. de haven aantikken
 await p.waitForTimeout(400);
 await tikOp('#gids-plek');
-check('havenpaneel open', await zichtbaar('#handelpaneel.haven'));
+check('havenpaneel open', await zichtbaar('#havenpaneel'));
 await p.screenshot({ path: '/home/claude/werk/h-paneel.png' });
 const voor = await p.evaluate(() => ({ hout: window.spel.economie.voorraad.hout, goud: window.spel.economie.voorraad.goud }));
-await tikOp('[data-verkoop="ruil:hout"]');
+await tikOp('[data-haven="goed:hout"]');
+const gekozen = await p.evaluate(() => ({ goud: window.spel.economie.voorraad.goud, order: (window.spel.haven.havens().find((h) => !h.rood) || {}).order }));
+check('goed kiezen bestelt nog niets', gekozen.goud === voor.goud && !gekozen.order, JSON.stringify(gekozen));
+check('bevestigknop toont de prijs', /Buy for 6 gold/.test(await p.textContent('#haven-bevestig')), await p.textContent('#haven-bevestig'));
+await p.screenshot({ path: '/tmp/haven-bord.png' });
+await tikOp('[data-haven="bevestig"]');
 const na = await p.evaluate(() => ({ hout: window.spel.economie.voorraad.hout, goud: window.spel.economie.voorraad.goud, havens: window.spel.haven.havens().map((h) => ({ rood: h.rood, order: h.order })) }));
 const eigen = na.havens.find((h) => !h.rood);
 check('bestelling geplaatst, goud betaald', eigen && eigen.order && eigen.order.soort === 'koop' && na.goud === voor.goud - 6, JSON.stringify({ voor, na }));

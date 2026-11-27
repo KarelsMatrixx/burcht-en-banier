@@ -544,37 +544,66 @@ async function start() {
   let havenModus = 'koop';
   let havenPartij = 1;
   const klok = (s) => `${Math.floor(s / 60)}:${String(Math.ceil(s) % 60).padStart(2, '0')}`;
-  // De haven: kopen of verkopen in partijen, het schip is na regels.haven.reis seconden terug.
+  // De haven (0.119.0): een bord. Goed, kant en hoeveelheid kies je alleen; pas "Confirm" bestelt.
+  let havenGoed = null;
   const toonHaven = () => {
     const hr = haven.regels;
     const info = haven.info(handelVak);
     if (!info) { handelVak = -1; ui.toonHandel({ open: false }); return; }
     const o = info.order;
+    const koop = havenModus === 'koop';
     const per = hr.per * havenPartij;
     const naam = (n) => regels.grondstoffen[n].naam;
-    let status;
-    if (o && o.tijd > 0) status = o.soort === 'koop' ? `Your ship is at sea. Back in ${klok(o.tijd)} with ${o.aantal} ${naam(o.naam).toLowerCase()}.` : `Your ship is at sea with ${o.aantal} ${naam(o.naam).toLowerCase()}. Back in ${klok(o.tijd)} with ${o.goud} gold.`;
-    else if (o) status = `Your ship waits at the quay: no room for ${o.rest} ${naam(o.naam).toLowerCase()}.`;
-    else status = handelBericht || (havenModus === 'koop' ? `Buy: pay gold now, the ship brings the goods in ${klok(hr.reis)}.` : `Sell: the ship takes the goods now and brings the gold in ${klok(hr.reis)}.`);
-    const lijst = havenModus === 'koop' ? hr.koop : hr.verkoop;
-    const knoppen = [
-      { sleutel: 'modus:koop', naam: 'Buy', kost: '', kan: true, gekozen: havenModus === 'koop' },
-      { sleutel: 'modus:verkoop', naam: 'Sell', kost: '', kan: true, gekozen: havenModus === 'verkoop' },
-      ...(hr.partijen || [1]).map((p) => ({ sleutel: `partij:${p}`, naam: `${p * hr.per}`, kost: 'per ship', kan: true, gekozen: havenPartij === p })),
-      ...Object.keys(lijst).filter((n) => regels.grondstoffen[n] && (n !== 'koper' || mag('kopermijn')) && (n !== 'hop' || mag('hopveld'))).map((n) => {
+    const klein = (n) => naam(n).toLowerCase();
+    const lijst = koop ? hr.koop : hr.verkoop;
+    const goederen = Object.keys(lijst).filter((n) => regels.grondstoffen[n] && (n !== 'koper' || mag('kopermijn')) && (n !== 'hop' || mag('hopveld')));
+    if (havenGoed && !goederen.includes(havenGoed)) havenGoed = null;
+    let schip;
+    if (o && o.tijd > 0) schip = { tekst: o.soort === 'koop' ? `Ship at sea. Back in ${klok(o.tijd)} with ${o.aantal} ${klein(o.naam)}.` : `Ship at sea. Back in ${klok(o.tijd)} with ${o.goud} gold.`, voortgang: 1 - o.tijd / info.reis };
+    else if (o) schip = { tekst: `Ship at the quay: no room for ${o.rest} ${klein(o.naam)}.`, voortgang: 1 };
+    else schip = { tekst: 'Your ship is at the quay, ready to sail.', voortgang: null };
+    // Wat de bevestigknop en de som laten zien
+    let som, bevestig;
+    if (!havenGoed) {
+      som = { tekst: koop ? 'Choose goods to buy.' : 'Choose goods to sell.', sub: koop ? `You pay now. The ship is back in ${klok(hr.reis)}.` : `The ship takes the goods now. It is back in ${klok(hr.reis)} with the gold.` };
+      bevestig = { tekst: koop ? 'Buy' : 'Sell', kan: false, verkoop: !koop };
+    } else {
+      const goud = lijst[havenGoed] * havenPartij;
+      const reden = haven.waaromNiet(handelVak, havenModus, havenGoed, havenPartij);
+      const na = economie.voorraad.goud + (koop ? -goud : 0);
+      som = { tekst: `${per} ${klein(havenGoed)}, ${goud} gold`, sub: koop ? `Gold ${economie.voorraad.goud} \u2192 ${na}. Back in ${klok(hr.reis)}.` : `You get ${goud} gold when the ship is back in ${klok(hr.reis)}.` };
+      if (reden && !(o && o.tijd > 0)) som.sub = `Not possible: ${reden}.`;
+      bevestig = { tekst: o ? 'Ship away' : reden ? (koop ? 'Buy' : 'Sell') : koop ? `Buy for ${goud} gold` : `Sell for ${goud} gold`, kan: !reden, verkoop: !koop };
+    }
+    if (handelBericht) som.sub = handelBericht;
+    ui.toonHaven({
+      open: true,
+      goud: economie.voorraad.goud,
+      schip,
+      modi: [
+        { sleutel: 'modus:koop', naam: 'Buy', gekozen: koop },
+        { sleutel: 'modus:verkoop', naam: 'Sell', gekozen: !koop },
+      ],
+      partijen: (hr.partijen || [1]).map((p) => ({ sleutel: `partij:${p}`, naam: `${p * hr.per}`, gekozen: havenPartij === p })),
+      goederen: goederen.map((n) => {
         const goud = lijst[n] * havenPartij;
-        const kan = !o && (havenModus === 'koop' ? economie.voorraad.goud >= goud && economie.opslagMax(n) - economie.voorraad[n] >= per : economie.voorraad[n] >= per);
-        return { sleutel: `ruil:${n}`, naam: `${naam(n)} (${economie.voorraad[n]})`, kost: havenModus === 'koop' ? `${per} for ${goud} gold` : `${per} for ${goud} gold`, kan };
+        const kan = !o && (koop ? economie.voorraad.goud >= goud && economie.opslagMax(n) - economie.voorraad[n] >= per : economie.voorraad[n] >= per);
+        return { sleutel: `goed:${n}`, n, naam: naam(n), prijs: `${hr.per} for ${lijst[n]} gold`, voorraad: economie.voorraad[n], gekozen: havenGoed === n, kan };
       }),
-    ];
-    ui.toonHandel({ open: true, haven: true, regels: [`Port. Gold: ${economie.voorraad.goud}. One ship, one order at a time.`, status], knoppen }, (sleutel) => {
+      som,
+      bevestig,
+    }, (sleutel) => {
       const [soort, waarde] = sleutel.split(':');
       if (soort === 'modus') { havenModus = waarde; handelBericht = ''; geluid.speel('ui_click'); }
       else if (soort === 'partij') { havenPartij = +waarde; handelBericht = ''; geluid.speel('ui_click'); }
-      else {
-        const reden = haven.bestel(handelVak, havenModus, waarde, havenPartij);
-        if (reden) geluid.speel('ui_denied');
-        handelBericht = reden ? `Not possible: ${reden}.` : '';
+      else if (soort === 'goed') { havenGoed = waarde; handelBericht = ''; geluid.speel('ui_click'); }
+      else if (sleutel === 'bevestig') {
+        if (!havenGoed) { geluid.speel('ui_denied'); handelBericht = 'Choose goods first.'; }
+        else {
+          const reden = haven.bestel(handelVak, havenModus, havenGoed, havenPartij);
+          if (reden) geluid.speel('ui_denied');
+          handelBericht = reden ? `Not possible: ${reden}.` : '';
+        }
       }
       toonHaven();
     });
@@ -636,6 +665,7 @@ async function start() {
   };
   verversHandel = () => { if (handelVak >= 0) toonHandel(); else if (zagerVak >= 0) toonZagerij(); };
   ui.opHandelSluit(() => { handelVak = -1; handelBericht = ''; zagerVak = -1; zagerBericht = ''; ui.toonHandel({ open: false }); });
+  ui.opHavenSluit(() => { handelVak = -1; handelBericht = ''; havenGoed = null; ui.toonHandel({ open: false }); });
 
   // Soldaten kiezen: de knoppen rechts onderin en de uitleg erboven.
   let kaderAan = false;        // staat de knop Kader aan?
@@ -1354,6 +1384,7 @@ async function start() {
         zagerVak = -1;
         handelVak = y * kaart.breedte + x;
         handelBericht = '';
+        havenGoed = null;
         staat.gekozen = { x, y };
         toonHandel();
         return;
