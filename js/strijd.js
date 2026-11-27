@@ -1225,6 +1225,19 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       vuurbal(e, b.x, b.y, b.burcht ? 44 : 24);
       if (k.def.brand && !b.burcht && HOUT.has(b.soort)) zetBrand(b, k.def.brand);
     } else if (k.def.bereik > 2) pijl(e.x, e.y, 20, b.x, b.y, b.burcht ? 44 : 24, !!k.def.alleenBouw);
+    // De saboteur blaast zichzelf op (0.124.3): de helft van het leven van een muur aan schade (dubbel bij poort, toren en sluis),
+    // en hij sneuvelt erbij. Tegen een hoofdkasteel (alleen in levels zonder koning) blijft het de gewone slag.
+    if (k.def.sabotage && k.def.ontploffing && !b.burcht) {
+      const schadeNu = Math.round(k.def.ontploffing * maxLeven(OBJECT.MUUR, b.van, b.vak) * bouwKeer(k.def, b));
+      effect({ soort: 'vuur', x: b.x, y: b.y, duur: 900 });
+      effect({ soort: 'klap', x: e.x, y: e.y, h: 14, duur: 260 });
+      geluid.speel('wall_collapse', { x: b.x, y: b.y });
+      e.leven = 0;
+      e.dood = true;
+      zetHouding(e, null);
+      raakBouw(b, schadeNu, e);
+      return;
+    }
     raakBouw(b, k.def.schadeBouw * bouwKeer(k.def, b), e);
   }
   // --- De heler: geneest elke seconde de zwaarst gewonde soldaat bij hem in de buurt.
@@ -3595,6 +3608,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     projectenAantal: () => projecten.length, vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder, bemanTrebuchet, bouwTrebuchet, bouwBallista, ontkoppel, trebuchetDoelen, trebuchetPlekOk: (vak) => vak >= 0 && vak < N && vrijVoor(vak, SPELER) && !staandOp(vak), ballistaPlekOk: (vak) => vak >= 0 && vak < N && wegvinder.isMuur(vak % B, Math.floor(vak / B), SPELER) && !geschutOp(vak), ballistaBereik: () => soorten.ballista.bereik + R.muurBereik, geschutStand: (team = SPELER) => ({ n: aantalGeschut(team), max: GESCHUT_MAX() }), trebuchetStand,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),
+    maakVijand,   // voor de tests (saboteur, 0.124.3)
     zetLadderBevel, ladders,
     zetLadderVoor: (vak, team, dx = 1, dy = 0, vast = false) => zetLadder(vak, team, [dx, dy], vast),
     klimBevel,

@@ -53,6 +53,7 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
   let rutgerThuis = null;
   let rutger = null;    // Rutger in de golf
   let eindKlok = -1;
+  let laatsten = 0;   // seconden dat er nog hooguit drie mannen over zijn
   let golfMannen = [];   // de mannen van de golf die nu aan land is (niet bewaard)
   let herlaad = true;    // net geladen: de mannen van een bezige golf kennen we niet meer bij naam
 
@@ -274,7 +275,8 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
   if (s.aftel === null || s.aftel === undefined) s.aftel = eersteAftel();   // een oud bewaard spel
   const mannenOpZee = () => schepen.reduce((a, sch) => a + (sch.terug ? 0 : Object.entries(sch.lading).reduce((b, [k, n]) => b + (k === heldSleutel ? 0 : n), 0)), 0);
   const mannenAanLand = () => {
-    golfMannen = golfMannen.filter((e) => !e.dood);
+    const levend = new Set(strijd.alleVijanden());
+    golfMannen = golfMannen.filter((e) => !e.dood && e.leven > 0 && levend.has(e));   // wie niet meer in het spel staat telt niet mee (0.124.3)
     return golfMannen.length;
   };
   const mannenOver = () => mannenOpZee() + mannenAanLand();
@@ -347,6 +349,17 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
         if (rutger.leven < rutger.levenMax / 2 && !s.gemeld.half) { s.gemeld.half = true; zegt(RUTGER.half); }
         if (rutger.verslagen) { overwinning(); return; }
       }
+      // Een laatste man die nergens heen gaat (vast, verstopt, onbereikbaar) houdt de golf niet eeuwig open (0.124.3):
+      // zijn er 60 seconden lang niet meer dan drie over en ligt er geen schip meer op zee, dan geven ze het op.
+      if (s.golfBezig && mannenOpZee() === 0 && mannenAanLand() > 0 && mannenAanLand() <= 3) {
+        laatsten += 0.5;
+        if (laatsten >= 60) {
+          for (const e of golfMannen) { e.leven = 0; e.dood = true; if (strijd.rook) strijd.rook(e.x, e.y); }
+          golfMannen = [];
+          laatsten = 0;
+          toonMelding('The last raiders lose heart and flee.');
+        }
+      } else laatsten = 0;
       // De golf is voorbij als niemand meer leeft: dan begint de klok naar de volgende.
       if (s.golfBezig && mannenOver() === 0) { s.golfBezig = false; herlaad = false; bewaar(); if (s.golven < aantal) toonMelding(`Wave ${s.golven} is beaten. The next raid comes in ${klok(s.aftel)}.`); }
       if (s.golven < aantal && !s.golfBezig && volgendeGolf() <= 0) stuurGolf();
@@ -393,5 +406,6 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
     zetTijd(t) { s.tijd = t; s.aftel = eersteAftel(); s.golfBezig = false; herlaad = false; },   // voor tests: spring naar dit moment
     volgende: volgendeGolf,
     mannenOver,
+    golfMannen: () => golfMannen,   // voor de tests
   };
 }

@@ -782,6 +782,7 @@
    "leven": 44,
    "schade": 0,
    "schadeBouw": 30,
+   "ontploffing": 0.5,
    "slagTijd": 3.0,
    "bereik": 1.5,
    "zicht": 6,
@@ -789,7 +790,7 @@
    "sabotage": true,
    "verborgen": 3,
    "bouwBonus": { "objecten": ["SLUIS", "LOODS", "POORT", "TOREN", "WACHTTOREN"], "keer": 2 },
-   "tip": "A man of the Silent Folk with a powder keg. Enemies only spot him up close. Blows up walls and buildings, twice as hard on gates, towers and the sluice. Does not fight soldiers."
+   "tip": "A man of the Silent Folk with a powder keg. Enemies only spot him up close. Blows himself up against a wall for half of that wall's life in damage, twice as much on gates, towers and the sluice. Does not fight soldiers."
   },  "ziener": {
    "naam": "Seer",
    "meervoud": "Seers",

@@ -1,3 +1,9 @@
+## 0.124.4
+- Fout opgelost (level 8): een wave bleef open staan omdat er nog 'a raider left' was, die nergens te zien was. Een man die niet meer meetelt als hij uit het spel is, telt nu niet meer mee. En zijn er 60 seconden lang hooguit drie mannen van de golf over (en geen schip meer op zee), dan geven ze het op ('The last raiders lose heart and flee.') en begint de klok naar de volgende golf. De 60 seconden zijn een schatting van Claude (golven.js, tests/golven109.mjs).
+
+## 0.124.3
+- De saboteur blaast zichzelf nu echt op: hij doet de helft van het leven van een muur aan schade (een muur van 200 verliest 100) en sneuvelt erbij. Bij poort, toren, sluis, loods en wachttoren is het dubbel (een poort verliest 200). Tegen een hoofdkasteel blijft het de gewone slag. Met een lichtflits en vuur bij de klap (economie.json: saboteur.ontploffing 0.5, tiptekst aangepast, tests/saboteur124.mjs). Het getal 0,5 is een schatting van Claude, zoals gevraagd door Karel.
+
 ## 0.70.4
 - De belegeringstoren is hoger dan een poort en kan er niet doorheen (economie.json: toren.hoog). Hij ziet elke poort als dicht, klimt niet en breekt geen poort (wegvinden.js: beelden 3 tot 5, HOOG).
 - Rode torens verschijnen buiten de muren, in het open veld. Jouw toren wordt alleen opgeleid als hij buiten je muren kan staan; anders meldt de werkplaats dat hij buiten je muren moet staan.

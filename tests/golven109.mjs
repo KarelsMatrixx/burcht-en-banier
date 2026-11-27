@@ -71,6 +71,21 @@ const dood = await p.evaluate(() => {
   return { bezig: doel.stand().golfBezig, a, b: doel.volgende() };
 });
 check('klok telt weer na de laatste dode man', !dood.bezig && dood.b < dood.a, JSON.stringify(dood));
+// 0.124.3: een vastzittende laatste man houdt de golf niet eeuwig open
+const vast = await p.evaluate(() => {
+  const { doel, strijd } = window.spel;
+  doel.zetTijd(180 + 110 + 1); doel.stap(0.6);
+  for (let i = 0; i < 160; i++) doel.stap(0.5);   // schepen leggen aan
+  const lijst = doel.golfMannen().filter((e) => !e.dood);
+  for (const e of lijst.slice(1)) { e.leven = 0; e.dood = true; }
+  lijst[0].snelheid = 0;
+  const voor = doel.mannenOver();
+  for (let i = 0; i < 40; i++) doel.stap(0.5);
+  const na20 = doel.mannenOver();
+  for (let i = 0; i < 160; i++) doel.stap(0.5);
+  return { voor, na20, na: doel.mannenOver(), bezig: doel.stand().golfBezig };
+});
+check('laatste man blijft eerst staan, geeft na 60 s op', vast.voor === 1 && vast.na20 === 1 && vast.na === 0 && !vast.bezig, JSON.stringify(vast));
 // Snel naar golf 10
 const g10 = await p.evaluate(() => {
   const { doel } = window.spel;
