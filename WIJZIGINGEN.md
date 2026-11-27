@@ -1397,3 +1397,8 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - De havenles van level 8 begint elke keer dat je het level vanaf de levelkaart start, ook als er een bewaarde stand is (main.js). Bij een herlaad midden in het level blijft de les gedaan.
 - Start over zet de havenles ook terug (havenles.js: zetOpnieuw).
 - tests/haven106.mjs: twee controles erbij (32).
+
+## 0.118.0: nieuwe White Dike
+- De witte dijk is geen rij losse platte blokjes meer: het is een doorlopende lage wal van witte kalksteen met er bovenop een houten Vikingpalissade (scherpe palen, ronde schilden, af en toe een rode wimpel). kunst.js `tekenDijk`: 16 varianten naar de buren, net als een muur; kaart.js `aansluiting` kent de dijk.
+- Gaten op diagonale hoeken worden gedicht (kaart.js), zodat de dijk één lijn is. Bij de haven blijft een opening.
+- De dijk blijft decor.
