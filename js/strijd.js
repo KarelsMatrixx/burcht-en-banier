@@ -2109,9 +2109,12 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     k.wraak = null;
     k.bevel = null;
     const vanPost = Math.hypot(px - e.x, py - e.y);
-    const dichtbij = anderen.filter((a) => Math.hypot(a.x - px, a.y - py) <= 2.5);
+    // Hold (0.121.0): een schutter schiet ook verder, zo ver als hij reikt (wel zonder van zijn post te lopen)
+    const straal = e.houdt ? Math.max(2.5, bereikVan(e, k) + 0.2) : 2.5;
+    const dichtbij = anderen.filter((a) => Math.hypot(a.x - px, a.y - py) <= straal);
     k.doelwit = dichtbij.length && vanPost <= 3 ? kiesDoelwit(e, k, dichtbij) : null;
-    if (k.doelwit && Math.hypot(k.doelwit.x - px, k.doelwit.y - py) > 3) k.doelwit = null;
+    if (k.doelwit && Math.hypot(k.doelwit.x - px, k.doelwit.y - py) > Math.max(3, straal)) k.doelwit = null;
+    if (k.doelwit && e.houdt && bereikVan(e, k) > 2 && (Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) > bereikVan(e, k) || !kanRaken(e, k, k.doelwit))) k.doelwit = null;   // een schutter loopt er niet naartoe
     if (k.doelwit) {
       e.karelTerug = false;
       if (k.def && k.def.koning && e.karelWacht !== undefined) lijfwachtLos = true;   // Karel valt aan: de lijfwacht gaat los
@@ -3341,6 +3344,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
       k.ladder = -1;
       e.soldaat.doel = -1;
       if (e.pad) e.pad.length = Math.min(e.pad.length, e.stap + 1);
+      if (e.houdt && e.team === SPELER) { e.houdt = false; delete e.post; e.karelTerug = false; }   // Hold (0.121.0): een aanval heft het op
       k.bevel = doel;
       k.bouw = null;
       k.bouwBevel = null;

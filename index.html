@@ -277,6 +277,11 @@
         <div class="plaat" id="leger-leeg" hidden>No soldiers yet. Build barracks and train them.</div>
         <!-- Je soldaten kiezen op groep of soort -->
         <div class="knoppen" id="leger-groepen" hidden></div>
+        <!-- Formatie en Hold (0.121.0): boven de knoppen Box, All, None, verschijnen als er soldaten gekozen zijn -->
+        <div class="knoppen" id="leger-orde">
+            <button id="knop-formatie" type="button" hidden><svg class="knop-lijn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="8" r="1.6"/><circle cx="12" cy="8" r="1.6"/><circle cx="19" cy="8" r="1.6"/><circle cx="5" cy="16" r="1.6"/><circle cx="12" cy="16" r="1.6"/><circle cx="19" cy="16" r="1.6"/></svg><span>Free</span></button>
+            <button id="knop-houd" type="button" hidden><svg class="knop-lijn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4"/><path d="M6 4h11l-3 4 3 4H6"/></svg>Hold</button>
+        </div>
         <!-- Je soldaten kiezen: verschijnt zodra je er een hebt -->
         <div class="knoppen" id="leger-balk" hidden>
           <button id="knop-kader" type="button"><svg class="knop-lijn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1" stroke-dasharray="3 3"/></svg>Box</button>

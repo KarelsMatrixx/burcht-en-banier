@@ -981,7 +981,7 @@ export function maakUi() {
     // De knoppen en de uitleg voor je soldaten.
     //   zichtbaar = de knoppen tonen, hint = de zin erboven,
     //   kader = de knop Kader staat aan, gekozen = er is iemand gekozen
-    toonLeger({ zichtbaar, hint, kader, gekozen, bouw = null, ontkoppel = false }) {
+    toonLeger({ zichtbaar, hint, kader, gekozen, bouw = null, ontkoppel = false, formatie = null, houd = null }) {
       // Kies je soldaten op de kaart, dan gaat het zwaard vanzelf open.
       if (gekozen && !legerStand.gekozen && paneel !== 'bouw') paneel = 'leger';
       legerStand = { zichtbaar, gekozen };
@@ -990,6 +990,12 @@ export function maakUi() {
       el('legerhint').hidden = !hint;
       el('knop-kader').classList.toggle('actief', !!kader);
       el('knop-niets').hidden = !gekozen;
+      // Formatie (0.121.0): de knop toont de formatie die het volgende bevel krijgt; Hold is aan als alle gekozenen vasthouden.
+      el('knop-formatie').hidden = !formatie;
+      if (formatie) el('knop-formatie').querySelector('span').textContent = formatie;
+      el('knop-formatie').setAttribute('aria-label', formatie ? `Formation: ${formatie}` : 'Formation');
+      el('knop-houd').hidden = !houd;
+      el('knop-houd').classList.toggle('actief', !!(houd && houd.aan));
       // De knop Build verschijnt als er een ingenieur gekozen is; die opent het menu met wat hij kan bouwen.
       // bouw = { menu, trebuchet: { actief, tekst }, ballista: { actief, tekst } }
       el('knop-bouw').hidden = !bouw;
@@ -1003,6 +1009,12 @@ export function maakUi() {
       }
       // De knop Release crew verschijnt als er een trebuchet of ballista gekozen is.
       el('knop-ontkoppel').hidden = !ontkoppel;
+    },
+    opFormatie(functie) {
+      el('knop-formatie').addEventListener('click', functie);
+    },
+    opHoud(functie) {
+      el('knop-houd').addEventListener('click', functie);
     },
     opOntkoppel(functie) {
       el('knop-ontkoppel').addEventListener('click', functie);
@@ -1207,6 +1219,14 @@ export function maakUi() {
       el('knop-hamer').classList.toggle('tut-dicht', hamerDicht);
       // Geen les om te bouwen: de bouwbalk gaat dicht
       if (hamerDicht && paneel === 'bouw') { zetPaneel(null); toonGroep(null); }
+    },
+    // Na een les buiten de proloog (de legerles): de bouwbalk weer helemaal open.
+    vrijBouw() {
+      if (beperktTot === undefined) return;
+      beperktTot = undefined;
+      for (const knop of el('bouw-knoppen').children) { knop.disabled = false; knop.classList.remove('tut-dicht'); }
+      el('knop-hamer').disabled = false;
+      el('knop-hamer').classList.remove('tut-dicht');
     },
     opBevestig(functie) {
       el('knop-bevestig').addEventListener('click', functie);

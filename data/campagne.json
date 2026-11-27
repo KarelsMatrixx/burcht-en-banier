@@ -308,6 +308,7 @@
    "id": 3,
    "naam": "Ironmarsh",
    "titel": "Level 3: Ironmarsh",
+   "legerLes": true,
    "heer": "Count Hademar of Ironmarsh",
    "portret": "hademar",
    "profiel": "zwaar",

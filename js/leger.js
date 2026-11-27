@@ -290,7 +290,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
       t.n++; u.n++;
       if (e.gekozen) { t.gekozen++; u.gekozen++; }
     }
-    return { groepen, perSoort, deel: d ? d.length : 0, deelGekozen: d ? d.filter((e) => e.gekozen).length : 0 };
+    const gek = soldaten.filter((e) => e.gekozen && !staatVast(e.soldaat.sleutel) && !isKoning(e));
+    return { groepen, perSoort, deel: d ? d.length : 0, deelGekozen: d ? d.filter((e) => e.gekozen).length : 0, houdbaar: gek.length, houdt: gek.filter((e) => e.houdt).length };
   }
 
   // De soldaat onder een punt in de wereld (in pixels), of null. marge
@@ -362,12 +363,120 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // Stuurt de gekozen soldaten naar een tegel. Ze verdelen zich over de
   // vrije tegels eromheen. opMuur = true: de muur op, over het stuk muur
   // waar die tegel bij hoort. Geeft terug hoeveel er op weg zijn gegaan.
+  // --- Formaties (0.121.0) -------------------------------------------------------------
+  // Naar Karel (25 nov): meer greep op je soldaten. Een bevel op de grond legt de gekozen groep
+  // in een formatie: Free (zoals altijd: zo dicht mogelijk bij de tik), Line (een brede rij),
+  // Block (een vierkant) of Wide (een vierkant met een tegel ruimte ertussen).
+  // In Line en Block staat het voetvolk vooraan (aan de kant van de tik, gezien vanaf waar de
+  // groep vandaan komt), de schutters erachter en de belegering achteraan.
+  const FORMATIES = ['vrij', 'lijn', 'schild', 'blok', 'wijd'];
+  let formatie = 'vrij';
+  const rangVan = (e) => { const g = groepVan(soorten[e.soldaat.sleutel]); return g === 'melee' ? 0 : g === 'afstand' ? 1 : 2; };
+
+  // De plekken van een formatie rond (x, y). Geeft [[soldaat, vak], ...] terug; wie geen plek
+  // vindt, staat er niet in (die krijgt daarna een gewone plek).
+  function formatiePlekken(groep, x, y) {
+    const n = groep.length;
+    // De richting: van het midden van de groep naar de tik. Staan ze er al bovenop, dan naar boven op het scherm.
+    let mx = 0, my = 0;
+    for (const e of groep) { mx += e.x; my += e.y; }
+    mx /= n; my /= n;
+    let dx = x + 0.5 - mx, dy = y + 0.5 - my;
+    const lengte = Math.hypot(dx, dy);
+    if (lengte < 1.5) { dx = -Math.SQRT1_2; dy = -Math.SQRT1_2; } else { dx /= lengte; dy /= lengte; }
+    const zx = -dy, zy = dx;   // zijwaarts
+    const ruimte = formatie === 'wijd' ? 2 : 1;
+    const breed = formatie === 'lijn' || formatie === 'schild' ? Math.min(n, 16) : Math.ceil(Math.sqrt(n));
+    // Op rang (voetvolk vooraan), dan per rij van links naar rechts zodat niemand kruist.
+    const volgorde = groep.slice().sort((a, b) => rangVan(a) - rangVan(b) || ((a.x - mx) * dx + (a.y - my) * dy > (b.x - mx) * dx + (b.y - my) * dy ? -1 : 1));
+    // De rijen: in Line krijgt elke rang zijn eigen rij (voetvolk, dan schutters, dan belegering),
+    // in Block en Wide vullen ze het vierkant op volgorde van rang.
+    const rijen = [];
+    const inRijen = (deze) => { for (let i = 0; i < deze.length; i += breed) rijen.push(deze.slice(i, i + breed)); };
+    if (formatie === 'lijn') {
+      for (const rang of [0, 1, 2]) inRijen(volgorde.filter((e) => rangVan(e) === rang));
+    } else if (formatie === 'schild') {
+      // Shield (Karel, 27 nov): de helft van het voetvolk voor de schutters, de andere helft erachter
+      const voet = volgorde.filter((e) => rangVan(e) === 0);
+      const voor = Math.ceil(voet.length / 2);
+      inRijen(voet.slice(0, voor));
+      inRijen(volgorde.filter((e) => rangVan(e) === 1));
+      inRijen(voet.slice(voor));
+      inRijen(volgorde.filter((e) => rangVan(e) === 2));
+    } else for (let i = 0; i < n; i += breed) rijen.push(volgorde.slice(i, i + breed));
+    const plan = [];
+    const uit = [];
+    for (let r = 0; r < rijen.length; r++) {
+      const rij = rijen[r];
+      rij.sort((a, b) => ((a.x - mx) * zx + (a.y - my) * zy) - ((b.x - mx) * zx + (b.y - my) * zy));
+      rij.forEach((e, k) => {
+        const zij = (k - (rij.length - 1) / 2) * ruimte;
+        const tx = Math.floor(x + 0.5 + zx * zij - dx * r * ruimte);
+        const ty = Math.floor(y + 0.5 + zy * zij - dy * r * ruimte);
+        if (tx < 0 || ty < 0 || tx >= B || ty >= H) return;
+        // Is de plek bezet (een boom, een huis), dan een plek ernaast op dezelfde diepte, zodat de rijen heel blijven.
+        const diep = (vx, vy) => (vx + 0.5 - x - 0.5) * dx + (vy + 0.5 - y - 0.5) * dy;
+        const dz = -r * ruimte;
+        let beste = -1, score = Infinity;
+        for (const vak of rond(ty * B + tx, 2)) {
+          if (!isVrij(vak) || bezet(vak, groep, plan)) continue;
+          const vx = vak % B, vy = Math.floor(vak / B);
+          const sc = Math.abs(diep(vx, vy) - dz) * 3 + Math.hypot(vx - tx, vy - ty);
+          if (sc < score) { score = sc; beste = vak; }
+        }
+        if (beste >= 0) { plan.push(beste); uit.push([e, beste]); }
+      });
+    }
+    return uit;
+  }
+
+  // Hold (0.121.0): wie vasthoudt, blijft op zijn plek en vecht alleen met wat dichtbij komt
+  // (een schutter schiet wat binnen zijn bereik is). Een nieuw bevel op de grond verplaatst
+  // de post; een aanval op een vijand heft Hold op. strijd.js karelWachtDenk doet het vechten.
+  function zetHoud(aan, lijst = gekozen()) {
+    let n = 0;
+    for (const e of lijst) {
+      if (staatVast(e.soldaat.sleutel) || isKoning(e)) continue;
+      if (aan) {
+        e.houdt = true;
+        if (!e.opMuur) e.post = e.soldaat.doel >= 0 && e.soldaat.doel < N ? e.soldaat.doel : vakVan(e);
+      } else { e.houdt = false; delete e.post; }
+      n++;
+    }
+    opLeger();
+    return n;
+  }
+
   function stuur(x, y, opMuur = false) {
     // Een stormram kan de muur niet op.
     let groep = (opMuur ? gekozen().filter((e) => magOpMuur(e.soldaat.sleutel)) : gekozen()).filter((e) => !staatVast(e.soldaat.sleutel));   // een trebuchet of ballista staat vast
     if (!groep.length || x < 0 || y < 0 || x >= B || y >= H) return 0;
-    for (const e of groep) delete e.post;   // een nieuw bevel: de vaste post (proloog, na Hold) vervalt
+    for (const e of groep) delete e.post;   // een nieuw bevel: de vaste post (proloog, na Hold) vervalt; wie Hold heeft, krijgt hieronder een nieuwe
     const doel = y * B + x;
+    // Een formatie op de grond (niet Free, minstens twee man)
+    if (!opMuur && formatie !== 'vrij' && groep.length > 1) {
+      const plan = formatiePlekken(groep, x, y);
+      let opWeg = 0;
+      const gedaan = new Set();
+      for (const [e, vak] of plan) {
+        if (loopNaar(e, vak)) { opWeg++; gedaan.add(e); if (e.houdt) e.post = vak; }
+      }
+      // Wie geen plek of geen weg vond: zo dicht mogelijk erbij, zoals altijd.
+      const rest = groep.filter((e) => !gedaan.has(e));
+      if (rest.length) {
+        const vrij = [];
+        for (const vak of rond(doel, 10)) {
+          if (isVrij(vak) && !bezet(vak, groep, vrij)) vrij.push(vak);
+          if (vrij.length >= rest.length * 2) break;
+        }
+        for (const e of rest) {
+          for (let i = 0; i < vrij.length; i++) {
+            if (loopNaar(e, vrij[i])) { opWeg++; if (e.houdt) e.post = vrij[i]; vrij.splice(i, 1); break; }
+          }
+        }
+      }
+      return opWeg;
+    }
     const plekken = [];
     if (opMuur) {
       if (!isMuur(doel)) return 0;
@@ -393,7 +502,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     groep.sort((a, b) => ver(a) - ver(b));
     let opWeg = 0;
     for (let i = 0; i < groep.length && i < plekken.length; i++) {
-      if (loopNaar(groep[i], plekken[i])) opWeg++;
+      if (loopNaar(groep[i], plekken[i])) { opWeg++; if (groep[i].houdt && plekken[i] < N) groep[i].post = plekken[i]; }
     }
     return opWeg;
   }
@@ -515,7 +624,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // Staat hij op de muur, dan komt er een 1 achter.
   const bewaarStand = () => soldaten.map((e) => {
     const regel = [e.soldaat.sleutel, Math.floor(e.x), Math.floor(e.y), Math.max(1, Math.round(e.leven))];
-    if (e.opMuur) regel.push(1);
+    if (e.opMuur || e.houdt) regel.push(e.opMuur ? 1 : 0);
+    if (e.houdt) regel.push(1);   // Hold (0.121.0): hij houdt zijn plek
     return regel;
   });
 
@@ -525,19 +635,21 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     let aantal = 0;
     for (const regel of lijst) {
       if (!Array.isArray(regel)) continue;
-      const [sleutel, x, y, leven, boven] = regel;
+      const [sleutel, x, y, leven, boven, houdt] = regel;
       if (!Object.prototype.hasOwnProperty.call(soorten, sleutel)) continue;
       if (plekken() + (soorten[sleutel].legerPlekken || 1) > maxLevel) break;
       if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= B || y >= H) continue;
       // Stond hij op de muur en staat die er nog, dan staat hij er weer op.
       if (boven === 1 && isMuur(y * B + x) && !bezet(N + y * B + x)) {
-        maak(sleutel, y * B + x, leven, true);
+        const e = maak(sleutel, y * B + x, leven, true);
+        if (houdt === 1) e.houdt = true;
         aantal++;
         continue;
       }
       const vak = plekBij(y * B + x, 6);
       if (vak < 0) continue;
-      maak(sleutel, vak, leven);
+      const e = maak(sleutel, vak, leven);
+      if (houdt === 1) { e.houdt = true; e.post = vak; }
       aantal++;
     }
     if (aantal) opLeger();
@@ -597,6 +709,13 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     zetKoningThuis: (burchtVak) => { koningThuis = burchtVak; },
     groepVan, kiesGroep, kiesSoort, kiesKader, kiesDeel, telling,
     kiesGeen: () => kies([]),
+    // Formaties en Hold (0.121.0)
+    formaties: FORMATIES,
+    formatie: () => formatie,
+    zetFormatie: (f) => { if (FORMATIES.includes(f)) formatie = f; },
+    volgendeFormatie: () => { formatie = FORMATIES[(FORMATIES.indexOf(formatie) + 1) % FORMATIES.length]; return formatie; },
+    zetHoud,
+    deel,
     zetKiesFilter: (f) => { kiesFilter = f || null; },
     // Een wandelingetje op de grond (voor de koning in de proloog); telt niet als bevel van de speler.
     wandel: (e, x, y) => x >= 0 && y >= 0 && x < B && y < H && isVrij(y * B + x) && !bezet(y * B + x, [e]) ? loopNaar(e, y * B + x) : false,

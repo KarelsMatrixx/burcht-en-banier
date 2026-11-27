@@ -1389,7 +1389,7 @@ body.gids-bedekt #gids-ring, body.gids-bedekt #gids-zin, body.gids-bedekt #gids-
   color: #f1e3c2;
   text-shadow: 0 1px 0 #000;
 }
-#bouw-knoppen button:active, #leger-groepen button:active, #leger-balk button:active { filter: brightness(1.15); }
+#bouw-knoppen button:active, #leger-groepen button:active, #leger-balk button:active, #leger-orde button:active { filter: brightness(1.15); }
 #bouw-knoppen button[data-open] { flex-direction: row; gap: 7px; padding: 0 14px 0 10px; }
 
 /* Slopen is een actie: roodbruin hout. */
@@ -1435,7 +1435,7 @@ button.actief .knop-lijn { color: #3a2614; }
 }
 
 /* Acties in de legerbalk: rond ijzer. */
-#leger-balk button {
+#leger-balk button, #leger-orde button {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 0 14px 0 10px;
   border-radius: 24px;
@@ -1444,9 +1444,9 @@ button.actief .knop-lijn { color: #3a2614; }
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 2px 4px rgba(0, 0, 0, 0.5);
   color: #e9e4d8;
 }
-#leger-balk button .knop-lijn { width: 18px; height: 18px; color: #d8c28a; }
-#leger-balk button.actief { background: linear-gradient(#6a6a6e, #3a3a3d); border-color: #f3d37a; box-shadow: 0 0 8px 2px rgba(246, 200, 90, 0.45); }
-#leger-balk button[hidden] { display: none; }
+#leger-balk button .knop-lijn, #leger-orde button .knop-lijn { width: 18px; height: 18px; color: #d8c28a; }
+#leger-balk button.actief, #leger-orde button.actief { background: linear-gradient(#6a6a6e, #3a3a3d); border-color: #f3d37a; box-shadow: 0 0 8px 2px rgba(246, 200, 90, 0.45); }
+#leger-balk button[hidden], #leger-orde button[hidden] { display: none; }
 
 /* Schuifbare rij: rechts een vervaging zolang er meer is. */
 .schuif-rechts {
@@ -1526,3 +1526,16 @@ button.actief .knop-lijn { color: #3a2614; }
 #haven-bevestig { background: rgba(150, 112, 40, 0.96); border-color: #f3d37a; font-weight: 700; min-width: 128px; }
 #haven-bevestig.verkoop { background: rgba(52, 110, 48, 0.96); border-color: #bfe8b4; }
 #haven-bevestig.kanniet { background: rgba(60, 56, 46, 0.9); border-color: rgba(241, 234, 216, 0.25); opacity: 0.6; }
+
+/* 0.121.0: Formatie en Hold staan boven de knoppen Box, All, None, rechts uitgelijnd. */
+#bouwbalk { position: relative; }
+#leger-orde {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  flex-wrap: nowrap;
+  gap: 6px;
+  pointer-events: none;
+}
+#leger-orde button { pointer-events: auto; }
+#leger-orde:not(:has(button:not([hidden]))), #bouwbalk:has(#leger-balk[hidden]) #leger-orde { display: none; }

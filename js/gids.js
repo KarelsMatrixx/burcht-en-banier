@@ -139,9 +139,31 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
         const r = vak(knop);
         const rij = vak(groepen);
         if (r.left < rij.left - 1 || r.right > rij.right + 1) return { e: groepen, tekst: `Swipe the row of groups sideways to find ${doel.groep}, then tap it.` };
-        return { e: knop, tekst: `Tap ${doel.groep}.` };
+        return { e: knop, tekst: doel.tekst || `Tap ${doel.groep}.` };
       }
+      // Legerles: in laag 2 (Back): eerst terug
+      const terug = [...groepen.querySelectorAll('button')].find((b) => b.textContent.startsWith('‹'));
+      if (terug && zichtbaar(terug)) return { e: terug, tekst: 'Go back first.' };
+      if (doel.anders) return { e: el('knop-kader'), tekst: doel.anders };
       return { e: el('knop-alle'), tekst: 'Tap All to choose your soldiers.' };
+    }
+    if (doel.soort === 'kader') {
+      // De legerles (js/legerles.js): het zwaard, Box, dan een kader om de mannen trekken.
+      const box = el('knop-kader');
+      if (!zichtbaar(box)) return { e: el('knop-zwaard'), tekst: 'Tap the sword to open your army.' };
+      if (!doel.kaderAan()) return { e: box, tekst: doel.fout && doel.fout() ? 'Not all eight are in it. Tap Box again and draw a bigger box.' : 'Tap Box.' };
+      return { e: null, tekst: 'Now drag one finger across the men on the golden spot, from one corner to the other, so the box holds all eight.' };
+    }
+    if (doel.soort === 'formatie' || doel.soort === 'houd') {
+      // De legerles: de formatieknop tot hij de goede vorm zegt, of Hold.
+      const knop = el(doel.soort === 'formatie' ? 'knop-formatie' : 'knop-houd');
+      if (doel.heeftKeuze && !doel.heeftKeuze()) {
+        const groepen = el('leger-groepen');
+        const g = zichtbaar(groepen) && [...groepen.querySelectorAll('button')].find((b) => b.textContent.startsWith('Group'));
+        return g ? { e: g, tekst: 'Your men are no longer chosen. Tap Group.' } : { e: el('knop-zwaard'), tekst: 'Open your army and choose your men again.' };
+      }
+      if (!zichtbaar(knop)) return { e: el('knop-zwaard'), tekst: 'Tap the sword to open your army.' };
+      return { e: knop, tekst: doel.soort === 'formatie' ? `Tap the formation button until it says ${doel.naam}.` : 'Tap Hold.' };
     }
     if (doel.soort === 'stuur') {
       // Na het bevel: ze zijn onderweg (naar Karel: duidelijk melden, en niet meer om een tik vragen)
