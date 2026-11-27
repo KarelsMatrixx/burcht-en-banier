@@ -131,10 +131,17 @@ check('nacht: intro van les 1', await kaartOpen() && /archers/i.test(await p.tex
 await leesKaart();
 // Les 1 streng: eerst per ongeluk de ridders
 if (!(await p.isVisible('#leger-groepen button'))) { await p.tap('#knop-zwaard'); await p.waitForTimeout(500); }
+check('kiesles: All en Box dicht', await p.evaluate(() => ['knop-alle', 'knop-kader'].every((id) => document.getElementById(id).classList.contains('tut-dicht'))));
+await p.tap('#knop-alle', { force: true }).catch(() => {}); await p.waitForTimeout(400);
+check('kiesles: All kiest niemand', await p.evaluate(() => window.spel.leger.aantalGekozen() === 0));
+check('kiesles: gids wijst Ranged aan, niet All', /Ranged/.test(await p.textContent('#gids-zin')) && !/\bAll\b/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+await p.locator('#leger-groepen button', { hasText: /^Melee/ }).tap(); await p.waitForTimeout(600);
 await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap(); await p.waitForTimeout(1200);
 check('kiesles: ridders kiezen telt niet voor boogschutters', !(await st()).nKlaar, JSON.stringify(await st()));
-await p.locator('#leger-groepen button', { hasText: /^Archer/ }).tap(); await p.waitForTimeout(1200);
-check('kiesles: boogschutters kiezen telt', (await st()).nKlaar, JSON.stringify(await st()));
+// Daarna de gids volgen (Back, Ranged, Archer)
+for (let k = 0; k < 6 && !(await st()).nKlaar; k++) { await tikGids(); await p.waitForTimeout(700); }
+check('kiesles: boogschutters via de gids gekozen telt', (await st()).nKlaar, JSON.stringify(await st()));
+check('kiesles: alleen boogschutters gekozen', await p.evaluate(() => window.spel.leger.gekozen().every((e) => e.soldaat.sleutel === 'boogschutter' || e.soldaat.sleutel === 'koning')));
 await leesKaart(); await leesKaart();   // Good, intro les 2
 // Les 2: boogschutters naar de muur bij de poort (de gids volgen)
 for (let k = 0; k < 12 && (await st()).nBevel !== 2; k++) { if (await kaartOpen()) break; await tikGids(); }
@@ -164,8 +171,9 @@ const boogOpMuur = await p.evaluate(() => { const s = window.spel; const st = s.
 check('boogschutters staan echt op de poortmuur', boogOpMuur >= 1, boogOpMuur);
 // Les 3 en 4
 if (!(await p.isVisible('#leger-groepen button'))) { await p.tap('#knop-zwaard'); await p.waitForTimeout(500); }
-await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap(); await p.waitForTimeout(1200);
-check('les 3: ridders gekozen', (await st()).nKlaar, JSON.stringify(await st()));
+check('les 3: gids wijst Back of Melee aan', /Go back|Melee/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+for (let k = 0; k < 6 && !(await st()).nKlaar; k++) { await tikGids(); await p.waitForTimeout(700); }
+check('les 3: ridders via de gids gekozen', (await st()).nKlaar, JSON.stringify(await st()));
 await leesKaart(); await leesKaart();
 for (let k = 0; k < 12 && (await st()).nBevel !== 4; k++) { if (await kaartOpen()) break; await tikGids(); }
 check('les 4: bevel gegeven', (await st()).nBevel === 4, JSON.stringify(await st()));
@@ -190,12 +198,14 @@ await p.screenshot({ path: '/tmp/s/p70_nacht.png' });
 
 // --- Level 1: Bartholts raad als eerste bericht ---
 await start(1);
-await p.waitForFunction(() => window.spel.ui.logboek().some((r) => r.soort === 'verhaal'), null, { timeout: 25000 }).catch(() => {});
-await p.waitForTimeout(300);
-const log1 = await p.evaluate(() => window.spel.ui.logboek().filter((r) => r.soort === 'verhaal'));
-check('level 1: eerste bericht is de raad van Bartholt', log1.length > 0 && /Build these first/.test(log1[0].tekst), JSON.stringify(log1.slice(0, 2)));
-check('level 1: van Bartholt', /Bartholt/.test(await p.textContent('#verhaal')), await p.textContent('#verhaal'));
-check('level 1: het bericht staat in beeld', /Build these first/.test(await p.textContent('#verhaal')), await p.textContent('#verhaal'));
+// Sinds 0.116/0.124 begint level 1 met de handel- en bouwles; Bartholts raad komt pas daarna (zie handelles116 en bouwles124).
+const metLessen = await p.evaluate(() => !!(window.spel.handelLes || window.spel.bouwLes));
+if (!metLessen) {
+  await p.waitForFunction(() => window.spel.ui.logboek().some((r) => r.soort === 'verhaal'), null, { timeout: 25000 }).catch(() => {});
+  await p.waitForTimeout(300);
+  const log1 = await p.evaluate(() => window.spel.ui.logboek().filter((r) => r.soort === 'verhaal'));
+  check('level 1: eerste bericht is de raad van Bartholt', log1.length > 0 && /Build these first/.test(log1[0].tekst), JSON.stringify(log1.slice(0, 2)));
+} else console.log('level 1 begint met lessen: controle van het eerste bericht overgeslagen');
 check('geen scriptfouten', fouten.length === 0, fouten.join('\n'));
 console.log(`proloog70: ${ok} goed, ${fout} fout`);
 await b.close(); srv.kill();

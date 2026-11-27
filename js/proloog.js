@@ -56,14 +56,14 @@ const LEGER_OTTGER = { ridder: 40, boogschutter: 27, bijlridder: 16, kruisboog: 
 
 // De les over je leger besturen, terwijl het leger van rood buiten de muur wacht.
 const NACHT_TAKEN = [
-  { taak: 'Select your archers', gids: { soort: 'kies', groep: 'Archer' },
-    tekst: 'Sire, look east! A whole army. We cannot stop them, but we can hold the walls. Take command: first choose your archers. Open the army with the sword, then pick the Archer group.',
+  { taak: 'Select your archers', gids: { soort: 'kies', groep: 'Archer', via: 'Ranged', viaTekst: 'Tap Ranged to see your archers.', tekst: 'Now tap Archer.' },
+    tekst: 'Sire, look east! A whole army. We cannot stop them, but we can hold the walls. Take command: first choose your archers. Open the army with the sword, tap Ranged, then pick Archer.',
     keuze: 'boogschutter' },
   { taak: 'Archers to the gate wall', gids: { soort: 'stuur', plekTekst: 'Archers here' }, doelPlek: [17, -1], opMuur: true,
     tekst: 'Good. Archers shoot best from a wall. With your archers chosen, tap the glowing piece of wall beside the gate.',
     stuurSoort: 'boogschutter' },
-  { taak: 'Select your knights', gids: { soort: 'kies', groep: 'Knight' },
-    tekst: 'Now the knights. They fight in the open. Pick the Knight group in the same panel.',
+  { taak: 'Select your knights', gids: { soort: 'kies', groep: 'Knight', via: 'Melee', viaTekst: 'Tap Melee to see your knights.', tekst: 'Now tap Knight.' },
+    tekst: 'Now the knights. They fight in the open. In the same panel, go back, tap Melee and pick Knight.',
     keuze: 'ridder' },
   { taak: 'Knights behind the gate', gids: { soort: 'stuur', plekTekst: 'Knights here' }, doelPlek: [14, 2],
     tekst: 'When the gate falls, knights must meet them in the passage. Tap the glowing spot just inside the gate.',
@@ -838,7 +838,11 @@ export function maakProloog({ soortKoning, kaart, bouwer, bouwwerken, kijkNaar, 
     // Wat mag de speler nu (naar Karel: in de tutorial alleen wat de les vraagt)?
     // wat: 'zwaard' (legerpaneel), 'volk' (voorraadbalk en buidel), 'logboek', 'oog', 'kazerne', 'handel', 'poort'.
     mag(wat) {
-      if (s.fase === 'nacht') return wat !== 'volk' && wat !== 'handel' && wat !== 'kazerne';
+      if (s.fase === 'nacht') {
+        // Kiesles: alleen via de groep en de soort (All en Box kiezen iedereen, dan telt de les nooit)
+        if ((wat === 'alle' || wat === 'kader') && s.deel === 'opmars' && NACHT_TAKEN[s.nTaak] && NACHT_TAKEN[s.nTaak].keuze && !s.nKlaar) return false;
+        return wat !== 'volk' && wat !== 'handel' && wat !== 'kazerne';
+      }
       if (s.fase !== 'bouw') return wat === 'logboek';
       const les = TAKEN[s.taak];
       const actief = !!s.basis && !s.klaar;

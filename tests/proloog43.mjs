@@ -48,8 +48,9 @@ check('ze marcheren naar het westen', k1.minX < k0.minX - 8, JSON.stringify([k0.
 check('nog niemand binnen de muren', k1.binnen === 0, k1.binnen);
 // Les 1 met echte tikken
 if (!(await p.isVisible('#leger-groepen button'))) await p.tap('#knop-zwaard'); await p.waitForTimeout(500);
-check('gids wijst Archer', /Archer/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
-await p.locator('#leger-groepen button', { hasText: /^Archer/ }).tap(); await p.waitForTimeout(900);
+check('gids wijst Ranged (de groep van de boogschutters)', /Ranged|Archer/.test(await p.textContent('#gids-zin')), await p.textContent('#gids-zin'));
+await p.locator('#leger-groepen button', { hasText: /^Ranged/ }).tap(); await p.waitForTimeout(600);
+if (!(await st()).nKlaar) { await p.locator('#leger-groepen button', { hasText: /^Archer/ }).tap(); await p.waitForTimeout(900); }
 const nS = async () => (await st());
 check('les 1 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 await kaartTik(); await kaartTik();
@@ -68,7 +69,11 @@ check('les 2 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 await kaartTik(); await kaartTik();
 console.log('DBG', await p.evaluate(() => ({ g: !document.getElementById('leger-groepen').hidden, btn: [...document.querySelectorAll('#leger-groepen button')].map((b) => b.textContent + ':' + (b.offsetParent ? 'v' : 'h')), zin: document.getElementById('gids-zin').textContent, pan: !!document.querySelector('#legerpaneel:not([hidden])') })));
 if (!(await p.isVisible('#leger-groepen button'))) { await p.tap('#knop-zwaard'); await p.waitForTimeout(400); }
-await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap({ timeout: 5000 }).catch(async () => { console.log('RETRY', await p.evaluate(() => { const b = [...document.querySelectorAll('#leger-groepen button')].find((x) => /^Knight/.test(x.textContent)); const r = b && b.getBoundingClientRect(); const o = r && document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return JSON.stringify({ r: r && [r.left, r.top, r.width, r.height], over: o && (o.id || o.className || o.tagName), kaart: !document.getElementById('gids-kaart').hidden }); })); await p.tap('#knop-zwaard'); await p.waitForTimeout(500); await p.locator('#leger-groepen button', { hasText: /^Knight/ }).tap({ timeout: 5000 }); });
+{ if (!(await p.isVisible('#leger-groepen button'))) { await p.tap('#knop-zwaard'); await p.waitForTimeout(500); }
+  const knop = (re) => p.locator('#leger-groepen button', { hasText: re });
+  if (await knop(/^‹/).count()) { await knop(/^‹/).tap(); await p.waitForTimeout(400); }
+  await knop(/^Melee/).tap(); await p.waitForTimeout(500);
+  await knop(/^Knight/).tap({ timeout: 5000 }); }
 await p.waitForTimeout(900);
 check('les 3 klaar', (await nS()).nKlaar, JSON.stringify(await nS()));
 await kaartTik(); await kaartTik();

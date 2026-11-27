@@ -1509,3 +1509,10 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 ## 0.124.2: de golven landen op steeds meer plekken
 - Hoe verder in de golven, hoe meer verschillende landingsplekken tegelijk (golven.js `stuurGolf`, `plekken`): golf 1 en 2 op een plek, golf 3 en 4 op twee, golf 5 en 6 op drie, golf 7 en 8 op vier, golf 9 en 10 op vijf. De schepen verdelen zich over die plekken; welke plekken het zijn wisselt per golf. Zo komt de aanval van verschillende kanten. Gemeten met een testspel: 1, 1, 2, 2, 3, 3, 4, 4, 5, 5 plekken.
 - De melding noemt het aantal plekken. Verder is `doel.plekkenPer` (standaard 2 golven per extra plek) aan te passen in data/campagne.json. Belegeringsmateriaal wordt over de schepen verdeeld en kan dus op verschillende plekken aan land komen.
+
+## 0.124.5: tutorial, de kieslessen werken weer met de twee lagen van het legerpaneel
+- Naar Karel: bij "Select your archers" en "Select your knights" wees de gids naar All, en All deed niets. Oorzaak: sinds de twee lagen (groepen, dan soorten) staan Archer en Knight niet meer in de eerste rij, dus viel de gids terug op All. All kiest iedereen en dan telt de les nooit.
+- Nu wijst de gids eerst de groep aan ("Tap Ranged to see your archers." en "Tap Melee to see your knights."), daarna de soort ("Now tap Archer." en "Now tap Knight."); staat de rij nog open op een andere groep, dan eerst Back (gids.js `kies` met `via`, proloog.js NACHT_TAKEN). Kiest Ranged al alleen boogschutters, dan is de les meteen klaar.
+- All en Box zijn dicht tijdens deze twee kieslessen (proloog.js `mag('alle')`, `mag('kader')`, ui.js `beperkKnoppen`); in de legerles van level 1 blijven ze open.
+- Teksten van Bartholt aangepast (Engels, na te lezen).
+- Tests: proloog70 volgt bij de kieslessen de gids zoals een speler en controleert dat All dicht is; proloog43 kiest via Ranged en Melee; de level 1 controle in proloog70 slaat het eerste bericht over zolang level 1 met lessen begint. proloog70 45 goed, proloog43 35, proloog35 82, proloog77 35, legerles121 39, alle groen.

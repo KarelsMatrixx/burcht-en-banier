@@ -145,6 +145,15 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       // Legerles: in laag 2 (Back): eerst terug
       const terug = [...groepen.querySelectorAll('button')].find((b) => b.textContent.startsWith('‹'));
       if (terug && zichtbaar(terug)) return { e: terug, tekst: 'Go back first.' };
+      // Twee lagen (0.104.0): de soort (Archer, Knight) zit onder zijn groep (Ranged, Melee). Eerst de groep.
+      if (doel.via) {
+        const via = [...groepen.querySelectorAll('button')].find((b) => b.textContent.startsWith(doel.via));
+        if (via && zichtbaar(via)) {
+          const r = vak(via); const rij = vak(groepen);
+          if (r.left < rij.left - 1 || r.right > rij.right + 1) return { e: groepen, tekst: `Swipe the row of groups sideways to find ${doel.via}, then tap it.` };
+          return { e: via, tekst: doel.viaTekst || `Tap ${doel.via}.` };
+        }
+      }
       if (doel.anders) return { e: el('knop-kader'), tekst: doel.anders };
       return { e: el('knop-alle'), tekst: 'Tap All to choose your soldiers.' };
     }

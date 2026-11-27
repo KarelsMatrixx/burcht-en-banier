@@ -1188,7 +1188,7 @@ export function maakUi() {
     },
     // Proloog: knoppen die niet bij de les horen zijn grijs en doen niets (mag = proloog.mag).
     beperkKnoppen(mag) {
-      const stand = mag ? ['zwaard', 'volk', 'logboek', 'oog'].map((w) => mag(w)).join() : '';
+      const stand = mag ? ['zwaard', 'volk', 'logboek', 'oog', 'alle', 'kader'].map((w) => mag(w)).join() : '';
       if (stand === knoppenStand) return;
       knoppenStand = stand;
       const zet = (id, open) => { const k = el(id); if (!k) return; k.classList.toggle('tut-dicht', !open); if ('disabled' in k && k.tagName === 'BUTTON') k.disabled = !open; };
@@ -1198,6 +1198,9 @@ export function maakUi() {
       el('voorraad').classList.toggle('tut-klik', !!mag && !mag('volk'));
       zet('adviseur', !mag || mag('logboek'));
       zet('knop-oog', !mag || mag('oog'));
+      // Kiesles in de proloog: alleen de groep en soort die de gids aanwijst, niet All of Box
+      zet('knop-alle', !mag || mag('alle'));
+      zet('knop-kader', !mag || mag('kader'));
       if (mag && !mag('zwaard') && paneel === 'leger') zetPaneel(null);
     },
     // Proloog: alleen het bouwwerk van de les is te kiezen (sleutel), of niets (null).

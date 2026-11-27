@@ -151,7 +151,7 @@ export function maakLegerLes({ gids, leger, kaart, wegvinder, klaarAl = false, o
     doelPlek: () => doelPlek,
     // Wat mag de speler nu? (main.js en ui.beperkKnoppen)
     mag(wat) {
-      if (wat === 'zwaard') return true;
+      if (wat === 'zwaard' || wat === 'alle' || wat === 'kader') return true;
       if (wat === 'formatie') return fase === 'formatie';
       if (wat === 'houd') return fase === 'houd';
       return false;   // bouwen, volk, logboek, oog: na de les
