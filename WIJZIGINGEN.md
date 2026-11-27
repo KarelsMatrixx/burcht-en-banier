@@ -1441,3 +1441,8 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 
 ## 0.120.1: het gouden avondlicht in level 8 is weg
 - Het oranje avondlicht over het scherm in de minuut voor een golf is helemaal verwijderd (zeeleven.js `tekenLicht` en de klok `licht`, tekenaar.js). De zeemist blijft.
+
+## 0.120.2: de klok naar de volgende wave telt pas als de laatste man dood is (level 8)
+- Voorheen liep de klok naar de volgende golf door vanaf het moment dat de vorige vertrok. Nu start hij pas als geen enkele man van de vorige golf meer leeft (schepen onderweg en mannen aan land, golven.js `s.aftel`, `s.golfBezig`, `mannenOver`). Daarna loopt de gewone wachttijd (`tussen`) af.
+- Tijdens een golf toont de klok linksboven "Raiders, N left" in plaats van een tijd, en de taakregel zegt hoeveel mannen er nog zijn. Als de golf verslagen is, komt een melding met de tijd tot de volgende.
+- Na een herladen midden in een golf tellen alle aanvallers van rood mee (de namen van de golfmannen zijn dan niet bewaard). `zetTijd` (test) springt naar een moment en wist de wachtstand. Tests golven109 (twee nieuwe checks) en eilanden111 aangepast. Teksten Engels, na te lezen; de wachttijd (100 s) is een schatting.

@@ -654,6 +654,16 @@ export function maakUi() {
     toonAanvalKlok(klok) {
       const vak = el('aanvalklok');
       if (!klok) { vak.hidden = true; return; }
+      // Een golf is nog bezig: laat zien hoeveel mannen er nog zijn (de klok wacht).
+      if (klok.over !== undefined) {
+        el('aanvalklok-label').textContent = 'Raiders';
+        el('aanvalklok-tijd').textContent = `${klok.over} left`;
+        el('aanvalklok-golf').textContent = `Wave ${klok.golf} of ${klok.totaal}`;
+        vak.classList.remove('dichtbij');
+        vak.hidden = false;
+        return;
+      }
+      el('aanvalklok-label').textContent = 'Next attack';
       const m = Math.floor(klok.seconden / 60);
       const sec = String(klok.seconden % 60).padStart(2, '0');
       // De laatste tien seconden tikt de klok.

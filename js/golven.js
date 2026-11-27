@@ -53,8 +53,10 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
   let rutgerThuis = null;
   let rutger = null;    // Rutger in de golf
   let eindKlok = -1;
+  let golfMannen = [];   // de mannen van de golf die nu aan land is (niet bewaard)
+  let herlaad = true;    // net geladen: de mannen van een bezige golf kennen we niet meer bij naam
 
-  function nieuw() { return { tijd: 0, golven: 0, geland: 0, onderweg: 0, rutgerGeland: false, rutgerLeven: 0, gemeld: {}, klaar: false }; }
+  function nieuw() { return { tijd: 0, aftel: null, golfBezig: false, golven: 0, geland: 0, onderweg: 0, rutgerGeland: false, rutgerLeven: 0, gemeld: {}, klaar: false }; }
   function lees() { try { return JSON.parse(localStorage.getItem(geheugen) || 'null'); } catch (e) { return null; } }
   function bewaar() { try { localStorage.setItem(geheugen, JSON.stringify(s)); } catch (e) { /* niet erg */ } }
   const zegt = (tekst) => toonVerhaal({ naam: 'Rutger the Mad', portret: 'rutger', tekst });
@@ -181,6 +183,9 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
       schepen.push({ route, pos: 0, snel: (route.length - 1) / (T + i * 1.2), terug: false, lading, landing, golf: nr + 1, eerste: i === 0, rutger: metRutger && i === 0 });
     });
     s.golven++;
+    s.aftel = d.tussen || 100;
+    s.golfBezig = true;
+    herlaad = false;
     s.onderweg = schepen.filter((x) => !x.terug).length;
     if (metRutger) {
       // Rutger verlaat zijn dorp en stapt op het voorste schip.
@@ -196,7 +201,9 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
     const { lading, landing } = sch;
     const zonderHeld = { ...lading };
     delete zonderHeld[heldSleutel];
+    const voorLanding = new Set(strijd.alleVijanden());
     strijd.stuurLeger(zonderHeld, sch.eerste, { rond: { x: landing.x, y: landing.y }, straal: 3, plan: true });
+    for (const e of strijd.alleVijanden()) if (!voorLanding.has(e)) golfMannen.push(e);
     if (lading[heldSleutel]) {
       rutger = strijd.maakHeld(heldSleutel, vrijBij(landing.x, landing.y));
       if (rutger) { rutger.onsterfelijk = true; s.rutgerGeland = true; zegt(RUTGER.geland); }
@@ -251,12 +258,24 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
     }
   }
 
-  const volgendeGolf = () => (s.golven >= aantal ? Infinity : (d.eerste || 150) + s.golven * (d.tussen || 100) - s.tijd);
+  // De klok naar de volgende golf telt pas als de laatste man van de vorige golf dood is (0.120.2).
+  // s.aftel = seconden tot de volgende golf; s.golfBezig = er zijn nog mannen van de vorige golf.
+  const eersteAftel = () => (d.eerste || 150) + s.golven * (d.tussen || 100) - s.tijd;
+  if (s.aftel === null || s.aftel === undefined) s.aftel = eersteAftel();   // een oud bewaard spel
+  const mannenOpZee = () => schepen.reduce((a, sch) => a + (sch.terug ? 0 : Object.entries(sch.lading).reduce((b, [k, n]) => b + (k === heldSleutel ? 0 : n), 0)), 0);
+  const mannenAanLand = () => {
+    golfMannen = golfMannen.filter((e) => !e.dood);
+    // Na een herladen weten we niet meer wie van de golf was: dan tellen alle aanvallers.
+    return herlaad && !golfMannen.length ? strijd.vijanden().filter((e) => !isHeld(e)).length : golfMannen.length;
+  };
+  const mannenOver = () => mannenOpZee() + mannenAanLand();
+  const volgendeGolf = () => (s.golven >= aantal ? Infinity : s.aftel);
   const toonKlok = () => {
     if (!toonAanvalKlok) return;
     const nog = volgendeGolf();
     if (!Number.isFinite(nog)) { toonAanvalKlok(null); return; }
-    toonAanvalKlok({ seconden: Math.max(0, Math.ceil(nog)), golf: s.golven + 1, totaal: aantal });
+    if (s.golfBezig) toonAanvalKlok({ seconden: 0, golf: s.golven, totaal: aantal, over: mannenOver() });
+    else toonAanvalKlok({ seconden: Math.max(0, Math.ceil(nog)), golf: s.golven + 1, totaal: aantal });
   };
 
   function vaarStap(dt) {
@@ -293,7 +312,7 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
         if (l) { rutger = strijd.maakHeld(heldSleutel, vrijBij(l.x, l.y)); if (rutger) { rutger.onsterfelijk = true; if (s.rutgerLeven) rutger.leven = Math.max(2, s.rutgerLeven); } }
       }
       // Was een golf onderweg toen je herlaadde, dan vaart hij opnieuw uit.
-      if (s.onderweg > 0 && s.geland < s.golven) { s.golven = s.geland; s.onderweg = 0; }
+      if (s.onderweg > 0 && s.geland < s.golven) { s.golven = s.geland; s.onderweg = 0; s.golfBezig = s.geland > 0 && strijd.vijanden().length > 0; s.aftel = 0; }
       toonKlok();
       if (!s.gemeld.begin) {
         s.gemeld.begin = true;
@@ -311,6 +330,7 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
       if (strijd.uitslag()) { if (toonAanvalKlok) toonAanvalKlok(null); return; }
       vaarStap(dt);
       s.tijd += dt;
+      if (!s.golfBezig) s.aftel -= dt;
       kijk += dt;
       if (kijk < 0.5) return;
       kijk = 0;
@@ -321,16 +341,21 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
         if (rutger.leven < rutger.levenMax / 2 && !s.gemeld.half) { s.gemeld.half = true; zegt(RUTGER.half); }
         if (rutger.verslagen) { overwinning(); return; }
       }
-      if (s.golven < aantal && volgendeGolf() <= 0) stuurGolf();
+      // De golf is voorbij als niemand meer leeft: dan begint de klok naar de volgende.
+      if (s.golfBezig && mannenOver() === 0) { s.golfBezig = false; herlaad = false; bewaar(); if (s.golven < aantal) toonMelding(`Wave ${s.golven} is beaten. The next raid comes in ${klok(s.aftel)}.`); }
+      if (s.golven < aantal && !s.golfBezig && volgendeGolf() <= 0) stuurGolf();
       if (s.golven === 0 && volgendeGolf() < 40 && !s.gemeld.waarschuw) { s.gemeld.waarschuw = true; bartholt('Sails on the horizon, Sire! Rutger\'s longships land on our shore. Put archers and soldiers where they come ashore.'); }
       toonKlok();
       const nogTeGaan = aantal - s.golven;
-      if (s.golven < aantal) toonTaak(`Survive Rutger's raids: wave ${s.golven} of ${aantal}${nogTeGaan ? `, next in ${klok(Math.max(0, volgendeGolf()))}` : ''}`);
+      if (s.golven < aantal) toonTaak(`Survive Rutger's raids: wave ${s.golven} of ${aantal}${nogTeGaan ? (s.golfBezig ? `, ${mannenOver()} raiders left. The next wave comes ${klok(d.tussen || 100)} after the last one falls` : `, next in ${klok(Math.max(0, volgendeGolf()))}`) : ''}`);
       else toonTaak(s.rutgerGeland ? 'Defeat Rutger the Mad. He will not die, but he can be beaten.' : 'Rutger is coming! Hold the shore.');
       if (Math.round(s.tijd) % 5 === 0) bewaar();
     },
     wis() {
       s = nieuw();
+      s.aftel = eersteAftel();
+      golfMannen = [];
+      herlaad = false;
       schepen.length = 0;
       rutger = null;
       eindKlok = -1;
@@ -359,7 +384,8 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
     stand: () => ({ ...s, schepen: schepen.length }),
     rutger: () => rutger,
     rutgerThuis: () => rutgerThuis,
-    zetTijd(t) { s.tijd = t; },
+    zetTijd(t) { s.tijd = t; s.aftel = eersteAftel(); s.golfBezig = false; herlaad = false; },   // voor tests: spring naar dit moment
     volgende: volgendeGolf,
+    mannenOver,
   };
 }

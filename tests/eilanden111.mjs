@@ -57,7 +57,7 @@ const w = await p.evaluate(async () => {
   const d = window.spel.doel;
   window.spel.ui.verbergVerhaal && window.spel.ui.verbergVerhaal();
   let max = 0, bronnen = new Set();
-  d.zetTijd(180 + 110 * 9 + 1);
+  for (let k = 0; k < 10; k++) { d.zetTijd(180 + 110 * k + 1); d.stap(0.6); }   // sinds 0.120.2 komt er een golf per sprong
   for (let i = 0; i < 40; i++) { d.stap(0.2); const sch = d.schepen(); max = Math.max(max, sch.length); for (const s of sch) bronnen.add(Math.round(s.x) + ',' + Math.round(s.y)); }
   return { max, golven: d.stand().golven };
 });

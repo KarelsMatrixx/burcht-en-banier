@@ -54,6 +54,23 @@ const g1b = await p.evaluate(() => { const { doel, strijd } = window.spel; for (
 check('golf 1 geland, mannen aan land', g1b.geland === 1 && g1b.vijanden >= g1.voor + 8, JSON.stringify(g1b));
 await p.waitForTimeout(1500);
 await p.screenshot({ path: '/home/claude/werk/g-land.png' });
+// 0.120.2: de klok naar de volgende golf wacht tot de laatste man van de golf dood is
+const wacht = await p.evaluate(() => {
+  const { doel } = window.spel;
+  const a = doel.volgende();
+  for (let i = 0; i < 100; i++) doel.stap(0.5);
+  return { a, b: doel.volgende(), bezig: doel.stand().golfBezig, over: doel.mannenOver() };
+});
+check('klok wacht zolang er mannen van de golf leven', wacht.bezig && wacht.over > 0 && wacht.b === wacht.a, JSON.stringify(wacht));
+const dood = await p.evaluate(() => {
+  const { doel, strijd, eenheden } = window.spel;
+  for (const e of strijd.vijanden()) { e.leven = 0; e.dood = true; }
+  for (let i = 0; i < 6; i++) { eenheden.stap(0.1); strijd.stap(); doel.stap(0.6); }
+  const a = doel.volgende();
+  for (let i = 0; i < 20; i++) doel.stap(0.5);
+  return { bezig: doel.stand().golfBezig, a, b: doel.volgende() };
+});
+check('klok telt weer na de laatste dode man', !dood.bezig && dood.b < dood.a, JSON.stringify(dood));
 // Snel naar golf 10
 const g10 = await p.evaluate(() => {
   const { doel } = window.spel;
