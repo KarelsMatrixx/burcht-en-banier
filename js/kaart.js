@@ -90,7 +90,7 @@ export function aansluiting(kaart, x, y, alsSoort, ookHier) {
 
 // De dijk (White Dike): de sleutel voor het plaatje van een dijktegel (kunst.js tekenDijk).
 // Bits 0-7: welke van de acht buren ook dijk zijn. Bits 8-11: aan welke kant het water ligt (1-8).
-// Bit 12: palissade (een haven binnen 6 tegels). Bit 13: poortpijler. Bits 14-17: richting van de haven.
+// Bit 12: houten muur in plaats van witte dijk (dicht bij het dorp van rood). Bit 13: poortpijler. Bits 14-17: richting van de haven.
 const ACHT = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
 function richtingNummer(sx, sy) {
   if (!sx && !sy) return 0;
@@ -113,15 +113,18 @@ export function dijkSleutel(kaart, x, y) {
     if (kaart.grond[j] === GROND.WATER) { wx += dx; wy += dy; }
   }
   sleutel |= richtingNummer(wx, wy) << 8;
+  const hout = kaart.dijkHout;
+  if (hout && Math.hypot(x - hout.x, y - hout.y) <= hout.straal) sleutel |= 4096;
   let havenD = Infinity;
   let hx = 0;
   let hy = 0;
-  for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) {
-    if (!binnen(x + dx, y + dy) || kaart.object[(y + dy) * B + x + dx] !== OBJECT.HAVEN) continue;
-    const d = Math.hypot(dx, dy);
-    if (d < havenD) { havenD = d; hx = dx; hy = dy; }
+  if (kaart.dijkPoorten && kaart.dijkPoorten.includes(y * B + x)) {
+    for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
+      if (!binnen(x + dx, y + dy) || kaart.object[(y + dy) * B + x + dx] !== OBJECT.HAVEN) continue;
+      const d = Math.hypot(dx, dy);
+      if (d < havenD) { havenD = d; hx = dx; hy = dy; }
+    }
   }
-  if (havenD < Infinity) sleutel |= 4096;
   if (kaart.dijkPoorten && kaart.dijkPoorten.includes(y * B + x)) sleutel |= 8192 | (richtingNummer(hx, hy) << 14);
   return sleutel;
 }
@@ -698,13 +701,31 @@ export function maakKaart(recept) {
   // rond het dorp van rood. Alleen op de oever, niet naast de haven.
   const dijkPoorten = [];
   if (r.witteDijk) {
-    const st = r.witteDijk.straal || 16;
+    // De hele kust van het eiland van rood wordt dijk (vanaf 0.118.4). Welk land bij zijn eiland hoort: alles
+    // wat je vanaf zijn burcht over land bereikt. Dicht bij zijn dorp (witteDijk.straal) is het een houten muur.
     const m = start[1];
-    for (let y = Math.max(1, m.y - st); y <= Math.min(hoogte - 2, m.y + st); y++) {
-      for (let x = Math.max(1, m.x - st); x <= Math.min(breedte - 2, m.x + st); x++) {
+    const eiland = new Uint8Array(breedte * hoogte);
+    const rij = [m.y * breedte + m.x];
+    eiland[rij[0]] = 1;
+    for (let k = 0; k < rij.length; k++) {
+      const i = rij[k];
+      const x = i % breedte;
+      const y = (i - x) / breedte;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const bx = x + dx;
+        const by = y + dy;
+        if (bx < 0 || by < 0 || bx >= breedte || by >= hoogte) continue;
+        const j = by * breedte + bx;
+        if (eiland[j] || grond[j] === GROND.WATER) continue;
+        eiland[j] = 1;
+        rij.push(j);
+      }
+    }
+    for (let y = 1; y < hoogte - 1; y++) {
+      for (let x = 1; x < breedte - 1; x++) {
         const i = y * breedte + x;
-        if (grond[i] === GROND.WATER || eigenaar[i] || (object[i] !== OBJECT.GEEN && object[i] !== OBJECT.BOOM && object[i] !== OBJECT.STEEN)) continue;
-        if (Math.hypot(x - m.x, y - m.y) > st || Math.max(Math.abs(x - m.x), Math.abs(y - m.y)) <= omvang + 1) continue;
+        if (!eiland[i] || eigenaar[i] || (object[i] !== OBJECT.GEEN && object[i] !== OBJECT.BOOM && object[i] !== OBJECT.STEEN)) continue;
+        if (Math.max(Math.abs(x - m.x), Math.abs(y - m.y)) <= omvang + 1) continue;
         const buren = [[1, 0], [-1, 0], [0, 1], [0, -1]];
         if (!buren.some(([dx, dy]) => grond[(y + dy) * breedte + x + dx] === GROND.WATER)) continue;
         let bijHaven = false;
@@ -1469,7 +1490,7 @@ export function maakKaart(recept) {
     { team: 1, midden: start[1], routes: r.zonderRood ? [] : [...ringen.slice().reverse().flatMap((ring) => routesRond(start[1], -1, ring.maat, ring.rond)), ...tolRoutes.filter((rt) => rt.length > 1)] },
   ];
 
-  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, tolMuren, reservePlekken, batterijPlekken, eilandTorens, eilandSterkte: (r.kasteel && r.kasteel.tol && r.kasteel.tol.eiland && r.kasteel.tol.eiland.sterkte) || 1, verbonden: padGemaakt === 'ja' || !!(r.kasteel && r.kasteel.tol), eilanden: !!(r.vorm && r.vorm.soort === 'eilanden'), eilandjes, dijkPoorten };
+  return { breedte, hoogte, zaad, naam: r.naam || '', grond, object, eigenaar, start, kastelen, omvang, posten, tolMuren, reservePlekken, batterijPlekken, eilandTorens, eilandSterkte: (r.kasteel && r.kasteel.tol && r.kasteel.tol.eiland && r.kasteel.tol.eiland.sterkte) || 1, verbonden: padGemaakt === 'ja' || !!(r.kasteel && r.kasteel.tol), eilanden: !!(r.vorm && r.vorm.soort === 'eilanden'), eilandjes, dijkPoorten, dijkHout: r.witteDijk ? { x: start[1].x, y: start[1].y, straal: r.witteDijk.straal || 16 } : null };
 }
 
 export function binnenKaart(kaart, x, y) {

@@ -4679,7 +4679,7 @@ function dijkTegel(naam, def, sleutel) {
   for (const [bit, dx, dy] of DIJK_BUREN) if (sleutel & bit) punten.push(scherm(dx, dy, 0.52));
   const wi = (sleutel >> 8) & 15;
   const water = naarEenheid(wi ? DIJK_ACHT[wi - 1] : [1, 1]);
-  const palissade = !!(sleutel & 4096);
+  const hout = !!(sleutel & 4096);                 // dicht bij het dorp: een houten muur in plaats van de witte dijk
   const poort = !!(sleutel & 8192);
   const hi = (sleutel >> 14) & 15;
   const haven = naarEenheid(hi ? DIJK_ACHT[hi - 1] : water);
@@ -4714,40 +4714,45 @@ function dijkTegel(naam, def, sleutel) {
     band(19, '#8f8b7c', 0.17, 3);
     for (let dy = 2; dy >= -D; dy--) band(18, dy > 0 ? '#bdb8a7' : '#dcd8cb', 0.16, dy);
   };
-  band(4, 'rgba(255,255,255,0.45)', 0.36, 4);       // schuim op de waterlijn
-  if (voor) { helling(); muur(); } else { muur(); helling(); }
-  // de kruin: wit kalkpad
-  band(14, '#e4e0d4', 0.07, -D - 0.5);
-  band(10, '#f3f1ea', 0.07, -D - 1.5);
-
-  // voegen in de muur, alleen als je de muur ziet
-  if (voor && punten.length) {
-    const [ox, oy] = scherm(water[0], water[1], 0.16);
-    for (const [px, py] of punten) {
-      for (let t = 0.12; t < 1; t += 0.22) {
-        for (const rij of [-2, -5.5]) {
-          const x = cx + px * t + ox + (toeval() - 0.5) * 2;
-          const y = cy + py * t + oy + 7 + rij;
-          blok(ctx, x - 1.8, y, 3.6, 0.8, 'rgba(120,112,92,0.28)');
-        }
-      }
-    }
-  }
-
-  // palissade: puntige palen met een regel ertussen, op de landkant van de kruin
-  if (palissade && punten.length) {
-    const [ox, oy] = scherm(water[0], water[1], -0.03);
+  // De houten muur: een lage aarden wal met een palissade van puntige stammen erop, met twee regels ertussen.
+  const houtMuur = () => {
+    band(4, 'rgba(255,255,255,0.4)', 0.36, 4);       // schuim op de waterlijn
+    band(20, '#6c5236', 0.12, 2);                    // natte aarde aan het water
+    band(18, '#7d6040', 0.06, 0);
+    band(14, '#6f8f4a', -0.04, -1.2);                // gras op de wal
+    if (!punten.length) return;
+    const [ox, oy] = scherm(water[0], water[1], 0.04);
     const palen = [];
     for (const [px, py] of punten) {
       const lang = Math.hypot(px, py);
-      for (let d = 2; d < lang + 1; d += 6.5) palen.push({ x: cx + ox + px * d / lang, y: cy + oy - D - 1 + py * d / lang, hoog: 11 + toeval() * 3 });
+      for (let d = 0; d < lang + 1; d += 4.6) palen.push({ x: cx + ox + px * d / lang, y: cy + oy - 1 + py * d / lang, hoog: 22 + toeval() * 4 });
     }
     palen.sort((a, c) => a.y - c.y);
-    for (const p of punten) {
-      const [ex, ey] = [cx + ox + p[0], cy + oy - D - 1 + p[1]];
-      lijn(ctx, cx + ox, cy + oy - D - 7, ex, ey - 6, '#5a3d22', 1.6);
+    for (const pl of palen) dijkPaal(ctx, pl.x, pl.y, pl.hoog, 4.4);
+    for (const p of punten) for (const v of [7, 16]) lijn(ctx, cx + ox, cy + oy - 1 - v, cx + ox + p[0], cy + oy - 1 + p[1] - v, '#3e2a16', 1.5);
+  };
+  if (hout) houtMuur();
+  else {
+    band(4, 'rgba(255,255,255,0.45)', 0.36, 4);       // schuim op de waterlijn
+    if (voor) { helling(); muur(); } else { muur(); helling(); }
+    // de kruin: wit kalkpad
+    band(14, '#e4e0d4', 0.07, -D - 0.5);
+    band(10, '#f3f1ea', 0.07, -D - 1.5);
+
+    // voegen in de muur, alleen als je de muur ziet
+    if (voor && punten.length) {
+      const [ox, oy] = scherm(water[0], water[1], 0.16);
+      for (const [px, py] of punten) {
+        for (let t = 0.12; t < 1; t += 0.22) {
+          for (const rij of [-2, -5.5]) {
+            const x = cx + px * t + ox + (toeval() - 0.5) * 2;
+            const y = cy + py * t + oy + 7 + rij;
+            blok(ctx, x - 1.8, y, 3.6, 0.8, 'rgba(120,112,92,0.28)');
+          }
+        }
+      }
     }
-    for (const pl of palen) dijkPaal(ctx, pl.x, pl.y, pl.hoog, 3);
+
   }
 
   // poort: een witte pijler met een kap, een rode banier en een open houten deur naar de haven
@@ -4756,21 +4761,30 @@ function dijkTegel(naam, def, sleutel) {
     const px = cx + ox;
     const py = cy + oy - D - 1;
     const [hx, hy] = scherm(haven[0], haven[1], 0.42);
+    const deurY = hout ? py + D + 1 : py;
     const deur = () => {
-      const A = [px + hx * 0.3, py + hy * 0.3];
-      const B = [px + hx, py + hy];
+      const A = [px + hx * 0.3, deurY + hy * 0.3];
+      const B = [px + hx, deurY + hy];
       const H = 17;
       vlak(ctx, [A, B, [B[0], B[1] - H], [A[0], A[1] - H]], '#7a5530');
       for (let k = 1; k < 5; k++) { const P = tussen(A, B, k / 5); lijn(ctx, P[0], P[1], P[0], P[1] - H, 'rgba(40,24,10,0.55)', 0.8); }
       for (const v of [4, 12]) lijn(ctx, A[0], A[1] - v, B[0], B[1] - v, '#2e2a26', 1.4);
     };
     if (hy < 0) deur();
-    steenBlok(ctx, px, py, 9, 4.5, 24, '#e8e4d8', toeval);
-    vlak(ctx, [[px - 10, py - 24], [px, py - 29], [px + 10, py - 24], [px, py - 19]], '#b8322a');
-    vlak(ctx, [[px - 10, py - 24], [px, py - 19], [px, py - 33]], '#8e2a22');
-    vlak(ctx, [[px, py - 19], [px + 10, py - 24], [px, py - 33]], '#c23a2e');
-    dijkPaal(ctx, px, py - 31, 10, 1.6);
-    vlak(ctx, [[px + 0.8, py - 40], [px + 11, py - 37], [px + 0.8, py - 34]], '#c23a2e');
+    if (hout) {
+      // een dikke houten poortpaal met een kap en een rode wimpel
+      dijkPaal(ctx, px, py + D + 1, 34, 8);
+      vlak(ctx, [[px - 7, py + D - 31], [px, py + D - 37], [px + 7, py + D - 31], [px, py + D - 27]], '#6b4a2c');
+      dijkPaal(ctx, px, py + D - 35, 9, 1.6);
+      vlak(ctx, [[px + 0.8, py + D - 43], [px + 11, py + D - 40], [px + 0.8, py + D - 37]], '#c23a2e');
+    } else {
+      steenBlok(ctx, px, py, 9, 4.5, 24, '#e8e4d8', toeval);
+      vlak(ctx, [[px - 10, py - 24], [px, py - 29], [px + 10, py - 24], [px, py - 19]], '#b8322a');
+      vlak(ctx, [[px - 10, py - 24], [px, py - 19], [px, py - 33]], '#8e2a22');
+      vlak(ctx, [[px, py - 19], [px + 10, py - 24], [px, py - 33]], '#c23a2e');
+      dijkPaal(ctx, px, py - 31, 10, 1.6);
+      vlak(ctx, [[px + 0.8, py - 40], [px + 11, py - 37], [px + 0.8, py - 34]], '#c23a2e');
+    }
     if (hy >= 0) deur();
   }
   return { beeld: doek, b, h, ax: cx, ay: cy + HH, geenSchaduw: true };

@@ -1415,3 +1415,8 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Binnen 6 tegels van een haven staat er een houten palissade op de dijk.
 - Waar de dijk voor een haven ophoudt staan twee witte poortpijlers met rode kap, banier en een open houten deur naar de haven (kaart.js `dijkPoorten`).
 - Elke tegel kiest zijn plaatje op buren, waterkant, palissade en poort (kaart.js `dijkSleutel`); plaatjes worden pas getekend als ze nodig zijn. Losse dijkstukjes zonder buur verdwijnen.
+
+## 0.118.4: dijk rond het hele eiland, houten muren bij het dorp
+- De hele kust van het eiland van rood is nu dijk (kaart.js: alle oevertegels die je vanaf zijn burcht over land bereikt), niet meer alleen binnen 15 tegels.
+- Geen palen meer op de witte dijk. Dicht bij het dorp van rood (witteDijk.straal) is de kust een houten muur: een lage aarden wal met een palissade van puntige stammen en twee regels. Witte dijk en houten muur sluiten op elkaar aan.
+- Bij de havens: witte poortpijlers in de dijk, dikke houten poortpalen in de houten muur, allebei met een open deur naar de haven.
