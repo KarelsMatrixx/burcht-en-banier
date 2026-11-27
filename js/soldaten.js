@@ -636,6 +636,14 @@ function werkerFiguur(def) {
       vlak(ctx, [[mx - 0.2, 18.4 + wip], [mx + 8, 18.4 + wip], [mx + 7, 23.6 + wip], [mx + 0.8, 23.6 + wip]], RIET);
       for (const [ax, ay] of [[1.6, 17.3], [3.8, 16.4], [6, 17.2], [4.9, 18], [2.8, 18.1]]) ovaal(ctx, mx + ax, ay + wip, 1.3, 1.6, '#b8d878');
       arm(mx + 3, 19 + wip, mx + 7, 22 + wip);
+    } else if (last && def.vracht === 'vis') {
+      // de visser met een net over de schouder en een vis in de hand
+      vlak(ctx, [[mx - 4, 14 + wip], [mx + 2, 13 + wip], [mx + 4, 22 + wip], [mx - 3, 23 + wip]], 'rgba(150,130,90,0.75)');
+      for (let j = 0; j < 4; j++) lijn(ctx, mx - 3.6 + j * 1.8, 13.6 + wip, mx - 2.6 + j * 1.8, 22.6 + wip, 'rgba(70,50,30,0.6)', 0.4);
+      for (let j = 0; j < 4; j++) lijn(ctx, mx - 3.8, 15 + j * 2.2 + wip, mx + 3, 14.2 + j * 2.2 + wip, 'rgba(70,50,30,0.6)', 0.4);
+      arm(mx + 3, 18.6 + wip, mx + 6, 21.4 + wip);
+      ovaal(ctx, mx + 6.6, 24 + wip, 1.3, 3, '#a9bcc8');
+      vlak(ctx, [[mx + 6.6, 26.6 + wip], [mx + 5.2, 28.4 + wip], [mx + 8, 28.4 + wip]], '#8fa4b2');
     } else if (last && def.vracht === 'kroes') {
       // de waard met een volle bierkroes in de hand en een witte schort
       blok(ctx, mx - 3, 19.4 + wip, 6, 8.6, 'rgba(250,247,238,0.92)');
@@ -674,7 +682,7 @@ function werkerFiguur(def) {
   return teken;
 }
 
-const BEROEP = { houthakker: 'houthakker', steenhouwer: 'steenhouwer', fruitteler: 'fruitteler', zager: 'zager', tarweboer: 'tarweboer', bakker: 'bakker', mijnwerker: 'mijnwerker', boer: 'boer', paardenboer: 'boer', hopboer: 'tarweboer', waard: 'bakker' };
+const BEROEP = { houthakker: 'houthakker', steenhouwer: 'steenhouwer', fruitteler: 'fruitteler', zager: 'zager', tarweboer: 'tarweboer', bakker: 'bakker', mijnwerker: 'mijnwerker', boer: 'boer', paardenboer: 'boer', hopboer: 'tarweboer', waard: 'bakker', visser: 'fruitteler' };
 function werker(def, sleutel) {
   const beroep = BEROEP[(sleutel || '').replace('eenheid.', '').replace(/_(blauw|rood)$/, '')] || 'houthakker';
   const teken = werkerFiguur({ ...def, beroep });

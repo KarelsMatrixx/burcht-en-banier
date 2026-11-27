@@ -864,7 +864,8 @@
    "wessel": "A letter to his father: \"Grandpa is old. He cries when he thinks I am asleep.\"",
    "beloning": [
     "moordgatentoren",
-    "haven"
+    "haven",
+    "vissershut"
    ],
    "rood": {
     "legerMax": 150,
@@ -1002,6 +1003,7 @@
    "kaart": "witte_dijk",
    "zeeleven": true,
    "havenLes": true,
+   "visLes": true,
    "begin": { "hout": 140, "planken": 40 },
    "landschap": "polder",
    "punt": {

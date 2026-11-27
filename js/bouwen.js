@@ -78,7 +78,7 @@ export function maakBouwer({ kaart, wegvinder, tekenaar, eenheden, economie, bou
     if (eenheden.staatOp(x, y)) return 'someone is standing here';
     if (werk && werk.dichtbij && !isDichtbij(x, y, werk.dichtbij)) return werk.dichtbij.reden;
     // aanWater (haven): een van de vier buren is water
-    if (werk && werk.aanWater && ![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => binnenKaart(kaart, x + dx, y + dy) && kaart.grond[(y + dy) * B + x + dx] === GROND.WATER)) return 'a port must stand right next to water';
+    if (werk && werk.aanWater && ![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => binnenKaart(kaart, x + dx, y + dy) && kaart.grond[(y + dy) * B + x + dx] === GROND.WATER)) return werk.waterReden || 'a port must stand right next to water';
     // vereist (kroeg): eerst een eigen bouwwerk van die soort
     if (werk && werk.vereist && !heeftEigen(OBJECT[werk.vereist])) return werk.vereist === 'HOPVELD' ? 'build a hop farm first' : 'you need another building first';
     return '';

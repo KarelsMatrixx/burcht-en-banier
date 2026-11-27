@@ -2,7 +2,7 @@
 
 import { CONFIG } from './config.js';
 import { geluid } from './geluid.js';
-import { maakKaart, laadKaarten, laadKastelen, binnenKaart, beschrijfTegel, OBJECT_ASSET } from './kaart.js';
+import { maakKaart, laadKaarten, laadKastelen, binnenKaart, beschrijfTegel, OBJECT_ASSET, OBJECT } from './kaart.js';
 import { rasterNaarWereld, wereldNaarRaster, kaartGrenzen } from './iso.js';
 import { maakCamera } from './camera.js';
 import { koppelInvoer } from './invoer.js';
@@ -30,6 +30,8 @@ import { maakPoortwacht } from './poortwacht.js';
 import { maakGids } from './gids.js';
 import { maakHaven } from './haven.js';
 import { maakHavenLes } from './havenles.js';
+import { maakVisserij } from './visserij.js';
+import { maakVisLes } from './visles.js';
 import { maakHandelLes } from './handelles.js';
 import { maakGolven } from './golven.js';
 import { maakZeeleven } from './zeeleven.js';
@@ -154,7 +156,7 @@ async function start() {
   let bewaren = false;   // pas aan als het spel helemaal is opgebouwd
   const bewaar = () => {
     if (!bewaren) return;
-    const stand = { bouwwerken: bouwer.eigenBouwwerken(), ...economie.bewaarStand(), leger: leger.bewaarStand(), strijd: strijd.bewaarStand(), haven: haven ? haven.stand() : [], havenLes: havenLesKlaar, handelLes: handelLesKlaar };
+    const stand = { bouwwerken: bouwer.eigenBouwwerken(), ...economie.bewaarStand(), leger: leger.bewaarStand(), strijd: strijd.bewaarStand(), haven: haven ? haven.stand() : [], havenLes: havenLesKlaar, visLes: visLesKlaar, handelLes: handelLesKlaar };
     if (opslag.bewaar(stand) || bewaarFoutGemeld) return;
     bewaarFoutGemeld = true;
     ui.toonMelding('Saving does not work here. Your progress is lost when you close the game.', { soort: 'uitleg', toon: true });
@@ -171,10 +173,13 @@ async function start() {
   let havenLes = null;         // de havenles van level 8 (js/havenles.js)
   let havenTik = 0;            // elke seconde: havens zoeken, het paneel bijwerken
   let havenLesKlaar = false;   // de havenles van level 8 is gedaan (bewaard)
+  let visserij = null;         // vissershutten en hun bootjes (js/visserij.js)
+  let visLes = null;           // de visles van level 8 (js/visles.js), na de havenles
+  let visLesKlaar = false;     // de visles is gedaan (bewaard)
   let handelLes = null;        // de handelles van level 1 (js/handelles.js)
   let handelLesKlaar = false;  // de handelles is gedaan (bewaard)
   // Loopt er een les (haven of handel)? Dan staat de oorlog stil.
-  const lesLoopt = () => !!((havenLes && havenLes.actief()) || (handelLes && handelLes.actief()));
+  const lesLoopt = () => !!((havenLes && havenLes.actief()) || (visLes && visLes.actief()) || (handelLes && handelLes.actief()));
   let naVoorraad = () => {};
   let naGeveld = () => {};     // een gevelde boom valt om (beeld); ingevuld als het gevecht er is
   let verversHandel = () => {};   // het paneel van de voorraadkamer, als het openstaat   // wordt verderop ingevuld, als de bouwbalk er is
@@ -189,6 +194,10 @@ async function start() {
   });
   // Havens (0.106.0): een schip haalt en brengt goederen (data/economie.json "haven").
   haven = maakHaven({ kaart, economie, regels: regels.haven || { reis: 120, per: 10, koop: {}, verkoop: {} }, grondstoffen: regels.grondstoffen, geluid,
+    opMelding: (tekst) => ui.toonMelding(tekst, { soort: 'economie', toon: true }) });
+  // Vissershutten (0.120.0): een bootje vist voedsel. Zijn de schepen van rood op zee, dan blijft het aan wal.
+  visserij = maakVisserij({ kaart, economie, regels: regels.visserij || {}, geluid,
+    gevaar: () => !!(doel && doel.stand && doel.stand().onderweg > 0),
     opMelding: (tekst) => ui.toonMelding(tekst, { soort: 'economie', toon: true }) });
   let naBouw = () => {};       // wordt hieronder ingevuld, als het gevecht er is
   const bouwer = maakBouwer({
@@ -260,6 +269,8 @@ async function start() {
     let vanKaart = false;
     try { vanKaart = window.sessionStorage.getItem(TOON_BEELD) === '1'; } catch (fout) { /* niet erg */ }
     havenLesKlaar = !!bewaard.havenLes && !vanKaart;
+    visLesKlaar = !!bewaard.visLes && !vanKaart;   // de visles net zo
+    visserij.zoek();
     handelLesKlaar = !!bewaard.handelLes;
     if (teruggezet) ui.toonMelding(`Your castle is back: ${teruggezet} ${teruggezet === 1 ? 'building' : 'buildings'}.`, { soort: 'uitleg' });
     leger.zetStand(bewaard.leger);
@@ -287,7 +298,8 @@ async function start() {
   const staat = {
     gekozen: null, schim: null, eenheden: eenheden.lijst, doel: null, kader: null, nacht: () => (proloog ? proloog.nacht() : 0),
     effecten: strijd.effecten, balken: strijd.balken,
-    schepen: () => [...haven.schepen(), ...(doel && doel.schepen ? doel.schepen() : []), ...(zeeleven ? zeeleven.schepen() : [])],
+    vissers: visserij,
+    schepen: () => [...haven.schepen(), ...visserij.schepen(), ...(doel && doel.schepen ? doel.schepen() : []), ...(zeeleven ? zeeleven.schepen() : [])],
     zee: null,
     ladders: () => strijd.ladders(),
   };
@@ -934,6 +946,8 @@ async function start() {
     if (doel) doel.wis();
     havenLesKlaar = false;   // na Start over begint de havenles weer
     if (havenLes) havenLes.zetOpnieuw();
+    visLesKlaar = false;     // de visles ook
+    if (visLes) visLes.zetOpnieuw();
     // Wie op de plek van een teruggekomen boom stond, krijgt een nieuwe plek.
     eenheden.zetAantal(aantal(), false);
     opslag.wis();
@@ -1162,7 +1176,7 @@ async function start() {
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
   // De proloog: taken van Bartholt, de nacht en de scène.
-  const gids = missie && (missie.proloog || missie.havenLes || missie.handelLes) ? maakGids({
+  const gids = missie && (missie.proloog || missie.havenLes || missie.visLes || missie.handelLes) ? maakGids({
     // Waar staat een tegel op het scherm, en hoe groot is hij? Voor de gouden ruit op de bouwplek.
     // boven: de bovenkant van het bouwwerk op die plek (een muur), daar tikt de speler om er een soldaat op te zetten
     plekNaarScherm: (x, y, boven = false) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); const h = boven ? hoogteOp(y * kaart.breedte + x) : 0; const sc = camera.wereldNaarScherm(w.x, w.y - h); return { x: sc.x, y: sc.y, zoom: camera.zoom }; },
@@ -1171,6 +1185,12 @@ async function start() {
   const slachting = maakSlachting({ strijd, economie, wegvinder, kaart, eenheden, leger, rood });
   // Level 8: Bartholt leert je de haven (js/havenles.js).
   havenLes = missie && missie.havenLes && !strijd.uitslag() ? maakHavenLes({ gids, haven, bouwer, bouwwerken, kaart, economie, klaarAl: havenLesKlaar, opKlaar: () => { havenLesKlaar = true; bewaar(); }, sluitPanelen: () => { stopBouw(); ui.sluitPaneel(); handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); } }) : null;
+  // Level 8, na de havenles: Bartholt leert je de vissershut (js/visles.js).
+  visLes = missie && missie.visLes && mag('vissershut') && !strijd.uitslag() ? maakVisLes({ gids, visserij, bouwer, bouwwerken, kaart, economie, klaarAl: visLesKlaar,
+    wachtOp: () => !havenLes || havenLes.klaar(),
+    opKlaar: () => { visLesKlaar = true; bewaar(); },
+    glijNaar: (x, y) => { const w = rasterNaarWereld(x, y); camera.glijNaar(w.x, w.y, 900); },
+    sluitPanelen: () => { stopBouw(); ui.sluitPaneel(); handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); } }) : null;
   // Level 1: Bartholt leert je verkopen in de voorraadkamer (js/handelles.js).
   handelLes = missie && missie.handelLes && !strijd.uitslag() ? maakHandelLes({ gids, bouwer, bouwwerken, kaart, economie, regels, klaarAl: handelLesKlaar, opKlaar: () => { handelLesKlaar = true; bewaar(); }, sluitPanelen: () => { stopBouw(); ui.sluitPaneel(); handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); } }) : null;
   const figuranten = missie && missie.proloog ? maakFiguranten({ kaart, eenheden, wegvinder, leger, strijd }) : null;
@@ -1537,6 +1557,7 @@ async function start() {
         let bezig = economie.beschrijf(y * kaart.breedte + x);
         const gebouw = bouwer.werkOp(x, y);
         if (gebouw && gebouw.woont) bezig = `room for ${gebouw.woont} peasants`;
+        if (kaart.object[y * kaart.breedte + x] === OBJECT.VISSERSHUT) { const v = visserij.beschrijf(y * kaart.breedte + x); if (v) bezig = (bezig ? `${bezig}. ` : '') + v.replace(/\.$/, ''); }
         // Is het beschadigd, dan zie je hoeveel het nog kan hebben.
         const leven = strijd.levenOp(y * kaart.breedte + x);
         const heel = leven && leven.leven < leven.max ? `, health ${leven.leven} of ${leven.max}` : '';
@@ -1620,10 +1641,12 @@ async function start() {
       // Havenles: zolang Bartholt de haven uitlegt, staat de oorlog stil (geen klok in een les).
       if (!lesLoopt()) strijd.stap();
       haven.stap(dt);
+      visserij.stap(dt);
       havenTik += dt;
-      if (havenTik >= 1) { havenTik = 0; haven.zoek(); if (handelVak >= 0) verversHandel(); }
+      if (havenTik >= 1) { havenTik = 0; haven.zoek(); visserij.zoek(); if (handelVak >= 0) verversHandel(); }
       if (handelLes) handelLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
       if (havenLes) havenLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
+      if (visLes) visLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
       poortwacht.stap();
       if (!lesLoopt()) verhaal.stap(dt, verhaalStand);   // havenles: ook de berichten wachten
       if (proloog) { if (!leest) proloog.stap(dt); gids.stap(dt); figuranten.stap(dt, proloog.fase()); ui.beperkBouw(proloog.bouwSleutel()); ui.beperkKnoppen(proloog.mag); if (kazerneVak >= 0 && !proloog.mag('kazerne')) sluitKazerne(); }   // opleidles klaar: het kazernepaneel dicht
@@ -1680,7 +1703,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { zeeleven, haven, havenLes, handelLes, gids, hinderlaag, reserve, sluipers, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
+  window.spel = { zeeleven, haven, havenLes, visserij, visLes, handelLes, gids, hinderlaag, reserve, sluipers, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

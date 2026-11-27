@@ -26,7 +26,7 @@ async function startLevel(n, klaar) {
 }
 
 await startLevel(8, [0, 1, 2, 3, 4, 5, 6, 7]);
-await p.evaluate(() => { if (window.spel.havenLes) window.spel.havenLes.sla(); window.spel.ui.verbergVerhaal(); });
+await p.evaluate(() => { if (window.spel.havenLes) window.spel.havenLes.sla(); if (window.spel.visLes) window.spel.visLes.sla(); window.spel.ui.verbergVerhaal(); });
 const begin = await p.evaluate(() => {
   const { doel, strijd } = window.spel;
   const thuis = doel.rutgerThuis();

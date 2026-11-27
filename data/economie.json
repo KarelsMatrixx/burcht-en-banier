@@ -299,6 +299,15 @@
    "plek": "the tavern",
    "bezig": "is pouring ale"
   },
+  "visser": {
+   "naam": "fisherman",
+   "soort": "VISSER",
+   "verzorgt": true,
+   "snelheid": 1.2,
+   "bereik": 2,
+   "plek": "the fisherman's hut",
+   "bezig": "is mending his nets"
+  },
   "paardenboer": {
    "naam": "horse keeper",
    "soort": "PAARDENBOER",
@@ -1072,6 +1081,17 @@
   "partijen": [1, 2, 5],
   "koop": { "hout": 6, "planken": 10, "steen": 8, "voedsel": 6, "tarwe": 6, "brood": 10, "koper": 18, "hop": 8 },
   "verkoop": { "hout": 4, "planken": 8, "steen": 6, "voedsel": 4, "tarwe": 4, "brood": 8, "koper": 16, "hop": 6 }
+ },
+ "visserij": {
+  "_uitleg": "Vissershut (vanaf level 8, js/visserij.js): een bootje per bemande hut. vangst = voedsel per tocht, vissen = seconden op de visplek, snelheid = tegels per seconde varen, rust = seconden aan de hut tussen twee tochten, minAfstand en maxAfstand = hoe ver de visplek over water ligt, diep = minstens zoveel tegels van land, lesVissen = vistijd van de eerste tocht in de les. Alle getallen zijn schattingen.",
+  "vangst": 12,
+  "vissen": 25,
+  "snelheid": 0.7,
+  "rust": 4,
+  "minAfstand": 5,
+  "maxAfstand": 11,
+  "diep": 2,
+  "lesVissen": 8
  },
  "kroeg": {
   "_uitleg": "Kroeg (beloning level 8): per maaltijdronde schenkt elke kroeg met een waard bier van hop. hop = hop per kroeg per ronde, stemming = populariteit per schenkende kroeg, max = hoeveel kroegen tellen. Schattingen.",

@@ -67,7 +67,13 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       if (bouwt) return { e: null, tekst: doel.plek ? 'Tap the golden spot on the map. A green outline means it fits.' : 'Tap the ground where it should stand. A green outline means it fits.' };
       if (zichtbaar(knoppen)) {
         const knop = knoppen.querySelector(`[data-sleutel="${doel.sleutel}"]`);
-        if (zichtbaar(knop)) return { e: knop, tekst: `Tap ${knop.firstChild.textContent.trim()}.` };
+        if (zichtbaar(knop)) {
+          // Valt de knop buiten de rij (de groep Work is lang sinds de vissershut), dan schuift de rij hem in beeld.
+          const r = vak(knop);
+          const rij = vak(knoppen);
+          if (r.left < rij.left - 1 || r.right > rij.right + 1) knop.scrollIntoView({ block: 'nearest', inline: 'center' });
+          return { e: knop, tekst: `Tap ${knop.firstChild.textContent.trim()}.` };
+        }
         const groep = knop && knop.dataset.groep;
         const groepKnop = groep && knoppen.querySelector(`[data-open="${groep}"]`);
         if (zichtbaar(groepKnop)) return { e: groepKnop, tekst: `Open ${groepKnop.textContent.trim()}.` };
@@ -99,6 +105,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
       }
       return { e: null, tekst: 'Tap your storehouse on the map (the golden spot).' };
     }
+    if (doel.soort === 'kijk') return { e: null, tekst: doel.tekst || '' };   // de visles: kijken, niets aantikken
     if (doel.soort === 'opleiden') {
       const paneel = el('legerpaneel');
       if (zichtbaar(paneel)) {
@@ -174,7 +181,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     // Grondles: eerst alleen het oog; de gouden plek (op de soldaat of de grond) pas daarna
     if (doel && doel.soort === 'sturen' && !oogGezien) { plek.hidden = true; return; }
     const sol = wijsSoldaat();
-    const p = sol ? { x: Math.floor(sol.x), y: Math.floor(sol.y) } : doel && doel.plek;
+    const p = sol ? { x: Math.floor(sol.x), y: Math.floor(sol.y) } : doel && (doel.volg ? doel.volg() : doel.plek);   // volg: een bewegend doel (het vissersbootje)
     if (!p || !plekNaarScherm) { plek.hidden = true; return; }
     if (doel.soort === 'opleiden' && zichtbaar(el('legerpaneel'))) { plek.hidden = true; return; }
     if ((doel.soort === 'haven' || doel.soort === 'voorraad') && zichtbaar(el('handelpaneel'))) { plek.hidden = true; return; }   // het kazernepaneel staat al open
@@ -187,6 +194,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
     const buiten = sc.x < veilig || sc.y < veilig || sc.x > spelBreedte() - veilig || sc.y > spelHoogte() - veilig;
     plek.hidden = false;
     plek.classList.toggle('buiten', buiten);
+    plek.classList.toggle('volg', !!(doel && doel.volg && !sol));   // een bewegend doel (het bootje): geen ruit eroverheen, alleen het label
     if (!buiten) {
       plek.style.width = `${breed}px`;
       plek.style.height = `${hoog}px`;

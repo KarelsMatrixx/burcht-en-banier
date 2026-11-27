@@ -217,6 +217,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
     [assets.haal('eenheid.waard_blauw'), assets.haal('eenheid.waard_rood')],
     [assets.haal('eenheid.rutger_blauw'), assets.haal('eenheid.rutger_rood')],
     [assets.haal('eenheid.berserker_blauw'), assets.haal('eenheid.berserker_rood')],
+    [assets.haal('eenheid.visser_blauw'), assets.haal('eenheid.visser_rood')],
   ];
   // De grond (gras, zand, water, aarde) komt uit het doorlopende landschap.
   // Alleen akkers blijven losse tegels (die zijn bewust rechthoekig).
@@ -919,11 +920,12 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       const blauw = assets.haal('schip.blauw').varianten;
       const roodS = assets.haal('schip.rood').varianten;
       const vikingS = assets.haal('schip.viking').varianten;
+      const visS = assets.haal('schip.visboot').varianten;   // vissersbootje (0.120.0): 0/1 varen, 2/3 vissen
       for (const sch of staat.schepen()) {
         const wx = (sch.x - sch.y) * HALVE_BREEDTE;
         const wy = (sch.x + sch.y) * HALVE_HOOGTE;
         if (wx < zichtLinks - 60 || wx > zichtRechts + 60 || wy < zichtBoven - 20 || wy > zichtOnder + 100 || sch.alpha <= 0) continue;
-        const v = (sch.viking ? vikingS : sch.rood ? roodS : blauw)[sch.richting > 0 ? 0 : 1];
+        const v = sch.visboot ? visS[(sch.richting > 0 ? 0 : 1) + (sch.vist ? 2 : sch.vol ? 4 : 0)] : (sch.viking ? vikingS : sch.rood ? roodS : blauw)[sch.richting > 0 ? 0 : 1];
         schepenRij.push({ sch, v, wx, wy, diepte: sch.x + sch.y + 1 });
       }
       schepenRij.sort((a, b) => a.diepte - b.diepte);
@@ -941,6 +943,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
 
     // Zeeleven (0.112.0): walvissen, meeuwen, mist en de kist op het eilandje, op het water.
     if (staat.zee) staat.zee.teken(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder);
+    if (staat.vissers) staat.vissers.teken(ctx, zichtLinks, zichtBoven, zichtRechts, zichtOnder);   // netten en kringen van de vissersbootjes
 
     // --- Ronde 2: alles wat rechtop staat, van achter naar voren ---------------
     let volgende = 0;   // eerstvolgende eenheid in de rij

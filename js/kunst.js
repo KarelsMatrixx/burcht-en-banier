@@ -4812,3 +4812,150 @@ export function tekenErf(naam, def) {
   for (let i = 0; i < 6; i++) ovaal(ctx, cx + (toeval() - 0.5) * 36, cy + (toeval() - 0.5) * 14, 4 + toeval() * 5, 1.6 + toeval() * 2, 'rgba(80,55,30,0.18)');
   return { beeld: doek, b, h, ax: b / 2, ay: h - 1 };
 }
+
+// --- Vissershut en vissersbootje (0.120.0, vanaf level 8) ---------------------------
+
+// Een vissershut: een lage houten hut op korte palen aan de oever, met een rieten dak,
+// een droogrek met vissen, een net tussen twee palen, een mand en een vat. Het bootje
+// ligt er los naast (js/visserij.js).
+export function tekenVissershut(naam, def) {
+  const b = TB + 8;
+  const h = TH + 52;
+  const { doek, ctx } = nieuwDoek(b, h);
+  const cx = b / 2;
+  const voet = h - 1 - HH;
+  const hout = def.hout || '#8a6a44';
+  const riet = def.riet || '#b89a5a';
+  ovaal(ctx, cx + 2, voet + 2, HB - 4, HH - 2, 'rgba(0,0,0,0.2)');
+  // een plankier aan de waterkant (voor)
+  vlak(ctx, [[cx + 4, voet + 2], [cx + 26, voet + 13], [cx + 20, voet + 16], [cx - 2, voet + 5]], tint(hout, 0.12));
+  for (let i = 1; i < 5; i++) lijn(ctx, cx + 4 - i * 1.2, voet + 2 + i * 0.6, cx + 26 - i * 1.2, voet + 13 + i * 0.6, 'rgba(50,30,15,0.35)', 0.5);
+  for (const [x, y] of [[cx + 24, voet + 14], [cx + 19, voet + 17]]) blok(ctx, x - 1, y - 1, 2, 6, HOUT_DONKER);
+  // de hut: twee wanden van planken op korte palen
+  const px = cx - 6;
+  const py = voet - 2;
+  const w = 14;
+  const wand = 13;
+  for (const dx of [-w + 1, 0, w - 1]) blok(ctx, px + dx - 1, py + (dx === 0 ? w / 2 : 0) - 1, 2, 4, HOUT_DONKER);
+  vlak(ctx, [[px - w, py - 2], [px, py + w / 2 - 2], [px, py + w / 2 - 2 - wand], [px - w, py - 2 - wand]], tint(hout, -0.3));
+  vlak(ctx, [[px, py + w / 2 - 2], [px + w, py - 2], [px + w, py - 2 - wand], [px, py + w / 2 - 2 - wand]], tint(hout, -0.05));
+  for (let r = 1; r < 4; r++) {
+    lijn(ctx, px, py + w / 2 - 2 - r * 3.4, px + w, py - 2 - r * 3.4, 'rgba(0,0,0,0.18)', 0.5);
+    lijn(ctx, px - w, py - 2 - r * 3.4, px, py + w / 2 - 2 - r * 3.4, 'rgba(0,0,0,0.18)', 0.5);
+  }
+  blok(ctx, px + 4, py - 9, 4.5, 8, '#3a2816');   // deur
+  // een rieten dak, ruig aan de randen
+  const top = py - 2 - wand;
+  vlak(ctx, [[px - w - 3, top + 1], [px, top + w / 2 + 2], [px, top - 9], [px - w / 2 - 1, top - 13]], tint(riet, -0.18));
+  vlak(ctx, [[px, top + w / 2 + 2], [px + w + 3, top + 1], [px + w / 2 + 1, top - 13], [px, top - 9]], riet);
+  for (let i = 0; i < 9; i++) {
+    const u = i / 8;
+    lijn(ctx, px + (w + 3) * u, top + w / 2 + 2 - (w / 2 + 1) * u, px + (w + 3) * u - 0.6, top + w / 2 + 4.4 - (w / 2 + 1) * u, tint(riet, -0.3), 0.6);
+  }
+  lijn(ctx, px - w / 2 - 1, top - 13, px + w / 2 + 1, top - 13, tint(riet, -0.35), 1.2);
+  // rook uit een pijpje
+  blok(ctx, px + 5, top - 11, 2.4, 4, '#5a4a3a');
+  // een droogrek met vissen (rechts)
+  balk(ctx, cx + 12, voet - 1, cx + 12, voet - 20, 1.4);
+  balk(ctx, cx + 26, voet + 6, cx + 26, voet - 13, 1.4);
+  lijn(ctx, cx + 12, voet - 19, cx + 26, voet - 12, '#5a4028', 0.9);
+  for (let i = 0; i < 4; i++) {
+    const x = cx + 14.5 + i * 3.2;
+    const y = voet - 17.6 + i * 1.6;
+    lijn(ctx, x, y, x, y + 1.6, '#5a4028', 0.5);
+    ovaal(ctx, x, y + 4.4, 1.1, 2.8, i % 2 ? '#aebfca' : '#c4ccd0');
+    vlak(ctx, [[x, y + 7], [x - 1.4, y + 8.6], [x + 1.4, y + 8.6]], '#8fa4b2');
+  }
+  // een net tussen twee palen (links)
+  balk(ctx, cx - 26, voet + 2, cx - 26, voet - 16, 1.3);
+  balk(ctx, cx - 17, voet + 7, cx - 17, voet - 11, 1.3);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(cx - 26, voet - 15); ctx.lineTo(cx - 17, voet - 10); ctx.lineTo(cx - 17.5, voet + 2); ctx.quadraticCurveTo(cx - 22, voet + 3, cx - 25.6, voet - 2); ctx.closePath();
+  ctx.fillStyle = 'rgba(150,130,90,0.35)';
+  ctx.fill();
+  ctx.clip();
+  for (let i = -6; i < 8; i++) {
+    lijn(ctx, cx - 28 + i * 2.2, voet - 18, cx - 22 + i * 2.2, voet + 6, 'rgba(70,50,30,0.55)', 0.4);
+    lijn(ctx, cx - 28, voet - 18 + i * 2.4, cx - 15, voet - 12 + i * 2.4, 'rgba(70,50,30,0.55)', 0.4);
+  }
+  ctx.restore();
+  for (let i = 0; i < 4; i++) ovaal(ctx, cx - 25 + i * 2.6, voet - 14.4 + i * 1.4, 0.9, 0.7, '#c96a3a');
+  // een mand met vis en een vat
+  vlak(ctx, [[cx - 6, voet + 6], [cx + 1, voet + 6], [cx, voet + 10], [cx - 5, voet + 10]], '#a8884a');
+  for (const dx of [-4.4, -2.4, -0.6]) ovaal(ctx, cx + dx, voet + 5.6, 1, 0.8, '#b8c8d2');
+  ovaal(ctx, cx + 8, voet + 9, 2.8, 1.4, '#5d4430');
+  blok(ctx, cx + 5.2, voet + 3, 5.6, 6, '#6d4f32');
+  ovaal(ctx, cx + 8, voet + 3, 2.8, 1.4, '#8a6a44');
+  // een blauw wimpeltje op het dak
+  lijn(ctx, px, top - 12, px, top - 24, '#3a2a1a', 0.9);
+  vlak(ctx, [[px, top - 24], [px + 8, top - 22], [px, top - 20]], def.vlag || '#2f5fc4');
+  return { beeld: doek, b, h, ax: b / 2, ay: h - 1 };
+}
+
+// Het vissersbootje: een open roeiboot met een visser met een blauwe muts, twee riemen en een
+// klein bruin zeiltje. Varianten: 0/1 varen (rechts/links), 2/3 vissen (net uit, riemen binnen),
+// 4/5 terug met een volle mand.
+export function tekenVisboot(naam, def) {
+  const maak = (richting, stand) => {
+    const b = 56;
+    const h = 52;
+    const { doek, ctx } = nieuwDoek(b, h);
+    if (richting < 0) { ctx.translate(b, 0); ctx.scale(-1, 1); }
+    const cx = b / 2;
+    const wl = h - 10;
+    const romp = def.romp || '#7a5634';
+    const kleur = def.kleur || '#2f5fc4';
+    ovaal(ctx, cx, wl + 3, 18, 4, 'rgba(10,30,50,0.26)');
+    if (stand !== 'vist') ovaal(ctx, cx - 18, wl + 2, 5, 1.5, 'rgba(255,255,255,0.35)');
+    // romp
+    ctx.fillStyle = romp;
+    ctx.beginPath();
+    ctx.moveTo(cx - 17, wl - 8);
+    ctx.lineTo(cx + 18, wl - 9);
+    ctx.quadraticCurveTo(cx + 15, wl + 2, cx + 6, wl + 2);
+    ctx.lineTo(cx - 10, wl + 2);
+    ctx.quadraticCurveTo(cx - 17, wl + 1, cx - 17, wl - 8);
+    ctx.closePath();
+    ctx.fill();
+    lijn(ctx, cx - 16, wl - 4, cx + 16, wl - 5, 'rgba(0,0,0,0.25)', 0.7);
+    vlak(ctx, [[cx - 17, wl - 8], [cx + 18, wl - 9], [cx + 18, wl - 7.6], [cx - 17, wl - 6.6]], tint(romp, 0.3));
+    vlak(ctx, [[cx - 15, wl - 8], [cx + 16, wl - 9], [cx + 13, wl - 11], [cx - 12, wl - 10.4]], tint(romp, -0.25));   // binnenkant
+    // een mand vis achterin
+    if (stand !== 'vaar') {
+      vlak(ctx, [[cx - 13, wl - 13], [cx - 6, wl - 13], [cx - 7, wl - 9], [cx - 12, wl - 9]], '#a8884a');
+      if (stand === 'vol') for (const dx of [-11.4, -9.6, -7.8, -10.4]) ovaal(ctx, cx + dx, wl - 13.6 - (dx === -10.4 ? 1.2 : 0), 1, 0.8, '#b8c8d2');
+    }
+    // mastje met een klein bruin zeil (gereefd bij het vissen)
+    balk(ctx, cx + 6, wl - 9, cx + 6, wl - 40, 1.5, HOUT_DONKER);
+    if (stand === 'vist') {
+      blok(ctx, cx - 2, wl - 36, 15, 2.6, '#8a6a4a');
+    } else {
+      ctx.fillStyle = '#9a7454';
+      ctx.beginPath();
+      ctx.moveTo(cx + 6.5, wl - 39); ctx.quadraticCurveTo(cx + 18, wl - 28, cx + 7, wl - 14); ctx.lineTo(cx + 6.5, wl - 14); ctx.closePath();
+      ctx.fill();
+      lijn(ctx, cx + 7, wl - 28, cx + 14, wl - 27, kleur, 1.4);   // een baan in teamkleur
+    }
+    vlak(ctx, [[cx + 6, wl - 40], [cx + 12, wl - 39], [cx + 6, wl - 38]], kleur);
+    // de visser: lijf, hoofd met muts
+    const vx = cx - 2;
+    blok(ctx, vx - 3, wl - 19, 6, 9, '#5f7a8a');
+    ovaal(ctx, vx, wl - 22, 2.6, 2.8, '#e0b48a');
+    vlak(ctx, [[vx - 3, wl - 23], [vx + 3, wl - 23], [vx + 1, wl - 27.5]], kleur);
+    if (stand === 'vist') {
+      // armen vooruit, een lijn en het net naar het water
+      lijn(ctx, vx + 2, wl - 17, vx + 9, wl - 20, '#5f7a8a', 2);
+      lijn(ctx, vx + 9, wl - 20, cx + 22, wl - 4, 'rgba(70,50,30,0.7)', 0.6);
+      lijn(ctx, vx + 9, wl - 20, cx + 25, wl - 1, 'rgba(70,50,30,0.6)', 0.5);
+      ovaal(ctx, cx + 23.5, wl - 1.5, 3, 1.2, 'rgba(150,130,90,0.45)');
+    } else {
+      // roeien: twee riemen schuin het water in
+      lijn(ctx, vx + 1, wl - 16, vx - 12, wl + 4, '#6b4a2c', 1.3);
+      lijn(ctx, vx + 2, wl - 16, vx + 12, wl + 3, tint('#6b4a2c', 0.2), 1.3);
+      ovaal(ctx, vx - 12.5, wl + 4, 2.4, 0.9, 'rgba(255,255,255,0.4)');
+    }
+    return { beeld: doek, b, h, ax: cx, ay: wl };
+  };
+  return { varianten: [maak(1, 'vaar'), maak(-1, 'vaar'), maak(1, 'vist'), maak(-1, 'vist'), maak(1, 'vol'), maak(-1, 'vol')] };
+}
