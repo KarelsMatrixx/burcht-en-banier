@@ -12,7 +12,7 @@
 // "Diepte" is x + y in rastermaat: hoe groter, hoe verder naar voren.
 
 import { CONFIG } from './config.js';
-import { GROND_ASSET, OBJECT_ASSET, OBJECT, GROND, aansluiting } from './kaart.js';
+import { GROND_ASSET, OBJECT_ASSET, OBJECT, GROND, aansluiting, dijkMasker } from './kaart.js';
 import { maakNabewerking } from './nabewerking.js';
 import { maakSfeer, tekenSchaduw } from './sfeer.js';
 import { maakLandschap } from './landschap.js';
@@ -293,6 +293,7 @@ export function maakTekenaar(canvas, kaart, camera, assets, profiel = null) {
       if (!asset || !asset.varianten) return asset;
       const nummer = asset.kies === 'toeval'
         ? Math.floor(tegelToeval(x, y, extra) * asset.varianten.length)
+        : asset.kies === 'dijk' ? dijkMasker(kaart, x, y)
         : variantBijBuren(asset, aansluiting(kaart, x, y));
       const variant = asset.varianten[nummer];
       variant.spreiding = asset.spreiding;

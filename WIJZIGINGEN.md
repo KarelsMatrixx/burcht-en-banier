@@ -1405,3 +1405,7 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 
 ## 0.118.1: dijk als kalkoever
 - De muur met palissade (0.118.0) zag er te rommelig uit: een zaagtand langs de kust. De White Dike is nu een witte kalkoever: platte kiezel, kalk en witte keien langs het water, met hier en daar twee palen met een rond schild of een hoge paal met rode wimpel. Geen doorlopende wal meer, geen gaten dichten; hij volgt elke kustlijn rustig (kunst.js `tekenDijk`, 12 varianten op toeval).
+
+## 0.118.2: de White Dike als echte dijk
+- Een gebogen grasdijk langs het water in plaats van blokken: een voet van witte kalksteen, een talud met gras, een gebogen top en een zandpad erover (kunst.js `tekenDijk`). Elke tegel kijkt naar al zijn 8 buren (kaart.js `dijkMasker`, tekenaar.js), zodat de dijk één vloeiende lijn is zonder naden. 256 kleine plaatjes.
+- De proefstijlen (kalkoever, kade, rotsen, blokken, duin) zijn weer weg.

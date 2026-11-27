@@ -88,6 +88,18 @@ export function aansluiting(kaart, x, y, alsSoort, ookHier) {
   return (buur(x, y - 1) ? 1 : 0) | (buur(x + 1, y) ? 2 : 0) | (buur(x, y + 1) ? 4 : 0) | (buur(x - 1, y) ? 8 : 0);
 }
 
+// De dijk (White Dike): welke van de acht buren ook dijk zijn (4 randen en 4 hoeken), voor de gebogen rug.
+export function dijkMasker(kaart, x, y) {
+  const richtingen = [[1, 0, -1], [2, 1, 0], [4, 0, 1], [8, -1, 0], [16, 1, -1], [32, 1, 1], [64, -1, 1], [128, -1, -1]];
+  let masker = 0;
+  for (const [bit, dx, dy] of richtingen) {
+    const bx = x + dx;
+    const by = y + dy;
+    if (bx >= 0 && by >= 0 && bx < kaart.breedte && by < kaart.hoogte && kaart.object[by * kaart.breedte + bx] === OBJECT.DIJK) masker |= bit;
+  }
+  return masker;
+}
+
 // Vloeiende ruis: een waarde tussen 0 en 1 die van tegel tot tegel
 // geleidelijk verandert. Zo ontstaan natuurlijke vlekken (meer, bos).
 function maakRuis(toeval, breedte, hoogte, celgrootte) {
