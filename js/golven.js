@@ -142,7 +142,9 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
 
   // --- Een golf ------------------------------------------------------------------------------
   function inhoudVan(golf) {
-    const n = Math.min(d.max || 40, (d.begin || 8) + (d.erbij || 4) * golf);
+    // Vanaf golf `sterkerVanaf` (0 = de eerste) komen er per golf `sterkerErbij` mannen extra bovenop (0.124.1).
+    const extra = golf >= (d.sterkerVanaf ?? Infinity) ? (golf - d.sterkerVanaf + 1) * (d.sterkerErbij || 0) : 0;
+    const n = Math.min(d.max || 40, (d.begin || 8) + (d.erbij || 4) * golf + extra);
     const leger = {};
     for (const [k, w] of Object.entries(d.leger || { ridder: 1 })) {
       const aandeel = typeof w === 'number' ? w : w.aandeel;
@@ -158,6 +160,12 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
       inhoud[k] = Math.max(0, Math.min(over, hier));
       over -= inhoud[k];
     });
+    // Belegeringsmateriaal (ram, ladders, katapult) komt bovenop de mannen: d.belegering = { soort: { vanaf, begin, erbij, max } }.
+    for (const [k, b] of Object.entries(d.belegering || {})) {
+      if (golf < (b.vanaf || 0)) continue;
+      const aantal = Math.min(b.max || 99, Math.round((b.begin || 1) + (b.erbij || 0) * (golf - (b.vanaf || 0))));
+      if (aantal > 0) inhoud[k] = (inhoud[k] || 0) + aantal;
+    }
     return inhoud;
   }
 
@@ -166,7 +174,9 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
     const inhoud = inhoudVan(nr);
     const totaal = Object.values(inhoud).reduce((a, b) => a + b, 0);
     const metRutger = nr + 1 === heldGolf;
-    const nSchepen = Math.max(1, Math.min(landingen.length * 4, Math.ceil(totaal / (d.perSchip || 10))));
+    // Hoe verder in de golven, hoe meer verschillende landingsplekken tegelijk (0.124.2): golf 1 en 2 een, dan om de twee golven een erbij.
+    const plekken = Math.max(1, Math.min(landingen.length, 1 + Math.floor(nr / (d.plekkenPer || 2))));
+    const nSchepen = Math.max(plekken, Math.min(landingen.length * 4, Math.ceil(totaal / (d.perSchip || 10))));
     // De mannen verdelen over de schepen, om en om.
     const ladingen = Array.from({ length: nSchepen }, () => ({}));
     let k = 0;
@@ -174,7 +184,7 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
     if (metRutger) ladingen[0][heldSleutel] = 1;
     const T = d.vaart || 40;
     ladingen.forEach((lading, i) => {
-      const landing = landingen[(nr + i) % landingen.length];
+      const landing = landingen[(nr + (i % plekken)) % landingen.length];   // de schepen verdelen zich over de plekken van deze golf
       // Elk schip vertrekt van een andere kade van rood; is die niet verbonden, dan de eerste die wel kan.
       let h = (nr + i * 3) % havens.length;
       for (let n = 0; n < havens.length && !(landing && landing.routes[h]); n++) h = (h + 1) % havens.length;
@@ -193,7 +203,7 @@ export function maakGolven({ missie, kaart, strijd, wegvinder, toonVerhaal, toon
       rutgerThuis = null;
       zegt(RUTGER.zelf);
     } else if (RUTGER.golf[nr]) zegt(RUTGER.golf[nr]);
-    toonMelding(`Longships on the water! Wave ${s.golven} of ${aantal}: ${totaal}${metRutger ? ' men and Rutger himself' : ' men'}.`);
+    toonMelding(`Longships on the water! Wave ${s.golven} of ${aantal}: ${totaal}${metRutger ? ' men and Rutger himself' : ' men'}${plekken > 1 ? `, landing in ${plekken} places` : ''}.`);
     bewaar();
   }
 

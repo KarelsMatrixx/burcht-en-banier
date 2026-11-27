@@ -1493,3 +1493,13 @@ Aanleiding: Karel vroeg of de kruisboog te sterk was. Ja: 9,5 schade per seconde
 - Na de les: je hebt 1 steen meer dan ervoor (de helft van het gesloopte stuk), verder hetzelfde.
 - Test: tests/bouwles124.mjs (28). Groen: handelles116 (20, slaat nu de bouwles over), legerles121 (39), bouwlos121 (7), test_stap17 (23). test_stap15 faalde al voor deze versie (reserve terug na bewaren, 21 van 22).
 - Na te lezen: alle nieuwe Engelse teksten. Niet op een iPhone gezien. Bekend: een tik op de bovenkant van een muur telt in de bouwstand als de tegel erachter; daarom staat de gouden ruit van poort en sloop op de grond aan de voet van de muur.
+
+## 0.124.1: level 8 sterker en met belegeringsmateriaal vanaf wave 4
+- Karels wens: de rode kant had geen kans tegen zijn muren. Vanaf wave 4 komen er per wave 5 mannen extra bovenop (golven.js `sterkerVanaf`, `sterkerErbij`; data/campagne.json level 8 `doel`). Wave 1 tot 3 blijven 8, 15 en 22 man; wave 4 wordt 34, wave 5 46, wave 6 58, wave 7 70, wave 8 tot 10 het maximum van 90 (was 71).
+- Belegeringsmateriaal bovenop de mannen (`doel.belegering`): ram vanaf wave 4 (1, later tot 4), ladder bearers vanaf wave 4 (2, later tot 8), katapult vanaf wave 6 (1, later tot 3). Ze varen mee in de langschepen. Een ram slaat eerst op muur, poort en toren en niet op de burcht zelf (bestaand gedrag, strijd.js `kiesBelegerDoel`).
+- Meer zware troepen: hellebaardiers al vanaf wave 4 (aandeel 2, was 1 vanaf wave 5) en saboteurs vanaf wave 5 (was wave 6).
+- Alle getallen zijn schattingen (na te lezen) en niet op een echte verdediging getest: dit moet Karel spelen en bijstellen. Een testwave zonder muren liet de ram stilstaan, omdat er niets te slopen was.
+
+## 0.124.2: de golven landen op steeds meer plekken
+- Hoe verder in de golven, hoe meer verschillende landingsplekken tegelijk (golven.js `stuurGolf`, `plekken`): golf 1 en 2 op een plek, golf 3 en 4 op twee, golf 5 en 6 op drie, golf 7 en 8 op vier, golf 9 en 10 op vijf. De schepen verdelen zich over die plekken; welke plekken het zijn wisselt per golf. Zo komt de aanval van verschillende kanten. Gemeten met een testspel: 1, 1, 2, 2, 3, 3, 4, 4, 5, 5 plekken.
+- De melding noemt het aantal plekken. Verder is `doel.plekkenPer` (standaard 2 golven per extra plek) aan te passen in data/campagne.json. Belegeringsmateriaal wordt over de schepen verdeeld en kan dus op verschillende plekken aan land komen.

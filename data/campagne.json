@@ -1077,7 +1077,9 @@
     "tussen": 110,
     "begin": 8,
     "erbij": 7,
-    "max": 72,
+  "sterkerVanaf": 3,
+  "sterkerErbij": 5,
+    "max": 90,
     "perSchip": 6,
     "vaart": 40,
     "leger": {
@@ -1093,19 +1095,24 @@
       "vanaf": 2
      },
      "hellebaardier": {
-      "aandeel": 1,
-      "vanaf": 4
-     },
+    "aandeel": 2,
+    "vanaf": 3
+   },
      "saboteur": {
-      "aandeel": 1,
-      "vanaf": 5
-     },
+    "aandeel": 1,
+    "vanaf": 4
+   },
      "vuurboogschutter": {
       "aandeel": 1,
       "vanaf": 6
      }
     },
-    "rutger": {
+  "belegering": {
+   "ram": { "vanaf": 3, "begin": 1, "erbij": 0.5, "max": 4 },
+   "ladder": { "vanaf": 3, "begin": 2, "erbij": 1, "max": 8 },
+   "katapult": { "vanaf": 5, "begin": 1, "erbij": 0.5, "max": 3 }
+  },
+  "rutger": {
      "golf": 10,
      "sleutel": "rutger"
     }
