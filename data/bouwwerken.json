@@ -66,6 +66,8 @@
     "belegeringswerkplaats": { "naam": "Siege Workshop", "groep": "leger", "object": "BELEGERINGSWERKPLAATS", "kosten": { "planken": 20, "steen": 10 }, "leidtOp": "belegering",
                      "tip": "Tap it to build siege gear: battering rams, catapults and siege towers. Ladder bearers are still trained at the barracks." },
     "magiertoren": { "naam": "Mystic Lodge", "groep": "leger",   "object": "MAGIERTOREN", "kosten": { "planken": 15, "steen": 15, "koper": 5 }, "leidtOp": "mystiek",
-                     "tip": "The mystic barracks: train assassins, flameweavers, healers and wardens here. They cost two peasants." }
+                     "tip": "The mystic barracks: train assassins, flameweavers, healers and wardens here. They cost two peasants." },
+    "heldenzaal":  { "naam": "Hall of Heroes", "groep": "leger",  "object": "HELDENZAAL",  "kosten": { "planken": 20, "steen": 30 }, "leidtOp": "held",
+                     "tip": "The lords you defeated now serve you. Tap it to call one hero. Only one hero at a time; if he falls, you can call a new one." }
   }
 }

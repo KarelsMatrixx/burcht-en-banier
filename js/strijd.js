@@ -559,7 +559,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   const isSchutter = (k) => k.def.bereik > 2;
   // Hoe ver iemand raakt: een schutter op de muur komt verder.
   // Een ballista op een rode toren reikt korter dan die van jou (R.torens.bereik, schatting van Claude, na te lezen): anders bestrijken 15 ballista's heel de omgeving van het kasteel.
-  const bereikVan = (e, k) => (e.torenPost && k.def.geschut && R.torens && Number.isFinite(R.torens.bereik) ? Math.min(k.def.bereik, R.torens.bereik) : k.def.bereik) + ((e.opMuur || e.hinderlaag) && isSchutter(k) ? R.muurBereik : 0);   // hoog in de rotsen schiet ook verder
+  const bereikVan = (e, k) => (e.bereikKeer && isSchutter(k) ? e.bereikKeer : 1) * (e.torenPost && k.def.geschut && R.torens && Number.isFinite(R.torens.bereik) ? Math.min(k.def.bereik, R.torens.bereik) : k.def.bereik) + ((e.opMuur || e.hinderlaag) && isSchutter(k) ? R.muurBereik : 0);   // hoog in de rotsen schiet ook verder
   // Een ridder kan alleen iemand raken die op dezelfde hoogte staat.
   const kanRaken = (e, k, a) => isSchutter(k) || !!a.opMuur === !!e.opMuur;
   // Een soldaat van de speler op de grond mag een vijand op het dak van zijn hoofdkasteel als doel houden: hij klimt erheen.
@@ -855,6 +855,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   function raak(doel, hoeveel, door) {
+    // Held Rutger in Berserker (0.125.0): dubbele schade uitdelen, de helft incasseren.
+    if (door && door.berserkTot > stapNr) hoeveel *= 2;
+    if (doel.berserkTot > stapNr) hoeveel = Math.max(1, Math.round(hoeveel / 2));
     doel.leven -= hoeveel;
     if (hoeveel > 0) {
       bloed(doel.x, doel.y, (doel.hoogte || 0) + 8, doel.leven <= 0);
@@ -1813,7 +1816,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
 
   // De bouwwerken van jou die een machine van rood mag aanvallen. De burcht hoort er niet bij.
   const SPERWERK = new Set([OBJECT.MUUR, OBJECT.POORT, OBJECT.TOREN, OBJECT.WACHTTOREN, OBJECT.MOORDGATENTOREN]);
-  const ANDERWERK = new Set([OBJECT.HOUTHAKKER, OBJECT.STEENGROEVE, OBJECT.BOOMGAARD, OBJECT.WONING, OBJECT.KAZERNE, OBJECT.STAL, OBJECT.VOORRAADKAMER, OBJECT.ZAGERIJ, OBJECT.TARWEVELD, OBJECT.BAKKERIJ, OBJECT.KOPERMIJN, OBJECT.MAGIERTOREN, OBJECT.BELEGERINGSWERKPLAATS]);
+  const ANDERWERK = new Set([OBJECT.HOUTHAKKER, OBJECT.STEENGROEVE, OBJECT.BOOMGAARD, OBJECT.WONING, OBJECT.KAZERNE, OBJECT.STAL, OBJECT.VOORRAADKAMER, OBJECT.ZAGERIJ, OBJECT.TARWEVELD, OBJECT.BAKKERIJ, OBJECT.KOPERMIJN, OBJECT.MAGIERTOREN, OBJECT.BELEGERINGSWERKPLAATS, OBJECT.HELDENZAAL]);
   function kiesBelegerDoel(e, k) {
     // Eerst op weg naar de burcht: het eerste wat in de weg staat (muur, poort, toren) gaat eraan.
     if (!e.opMuur && !e.klimt) {
@@ -2795,6 +2798,14 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     if (k.pose > 0 && --k.pose === 0) e.pose = 0;
     if (!e.pad) k.schuif = false;
     k.rust++;
+    // Gevangen in een valstrik van held Brandt (0.125.0): niet lopen, niet vechten.
+    if (e.vastTot > stapNr) {
+      k.doelwit = null;
+      k.bevel = null;
+      if (e.pad) zetPad(e, null);
+      zetHouding(e, null);
+      return;
+    }
     // Een ruiter telt hoeveel tegels hij loopt: na genoeg tegels doet zijn eerste klap veel meer schade (charge).
     if (k.def.charge) {
       const afstand = Math.hypot(e.x - (k.lx === undefined ? e.x : k.lx), e.y - (k.ly === undefined ? e.y : k.ly));
@@ -3224,6 +3235,94 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
   }
 
   // Eén rekenstap van het hele gevecht.
+  // --- Helden (0.125.0, js/helden.js) ------------------------------------------------
+  // Een held is een soldaat met def.held. Hij heeft een passief effect (aura) en een ability
+  // met een wachttijd (e.heldKlaar, in stappen). Er loopt er maar een tegelijk (leger.js).
+  const heldVan = (team = SPELER) => lijstVan(team).find((e) => !e.dood && krijgVan(e).def.held && !e.verslagen) || null;
+  const vijandenBinnen = (x, y, r, team = SPELER) => lijstVan(team === SPELER ? VIJAND : SPELER).filter((a) => !a.dood && !a.verslagen && Math.hypot(a.x - x, a.y - y) <= r);
+  // Alle bouwwerken van eigenaar van (1 = speler, ROOD = rood; geen burcht) met schade binnen r tegels.
+  function beschadigdBinnen(x, y, r, van) {
+    const uit = [];
+    for (const [vak, s] of schade) {
+      if (s.van !== van || kaart.eigenaar[vak] !== van || kaart.object[vak] !== s.soort) continue;
+      const max = maxLeven(s.soort, s.van, vak);
+      if (s.leven >= max) continue;
+      if (Math.hypot((vak % B) + 0.5 - x, Math.floor(vak / B) + 0.5 - y) > r) continue;
+      uit.push({ vak, s, max });
+    }
+    return uit;
+  }
+  function heldStap() {
+    // Aura van Mechteld: eigen schutters dichtbij schieten verder. Elke halve seconde opnieuw.
+    for (const e of leger.lijst) e.bereikKeer = 0;
+    const held = heldVan(SPELER);
+    if (!held) return;
+    const def = krijgVan(held).def;
+    const aura = def.aura;
+    if (aura && aura.schutterBereik) {
+      for (const e of leger.lijst) {
+        if (e.dood || e === held || !isSchutter(krijgVan(e))) continue;
+        if (Math.hypot(e.x - held.x, e.y - held.y) <= aura.bereik) e.bereikKeer = aura.schutterBereik;
+      }
+    }
+    // Lambrecht: beschadigde eigen bouwwerken in de buurt worden langzaam hersteld.
+    if (aura && aura.herstelPerSeconde) {
+      for (const { s, max } of beschadigdBinnen(held.x, held.y, aura.bereik, 1)) s.leven = Math.min(max, s.leven + max * aura.herstelPerSeconde * 0.5);
+      balkenBij();
+    }
+  }
+  // De ability van een held. Geeft een lege tekst als het lukte, anders de reden (de wachttijd loopt dan niet).
+  function heldDaad(e) {
+    if (!e || e.dood) return 'your hero has fallen';
+    const k = krijgVan(e);
+    const a = k.def.ability;
+    if (!a) return 'this soldier has no ability';
+    if (e.heldKlaar > stapNr) return `${a.naam} is not ready yet`;
+    if (a.soort === 'berserker') {
+      e.berserkTot = stapNr + stappen(a.duur);
+      bloed(e.x, e.y, (e.hoogte || 0) + 10, false);
+      geluid.speel('unit_ready_shout', { x: e.x, y: e.y });
+    } else if (a.soort === 'windvlaag') {
+      // Op haar doelwit, anders de dichtstbijzijnde vijand binnen haar bereik.
+      const r = bereikVan(e, k) + 1;
+      let doel = k.doelwit && !k.doelwit.dood && k.doelwit.team !== e.team && Math.hypot(k.doelwit.x - e.x, k.doelwit.y - e.y) <= r ? k.doelwit : null;
+      if (!doel) {
+        let min = Infinity;
+        for (const v of vijandenBinnen(e.x, e.y, r, e.team)) { const d = Math.hypot(v.x - e.x, v.y - e.y); if (d < min) { min = d; doel = v; } }
+      }
+      if (!doel) return 'no enemy within her range';
+      const geraakt = vijandenBinnen(doel.x, doel.y, a.straal, e.team);
+      geraakt.forEach((v, i) => {
+        pijl(e.x, e.y, (e.hoogte || 0) + 14, v.x + (i % 3 - 1) * 0.2, v.y, (v.hoogte || 0) + 6);
+        raak(v, Math.max(1, Math.round(a.schade * dekkingVan(v))), e);
+      });
+      geluid.speel('arrow_release', { x: e.x, y: e.y });
+    } else if (a.soort === 'noodherstel') {
+      const lijst = beschadigdBinnen(e.x, e.y, a.straal, 1);
+      if (!lijst.length) return 'nothing of yours nearby is damaged';
+      for (const { s, max } of lijst) s.leven = Math.min(max, s.leven + max * a.deel);
+      balkenBij();
+      geluid.speel('build_place', { x: e.x, y: e.y });
+    } else if (a.soort === 'valstrik') {
+      const lijst = vijandenBinnen(e.x, e.y, a.straal, e.team);
+      if (!lijst.length) return 'no enemy close enough';
+      for (const v of lijst) {
+        v.vastTot = stapNr + stappen(a.duur);
+        effect({ soort: 'klap', x: v.x, y: v.y, h: (v.hoogte || 0) + 4, duur: 300 });
+      }
+      geluid.speel('order_move', { x: e.x, y: e.y });
+    } else return 'unknown ability';
+    e.heldKlaar = stapNr + stappen(a.wacht);
+    return '';
+  }
+  // Voor de knop: naam, seconden tot klaar, en of hij nu werkt (Berserker).
+  function heldStand(e) {
+    if (!e || e.dood) return null;
+    const a = krijgVan(e).def.ability;
+    if (!a) return null;
+    return { naam: a.naam, wacht: Math.max(0, Math.ceil(((e.heldKlaar || 0) - stapNr) / perSeconde)), actief: e.berserkTot > stapNr };
+  }
+
   function stap() {
     if (uitslag) return;
     stapNr++;
@@ -3250,6 +3349,7 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     burchtStap(burcht, vijanden);
     if (!R.proloog) burchtStap(rood, eigen);
     if (stapNr % stappen(1) === 0) helerStap();
+    if (stapNr % stappen(0.5) === 0) heldStap();
     moordStap();
     jagerStap();
     if (stapNr % stappen(0.5) === 0 && vijanden.some((e) => e.reserveWacht)) reserveZicht();
@@ -3608,6 +3708,9 @@ export function maakStrijd({ regels, kaart, wegvinder, eenheden, leger, bouwer, 
     projectenAantal: () => projecten.length, vindVijand, valAan, valBouwAan, isVanRood, levenOp, gaVerder, bemanTrebuchet, bouwTrebuchet, bouwBallista, ontkoppel, trebuchetDoelen, trebuchetPlekOk: (vak) => vak >= 0 && vak < N && vrijVoor(vak, SPELER) && !staandOp(vak), ballistaPlekOk: (vak) => vak >= 0 && vak < N && wegvinder.isMuur(vak % B, Math.floor(vak / B), SPELER) && !geschutOp(vak), ballistaBereik: () => soorten.ballista.bereik + R.muurBereik, geschutStand: (team = SPELER) => ({ n: aantalGeschut(team), max: GESCHUT_MAX() }), trebuchetStand,
     // Voor de tests: hoeveel harder deze soldaat slaat (vaandel van koning of banierdrager).
     sterkteVan: (e) => sterkteVan(e, krijgVan(e)),
+    heldDaad, heldStand, heldVan: () => heldVan(SPELER), beschadig: (vak, n) => raakBouw(bouwDoel(vak), n),   // beschadig: voor de tests
+    bouwSchade: (vak) => { const s = schade.get(vak); return s ? { leven: s.leven, max: maxLeven(s.soort, s.van, vak) } : null; },
+    bereikVan: (e) => bereikVan(e, krijgVan(e)),
     maakVijand,   // voor de tests (saboteur, 0.124.3)
     zetLadderBevel, ladders,
     zetLadderVoor: (vak, team, dx = 1, dy = 0, vast = false) => zetLadder(vak, team, [dx, dy], vast),

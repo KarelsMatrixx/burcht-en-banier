@@ -151,10 +151,15 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   }
 
   // --- Opleiden ---------------------------------------------------------------------
+  // Een held (0.125.0) neemt geen plek in het leger in en kost geen boer.
+  const plekkenVan = (def) => (def.held ? 0 : def.legerPlekken || 1);
+  const boerenVan = (def) => (def.held ? 0 : def.boeren || 1);
+  // De levende held van de speler, of null. Er loopt er maar een tegelijk.
+  const held = () => soldaten.find((e) => !e.dood && soorten[e.soldaat.sleutel].held) || null;
   // Een steenwachter neemt twee plekken in het leger in, de rest een.
   function plekken() {
     let n = 0;
-    for (const e of soldaten) n += (soorten[e.soldaat.sleutel].legerPlekken || 1);
+    for (const e of soldaten) n += plekkenVan(soorten[e.soldaat.sleutel]);
     return n;
   }
 
@@ -186,6 +191,10 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     const def = soorten[sleutel];
     if (!def) return 'that soldier does not exist';
     if (def.koning) return 'there is only one king';
+    if (def.held) {
+      const h = held();
+      if (h) return `${soorten[h.soldaat.sleutel].naam} is already your hero. Only one hero at a time`;
+    }
     // Een ruiter heeft een stal met een paardenboer nodig: perStal paarden per stal.
     if (def.perStal) {
       const stallen = aantalStallen();
@@ -196,7 +205,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
       if (levend >= def.perStal * Math.min(stallen, boeren)) return `every stable place is taken (${def.perStal} horses per stable): build another stable`;
     }
     const grens = legerMax();
-    if (plekken() + (def.legerPlekken || 1) > grens) {
+    if (!def.held && plekken() + plekkenVan(def) > grens) {
       // Staat de grens lager dan die van het level, dan helpt een kazerne erbij.
       return perKazerne && grens < maxLevel
         ? `your army is full (${grens} places). Each barracks holds ${perKazerne}: build another barracks`
@@ -204,8 +213,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     }
     const tekort = economie.tekort(def.kosten);
     if (tekort) return tekort;
-    const boeren = def.boeren || 1;
-    if (economie.bevolking().vrij < boeren) return boeren > 1 ? `he costs ${boeren} idle peasants` : 'there is no idle peasant';
+    const boeren = boerenVan(def);
+    if (boeren && economie.bevolking().vrij < boeren) return boeren > 1 ? `he costs ${boeren} idle peasants` : 'there is no idle peasant';
     return '';
   }
 
@@ -226,7 +235,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
     }
     if (vak < 0) return 'there is no room next to this building';
     economie.betaal(soorten[sleutel].kosten);
-    for (let i = soorten[sleutel].boeren || 1; i > 0; i--) economie.boerWeg();
+    for (let i = boerenVan(soorten[sleutel]); i > 0; i--) economie.boerWeg();
     maak(sleutel, vak);
     opVerandering();
     opLeger();
@@ -622,7 +631,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
   // --- Bewaren en terugzetten ---------------------------------------------------------
   // Per soldaat: wie het is, waar hij staat en hoeveel leven hij nog heeft.
   // Staat hij op de muur, dan komt er een 1 achter.
-  const bewaarStand = () => soldaten.map((e) => {
+  const bewaarStand = () => soldaten.filter((e) => !e.dood).map((e) => {
     const regel = [e.soldaat.sleutel, Math.floor(e.x), Math.floor(e.y), Math.max(1, Math.round(e.leven))];
     if (e.opMuur || e.houdt) regel.push(e.opMuur ? 1 : 0);
     if (e.houdt) regel.push(1);   // Hold (0.121.0): hij houdt zijn plek
@@ -637,7 +646,8 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
       if (!Array.isArray(regel)) continue;
       const [sleutel, x, y, leven, boven, houdt] = regel;
       if (!Object.prototype.hasOwnProperty.call(soorten, sleutel)) continue;
-      if (plekken() + (soorten[sleutel].legerPlekken || 1) > maxLevel) break;
+      if (soorten[sleutel].held && held()) continue;   // nooit twee helden (0.125.0)
+      if (plekken() + plekkenVan(soorten[sleutel]) > maxLevel) break;
       if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= B || y >= H) continue;
       // Stond hij op de muur en staat die er nog, dan staat hij er weer op.
       if (boven === 1 && isMuur(y * B + x) && !bezet(N + y * B + x)) {
@@ -693,7 +703,7 @@ export function maakLeger({ regels, kaart, wegvinder, eenheden, economie, opVera
 
   return {
     gekozenHoog: () => gekozen().some(isHoog),
-    soorten, get max() { return legerMax(); }, waaromNiet, leidOp, vind, kies, stuur, stap,
+    soorten, get max() { return legerMax(); }, waaromNiet, leidOp, held, vind, kies, stuur, stap,
     kiesAlles: () => kies(soldaten.filter((e) => !isKoning(e))),
     zetKoning, geef,
     // Een soldaat of machine op een exact vak neerzetten (de ingenieur bouwt zo een trebuchet).

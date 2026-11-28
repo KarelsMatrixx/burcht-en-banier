@@ -1025,7 +1025,11 @@
     "hopveld",
     "kroeg",
     "rutger",
-    "berserker"
+    "berserker",
+    "heldenzaal",
+    "mechteld",
+    "lambrecht",
+    "brandt"
    ],
    "rood": {
     "legerMax": 240,
@@ -1136,6 +1140,7 @@
    "id": 9,
    "naam": "Mourngate",
    "titel": "Level 9: The Mourngate",
+   "heldenLes": true,
    "heer": "Marshal Evert Falconer",
    "portret": "valkenier",
    "profiel": "zwaar",

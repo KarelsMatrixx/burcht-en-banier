@@ -23,6 +23,7 @@ async function startLevel(n, klaar) {
   await p.waitForTimeout(500);
   if (await zichtbaar('#missie-begin')) await p.click('#missie-begin');
   await p.waitForTimeout(800);
+  await p.evaluate(() => window.spel.heldenLes && window.spel.heldenLes.sla());   // heldenles (0.125.0) overslaan
 }
 
 // Level 8: het dorp van Rutger

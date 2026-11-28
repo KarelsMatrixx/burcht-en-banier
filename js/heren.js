@@ -145,7 +145,8 @@ function schaduw(ctx, mx, breedte) {
   ctx.beginPath(); ctx.ellipse(mx, 34, breedte, breedte * 0.36, 0, 0, Math.PI * 2); ctx.fill();
 }
 
-const ROOD = '#c23a2e';
+// De teamkleur van een heer: rood, tenzij hij als held voor jou vecht (def.accent, 0.125.0).
+let ROOD = '#c23a2e';
 const arm = (ctx, ax, ay, bx, by, kleur, d = 2.6) => lijn(ctx, ax, ay, bx, by, kleur, d);
 function hals(ctx, x, y, huid) { lichtBlok(ctx, x - 1.4, y + 3.2, 2.8, 2.4, tint(huid, -0.1), 0.15); }
 export function benen(ctx, mx, wip, pas, o) {
@@ -1320,7 +1321,9 @@ export function maakHeer(sleutel, houding, beeld, spiegel = false, def = {}) {
     return [c, ctx];
   };
   const [fig, fctx] = nieuw();
-  heer.teken(fctx, houding, beeld, def);
+  const oudeKleur = ROOD;
+  if (def.accent) ROOD = def.accent;
+  try { heer.teken(fctx, houding, beeld, def); } finally { ROOD = oudeKleur; }
   const sil = document.createElement('canvas');
   sil.width = w; sil.height = h;
   const sctx = sil.getContext('2d');

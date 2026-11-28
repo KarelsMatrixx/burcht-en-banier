@@ -54,6 +54,7 @@ export function maakGids({ plekNaarScherm = null, tegelMaat = { breedte: 64, hoo
   // Wat is nu de eerstvolgende knop? Per soort taak.
   function volgende() {
     if (!doel) return null;
+    if (doel.soort === 'eigen') return doel.eigen();   // de heldenles (0.125.0): de les zegt zelf wat er aan de beurt is
     const hamer = el('knop-hamer');
     if (doel.soort === 'bouw') {
       if (doel.eigen) { const r = doel.eigen(); if (r) return r; }   // de bouwles: eigen zin bij de muur en het slopen

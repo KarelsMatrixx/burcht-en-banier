@@ -18,6 +18,7 @@ await p.evaluate(() => { localStorage.clear(); sessionStorage.clear(); sessionSt
 await p.reload(); await wacht(); await p.waitForTimeout(500);
 await p.tap('#missie-begin').catch(() => {}); await p.waitForTimeout(1500);
 await p.evaluate(() => window.spel.ui && window.spel.ui.verbergVerhaal && window.spel.ui.verbergVerhaal());
+await p.evaluate(() => window.spel.heldenLes && window.spel.heldenLes.sla());   // heldenles (0.125.0) overslaan
 const groepen = await p.evaluate(() => [...document.querySelectorAll('#bouw-knoppen [data-open]')].map((k) => k.dataset.open));
 check('vijf groepen', JSON.stringify(groepen) === JSON.stringify(['kasteel', 'grondstof', 'voedsel', 'dorp', 'leger']), JSON.stringify(groepen));
 const n = await p.evaluate(() => { window.spel.leger.kiesAlles(); return window.spel.leger.aantalGekozen(); });

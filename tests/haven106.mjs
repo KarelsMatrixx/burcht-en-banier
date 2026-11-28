@@ -32,6 +32,7 @@ async function startLevel(n, klaar) {
   await p.waitForTimeout(500);
   // eventuele berichten van de heer wegtikken
   for (let k = 0; k < 4; k++) { if (await zichtbaar('#verhaal')) { await p.evaluate(() => window.spel.ui.verbergVerhaal()); await p.waitForTimeout(250); } }
+  await p.evaluate(() => window.spel.heldenLes && window.spel.heldenLes.sla());   // heldenles (0.125.0) overslaan
 }
 
 await startLevel(8, [0, 1, 2, 3, 4, 5, 6, 7]);

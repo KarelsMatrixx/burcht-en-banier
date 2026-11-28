@@ -362,6 +362,57 @@ export function maakUi() {
     el('knop-test').classList.toggle('actief', !el('proef').hidden);
   });
 
+  // --- Heldenzaal (0.125.0) ------------------------------------------------------------
+  // Bovenaan een kaartje per held (portret, poppetje, naam); tik je er een aan, dan zie je
+  // eronder wat hij kan en de knop Buy met de prijs.
+  let heldKeus = null;
+  const poppetjes = new Map();   // sleutel -> dataURL van het poppetje (een keer gemaakt)
+  function poppetjeVan(k) {
+    if (poppetjes.has(k.sleutel)) return poppetjes.get(k.sleutel);
+    let url = '';
+    try {
+      if (k.figuur) {
+        const c = document.createElement('canvas');
+        c.width = k.figuur.width; c.height = k.figuur.height;
+        c.getContext('2d').drawImage(k.figuur, 0, 0);
+        url = c.toDataURL();
+      }
+    } catch (fout) { url = ''; }
+    poppetjes.set(k.sleutel, url);
+    return url;
+  }
+  function toonHelden(balk, helden) {
+    balk.classList.add('helden');
+    balk.dataset.teken = '';
+    if (!helden.some((k) => k.sleutel === heldKeus)) heldKeus = (helden.find((k) => k.kan) || helden[0]).sleutel;
+    const kies = helden.find((k) => k.sleutel === heldKeus);
+    const maak = (tag, klas, tekst) => { const d = document.createElement(tag); if (klas) d.className = klas; if (tekst !== undefined) d.textContent = tekst; return d; };
+    const rij = maak('div', 'held-rij');
+    for (const k of helden) {
+      const kaart = maak('button', 'held-kaart' + (k.sleutel === heldKeus ? ' actief' : ''));
+      kaart.type = 'button';
+      kaart.dataset.held = k.sleutel;
+      const beelden = maak('div', 'held-beelden');
+      const img = maak('img', 'held-portret'); img.src = k.portret; img.alt = '';
+      beelden.append(img);
+      const pop = poppetjeVan(k);
+      if (pop) { const f = maak('img', 'held-figuur'); f.src = pop; f.alt = ''; beelden.append(f); }
+      kaart.append(beelden, maak('span', 'held-naam', k.naam), maak('small', '', k.prijs));
+      kaart.addEventListener('click', () => { heldKeus = k.sleutel; toonHelden(balk, helden); });
+      rij.append(kaart);
+    }
+    const info = maak('div', 'held-info');
+    info.append(maak('div', 'held-ability', `Ability: ${kies.ability}. ${kies.uitleg.ability || ''}`));
+    info.append(maak('div', 'held-passief', `Always: ${kies.uitleg.passief || ''}`));
+    const koop = maak('button', 'held-koop' + (kies.kan ? '' : ' kanniet'), `Buy ${kies.naam.split(' ')[0]} · ${kies.prijs}`);
+    koop.type = 'button';
+    koop.id = 'held-koop';
+    koop.addEventListener('click', () => leidOp(kies.sleutel));
+    info.append(koop);
+    if (!kies.kan && kies.waarom) info.append(maak('div', 'held-waarom', `Not now: ${kies.waarom}.`));
+    balk.replaceChildren(rij, info);
+  }
+
   return {
     toonBeelden(aantal) {
       beelden = `${aantal} fps`;
@@ -854,6 +905,9 @@ export function maakUi() {
         el('leger-tekst').appendChild(p);
       }
       const balk = el('leger-opleiden');
+      // Heldenzaal (0.125.0): kaartjes met portret en poppetje, daaronder de uitleg en Buy.
+      if (knoppen.length && knoppen[0].held) { toonHelden(balk, knoppen); return; }
+      balk.classList.remove('helden');
       const teken = knoppen.map((k) => k.sleutel).join();
       if (balk.dataset.teken !== teken) {
         balk.dataset.teken = teken;
@@ -994,7 +1048,8 @@ export function maakUi() {
     // De knoppen en de uitleg voor je soldaten.
     //   zichtbaar = de knoppen tonen, hint = de zin erboven,
     //   kader = de knop Kader staat aan, gekozen = er is iemand gekozen
-    toonLeger({ zichtbaar, hint, kader, gekozen, bouw = null, ontkoppel = false, formatie = null, houd = null }) {
+    toonLeger({ zichtbaar, hint, kader, gekozen, bouw = null, ontkoppel = false, formatie = null, houd = null, held = null }) {
+      this.toonHeld(held);
       // Kies je soldaten op de kaart, dan gaat het zwaard vanzelf open.
       if (gekozen && !legerStand.gekozen && paneel !== 'bouw') paneel = 'leger';
       legerStand = { zichtbaar, gekozen };
@@ -1028,6 +1083,18 @@ export function maakUi() {
     },
     opHoud(functie) {
       el('knop-houd').addEventListener('click', functie);
+    },
+    // De abilityknop van de gekozen held (0.125.0): stand = { naam, wacht (seconden), actief } of null.
+    toonHeld(stand) {
+      const knop = el('knop-held');
+      knop.hidden = !stand;
+      if (!stand) return;
+      knop.textContent = stand.actief ? `${stand.naam}!` : stand.wacht > 0 ? `${stand.naam} ${stand.wacht}s` : stand.naam;
+      knop.classList.toggle('actief', !!stand.actief);
+      knop.classList.toggle('wacht', !stand.actief && stand.wacht > 0);
+    },
+    opHeld(functie) {
+      el('knop-held').addEventListener('click', functie);
     },
     opOntkoppel(functie) {
       el('knop-ontkoppel').addEventListener('click', functie);

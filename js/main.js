@@ -35,6 +35,7 @@ import { maakVisLes } from './visles.js';
 import { maakHandelLes } from './handelles.js';
 import { maakLegerLes } from './legerles.js';
 import { maakBouwLes } from './bouwles.js';
+import { maakHeldenLes } from './heldenles.js';
 import { maakGolven } from './golven.js';
 import { maakZeeleven } from './zeeleven.js';
 import { maakFiguranten } from './figuranten.js';
@@ -158,7 +159,7 @@ async function start() {
   let bewaren = false;   // pas aan als het spel helemaal is opgebouwd
   const bewaar = () => {
     if (!bewaren) return;
-    const stand = { bouwwerken: bouwer.eigenBouwwerken(), ...economie.bewaarStand(), leger: leger.bewaarStand(), strijd: strijd.bewaarStand(), haven: haven ? haven.stand() : [], havenLes: havenLesKlaar, visLes: visLesKlaar, handelLes: handelLesKlaar, legerLes: legerLesKlaar, bouwLes: bouwLesKlaar };
+    const stand = { bouwwerken: bouwer.eigenBouwwerken(), ...economie.bewaarStand(), leger: leger.bewaarStand(), strijd: strijd.bewaarStand(), haven: haven ? haven.stand() : [], havenLes: havenLesKlaar, visLes: visLesKlaar, handelLes: handelLesKlaar, legerLes: legerLesKlaar, bouwLes: bouwLesKlaar, heldenLes: heldenLesKlaar };
     if (opslag.bewaar(stand) || bewaarFoutGemeld) return;
     bewaarFoutGemeld = true;
     ui.toonMelding('Saving does not work here. Your progress is lost when you close the game.', { soort: 'uitleg', toon: true });
@@ -184,8 +185,10 @@ async function start() {
   let legerLesKlaar = false;   // de legerles is gedaan (bewaard)
   let bouwLes = null;          // de bouwles van level 1 (js/bouwles.js): muur, poort, toren, slopen
   let bouwLesKlaar = false;    // de bouwles is gedaan (bewaard)
+  let heldenLes = null;        // de heldenles van level 9 (js/heldenles.js): Rutger, Berserker, de heldenzaal
+  let heldenLesKlaar = false;  // de heldenles is gedaan (bewaard)
   // Loopt er een les (haven of handel)? Dan staat de oorlog stil.
-  const lesLoopt = () => !!((havenLes && havenLes.actief()) || (visLes && visLes.actief()) || (handelLes && handelLes.actief()) || (legerLes && legerLes.actief()) || (bouwLes && bouwLes.actief()));
+  const lesLoopt = () => !!((havenLes && havenLes.actief()) || (visLes && visLes.actief()) || (handelLes && handelLes.actief()) || (legerLes && legerLes.actief()) || (bouwLes && bouwLes.actief()) || (heldenLes && heldenLes.actief()));
   let naVoorraad = () => {};
   let naGeveld = () => {};     // een gevelde boom valt om (beeld); ingevuld als het gevecht er is
   let verversHandel = () => {};   // het paneel van de voorraadkamer, als het openstaat   // wordt verderop ingevuld, als de bouwbalk er is
@@ -278,7 +281,8 @@ async function start() {
     visLesKlaar = !!bewaard.visLes && !vanKaart;   // de visles net zo
     visserij.zoek();
     handelLesKlaar = !!bewaard.handelLes;
-    bouwLesKlaar = !!bewaard.bouwLes;   // de bouwles net zo
+    bouwLesKlaar = !!bewaard.bouwLes;
+    heldenLesKlaar = !!bewaard.heldenLes;   // de bouwles net zo
     legerLesKlaar = !!bewaard.legerLes;   // de legerles net zo (de acht man staan al in je bewaarde leger)
     if (teruggezet) ui.toonMelding(`Your castle is back: ${teruggezet} ${teruggezet === 1 ? 'building' : 'buildings'}.`, { soort: 'uitleg' });
     leger.zetStand(bewaard.leger);
@@ -394,7 +398,8 @@ async function start() {
     if (meting.isBezig()) return;
     // Proloog: alleen het bouwwerk van de les is te kiezen (de knoppen zijn dan ook dicht).
     if (sleutel && proloog && proloog.bouwSleutel() !== sleutel) return;
-    if (sleutel && bouwLes && bouwLes.actief() && bouwLes.bouwSleutel() !== sleutel) return;   // bouwles: idem
+    if (sleutel && bouwLes && bouwLes.actief() && bouwLes.bouwSleutel() !== sleutel) return;
+    if (sleutel && heldenLes && heldenLes.actief() && heldenLes.bouwSleutel() !== sleutel) return;   // heldenles: idem   // bouwles: idem
     bouw.sleutel = sleutel;
     bouw.begin = null;
     bouw.eind = null;
@@ -409,7 +414,8 @@ async function start() {
 
   function bevestigBouw() {
     if (!bouw.sleutel || !staat.schim) return;
-    if (bouwLes && bouwLes.actief() && !bouwLes.magBevestig(bouw)) { geluid.speel('ui_denied'); return; }   // bouwles: pas als het klopt
+    if (bouwLes && bouwLes.actief() && !bouwLes.magBevestig(bouw)) { geluid.speel('ui_denied'); return; }
+    if (heldenLes && heldenLes.actief() && !heldenLes.magBevestig(bouw)) { geluid.speel('ui_denied'); return; }   // bouwles: pas als het klopt
     if (bouw.sleutel === SLOOP) geluid.speel(bouwer.sloop(bouw.begin.x, bouw.begin.y) ? 'build_demolish' : 'ui_denied');
     else geluid.speel(bouwer.plaats(bouwwerken[bouw.sleutel], staat.schim.tegels.filter((t) => t.ok)) ? 'build_place' : 'ui_denied');
     bouw.begin = null;
@@ -419,7 +425,8 @@ async function start() {
 
   // Een tik op de kaart terwijl je bouwt.
   function tikBouw(x, y) {
-    if (bouwLes && bouwLes.actief() && !bouwLes.magTik(x, y, bouw)) { geluid.speel('ui_denied'); return; }   // bouwles: alleen de gouden plek
+    if (bouwLes && bouwLes.actief() && !bouwLes.magTik(x, y, bouw)) { geluid.speel('ui_denied'); return; }
+    if (heldenLes && heldenLes.actief() && !heldenLes.magTik(x, y, bouw)) { geluid.speel('ui_denied'); return; }   // bouwles: alleen de gouden plek
     const werk = bouwwerken[bouw.sleutel];
     if (werk && werk.lijn && bouw.begin) bouw.eind = { x, y };
     else bouw.begin = { x, y };
@@ -523,6 +530,14 @@ async function start() {
     }
   }
 
+  // Wat je ziet als een held zijn ability gebruikt (Engels, na te lezen).
+  const HELD_ZIN = {
+    berserker: 'Rutger roars: Berserker! Double damage, half the pain, for ten seconds.',
+    windvlaag: 'Mechteld calls the wind: a volley of arrows falls on the enemy.',
+    noodherstel: 'Lambrecht and his hammer: your walls and buildings nearby are mended.',
+    valstrik: 'Brandt springs his snares: the enemies around him are caught.',
+  };
+
   let kazerneVak = -1;         // de kazerne waarvan het paneel openstaat
   let kazerneBericht = '';     // wat er het laatst gebeurde
   const toonKazerne = () => {
@@ -538,11 +553,25 @@ async function start() {
     ui.toonKazerne({
       open: true,
       regels: [
-        `${gebouw.naam}. Army places: ${leger.plekken()} of ${leger.max}. Gold: ${economie.voorraad.goud}. Idle peasants: ${Math.max(0, volk.vrij)}.`,
-        kazerneBericht || (gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : gebouw.leidtOp === 'belegering' ? 'Siege gear costs gold, planks and one idle peasant. Ladder bearers are trained at the barracks.' : gebouw.leidtOp === 'stal' ? 'A mounted knight costs gold, copper, wheat and one idle peasant. Each stable holds five horses and needs a horse keeper.' : 'A soldier costs gold and one idle peasant.'),
+        gebouw.leidtOp === 'held' ? `${gebouw.naam}. Gold: ${economie.voorraad.goud}. A hero takes no army place and no peasant.` : `${gebouw.naam}. Army places: ${leger.plekken()} of ${leger.max}. Gold: ${economie.voorraad.goud}. Idle peasants: ${Math.max(0, volk.vrij)}.`,
+        kazerneBericht || (gebouw.leidtOp === 'held' ? (leger.held() ? `${leger.soorten[leger.held().soldaat.sleutel].naam} is your hero now. Only one hero at a time: if he falls, you can call a new one.` : 'Call one hero for gold. Only one hero at a time: if he falls, you can call a new one.') : gebouw.leidtOp === 'mystiek' ? 'Mystic soldiers cost gold, copper and two idle peasants.' : gebouw.leidtOp === 'belegering' ? 'Siege gear costs gold, planks and one idle peasant. Ladder bearers are trained at the barracks.' : gebouw.leidtOp === 'stal' ? 'A mounted knight costs gold, copper, wheat and one idle peasant. Each stable holds five horses and needs a horse keeper.' : 'A soldier costs gold and one idle peasant.'),
       ],
-      knoppen: Object.values(leger.soorten).filter((def) => mag(def.sleutel) && (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel) })),
+      knoppen: Object.values(leger.soorten).filter((def) => mag(def.sleutel) && (def.kazerne || 'klassiek') === (gebouw.leidtOp === true ? 'klassiek' : gebouw.leidtOp)).map((def) => ({ sleutel: def.sleutel, naam: def.naam, kost: economie.kostTekst(def.kosten), kan: !leger.waaromNiet(def.sleutel), ...(def.held ? heldKaart(def) : {}) })),
     });
+  };
+  // Heldenzaal (0.125.0): wat een kaartje van een held toont (portret, poppetje, uitleg, prijs).
+  const heldKaart = (def) => {
+    let figuur = null;
+    try { const a = assets.haal(`eenheid.${def.sleutel}_blauw`); figuur = a.rechts ? a.rechts[0] : a.beeld || null; } catch (fout) { figuur = null; }
+    return {
+      held: true,
+      portret: `beelden/portretten/${def.portret || def.sleutel}.jpg`,
+      figuur,
+      ability: def.ability ? `${def.ability.naam} (every ${def.ability.wacht} s)` : '',
+      uitleg: def.uitleg || {},
+      prijs: def.kosten && def.kosten.goud ? `${def.kosten.goud} gold` : economie.kostTekst(def.kosten),
+      waarom: leger.waaromNiet(def.sleutel),
+    };
   };
   const sluitKazerne = () => {
     kazerneVak = -1;
@@ -556,6 +585,7 @@ async function start() {
     else {
       const soort = leger.soorten[sleutel];
       geluid.speel({ mystiek: 'mystic_ready', belegering: 'siegeworks_ready', stal: 'horse_neigh' }[soort.kazerne] || 'barracks_ready');
+      if (soort.held) { kazerneBericht = `${soort.naam} answers your call. Select your hero and press ${soort.ability ? soort.ability.naam : 'the ability button'}.`; toonKazerne(); naLeger(); return; }
       if (!soort.alleenBouw && soort.kazerne !== 'belegering') geluid.speel('unit_ready_shout', { wacht: 350 });
     }
     kazerneBericht = reden ? `Not possible: ${reden}.` : `${metLidwoord(leger.soorten[sleutel].naam.toLowerCase(), true)} is ready at the ${leger.soorten[sleutel].kazerne === 'stal' ? 'stable' : leger.soorten[sleutel].kazerne === 'belegering' ? 'siege workshop' : 'barracks'}.`;
@@ -803,6 +833,19 @@ async function start() {
     if (n) ui.toonMelding(aan ? 'Hold: they stay where they are and only fight what comes close. Archers shoot what is in range.' : 'Hold is off: they fight freely again.', { soort: 'leger' });
     naLeger();
   });
+  // De ability van de gekozen held (0.125.0).
+  ui.opHeld(() => {
+    const h = leger.gekozen().find((e) => leger.soorten[e.soldaat.sleutel].ability);
+    const reden = strijd.heldDaad(h);
+    if (reden) {
+      geluid.speel('ui_denied');
+      ui.toonMelding(`Not now: ${reden}.`, { soort: 'leger' });
+    } else {
+      const def = leger.soorten[h.soldaat.sleutel];
+      ui.toonMelding(HELD_ZIN[def.ability.soort] || `${def.ability.naam}!`, { soort: 'leger' });
+    }
+    naLeger();
+  });
   ui.opOntkoppel(() => {
     const { n, sloop } = strijd.ontkoppel(leger.gekozen());
     if (sloop) for (let i = 0; i < sloop; i++) economie.geefTerug(leger.soorten.trebuchet.kosten);
@@ -840,7 +883,8 @@ async function start() {
     const formatie = gewoon && telG.houdbaar > 1 ? FORMATIE_NAAM[leger.formatie()] : null;
     const houd = gewoon && telG.houdbaar > 0 ? { aan: telG.houdt === telG.houdbaar } : null;
     if (gewoon && telG.houdbaar > 0 && telG.houdt === telG.houdbaar && hint) hint = hint.replace(' selected.', ' selected (Hold).');
-    ui.toonLeger({ formatie, houd, zichtbaar: !bouwt && leger.aantal() > 0, hint, kader: kaderAan, gekozen: gekozen > 0, bouw: ingenieur ? { menu: bouwMenu, trebuchet: { actief: trebuchetModus, tekst: trebuchetModus ? (trebuchetPlek && trebuchetPlek.ok ? 'Build here' : 'Cancel') : 'Trebuchet' }, ballista: { actief: ballistaModus, tekst: ballistaModus ? (ballistaPlek && ballistaPlek.ok ? 'Build here' : 'Cancel') : 'Ballista' } } : null, ontkoppel: staandGekozen });
+    const heldGekozen = !bouwt && !proloog ? leger.gekozen().find((e) => leger.soorten[e.soldaat.sleutel].ability) : null;
+    ui.toonLeger({ held: heldGekozen ? strijd.heldStand(heldGekozen) : null, formatie, houd, zichtbaar: !bouwt && leger.aantal() > 0, hint, kader: kaderAan, gekozen: gekozen > 0, bouw: ingenieur ? { menu: bouwMenu, trebuchet: { actief: trebuchetModus, tekst: trebuchetModus ? (trebuchetPlek && trebuchetPlek.ok ? 'Build here' : 'Cancel') : 'Trebuchet' }, ballista: { actief: ballistaModus, tekst: ballistaModus ? (ballistaPlek && ballistaPlek.ok ? 'Build here' : 'Cancel') : 'Ballista' } } : null, ontkoppel: staandGekozen });
     // Groepen (dichtbij, afstand, belegering) en losse soorten kiezen.
     if (!bouwt && leger.aantal() > 0) {
       const t = leger.telling();
@@ -996,6 +1040,8 @@ async function start() {
     if (legerLes) legerLes.zetOpnieuw();
     bouwLesKlaar = false;    // de bouwles ook (de muur is weg)
     if (bouwLes) bouwLes.zetOpnieuw();
+    heldenLesKlaar = false;
+    if (heldenLes) heldenLes.zetOpnieuw();
     // Wie op de plek van een teruggekomen boom stond, krijgt een nieuwe plek.
     eenheden.zetAantal(aantal(), false);
     opslag.wis();
@@ -1010,6 +1056,11 @@ async function start() {
   let vijandInBeeld = false;
   const heerNaam = missie ? missie.heer : 'Red';
   naStrijd = () => {
+    // Helden (0.125.0): de passieve oogst van Brandt en de aftelling op de abilityknop.
+    const held = leger.held();
+    economie.zetOogst(held ? leger.soorten[held.soldaat.sleutel].oogst : null);
+    const heldGekozen = held && held.gekozen ? held : null;
+    ui.toonHeld(heldGekozen ? strijd.heldStand(heldGekozen) : null);
     const s = strijd.stand();
     let kort = '';
     let lang = '';
@@ -1238,7 +1289,7 @@ async function start() {
   ui.opVolgende(() => kiesModus(`missie:${missie.id + 1}`));
   // Een missie die nog niet is begonnen opent met zijn intro.
   // De proloog: taken van Bartholt, de nacht en de scène.
-  const gids = missie && (missie.proloog || missie.havenLes || missie.visLes || missie.handelLes || missie.legerLes || missie.bouwLes) ? maakGids({
+  const gids = missie && (missie.proloog || missie.havenLes || missie.visLes || missie.handelLes || missie.legerLes || missie.bouwLes || missie.heldenLes) ? maakGids({
     // Waar staat een tegel op het scherm, en hoe groot is hij? Voor de gouden ruit op de bouwplek.
     // boven: de bovenkant van het bouwwerk op die plek (een muur), daar tikt de speler om er een soldaat op te zetten
     plekNaarScherm: (x, y, boven = false) => { const w = rasterNaarWereld(x + 0.5, y + 0.5); const h = boven ? hoogteOp(y * kaart.breedte + x) : 0; const sc = camera.wereldNaarScherm(w.x, w.y - h); return { x: sc.x, y: sc.y, zoom: camera.zoom }; },
@@ -1262,6 +1313,12 @@ async function start() {
     opKlaar: () => { bouwLesKlaar = true; ui.vrijBouw(); bewaar(); },
     glijNaar: (x, y) => { const w = rasterNaarWereld(x, y); camera.glijNaar(w.x, w.y, 900); },
     sluitPanelen: () => { stopBouw(); ui.sluitPaneel(); handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); } }) : null;
+  // Level 9: Bartholt leert je de helden: Rutger, zijn Berserker en de heldenzaal (js/heldenles.js).
+  heldenLes = missie && missie.heldenLes && mag('heldenzaal') && !strijd.uitslag() ? maakHeldenLes({ gids, leger, strijd, bouwer, bouwwerken, kaart, economie, klaarAl: heldenLesKlaar,
+    bouwStand: () => bouw,
+    opKlaar: () => { heldenLesKlaar = true; ui.vrijBouw(); naLeger(); bewaar(); },
+    glijNaar: (x, y) => { const w = rasterNaarWereld(x, y); camera.glijNaar(w.x, w.y, 900); },
+    sluitPanelen: () => { stopBouw(); ui.sluitPaneel(); handelVak = -1; handelBericht = ''; ui.toonHandel({ open: false }); sluitKazerne(); } }) : null;
   // Level 3: Bartholt leert je het leger besturen: box, groep, formatie en Hold (js/legerles.js).
   legerLes = missie && missie.legerLes && !strijd.uitslag() ? maakLegerLes({ gids, leger, kaart, wegvinder, klaarAl: legerLesKlaar,
     opKlaar: () => { legerLesKlaar = true; ui.beperkKnoppen(null); ui.vrijBouw(); naLeger(); bewaar(); },
@@ -1484,6 +1541,7 @@ async function start() {
         toonHandel();
         return;
       }
+      if (aangetikt && aangetikt.leidtOp && heldenLes && heldenLes.actief() && !heldenLes.magZaal()) { geluid.speel('ui_denied'); return; }   // heldenles: nog niet
       if (aangetikt && aangetikt.leidtOp) {
         zagerVak = -1;
         kazerneVak = y * kaart.breedte + x;
@@ -1728,6 +1786,10 @@ async function start() {
         bouwLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
         if (bouwLes.actief()) ui.beperkBouw(bouwLes.bouwSleutel());
       }
+      if (heldenLes) {
+        heldenLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
+        if (heldenLes.actief()) ui.beperkBouw(heldenLes.bouwSleutel());
+      }
       if (handelLes) handelLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
       if (havenLes) havenLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
       if (visLes) visLes.stap(dt, !beeldOpen && document.getElementById('missie').hidden && document.getElementById('verhaalbeeld').hidden && document.getElementById('verhaal').hidden);
@@ -1787,7 +1849,7 @@ async function start() {
     const y = Math.floor(i / kaart.breedte) + 0.5;
     return eenheden.lijst.some((e) => e.team === 1 && !e.dood && Math.abs(e.x - x) < 1.8 && Math.abs(e.y - y) < 1.8) ? 1 : 0;
   });
-  window.spel = { bouwLes, legerLes, zeeleven, haven, havenLes, visserij, visLes, handelLes, gids, hinderlaag, reserve, sluipers, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
+  window.spel = { heldenLes, bouwLes, legerLes, zeeleven, haven, havenLes, visserij, visLes, handelLes, gids, hinderlaag, reserve, sluipers, veld, rood, regels, modus, missies, CONFIG, kaart, camera, staat, tekenaar, wegvinder, eenheden, meting, bouwer, bouwwerken, bouw, opslag, economie, leger, strijd, ui, proloog, doel, figuranten, slachting, poortwacht, assets, landschap: landschapProfiel, geluid };
 }
 
 // Zorgt dat het spel ook zonder internet start (zie sw.js) en dat je na

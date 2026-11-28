@@ -90,6 +90,11 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
   }
 
   // Slopen geeft een deel van de bouwkosten terug.
+  // Held Brandt (0.125.0): zolang hij leeft werken sommige beroepen sneller (keer < 1 = kortere werktijd).
+  let oogst = null;   // { keer, beroepen: Set }
+  const oogstVan = (beroep) => (oogst && oogst.beroepen.has(beroep.sleutel) ? oogst.keer : 1);
+  function zetOogst(o) { oogst = o && o.keer ? { keer: o.keer, beroepen: new Set(o.beroepen || []) } : null; }
+
   function geefTerug(kosten) {
     for (const [naam, aantal] of soorten(kosten)) voorraad[naam] += Math.floor(aantal * regels.sloopTerug);
     opVoorraad();
@@ -504,7 +509,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     }
     w.staat = 'werk';
     w.genomen = false;
-    w.tel = Math.round(beroep.werkTijd * stappenPerSeconde);
+    w.tel = Math.round(beroep.werkTijd * oogstVan(beroep) * stappenPerSeconde);
     if (beroep.sleutel === 'bakker') geluid.speel('bakery_oven', { x: e.x, y: e.y });
     e.houding = 'hak';
     e.snelheid = beroep.snelheid;
@@ -590,7 +595,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
       if (e.pad) return;                     // nog onderweg
       if (hier !== w.sta) return opnieuw(e); // de route is afgesneden: er is gebouwd
       w.staat = 'werk';
-      w.tel = Math.round(beroep.werkTijd * stappenPerSeconde);
+      w.tel = Math.round(beroep.werkTijd * oogstVan(beroep) * stappenPerSeconde);
       e.houding = 'hak';
       const dx = (w.bron % B) - (hier % B);
       const dy = Math.floor(w.bron / B) - Math.floor(hier / B);
@@ -939,7 +944,7 @@ export function maakEconomie({ regels, kaart, wegvinder, eenheden, opKaart, opVo
     munt: () => volkRegels.munt,
     voorraad, opslagMax, maakt: (naam) => [...werkplaatsen.values()].some((e) => e.werk.beroep.haalt === naam) || wachtend.some((w) => regels.beroepen[w.beroepNaam] && regels.beroepen[w.beroepNaam].haalt === naam), opslagKamers: () => kamers, herzieOpslag, kostTekst, tekort, tekortAan, betaal, geefTerug, geefAllesTerug,
     nieuweWerkplaats, werkplaatsWeg, stap, beschrijf,
-    bewaarStand, zetStand, herstel,
+    bewaarStand, zetStand, herstel, zetOogst, oogstVan: (sleutel) => oogstVan({ sleutel }),
     // Woonruimte erbij (een woning gebouwd) of eraf (gesloopt).
     plekErbij(aantal) {
       woonruimte = Math.max(0, woonruimte + aantal);
